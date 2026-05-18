@@ -30,6 +30,14 @@ The public site is static-first, deployable on Cloudflare Pages, and hardened fo
 - Confirmed security remains subordinate to gas suppression, fire detection, compliance and lifecycle support.
 - Added hardened contextual inquiry forms with explicit request types, bounded input lengths and email-client submission guidance.
 
+## Cinematic Hero Rebuild
+
+- Rebuilt the homepage hero around environmental 3D illusion rather than interface UI.
+- Removed floating annotation cards and fake operational overlays from the hero.
+- Replaced the inner-page framed architecture card with ambient Kharon mark, perspective floor and restrained linework.
+- Preserved static-first performance: CSS/SVG only, no Three.js, no React island and no public app JavaScript bundle.
+- Reduced hero height so the homepage works as an authority-and-routing entry point instead of a long cinematic sequence.
+
 ## Operational Notes
 
 - Configure apex/www canonical forwarding in Cloudflare Redirect Rules or Bulk Redirects:

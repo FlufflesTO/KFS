@@ -92,7 +92,7 @@ export const solutionLinks = [
     label: "Critical Infrastructure",
     href: "/critical-infrastructure",
     summary:
-      "Protection architecture for data centres, control rooms, electrical rooms and high-consequence operational sites."
+      "Infrastructure protection for data centres, control rooms, electrical rooms and high-consequence operational sites."
   },
   {
     label: "Integrated Security",
@@ -199,7 +199,7 @@ export const trustModules = [
   },
   {
     title: "Response process",
-    text: "Detection, escalation, evacuation and suppression release logic are aligned to site operating procedures.",
+    text: "Detection, escalation, evacuation and confirmed response sequences are aligned to site operating procedures.",
     status: "Response",
     tone: "amber"
   },

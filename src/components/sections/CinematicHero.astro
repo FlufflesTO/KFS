@@ -1,39 +1,48 @@
 ---
-import { complianceSignals } from "../../data/site.js";
+const trustSignals = ["SAQCC", "SANS 10139", "SANS 14520", "Commercial & Industrial Only"];
 ---
 
 <section class="hero-cinematic relative isolate overflow-hidden bg-kharon-black text-white">
-  <div class="hero-cinematic__fog"></div>
-  <div class="hero-cinematic__mark" aria-hidden="true">
-    <span>K</span>
-  </div>
-  <svg class="hero-cinematic__topology" viewBox="0 0 900 520" aria-hidden="true">
-    <path d="M80 380H300L420 260H640L760 150" />
-    <path d="M140 210H330L450 330H650" />
-    <path d="M250 430L410 370L560 430L780 280" />
-    <circle cx="300" cy="380" r="8" />
-    <circle cx="420" cy="260" r="8" />
-    <circle cx="640" cy="260" r="8" />
-    <circle cx="760" cy="150" r="8" class="critical" />
+  <div class="hero-cinematic__atmosphere" aria-hidden="true"></div>
+  <div class="hero-cinematic__titan" aria-hidden="true">K</div>
+  <div class="hero-cinematic__structure" aria-hidden="true"></div>
+  <div class="hero-cinematic__floor" aria-hidden="true"></div>
+
+  <svg class="hero-cinematic__linework" viewBox="0 0 1080 620" aria-hidden="true">
+    <defs>
+      <linearGradient id="hero-linework-primary" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#00C2FF" stop-opacity="0" />
+        <stop offset="45%" stop-color="#00C2FF" stop-opacity="0.45" />
+        <stop offset="100%" stop-color="#C4332F" stop-opacity="0.32" />
+      </linearGradient>
+    </defs>
+    <path d="M160 440H360L472 328H660L810 214" />
+    <path d="M230 272H410L520 380H730" />
+    <path d="M340 506L500 450L650 506L870 356" />
+    <path class="secondary" d="M660 118V492M752 150V426M844 210V386" />
+    <circle cx="360" cy="440" r="5" />
+    <circle cx="472" cy="328" r="5" />
+    <circle cx="660" cy="328" r="5" />
+    <circle class="critical" cx="810" cy="214" r="6" />
   </svg>
 
-  <div class="relative z-10 mx-auto grid min-h-[calc(100svh-5rem)] max-w-7xl items-center gap-10 px-6 py-24 lg:grid-cols-[0.95fr_1.05fr] lg:py-28">
+  <div class="relative z-10 mx-auto grid min-h-[min(760px,calc(86svh-5rem))] max-w-7xl items-center gap-10 px-6 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:py-24">
     <div class="max-w-3xl">
-      <p class="mb-4 text-sm font-bold uppercase text-kharon-cyan">
+      <p class="mb-4 text-xs font-bold uppercase text-kharon-cyan">
         Commercial Fire Detection & Gaseous Suppression Specialists
       </p>
 
       <h1 class="kharon-h1">
-        Engineering-led fire protection for mission-critical infrastructure.
+        Engineering-led fire detection and gaseous suppression for critical infrastructure.
       </h1>
 
       <p class="mt-5 max-w-2xl text-lg leading-8 text-white/72">
-        Kharon Fire and Security Solutions (Pty) Ltd designs, installs, services and maintains commercial and industrial fire detection and gas suppression systems for continuity, compliance and infrastructure resilience.
+        Commercial and industrial systems designed, installed, serviced and maintained for lifecycle support, compliance alignment and operational continuity.
       </p>
 
       <div class="mt-6 flex flex-wrap gap-2">
-        {complianceSignals.map((item) => (
-          <span class="rounded-md border border-white/10 bg-white/[0.05] px-3 py-2 text-xs font-bold uppercase text-white/72">
+        {trustSignals.map((item) => (
+          <span class="border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-bold uppercase text-white/72">
             {item}
           </span>
         ))}
@@ -52,21 +61,6 @@ import { complianceSignals } from "../../data/site.js";
       </div>
     </div>
 
-    <div class="relative hidden min-h-[33rem] lg:block" aria-hidden="true">
-      <div class="hero-cinematic__monolith">
-        <div class="hero-cinematic__monolith-face">
-          <span>K</span>
-        </div>
-      </div>
-      <div class="hero-cinematic__floor"></div>
-      <div class="hero-cinematic__annotation hero-cinematic__annotation--one">
-        <span>SUPPRESSION RELEASE LOGIC</span>
-        <strong>DETECT / CONFIRM / RELEASE</strong>
-      </div>
-      <div class="hero-cinematic__annotation hero-cinematic__annotation--two">
-        <span>DETECTION TOPOLOGY</span>
-        <strong>ADDRESSABLE ZONES</strong>
-      </div>
-    </div>
+    <div class="hero-cinematic__void hidden lg:block" aria-hidden="true"></div>
   </div>
 </section>

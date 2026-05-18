@@ -92,138 +92,182 @@ summary::-webkit-details-marker {
 }
 
 .hero-padding {
-  padding-top: 10rem;
-  padding-bottom: 8rem;
+  padding-top: 9rem;
+  padding-bottom: 6rem;
 }
 
 .hero-cinematic {
-  min-height: calc(100svh - 5rem);
+  min-height: min(780px, calc(86svh - 5rem));
+  background:
+    linear-gradient(90deg, rgba(7, 9, 11, 0.98) 0%, rgba(9, 12, 15, 0.92) 48%, rgba(7, 9, 11, 0.98) 100%);
 }
 
-.hero-cinematic__fog {
+.hero-cinematic__atmosphere {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 78% 45%, rgba(31, 78, 121, 0.28), transparent 34%),
-    radial-gradient(circle at 50% 80%, rgba(196, 51, 47, 0.13), transparent 28%),
-    linear-gradient(90deg, rgba(11, 13, 15, 0.96) 0%, rgba(11, 13, 15, 0.84) 46%, rgba(11, 13, 15, 0.96) 100%);
+    radial-gradient(circle at 73% 38%, rgba(31, 78, 121, 0.3), transparent 30%),
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, 0.08), transparent 20%),
+    radial-gradient(circle at 58% 86%, rgba(196, 51, 47, 0.1), transparent 26%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 38%);
 }
 
-.hero-cinematic__mark {
+.hero-cinematic__atmosphere::after {
+  content: "";
   position: absolute;
-  right: clamp(-7rem, -4vw, -2rem);
-  top: 6%;
-  font-size: clamp(20rem, 38vw, 42rem);
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 72px 72px;
+  opacity: 0.32;
+  mask-image: linear-gradient(90deg, transparent 0%, black 45%, black 92%);
+}
+
+.hero-cinematic__titan {
+  position: absolute;
+  right: clamp(-9rem, -7vw, -3rem);
+  top: clamp(1rem, 4vw, 4rem);
+  color: rgba(255, 255, 255, 0.052);
+  font-size: clamp(26rem, 43vw, 48rem);
   font-weight: 700;
-  line-height: 0.8;
-  color: rgba(255, 255, 255, 0.035);
+  line-height: 0.78;
   text-shadow:
-    1px 1px 0 rgba(255, 255, 255, 0.04),
-    34px 40px 70px rgba(0, 0, 0, 0.75);
-  transform: perspective(900px) rotateY(-18deg) rotateX(4deg) skewY(-2deg);
+    -2px 0 0 rgba(255, 255, 255, 0.035),
+    -70px 90px 130px rgba(0, 0, 0, 0.78);
+  transform: perspective(1000px) rotateY(-21deg) rotateX(5deg) skewY(-2deg);
   transform-origin: center;
-  filter: blur(0.2px);
+  mask-image: linear-gradient(90deg, transparent 0%, black 18%, black 74%, transparent 100%);
+  animation: titan-drift 22s ease-in-out infinite alternate;
 }
 
-.hero-cinematic__topology {
+.hero-cinematic__structure {
   position: absolute;
-  inset: auto 0 0 auto;
-  width: min(64rem, 72vw);
-  height: auto;
-  opacity: 0.34;
-  transform: translate3d(6%, 8%, 0);
-}
-
-.hero-cinematic__topology path {
-  fill: none;
-  stroke: rgba(0, 194, 255, 0.45);
-  stroke-width: 2;
-}
-
-.hero-cinematic__topology circle {
-  fill: rgba(0, 194, 255, 0.72);
-}
-
-.hero-cinematic__topology .critical {
-  fill: var(--critical-red);
-}
-
-.hero-cinematic__monolith {
-  position: absolute;
-  inset: 3rem 1rem 3rem 10rem;
-  transform: perspective(900px) rotateY(-18deg) rotateX(3deg);
-  transform-style: preserve-3d;
-}
-
-.hero-cinematic__monolith-face {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  right: 7%;
+  bottom: 7%;
+  width: min(34rem, 42vw);
+  height: min(32rem, 58vh);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(0, 194, 255, 0.09);
   background:
-    linear-gradient(115deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01) 38%, rgba(0, 194, 255, 0.06)),
-    linear-gradient(180deg, rgba(13, 20, 26, 0.92), rgba(3, 5, 7, 0.8));
+    linear-gradient(105deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012) 42%, rgba(0, 194, 255, 0.05)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 62%);
   box-shadow:
-    inset 0 0 0 1px rgba(0, 194, 255, 0.05),
-    -50px 50px 100px rgba(0, 0, 0, 0.55);
-  clip-path: polygon(18% 0, 100% 0, 82% 100%, 0 100%);
-}
-
-.hero-cinematic__monolith-face span {
-  color: rgba(255, 255, 255, 0.09);
-  font-size: 20rem;
-  font-weight: 700;
-  line-height: 1;
-  transform: translateX(4%) scaleY(1.08);
+    inset 30px 0 80px rgba(255, 255, 255, 0.025),
+    -90px 80px 140px rgba(0, 0, 0, 0.55);
+  clip-path: polygon(24% 0, 100% 0, 78% 100%, 0 100%);
+  transform: perspective(850px) rotateY(-18deg) rotateX(3deg);
 }
 
 .hero-cinematic__floor {
   position: absolute;
-  inset: auto 0 0 4rem;
+  inset: auto -6rem -9rem 22%;
   height: 42%;
-  background:
+  background-image:
     linear-gradient(rgba(0, 194, 255, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 194, 255, 0.08) 1px, transparent 1px);
-  background-size: 54px 54px;
-  transform: perspective(720px) rotateX(68deg);
+  background-size: 64px 64px;
+  opacity: 0.34;
+  transform: perspective(760px) rotateX(69deg);
   transform-origin: bottom;
-  opacity: 0.42;
-  mask-image: linear-gradient(to top, black, transparent);
+  mask-image: linear-gradient(to top, black 0%, transparent 78%);
 }
 
-.hero-cinematic__annotation {
+.hero-cinematic__linework {
   position: absolute;
-  max-width: 16rem;
-  border-left: 2px solid rgba(0, 194, 255, 0.45);
-  background: rgba(8, 12, 15, 0.58);
-  padding: 0.85rem 1rem;
-  backdrop-filter: blur(6px);
+  right: -4%;
+  bottom: 4%;
+  width: min(70rem, 78vw);
+  height: auto;
+  opacity: 0.38;
+  transform: perspective(900px) rotateX(1deg) rotateY(-5deg);
+  animation: linework-drift 18s ease-in-out infinite alternate;
 }
 
-.hero-cinematic__annotation span {
-  display: block;
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 0.68rem;
+.hero-cinematic__linework path {
+  fill: none;
+  stroke: url("#hero-linework-primary");
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.hero-cinematic__linework .secondary {
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 1;
+}
+
+.hero-cinematic__linework circle {
+  fill: rgba(0, 194, 255, 0.46);
+}
+
+.hero-cinematic__linework .critical {
+  fill: rgba(196, 51, 47, 0.58);
+}
+
+.hero-cinematic__void {
+  min-height: 26rem;
+}
+
+.hero-page-depth {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-page-depth__mark {
+  position: absolute;
+  inset: 0 -8% auto auto;
+  color: rgba(255, 255, 255, 0.055);
+  font-size: clamp(18rem, 30vw, 30rem);
   font-weight: 700;
-  text-transform: uppercase;
+  line-height: 0.85;
+  transform: perspective(820px) rotateY(-20deg) rotateX(4deg);
+  text-shadow: -50px 70px 110px rgba(0, 0, 0, 0.72);
 }
 
-.hero-cinematic__annotation strong {
-  display: block;
-  margin-top: 0.35rem;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 0.82rem;
+.hero-page-depth__floor {
+  position: absolute;
+  inset: auto -4rem -8rem 6rem;
+  height: 54%;
+  background-image:
+    linear-gradient(rgba(0, 194, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 194, 255, 0.075) 1px, transparent 1px);
+  background-size: 52px 52px;
+  opacity: 0.34;
+  transform: perspective(650px) rotateX(68deg);
+  transform-origin: bottom;
+  mask-image: linear-gradient(to top, black, transparent 82%);
 }
 
-.hero-cinematic__annotation--one {
-  right: 5%;
-  top: 22%;
+.hero-page-depth__linework {
+  position: absolute;
+  inset: 14% 0 auto auto;
+  width: min(33rem, 100%);
+  opacity: 0.46;
 }
 
-.hero-cinematic__annotation--two {
-  left: 14%;
-  bottom: 20%;
+.hero-page-depth__linework path {
+  fill: none;
+  stroke: url("#hero-architecture-line");
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.hero-page-depth__linework .secondary {
+  stroke: rgba(0, 194, 255, 0.26);
+  stroke-dasharray: 8 10;
+}
+
+.hero-page-depth__linework .gridline {
+  stroke: rgba(255, 255, 255, 0.11);
+  stroke-width: 1;
+}
+
+.hero-page-depth__linework circle {
+  fill: rgba(0, 194, 255, 0.4);
+}
+
+.hero-page-depth__linework .critical {
+  fill: rgba(196, 51, 47, 0.52);
 }
 
 .reveal {
@@ -252,6 +296,28 @@ summary::-webkit-details-marker {
   }
 }
 
+@keyframes titan-drift {
+  from {
+    transform: perspective(1000px) rotateY(-21deg) rotateX(5deg) skewY(-2deg) translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: perspective(1000px) rotateY(-20deg) rotateX(5deg) skewY(-2deg) translate3d(-0.8rem, 0.35rem, 0);
+  }
+}
+
+@keyframes linework-drift {
+  from {
+    opacity: 0.32;
+    transform: perspective(900px) rotateX(1deg) rotateY(-5deg) translate3d(0, 0, 0);
+  }
+
+  to {
+    opacity: 0.42;
+    transform: perspective(900px) rotateX(1deg) rotateY(-5deg) translate3d(-0.9rem, -0.35rem, 0);
+  }
+}
+
 @media (max-width: 768px) {
   .section-padding {
     padding-top: 4rem;
@@ -263,4 +329,26 @@ summary::-webkit-details-marker {
     padding-bottom: 5rem;
   }
 
+  .hero-cinematic {
+    min-height: auto;
+  }
+
+  .hero-cinematic__titan {
+    right: -11rem;
+    top: 7rem;
+    font-size: 28rem;
+    opacity: 0.7;
+  }
+
+  .hero-cinematic__linework {
+    right: -15rem;
+    bottom: -1rem;
+    width: 46rem;
+    opacity: 0.22;
+  }
+
+  .hero-cinematic__floor,
+  .hero-cinematic__structure {
+    display: none;
+  }
 }
