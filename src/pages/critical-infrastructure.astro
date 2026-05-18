@@ -1,0 +1,36 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import SectorRiskGrid from "../components/sections/SectorRiskGrid.astro";
+import EngineeringSystems from "../components/sections/EngineeringSystems.astro";
+import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
+import Footer from "../components/layout/Footer.astro";
+---
+
+<BaseLayout
+  title="Critical Infrastructure Protection | Kharon"
+  description="Fire detection, gaseous suppression and lifecycle support for data centres, electrical rooms, control rooms and operationally sensitive commercial infrastructure."
+>
+  <Hero
+    title="Critical infrastructure fire protection for continuity-sensitive environments."
+    text="Kharon supports commercial and industrial spaces where system failure, fire events or poor documentation create operational consequence."
+  />
+
+  <SectorRiskGrid />
+  <EngineeringSystems />
+
+  <ContextualInquiry
+    eyebrow="Critical Infrastructure"
+    title="Discuss critical infrastructure protection."
+    text="Provide uptime sensitivity, redundancy requirements, suppression concerns and operational constraints."
+    requestType="Critical infrastructure protection discussion"
+    fields={[
+      { label: "Infrastructure Type", name: "infrastructure_type", options: ["Data centre", "Telecoms room", "Control room", "Electrical room", "Utilities site", "Healthcare infrastructure", "Other"] },
+      { label: "Uptime Sensitivity", name: "uptime_sensitivity", options: ["24/7 critical", "Business critical", "Operationally important", "Planned maintenance window available", "Unknown"] },
+      { label: "Suppression Requirement", name: "suppression_requirement", options: ["Existing gas suppression", "New suppression requirement", "Agent review", "Room integrity concern", "Unknown"] },
+      { label: "Operational Constraint", name: "operational_constraint", options: ["No downtime", "Limited access window", "Compliance deadline", "Insurance requirement", "Expansion or refurbishment"] }
+    ]}
+  />
+
+  <Footer />
+</BaseLayout>

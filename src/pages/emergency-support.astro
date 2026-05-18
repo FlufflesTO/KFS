@@ -1,0 +1,34 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import EmergencyResponse from "../components/sections/EmergencyResponse.astro";
+import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
+import Footer from "../components/layout/Footer.astro";
+---
+
+<BaseLayout
+  title="Emergency Support | Kharon"
+  description="Operational support pathways for fire detection faults, gas suppression issues, urgent compliance interventions and maintenance escalations."
+>
+  <Hero
+    title="Emergency and SLA support for protection-system issues."
+    text="Route urgent faults, compliance interventions, maintenance escalations and system support requests with the operational context required for response."
+  />
+
+  <EmergencyResponse />
+
+  <ContextualInquiry
+    eyebrow="Support Request"
+    title="Start an emergency or SLA support request."
+    text="Identify the protected area, system type, current fault state and operational consequence."
+    requestType="Emergency / SLA support"
+    fields={[
+      { label: "Severity", name: "severity", options: ["Critical system fault", "Urgent service intervention", "Compliance intervention", "Planned support request"] },
+      { label: "Affected System", name: "affected_system", options: ["Gas suppression", "Fire detection", "Fire panel", "Detection devices", "Integrated security support", "Unknown"] },
+      { label: "Protected Area", name: "protected_area", options: ["Server room", "Electrical room", "Warehouse", "Control room", "Commercial facility", "Industrial area", "Other"] },
+      { label: "Operational Status", name: "operational_status", options: ["Live fault", "System isolated", "Service overdue", "Audit pressure", "Preventive request"] }
+    ]}
+  />
+
+  <Footer />
+</BaseLayout>

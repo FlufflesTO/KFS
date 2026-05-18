@@ -1,0 +1,61 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import SplitFeature from "../components/sections/SplitFeature.astro";
+import ProofGrid from "../components/sections/ProofGrid.astro";
+import EngineeringSystems from "../components/sections/EngineeringSystems.astro";
+import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
+import Footer from "../components/layout/Footer.astro";
+import { capabilityProof, pageMeta } from "../data/site.js";
+
+const proofItems = capabilityProof.detection.map((item, index) => ({
+  title: item,
+  text: "Structured to make alarms, response paths and maintenance responsibilities intelligible over time.",
+  status: `Detection 0${index + 1}`
+}));
+---
+
+<BaseLayout title={pageMeta.fireDetection.title} description={pageMeta.fireDetection.description}>
+  <Hero
+    title="Fire detection infrastructure for commercial and industrial sites."
+    text="Kharon designs, installs, services and maintains fire detection systems built around site risk, reliable alarm response and long-term compliance visibility."
+  />
+
+  <SplitFeature
+    eyebrow="Detection Capability"
+    title="Addressable systems, control panels, response zones and diagnostics."
+    text="Fire detection should be intelligible under pressure, maintainable over time and aligned with how each environment actually operates."
+    bullets={[
+      "Addressable fire alarm systems",
+      "Specialist detection options",
+      "Control panel and zone strategy",
+      "Cause-and-effect planning",
+      "False-alarm and fault diagnosis support"
+    ]}
+    visual="detection"
+    imageAlt="Schematic showing addressable detection loop, control panel and response zones"
+  />
+
+  <ProofGrid
+    eyebrow="Detection Evidence"
+    title="Detection systems should be clear under pressure."
+    text="The design emphasis is on response logic that operators can understand and maintain, not only hardware coverage."
+    items={proofItems}
+  />
+
+  <EngineeringSystems />
+
+  <ContextualInquiry
+    eyebrow="Detection Review"
+    title="Request a fire detection review."
+    text="Provide the facility type, panel context, detection concern and maintenance status so the request can be assessed correctly."
+    requestType="Fire detection review"
+    fields={[
+      { label: "Panel Type", name: "panel_type", options: ["Unknown", "Addressable", "Conventional", "Networked panel", "Upgrade required"] },
+      { label: "Facility Type", name: "facility_type", options: ["Commercial site", "Industrial facility", "Warehouse", "Data centre", "Healthcare", "Utilities", "Other"] },
+      { label: "Compliance Issue", name: "compliance_issue", options: ["Inspection due", "Fault condition", "False alarm issue", "Documentation gap", "System expansion"] },
+      { label: "Maintenance Requirement", name: "maintenance_requirement", options: ["Scheduled service", "Fault diagnosis", "Panel review", "Device testing", "Lifecycle assessment"] }
+    ]}
+  />
+  <Footer />
+</BaseLayout>

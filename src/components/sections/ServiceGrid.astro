@@ -1,0 +1,36 @@
+---
+import SectionHeading from "./SectionHeading.astro";
+
+const { eyebrow, title, text, items = [] } = Astro.props;
+---
+
+<section class="section-padding bg-white">
+  <div class="mx-auto max-w-7xl px-6">
+    <SectionHeading eyebrow={eyebrow} title={title} text={text} />
+
+    <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {items.map((item) => (
+        <a
+          href={item.href}
+          class="group rounded-lg border border-kharon-border bg-white p-8 transition hover:-translate-y-1 hover:shadow-xl"
+        >
+          <div class="mb-8 flex h-12 w-12 items-center justify-center rounded-md border border-kharon-border text-kharon-purple transition group-hover:bg-kharon-purple group-hover:text-white">
+            <span class="text-xl font-bold">{item.index}</span>
+          </div>
+
+          <h3 class="text-2xl font-semibold text-kharon-black">
+            {item.title}
+          </h3>
+
+          <p class="mt-4 leading-7 text-kharon-grey">
+            {item.text}
+          </p>
+
+          <span class="mt-6 inline-flex items-center gap-2 text-sm font-bold text-kharon-purple group-hover:text-kharon-blue">
+            Learn more <span aria-hidden="true">-&gt;</span>
+          </span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

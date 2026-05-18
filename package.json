@@ -1,0 +1,34 @@
+{
+  "name": "kharon-website",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=9.6.5"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "build:staging": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 staging",
+    "build:production:kharon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 production",
+    "preview": "astro preview",
+    "auth:cloudflare": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 login",
+    "cloudflare:whoami": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 whoami",
+    "cloudflare:list-projects": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 list",
+    "cloudflare:create-project": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 create",
+    "cloudflare:domains": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 domains",
+    "cloudflare:retry-portal": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 retry-portal",
+    "cloudflare:check-portal": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 check-portal",
+    "deploy:cloudflare": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 production",
+    "deploy:cloudflare:preview": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "astro": "^6.3.3",
+    "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.92.0"
+  }
+}

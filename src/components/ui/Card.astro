@@ -1,0 +1,32 @@
+---
+const {
+  title,
+  text,
+  href,
+  status,
+  dark = false
+} = Astro.props;
+
+const Element = href ? "a" : "div";
+const baseClass = dark
+  ? "group block rounded-lg border border-white/10 bg-white/[0.04] p-6 text-white transition hover:-translate-y-1 hover:bg-white/[0.07]"
+  : "group block rounded-lg border border-kharon-border bg-white p-6 text-kharon-black transition hover:-translate-y-1 hover:shadow-xl";
+---
+
+<Element href={href} class={baseClass}>
+  {status && (
+    <p class={`mb-4 text-xs font-bold uppercase ${dark ? "text-kharon-cyan" : "text-kharon-purple"}`}>
+      {status}
+    </p>
+  )}
+
+  <h3 class="text-xl font-semibold leading-snug">
+    {title}
+  </h3>
+
+  {text && (
+    <p class={`mt-3 leading-7 ${dark ? "text-white/65" : "text-kharon-grey"}`}>
+      {text}
+    </p>
+  )}
+</Element>

@@ -1,0 +1,42 @@
+---
+const required = [
+  "Gas cylinder banks",
+  "Suppression nozzles",
+  "Server room protection",
+  "Fire panels",
+  "Detection devices and loops",
+  "Commissioning procedures",
+  "Technician testing",
+  "Control rooms",
+  "Industrial risers",
+  "Warehouse systems",
+  "Electrical infrastructure",
+  "Maintenance activity"
+];
+---
+
+<section class="section-padding bg-kharon-light">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+      <div>
+        <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">
+          Industrial Imagery Strategy
+        </p>
+        <h2 class="text-3xl font-bold leading-tight text-kharon-black sm:text-4xl lg:text-5xl">
+          The next proof layer requires real installation and maintenance photography.
+        </h2>
+        <p class="mt-5 text-lg leading-8 text-kharon-grey">
+          No generic people, residential alarms or stock security imagery should be used. The approved asset library should show actual infrastructure, commissioning detail and commercial operating environments.
+        </p>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        {required.map((item) => (
+          <div class="rounded-md border border-kharon-border bg-white px-4 py-3 text-sm font-semibold text-kharon-grey">
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

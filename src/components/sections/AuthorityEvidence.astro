@@ -1,0 +1,57 @@
+---
+import { proofSignals, supportedEcosystem } from "../../data/site.js";
+---
+
+<section class="section-padding bg-white">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+      <div>
+        <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">
+          Technical Proof
+        </p>
+
+        <h2 class="text-3xl font-bold leading-tight text-kharon-black sm:text-4xl lg:text-5xl">
+          Authority is shown through competency, standards and system familiarity.
+        </h2>
+
+        <p class="mt-5 text-lg leading-8 text-kharon-grey">
+          Kharon should not rely on polished positioning alone. Procurement teams need visible signals that the company works across real fire detection, gas suppression, commissioning and maintenance environments.
+        </p>
+      </div>
+
+      <div class="grid gap-5">
+        {proofSignals.map((item) => (
+          <article class="rounded-lg border border-kharon-border bg-kharon-light p-6">
+            <p class="text-xs font-bold uppercase text-kharon-purple">{item.status}</p>
+            <h3 class="mt-3 text-xl font-semibold text-kharon-black">{item.title}</h3>
+            <p class="mt-3 leading-7 text-kharon-grey">{item.text}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <div class="mt-14 rounded-lg border border-kharon-border bg-kharon-black p-6 text-white">
+      <div class="flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <p class="text-sm font-bold uppercase text-kharon-cyan">
+            Supported Systems Ecosystem
+          </p>
+          <h3 class="mt-3 text-2xl font-bold">
+            Field familiarity across suppression, detection and integrated security platforms.
+          </h3>
+        </div>
+        <p class="max-w-xl text-sm leading-7 text-white/60">
+          Listed as ecosystem familiarity, not exclusive partnership claims. Final procurement should verify current approvals, warranties and product-specific authorisations.
+        </p>
+      </div>
+
+      <div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {supportedEcosystem.map((item) => (
+          <div class="rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white/80">
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

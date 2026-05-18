@@ -1,0 +1,16 @@
+---
+import { complianceSignals } from "../../data/site.js";
+---
+
+<section class="border-y border-white/10 bg-kharon-charcoal py-5 text-white" aria-label="Compliance proof signals">
+  <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-6">
+    <p class="mr-3 text-xs font-bold uppercase text-kharon-cyan">
+      Compliance Layer
+    </p>
+    {complianceSignals.map((item) => (
+      <span class="rounded-md border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase text-white/75">
+        {item}
+      </span>
+    ))}
+  </div>
+</section>

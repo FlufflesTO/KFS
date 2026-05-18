@@ -1,0 +1,21 @@
+---
+const { eyebrow, title, text, dark = false, align = "left" } = Astro.props;
+---
+
+<div class={align === "center" ? "mx-auto max-w-3xl text-center" : "max-w-3xl"}>
+  {eyebrow && (
+    <p class={`mb-4 text-sm font-bold uppercase ${dark ? "text-kharon-cyan" : "text-kharon-purple"}`}>
+      {eyebrow}
+    </p>
+  )}
+
+  <h2 class={`kharon-h2 ${dark ? "text-white" : "text-kharon-black"}`}>
+    {title}
+  </h2>
+
+  {text && (
+    <p class={`mt-5 text-lg leading-8 ${dark ? "text-white/70" : "text-kharon-grey"}`}>
+      {text}
+    </p>
+  )}
+</div>

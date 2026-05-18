@@ -1,0 +1,55 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import SectorRiskGrid from "../components/sections/SectorRiskGrid.astro";
+import ProofGrid from "../components/sections/ProofGrid.astro";
+import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
+import Footer from "../components/layout/Footer.astro";
+import { pageMeta } from "../data/site.js";
+
+const operatingContexts = [
+  {
+    title: "Technical spaces",
+    text: "Server rooms, plant rooms and critical equipment areas where suppression choices affect continuity.",
+    status: "Environment"
+  },
+  {
+    title: "Industrial operations",
+    text: "Manufacturing, logistics and utility environments where detection clarity affects response.",
+    status: "Operation"
+  },
+  {
+    title: "Commercial estates",
+    text: "Multi-tenant or managed properties where compliance visibility and service records matter.",
+    status: "Governance"
+  }
+];
+---
+
+<BaseLayout title={pageMeta.industries.title} description={pageMeta.industries.description}>
+  <Hero
+    title="Protection systems for complex operational environments."
+    text="Kharon supports commercial and industrial sites where reliability, compliance and continuity directly affect operations."
+  />
+
+  <SectorRiskGrid />
+  <ProofGrid
+    eyebrow="Operating Contexts"
+    title="The common thread is consequence."
+    text="Kharon is suited to environments where system failure, poor documentation or unclear response logic creates operational risk."
+    items={operatingContexts}
+    dark
+  />
+  <ContextualInquiry
+    eyebrow="Sector Assessment"
+    title="Discuss sector-specific infrastructure protection."
+    text="Route the request by facility type, protected assets and continuity exposure."
+    requestType="Sector protection assessment"
+    fields={[
+      { label: "Sector", name: "sector", options: ["Data centre", "Telecoms", "Logistics / warehouse", "Industrial facility", "Utilities", "Healthcare", "Commercial infrastructure", "Control room"] },
+      { label: "Primary Concern", name: "primary_concern", options: ["Gas suppression", "Fire detection", "Compliance records", "Maintenance backlog", "Emergency fault", "Infrastructure security support"] },
+      { label: "Operational Consequence", name: "operational_consequence", options: ["Downtime risk", "Asset damage risk", "Audit / insurance risk", "Occupant safety", "Unknown"] }
+    ]}
+  />
+  <Footer />
+</BaseLayout>

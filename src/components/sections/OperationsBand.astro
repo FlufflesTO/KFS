@@ -1,0 +1,32 @@
+---
+import StatusIndicator from "../ui/StatusIndicator.astro";
+
+const rows = [
+  {
+    label: "Primary specialization",
+    value: "Fire detection + gas suppression",
+    tone: "cyan"
+  },
+  {
+    label: "Execution capability",
+    value: "Assess, design, install, service",
+    tone: "purple"
+  },
+  {
+    label: "Lifecycle control",
+    value: "Testing, records, faults, maintenance",
+    tone: "amber"
+  }
+];
+---
+
+<section class="bg-kharon-charcoal py-10 text-white">
+  <div class="mx-auto grid max-w-7xl gap-4 px-6 md:grid-cols-3">
+    {rows.map((row) => (
+      <div class="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+        <StatusIndicator label={row.label} tone={row.tone} />
+        <p class="mt-3 text-lg font-semibold leading-snug">{row.value}</p>
+      </div>
+    ))}
+  </div>
+</section>

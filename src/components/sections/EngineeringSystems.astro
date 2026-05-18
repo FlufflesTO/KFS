@@ -1,0 +1,72 @@
+---
+const systems = [
+  {
+    eyebrow: "Gas Suppression Methodology",
+    title: "Detection-confirmed release sequence",
+    copy: "Suppression is framed as a controlled system: detection confirmation, alarm state, release logic, protected-room integrity and post-event service evidence.",
+    nodes: ["Detect", "Confirm", "Alarm", "Release", "Verify"]
+  },
+  {
+    eyebrow: "Fire Detection Topology",
+    title: "Addressable zones with fault visibility",
+    copy: "Detection architecture is communicated through loops, panels, response zones and fault paths that operators can understand under pressure.",
+    nodes: ["Devices", "Loop", "Panel", "Zone", "Escalate"]
+  },
+  {
+    eyebrow: "Lifecycle Support",
+    title: "Inspection-ready maintenance cadence",
+    copy: "System ownership continues after installation through testing, defect logging, service records, escalation and lifecycle decisions.",
+    nodes: ["Inspect", "Test", "Record", "Rectify", "Report"]
+  }
+];
+---
+
+<section class="section-padding bg-kharon-black text-white">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="max-w-4xl">
+      <p class="mb-4 text-sm font-bold uppercase text-kharon-cyan">
+        Engineering Architecture
+      </p>
+      <h2 class="text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+        Technical systems must be legible before, during and after an incident.
+      </h2>
+      <p class="mt-5 text-lg leading-8 text-white/65">
+        Kharon’s authority is expressed through system logic: how detection, suppression, escalation, records and service response connect in commercial and industrial environments.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-6 lg:grid-cols-3">
+      {systems.map((system, systemIndex) => (
+        <article class="rounded-lg border border-white/10 bg-white/[0.04] p-6">
+          <p class="text-xs font-bold uppercase text-kharon-cyan">{system.eyebrow}</p>
+          <h3 class="mt-3 text-2xl font-bold leading-tight">{system.title}</h3>
+          <p class="mt-4 leading-7 text-white/65">{system.copy}</p>
+
+          <div class="mt-7 rounded-lg border border-white/10 bg-black/30 p-4">
+            <svg viewBox="0 0 420 170" role="img" aria-label={`${system.title} process diagram`} class="h-auto w-full">
+              <defs>
+                <linearGradient id={`line-${systemIndex}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#00C2FF" stop-opacity="0.2" />
+                  <stop offset="55%" stop-color="#00C2FF" stop-opacity="0.75" />
+                  <stop offset="100%" stop-color="#C4332F" stop-opacity="0.75" />
+                </linearGradient>
+              </defs>
+              <path d="M48 84H372" stroke={`url(#line-${systemIndex})`} stroke-width="3" stroke-linecap="round" />
+              {system.nodes.map((node, index) => {
+                const x = 48 + index * 81;
+                const critical = index === system.nodes.length - 1;
+                return (
+                  <g>
+                    <rect x={x - 27} y="56" width="54" height="54" rx="8" fill={critical ? "#3A1618" : "#111820"} stroke={critical ? "#C4332F" : "#00C2FF"} stroke-opacity="0.75" />
+                    <text x={x} y="137" text-anchor="middle" fill="#DDE4EA" font-size="16" font-family="Century Gothic, Arial">{node}</text>
+                    <text x={x} y="89" text-anchor="middle" fill={critical ? "#F87171" : "#00C2FF"} font-size="14" font-family="Century Gothic, Arial">0{index + 1}</text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

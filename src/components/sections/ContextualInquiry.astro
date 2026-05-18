@@ -1,0 +1,68 @@
+---
+import { site } from "../../data/site.js";
+
+const {
+  eyebrow = "Operational Request",
+  title = "Request a site assessment.",
+  text = "Provide the operational context so Kharon can route the request correctly.",
+  requestType = "Site assessment",
+  fields = []
+} = Astro.props;
+
+const baseFields = [
+  { label: "Name", name: "name", type: "text", autocomplete: "name", maxlength: 80 },
+  { label: "Email", name: "email", type: "email", autocomplete: "email", inputmode: "email", maxlength: 120 },
+  { label: "Company / Site", name: "site", type: "text", autocomplete: "organization", maxlength: 140 }
+];
+---
+
+<section class="section-padding bg-white">
+  <div class="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-[0.85fr_1.15fr]">
+    <div>
+      <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">{eyebrow}</p>
+      <h2 class="text-3xl font-bold leading-tight text-kharon-black sm:text-4xl lg:text-5xl">{title}</h2>
+      <p class="mt-5 text-lg leading-8 text-kharon-grey">{text}</p>
+      <div class="mt-8 rounded-lg border border-kharon-border bg-kharon-light p-5">
+        <p class="text-xs font-bold uppercase text-kharon-purple">Request Type</p>
+        <p class="mt-2 text-xl font-bold text-kharon-black">{requestType}</p>
+      </div>
+    </div>
+
+    <form class="grid gap-5 rounded-lg border border-kharon-border bg-kharon-light p-6" action={`mailto:${site.email}`} method="post" enctype="text/plain" aria-describedby={`${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-help`}>
+      <p id={`${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-help`} class="text-sm text-kharon-grey">
+        Submission opens your default email client with this request context included.
+      </p>
+
+      <input type="hidden" name="request_type" value={requestType} />
+      {[...baseFields, ...fields].map((field) => (
+        <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+          {field.label}
+          {field.options ? (
+            <select class="rounded-md border border-kharon-border px-4 py-3 font-normal" name={field.name} required={field.required !== false}>
+              {field.options.map((option) => <option value={option}>{option}</option>)}
+            </select>
+          ) : (
+            <input
+              class="rounded-md border border-kharon-border px-4 py-3 font-normal"
+              name={field.name}
+              type={field.type || "text"}
+              autocomplete={field.autocomplete}
+              inputmode={field.inputmode}
+              maxlength={field.maxlength || 160}
+              required={field.required !== false}
+            />
+          )}
+        </label>
+      ))}
+
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        Operational Notes
+        <textarea class="min-h-32 rounded-md border border-kharon-border px-4 py-3 font-normal" name="operational_notes" maxlength="3000" required></textarea>
+      </label>
+
+      <button class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
+        Submit Request
+      </button>
+    </form>
+  </div>
+</section>

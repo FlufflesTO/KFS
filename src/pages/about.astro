@@ -1,0 +1,49 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import SplitFeature from "../components/sections/SplitFeature.astro";
+import ProofGrid from "../components/sections/ProofGrid.astro";
+import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
+import Footer from "../components/layout/Footer.astro";
+import { assuranceItems, pageMeta } from "../data/site.js";
+---
+
+<BaseLayout title={pageMeta.about.title} description={pageMeta.about.description}>
+  <Hero
+    title="Specialist protection systems with structured engineering discipline."
+    text="Kharon is positioned around trust, technical competence and operational maturity for commercial and industrial environments."
+  />
+
+  <SplitFeature
+    eyebrow="Company Position"
+    title="Fire and suppression specialists first."
+    text="Kharon is not a generic security installer. The company focuses on engineered fire protection and suppression systems, with security delivered where it strengthens the wider strategy."
+    bullets={[
+      "Gas suppression-first positioning",
+      "Commercial fire detection capability",
+      "Compliance and maintenance discipline",
+      "Integrated security support"
+    ]}
+    visual="systems"
+    imageAlt="Schematic showing Kharon engineering workflow from risk input to operational support"
+  />
+
+  <ProofGrid
+    eyebrow="How Kharon Operates"
+    title="A structured protection partner, not a generic installer."
+    text="The operating model is intentionally disciplined: understand the risk, design the system logic and keep the evidence current."
+    items={assuranceItems}
+  />
+
+  <ContextualInquiry
+    eyebrow="Capability Discussion"
+    title="Discuss Kharon capability against your operating environment."
+    text="Use this route when the request spans multiple systems, sites or governance concerns."
+    requestType="Capability discussion"
+    fields={[
+      { label: "Capability Area", name: "capability_area", options: ["Gas suppression", "Fire detection", "Compliance lifecycle", "Critical infrastructure", "Integrated security support", "Multi-site review"] },
+      { label: "Site Context", name: "site_context", options: ["Single site", "Multiple sites", "Critical room", "Industrial operation", "Commercial estate", "Unknown"] }
+    ]}
+  />
+  <Footer />
+</BaseLayout>

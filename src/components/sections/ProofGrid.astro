@@ -1,0 +1,24 @@
+---
+import Card from "../ui/Card.astro";
+import SectionHeading from "./SectionHeading.astro";
+
+const {
+  eyebrow,
+  title,
+  text,
+  items = [],
+  dark = false
+} = Astro.props;
+---
+
+<section class={`section-padding ${dark ? "bg-kharon-black text-white" : "bg-white"}`}>
+  <div class="mx-auto max-w-7xl px-6">
+    <SectionHeading eyebrow={eyebrow} title={title} text={text} dark={dark} />
+
+    <div class="mt-12 grid gap-5 md:grid-cols-3">
+      {items.map((item) => (
+        <Card title={item.title} text={item.text} status={item.status} href={item.href} dark={dark} />
+      ))}
+    </div>
+  </div>
+</section>

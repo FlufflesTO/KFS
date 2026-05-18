@@ -1,0 +1,54 @@
+---
+const pathways = [
+  {
+    severity: "Critical",
+    title: "System fault affecting protected operations",
+    response: "Escalate technical support, isolate operational risk, confirm temporary controls.",
+    tone: "border-red-400/50 bg-red-500/10 text-red-100"
+  },
+  {
+    severity: "Urgent",
+    title: "Detection, panel or suppression service intervention",
+    response: "Schedule technician response, record fault context, confirm compliance impact.",
+    tone: "border-kharon-amber/60 bg-kharon-amber/10 text-white"
+  },
+  {
+    severity: "Planned",
+    title: "Assessment, maintenance or documentation request",
+    response: "Scope site requirement, align records, plan inspection or service cadence.",
+    tone: "border-kharon-cyan/50 bg-kharon-cyan/10 text-white"
+  }
+];
+---
+
+<section id="emergency-support" class="section-padding bg-kharon-charcoal text-white">
+  <div class="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-[0.85fr_1.15fr]">
+    <div>
+      <p class="mb-4 text-sm font-bold uppercase text-red-300">
+        Emergency / SLA Response
+      </p>
+      <h2 class="text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+        Operational support paths for faults, compliance interventions and maintenance requests.
+      </h2>
+      <p class="mt-5 text-lg leading-8 text-white/65">
+        The response language is deliberately operational. Kharon support requests should identify the protected area, system type, fault state, site consequence and required response window.
+      </p>
+      <a href="/contact#emergency-support" class="mt-8 inline-flex rounded-md bg-red-700 px-6 py-4 font-semibold text-white hover:bg-red-800">
+        Start Support Request
+      </a>
+    </div>
+
+    <div class="grid gap-4">
+      {pathways.map((item) => (
+        <article class={`rounded-lg border p-5 ${item.tone}`}>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <p class="text-xs font-bold uppercase tracking-wide">{item.severity}</p>
+            <span class="rounded-md border border-white/15 px-3 py-1 text-xs font-bold uppercase text-white/70">Response path</span>
+          </div>
+          <h3 class="mt-3 text-xl font-bold">{item.title}</h3>
+          <p class="mt-3 leading-7 text-white/70">{item.response}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

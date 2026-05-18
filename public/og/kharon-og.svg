@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Kharon Fire and Security Systems</title>
+  <desc id="desc">Commercial fire detection and gas suppression specialists.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B0D0F" />
+      <stop offset="100%" stop-color="#15191D" />
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1F4E79" stop-opacity="0.2" />
+      <stop offset="50%" stop-color="#00C2FF" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#4B2E83" stop-opacity="0.2" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <g opacity="0.2" stroke="#FFFFFF" stroke-width="1">
+    <path d="M0 110h1200M0 220h1200M0 330h1200M0 440h1200M0 550h1200" />
+    <path d="M120 0v630M240 0v630M360 0v630M480 0v630M600 0v630M720 0v630M840 0v630M960 0v630M1080 0v630" />
+  </g>
+  <path d="M230 360h730" stroke="url(#line)" stroke-width="4" />
+  <g fill="#1F4E79" stroke="#D6D9DD" stroke-opacity="0.2">
+    <rect x="200" y="330" width="64" height="64" rx="6" />
+    <rect x="430" y="300" width="64" height="64" rx="6" />
+    <rect x="630" y="340" width="64" height="64" rx="6" />
+    <rect x="860" y="305" width="64" height="64" rx="6" />
+  </g>
+  <g fill="#FFFFFF">
+    <text x="120" y="170" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="28" letter-spacing="3" opacity="0.7">KHARON</text>
+    <text x="120" y="250" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="62" font-weight="700">
+      Fire and Security Systems
+    </text>
+    <text x="120" y="302" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="30" opacity="0.85">
+      Commercial Fire Detection and Gas Suppression Specialists
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,20 @@
+---
+const {
+  href = "/contact",
+  label = "Request Site Assessment",
+  variant = "primary"
+} = Astro.props;
+
+const styles = {
+  primary: "bg-kharon-purple text-white hover:bg-kharon-blue",
+  secondary: "border border-white/25 text-white hover:bg-white/10",
+  dark: "bg-kharon-black text-white hover:bg-kharon-blue"
+};
+---
+
+<a
+  href={href}
+  class={`inline-flex rounded-md px-6 py-4 font-semibold ${styles[variant]}`}
+>
+  {label}
+</a>

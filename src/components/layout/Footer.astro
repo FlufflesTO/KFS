@@ -1,0 +1,26 @@
+---
+import { site, solutionLinks } from "../../data/site.js";
+---
+
+<footer class="bg-kharon-charcoal text-white">
+  <div class="mx-auto max-w-7xl px-6 py-14">
+    <p class="text-sm font-bold uppercase">
+      {site.shortName}
+    </p>
+
+    <p class="mt-4 max-w-xl text-sm leading-7 text-white/60">
+      {site.description}
+    </p>
+
+    <div class="mt-10 flex flex-wrap gap-6 text-sm text-white/60">
+      <a href="/">Home</a>
+      {solutionLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+      <a href="/contact">Contact</a>
+      <a href={site.portalContactPath} title={site.portalStatus}>Records Access</a>
+    </div>
+
+    <p class="mt-8 text-sm text-white/50">
+      Contact via the enquiry form
+    </p>
+  </div>
+</footer>

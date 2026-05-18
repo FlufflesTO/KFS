@@ -1,0 +1,67 @@
+---
+import "../styles/global.css";
+import Header from "../components/layout/Header.astro";
+import { site } from "../data/site.js";
+
+const {
+  title = site.title,
+  description = site.description,
+  ogImage = site.ogImage,
+  noindex = false,
+  canonicalPath = Astro.url?.pathname || "/"
+} = Astro.props;
+
+const canonicalUrl = new URL(canonicalPath, site.url).toString();
+const ogImageUrl = new URL(ogImage, site.url).toString();
+---
+
+<!doctype html>
+<html lang="en-ZA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+    <meta name="theme-color" content="#0B0D0F" />
+    <meta name="format-detection" content="telephone=no, address=no, email=no" />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:alt" content="Kharon Fire and Security Solutions technical network visual" />
+    <meta property="og:locale" content="en_ZA" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": site.name,
+      "url": site.url,
+      "email": site.email,
+      "description": description,
+      "serviceType": [
+        "Gas Suppression Systems",
+        "Fire Detection Systems",
+        "Compliance and Maintenance",
+        "Integrated Infrastructure Security"
+      ]
+    })} />
+  </head>
+
+  <body>
+    <Header currentPath={canonicalPath} />
+
+    <main id="main-content">
+      <slot />
+    </main>
+  </body>
+</html>

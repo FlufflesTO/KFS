@@ -1,0 +1,131 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import Footer from "../components/layout/Footer.astro";
+import { pageMeta, site, solutionLinks } from "../data/site.js";
+
+const requestTypes = [
+  "Emergency technical support",
+  "Gas suppression evaluation",
+  "Fire detection system review",
+  "Compliance inspection",
+  "Maintenance assessment",
+  "Client records access",
+  ...solutionLinks.map((link) => link.label)
+];
+---
+
+<BaseLayout title={pageMeta.contact.title} description={pageMeta.contact.description}>
+  <Hero
+    title="Request a site assessment."
+    text="Tell Kharon about your environment, assets and protection requirements."
+  />
+
+  <section class="section-padding bg-white">
+    <div class="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-2">
+      <div>
+        <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">
+          Contact
+        </p>
+
+        <h2 class="text-3xl font-bold leading-tight text-kharon-black sm:text-4xl lg:text-5xl">
+          Start with the operational context.
+        </h2>
+
+        <p class="mt-5 text-lg leading-8 text-kharon-grey">
+          Include site type, existing systems, required timescale and whether gas suppression, fire detection, compliance or security is the priority.
+        </p>
+
+        <div class="mt-8 grid gap-3 text-kharon-grey">
+          <p>
+            Email: <span class="font-semibold text-kharon-purple">admin [at] kharon.co.za</span>
+          </p>
+          <p>
+            Client records: <a class="font-semibold text-kharon-purple" href={site.portalContactPath}>request records access</a>
+          </p>
+        </div>
+
+        <div id="portal-access" class="mt-10 scroll-mt-28 rounded-lg border border-kharon-border bg-kharon-light p-6">
+          <p class="text-sm font-bold uppercase text-kharon-purple">
+            Records Access
+          </p>
+          <h2 class="mt-3 text-2xl font-bold text-kharon-black">
+            Request access to service records or maintenance coordination.
+          </h2>
+          <p class="mt-4 leading-7 text-kharon-grey">
+            Use the enquiry form for current client requests, service records, maintenance scheduling, compliance documentation or account access questions while the dedicated client records workflow is being separated from the public site.
+          </p>
+        </div>
+      </div>
+
+      <form
+        id="emergency-support"
+        class="grid gap-5 rounded-lg border border-kharon-border bg-kharon-light p-6"
+        action={`mailto:${site.email}`}
+        method="post"
+        enctype="text/plain"
+      >
+        <p id="contact-help" class="text-sm text-kharon-grey">
+          Submission opens your default email client with prefilled details for secure review.
+        </p>
+
+        <label class="sr-only" for="website-field">Website</label>
+        <input
+          id="website-field"
+          class="hidden"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+        />
+
+        <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+          Name
+          <input
+            class="rounded-md border border-kharon-border px-4 py-3 font-normal"
+            name="name"
+            autocomplete="name"
+            maxlength="80"
+            required
+          />
+        </label>
+
+        <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+          Email
+          <input
+            class="rounded-md border border-kharon-border px-4 py-3 font-normal"
+            name="email"
+            type="email"
+            autocomplete="email"
+            inputmode="email"
+            maxlength="120"
+            required
+          />
+        </label>
+
+        <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+          Request Type
+          <select class="rounded-md border border-kharon-border px-4 py-3 font-normal" name="priority" required>
+            {requestTypes.map((item) => <option value={item}>{item}</option>)}
+          </select>
+        </label>
+
+        <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+          Message
+          <textarea
+            class="min-h-36 rounded-md border border-kharon-border px-4 py-3 font-normal"
+            name="message"
+            maxlength="3000"
+            aria-describedby="contact-help"
+            required
+          ></textarea>
+        </label>
+
+        <button class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
+          Submit Enquiry
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <Footer />
+</BaseLayout>

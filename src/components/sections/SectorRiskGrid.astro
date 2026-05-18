@@ -1,0 +1,29 @@
+---
+import { industries } from "../../data/site.js";
+---
+
+<section id="sectors" class="section-padding bg-white">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="max-w-4xl">
+      <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">
+        Sectors Served
+      </p>
+      <h2 class="text-3xl font-bold leading-tight text-kharon-black sm:text-4xl lg:text-5xl">
+        Commercial and industrial environments with high operational consequence.
+      </h2>
+      <p class="mt-5 text-lg leading-8 text-kharon-grey">
+        The risk profile changes by facility type. Kharon frames each environment around protected assets, detection reliability, suppression readiness, evacuation logic and service evidence.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+      {industries.map((industry) => (
+        <article class="rounded-lg border border-kharon-border bg-kharon-light p-5">
+          <p class="text-xs font-bold uppercase text-kharon-purple">{industry.priority}</p>
+          <h3 class="mt-3 text-lg font-bold leading-snug text-kharon-black">{industry.title}</h3>
+          <p class="mt-3 text-sm leading-7 text-kharon-grey">{industry.risk}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

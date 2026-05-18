@@ -1,0 +1,79 @@
+---
+import Button from "../ui/Button.astro";
+
+const {
+  eyebrow,
+  title,
+  text,
+  bullets = [],
+  visual = "systems",
+  imageAlt = "Industrial fire and security infrastructure",
+  reverse = false,
+  href = "/contact",
+  cta = "Discuss Requirements"
+} = Astro.props;
+
+const visualLabels = {
+  suppression: ["Cylinder bank", "Release panel", "Protected room"],
+  detection: ["Addressable loop", "Control panel", "Response zones"],
+  compliance: ["Inspection", "Service record", "Lifecycle plan"],
+  security: ["Access control", "CCTV", "Monitoring"],
+  systems: ["Risk input", "System design", "Operational support"]
+};
+
+const labels = visualLabels[visual] || visualLabels.systems;
+---
+
+<section class="section-padding bg-kharon-light">
+  <div class={`mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 ${reverse ? "lg:[&>*:first-child]:order-2" : ""}`}>
+    <div>
+      <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">
+        {eyebrow}
+      </p>
+
+      <h2 class="text-3xl font-bold leading-tight text-kharon-black sm:text-4xl lg:text-5xl">
+        {title}
+      </h2>
+
+      <p class="mt-5 text-lg leading-8 text-kharon-grey">
+        {text}
+      </p>
+
+      <ul class="mt-8 grid gap-4">
+        {bullets.map((bullet) => (
+          <li class="flex gap-3 text-kharon-grey">
+            <span class="mt-2 h-2 w-2 shrink-0 bg-kharon-purple"></span>
+            <span>{bullet}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div class="mt-9">
+        <Button href={href} label={cta} variant="dark" />
+      </div>
+    </div>
+
+    <div class="overflow-hidden rounded-lg border border-kharon-border bg-white p-3 shadow-xl">
+      <div
+        class="relative grid aspect-[4/3] overflow-hidden rounded-lg bg-kharon-black p-6 text-white"
+        role="img"
+        aria-label={imageAlt}
+      >
+        <div class="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.18)_1px,transparent_1px)] [background-size:36px_36px]"></div>
+        <div class="absolute inset-x-10 top-1/2 h-px bg-kharon-cyan/60"></div>
+
+        <div class="relative z-10 grid h-full grid-cols-3 items-center gap-4">
+          {labels.map((label, index) => (
+            <div class="grid gap-3">
+              <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-lg border border-white/15 bg-white/10 shadow-[0_0_30px_rgba(0,194,255,0.18)]">
+                <span class="h-6 w-6 rounded-md bg-kharon-cyan/80"></span>
+              </div>
+              <p class="text-center text-sm font-semibold text-white/80">{label}</p>
+              <p class="text-center text-xs text-white/35">0{index + 1}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

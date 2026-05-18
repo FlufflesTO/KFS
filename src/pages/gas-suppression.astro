@@ -1,0 +1,62 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import SplitFeature from "../components/sections/SplitFeature.astro";
+import ProofGrid from "../components/sections/ProofGrid.astro";
+import EngineeringSystems from "../components/sections/EngineeringSystems.astro";
+import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
+import Footer from "../components/layout/Footer.astro";
+import { capabilityProof, pageMeta } from "../data/site.js";
+
+const proofItems = capabilityProof.suppression.map((item, index) => ({
+  title: item,
+  text: "Built around continuity, controlled activation and maintainable infrastructure for critical technical spaces.",
+  status: `Suppression 0${index + 1}`
+}));
+---
+
+<BaseLayout title={pageMeta.gasSuppression.title} description={pageMeta.gasSuppression.description}>
+  <Hero
+    title="Clean-agent gas suppression for critical rooms and sensitive assets."
+    text="Kharon designs, installs, services and maintains engineered suppression systems for server rooms, electrical infrastructure and commercial environments where water damage and downtime are unacceptable."
+  />
+
+  <SplitFeature
+    eyebrow="Engineered Suppression"
+    title="Designed around protected spaces, release logic and continuity risk."
+    text="Gas suppression protects critical equipment spaces through coordinated detection, alarm signalling, release infrastructure and maintainable lifecycle support."
+    bullets={[
+      "Server room and data centre suppression",
+      "Electrical and control-room asset protection",
+      "Cylinder bank and release infrastructure",
+      "Detection and alarm integration",
+      "Inspection, servicing and lifecycle support"
+    ]}
+    visual="suppression"
+    imageAlt="Schematic showing gas cylinder bank, release panel and protected room"
+  />
+
+  <ProofGrid
+    eyebrow="Suppression Evidence"
+    title="Engineered around the protected space."
+    text="Gas suppression work must balance asset protection, occupant safety, detection logic and lifecycle accountability."
+    items={proofItems}
+  />
+
+  <EngineeringSystems />
+
+  <ContextualInquiry
+    eyebrow="Suppression Assessment"
+    title="Request a gas suppression assessment."
+    text="Capture the protected environment, existing agent or system state, continuity exposure and room integrity concerns."
+    requestType="Gas suppression assessment"
+    fields={[
+      { label: "Environment Type", name: "environment_type", options: ["Server room", "Electrical room", "Control room", "Telecoms space", "Industrial process area", "Other critical room"] },
+      { label: "Protected Room / Asset", name: "protected_room" },
+      { label: "Existing System", name: "existing_system", options: ["No existing system", "Existing gaseous suppression", "Water-based system nearby", "Unknown", "Upgrade / replacement"] },
+      { label: "Suppression Agent", name: "suppression_agent", options: ["Unknown", "FM-200", "Inergen", "Novec", "Stat-X", "Other"] },
+      { label: "Continuity Concern", name: "continuity_concern", options: ["High uptime requirement", "Sensitive equipment", "Compliance concern", "Recent fault", "Planned upgrade"] }
+    ]}
+  />
+  <Footer />
+</BaseLayout>

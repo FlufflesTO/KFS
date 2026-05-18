@@ -1,0 +1,2 @@
+# Cloudflare Pages _redirects does not support domain-level redirects.
+# Configure apex/www forwarding with Cloudflare Redirect Rules or Bulk Redirects.

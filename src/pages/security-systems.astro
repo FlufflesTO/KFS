@@ -1,0 +1,56 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import SplitFeature from "../components/sections/SplitFeature.astro";
+import ProofGrid from "../components/sections/ProofGrid.astro";
+import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
+import Footer from "../components/layout/Footer.astro";
+import { capabilityProof, pageMeta } from "../data/site.js";
+
+const proofItems = capabilityProof.security.map((item, index) => ({
+  title: item,
+  text: "Security is treated as part of a critical-site operating model, integrated with access, monitoring and resilience priorities.",
+  status: `Security 0${index + 1}`
+}));
+---
+
+<BaseLayout title={pageMeta.security.title} description={pageMeta.security.description}>
+  <Hero
+    title="Integrated security systems for infrastructure resilience."
+    text="CCTV, access control and monitoring systems delivered where they support wider commercial protection requirements."
+  />
+
+  <SplitFeature
+    eyebrow="Secondary Capability"
+    title="Security integrated with wider protection strategy."
+    text="Security supports controlled access, monitoring and operational resilience without replacing Kharon's fire and suppression specialism."
+    bullets={[
+      "Enterprise CCTV",
+      "Access control",
+      "Operational monitoring",
+      "Commercial security integration"
+    ]}
+    visual="security"
+    imageAlt="Schematic showing access control, CCTV and monitoring infrastructure"
+  />
+
+  <ProofGrid
+    eyebrow="Security Evidence"
+    title="Security works best when it supports the whole protection model."
+    text="Kharon's security positioning remains disciplined: integrated support for enterprise sites, not a generic alarm-company offer."
+    items={proofItems}
+  />
+
+  <ContextualInquiry
+    eyebrow="Integrated Security Support"
+    title="Request an infrastructure security review."
+    text="Security requests are assessed as support to operational protection, access control and site resilience requirements."
+    requestType="Integrated infrastructure security review"
+    fields={[
+      { label: "Support Capability", name: "support_capability", options: ["Access control", "CCTV", "IDS", "Monitoring integration", "Multi-system review"] },
+      { label: "Facility Type", name: "facility_type", options: ["Commercial site", "Industrial facility", "Warehouse", "Critical infrastructure", "Control room", "Other"] },
+      { label: "Operational Constraint", name: "operational_constraint", options: ["Access governance", "Monitoring gap", "Incident review", "System expansion", "Integration with fire systems"] }
+    ]}
+  />
+  <Footer />
+</BaseLayout>

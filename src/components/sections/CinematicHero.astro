@@ -1,0 +1,72 @@
+---
+import { complianceSignals } from "../../data/site.js";
+---
+
+<section class="hero-cinematic relative isolate overflow-hidden bg-kharon-black text-white">
+  <div class="hero-cinematic__fog"></div>
+  <div class="hero-cinematic__mark" aria-hidden="true">
+    <span>K</span>
+  </div>
+  <svg class="hero-cinematic__topology" viewBox="0 0 900 520" aria-hidden="true">
+    <path d="M80 380H300L420 260H640L760 150" />
+    <path d="M140 210H330L450 330H650" />
+    <path d="M250 430L410 370L560 430L780 280" />
+    <circle cx="300" cy="380" r="8" />
+    <circle cx="420" cy="260" r="8" />
+    <circle cx="640" cy="260" r="8" />
+    <circle cx="760" cy="150" r="8" class="critical" />
+  </svg>
+
+  <div class="relative z-10 mx-auto grid min-h-[calc(100svh-5rem)] max-w-7xl items-center gap-10 px-6 py-24 lg:grid-cols-[0.95fr_1.05fr] lg:py-28">
+    <div class="max-w-3xl">
+      <p class="mb-4 text-sm font-bold uppercase text-kharon-cyan">
+        Commercial Fire Detection & Gaseous Suppression Specialists
+      </p>
+
+      <h1 class="kharon-h1">
+        Engineering-led fire protection for mission-critical infrastructure.
+      </h1>
+
+      <p class="mt-5 max-w-2xl text-lg leading-8 text-white/72">
+        Kharon Fire and Security Solutions (Pty) Ltd designs, installs, services and maintains commercial and industrial fire detection and gas suppression systems for continuity, compliance and infrastructure resilience.
+      </p>
+
+      <div class="mt-6 flex flex-wrap gap-2">
+        {complianceSignals.map((item) => (
+          <span class="rounded-md border border-white/10 bg-white/[0.05] px-3 py-2 text-xs font-bold uppercase text-white/72">
+            {item}
+          </span>
+        ))}
+      </div>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="/contact?intent=site-assessment" class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
+          Request Site Assessment
+        </a>
+        <a href="/emergency-support" class="rounded-md border border-red-400/50 px-6 py-4 font-semibold text-white hover:bg-red-500/15">
+          Emergency Support
+        </a>
+        <a href="/gas-suppression" class="rounded-md border border-white/20 px-6 py-4 font-semibold text-white/80 hover:bg-white/10 hover:text-white">
+          Explore Systems
+        </a>
+      </div>
+    </div>
+
+    <div class="relative hidden min-h-[33rem] lg:block" aria-hidden="true">
+      <div class="hero-cinematic__monolith">
+        <div class="hero-cinematic__monolith-face">
+          <span>K</span>
+        </div>
+      </div>
+      <div class="hero-cinematic__floor"></div>
+      <div class="hero-cinematic__annotation hero-cinematic__annotation--one">
+        <span>SUPPRESSION RELEASE LOGIC</span>
+        <strong>DETECT / CONFIRM / RELEASE</strong>
+      </div>
+      <div class="hero-cinematic__annotation hero-cinematic__annotation--two">
+        <span>DETECTION TOPOLOGY</span>
+        <strong>ADDRESSABLE ZONES</strong>
+      </div>
+    </div>
+  </div>
+</section>
