@@ -13,6 +13,52 @@ const {
 
 const canonicalUrl = new URL(canonicalPath, site.url).toString();
 const ogImageUrl = new URL(ogImage, site.url).toString();
+const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": site.name,
+    "url": site.url,
+    "email": site.email,
+    "logo": ogImageUrl,
+    "areaServed": "South Africa",
+    "knowsAbout": [
+      "Gas suppression systems",
+      "Fire detection systems",
+      "SANS 10139 aligned fire detection",
+      "SANS 14520 aligned gaseous suppression",
+      "Commercial fire protection maintenance"
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": site.shortName,
+    "url": site.url,
+    "inLanguage": "en-ZA"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Commercial fire detection and gaseous suppression",
+    "provider": {
+      "@type": "Organization",
+      "name": site.name,
+      "url": site.url
+    },
+    "areaServed": "South Africa",
+    "serviceType": [
+      "Gas Suppression Systems",
+      "Fire Detection Systems",
+      "Compliance and Maintenance",
+      "Integrated Infrastructure Security"
+    ],
+    "audience": {
+      "@type": "BusinessAudience",
+      "audienceType": "Commercial and industrial facilities"
+    }
+  }
+];
 ---
 
 <!doctype html>
@@ -26,6 +72,7 @@ const ogImageUrl = new URL(ogImage, site.url).toString();
     <meta name="theme-color" content="#0B0D0F" />
     <meta name="format-detection" content="telephone=no, address=no, email=no" />
     <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -41,20 +88,7 @@ const ogImageUrl = new URL(ogImage, site.url).toString();
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
 
-    <script type="application/ld+json" set:html={JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "LocalBusiness",
-      "name": site.name,
-      "url": site.url,
-      "email": site.email,
-      "description": description,
-      "serviceType": [
-        "Gas Suppression Systems",
-        "Fire Detection Systems",
-        "Compliance and Maintenance",
-        "Integrated Infrastructure Security"
-      ]
-    })} />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
 
   <body>

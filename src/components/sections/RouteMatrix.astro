@@ -48,14 +48,14 @@ const routes = [
           Move directly to the system, risk or response path.
         </h2>
       </div>
-      <a href="/contact" class="rounded-md border border-kharon-border px-5 py-3 text-sm font-bold text-kharon-grey hover:border-kharon-purple hover:text-kharon-purple">
-        Contact Kharon
+      <a href="/contact?intent=site-assessment" class="rounded-md border border-kharon-border px-5 py-3 text-sm font-bold text-kharon-grey hover:border-kharon-purple hover:text-kharon-purple">
+        Assessment Intake
       </a>
     </div>
 
     <div class="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {routes.map((route) => (
-        <a href={route.href} class="group rounded-lg border border-kharon-border bg-kharon-light p-6 transition hover:-translate-y-1 hover:bg-white hover:shadow-xl">
+        <a href={route.href} class="group rounded-md border border-kharon-border bg-kharon-light p-6 hover:border-kharon-purple/45 hover:bg-white">
           <p class="text-xs font-bold uppercase text-kharon-purple">{route.label}</p>
           <h3 class="mt-3 text-xl font-bold text-kharon-black">{route.title}</h3>
           <p class="mt-3 text-sm leading-7 text-kharon-grey">{route.text}</p>

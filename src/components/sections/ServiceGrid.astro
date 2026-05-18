@@ -12,7 +12,7 @@ const { eyebrow, title, text, items = [] } = Astro.props;
       {items.map((item) => (
         <a
           href={item.href}
-          class="group rounded-lg border border-kharon-border bg-white p-8 transition hover:-translate-y-1 hover:shadow-xl"
+          class="group rounded-md border border-kharon-border bg-white p-8 hover:border-kharon-purple/45"
         >
           <div class="mb-8 flex h-12 w-12 items-center justify-center rounded-md border border-kharon-border text-kharon-purple transition group-hover:bg-kharon-purple group-hover:text-white">
             <span class="text-xl font-bold">{item.index}</span>

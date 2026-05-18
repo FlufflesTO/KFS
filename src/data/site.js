@@ -107,7 +107,7 @@ export const mainLinks = [
   { label: "Sectors", href: "/industries" },
   { label: "Compliance", href: "/compliance-maintenance" },
   { label: "Emergency", href: "/emergency-support" },
-  { label: "Contact", href: "/contact" }
+  { label: "Assessment Intake", href: "/contact?intent=site-assessment" }
 ];
 
 export const sitemapPages = [

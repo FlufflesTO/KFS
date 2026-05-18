@@ -31,6 +31,7 @@
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
 }
 
 body {
@@ -42,14 +43,14 @@ body {
 }
 
 .kharon-h1 {
-  font-size: clamp(3rem, 6vw, 5rem);
+  font-size: 2.75rem;
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1.02;
   letter-spacing: 0;
 }
 
 .kharon-h2 {
-  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-size: 2rem;
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0;
@@ -66,7 +67,11 @@ input,
 select,
 textarea,
 summary {
-  transition: all 180ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
 }
 
 summary::-webkit-details-marker {
@@ -87,13 +92,13 @@ summary::-webkit-details-marker {
 }
 
 .section-padding {
-  padding-top: 6rem;
-  padding-bottom: 6rem;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
 }
 
 .hero-padding {
-  padding-top: 9rem;
-  padding-bottom: 6rem;
+  padding-top: 8rem;
+  padding-bottom: 5rem;
 }
 
 .hero-cinematic {
@@ -129,7 +134,7 @@ summary::-webkit-details-marker {
   right: clamp(-9rem, -7vw, -3rem);
   top: clamp(1rem, 4vw, 4rem);
   color: rgba(255, 255, 255, 0.052);
-  font-size: clamp(26rem, 43vw, 48rem);
+  font-size: 32rem;
   font-weight: 700;
   line-height: 0.78;
   text-shadow:
@@ -217,7 +222,7 @@ summary::-webkit-details-marker {
   position: absolute;
   inset: 0 -8% auto auto;
   color: rgba(255, 255, 255, 0.055);
-  font-size: clamp(18rem, 30vw, 30rem);
+  font-size: 22rem;
   font-weight: 700;
   line-height: 0.85;
   transform: perspective(820px) rotateY(-20deg) rotateX(4deg);
@@ -291,7 +296,7 @@ summary::-webkit-details-marker {
   ::before,
   ::after {
     scroll-behavior: auto !important;
-    animation-duration: 1ms !important;
+    animation: none !important;
     transition-duration: 1ms !important;
   }
 }
@@ -320,13 +325,13 @@ summary::-webkit-details-marker {
 
 @media (max-width: 768px) {
   .section-padding {
-    padding-top: 4rem;
-    padding-bottom: 4rem;
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
   }
 
   .hero-padding {
-    padding-top: 8rem;
-    padding-bottom: 5rem;
+    padding-top: 7rem;
+    padding-bottom: 4rem;
   }
 
   .hero-cinematic {
@@ -350,5 +355,33 @@ summary::-webkit-details-marker {
   .hero-cinematic__floor,
   .hero-cinematic__structure {
     display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .kharon-h1 {
+    font-size: 3rem;
+  }
+
+  .kharon-h2 {
+    font-size: 2.55rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .kharon-h1 {
+    font-size: 3.35rem;
+  }
+
+  .kharon-h2 {
+    font-size: 3rem;
+  }
+
+  .hero-cinematic__titan {
+    font-size: 44rem;
+  }
+
+  .hero-page-depth__mark {
+    font-size: 28rem;
   }
 }

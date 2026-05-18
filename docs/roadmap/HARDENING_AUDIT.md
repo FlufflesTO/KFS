@@ -38,6 +38,15 @@ The public site is static-first, deployable on Cloudflare Pages, and hardened fo
 - Preserved static-first performance: CSS/SVG only, no Three.js, no React island and no public app JavaScript bundle.
 - Reduced hero height so the homepage works as an authority-and-routing entry point instead of a long cinematic sequence.
 
+## Enterprise Hardening Pass
+
+- Added `npm run validate:site`, which builds the tequit staging bundle and audits generated output for routes, metadata, contextual forms, internal links, security headers, CSS budget, JS-free output and forbidden pseudo-dashboard terms.
+- Hardened deployment so `npm run deploy:cloudflare` rebuilds the tequit bundle before uploading to Cloudflare Pages.
+- Removed hover-lift and glow effects from reusable cards, status markers and schematic visuals.
+- Reworked shared navigation/footer assessment links to preserve request intent instead of dumping users into generic contact routing.
+- Added favicon and expanded structured data for organization, website and commercial fire-protection service context.
+- Verified Lighthouse mobile scores: Performance 100, Accessibility 100, Best Practices 100, SEO 100.
+
 ## Operational Notes
 
 - Configure apex/www canonical forwarding in Cloudflare Redirect Rules or Bulk Redirects:

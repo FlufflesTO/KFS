@@ -26,8 +26,8 @@ const trustSignals = ["SAQCC", "SANS 10139", "SANS 14520", "Commercial & Industr
     <circle class="critical" cx="810" cy="214" r="6" />
   </svg>
 
-  <div class="relative z-10 mx-auto grid min-h-[min(760px,calc(86svh-5rem))] max-w-7xl items-center gap-10 px-6 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:py-24">
-    <div class="max-w-3xl">
+  <div class="relative z-10 mx-auto grid min-h-[min(720px,calc(84svh-5rem))] max-w-7xl items-center gap-8 px-6 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:py-16">
+    <div class="max-w-4xl">
       <p class="mb-4 text-xs font-bold uppercase text-kharon-cyan">
         Commercial Fire Detection & Gaseous Suppression Specialists
       </p>
@@ -36,11 +36,11 @@ const trustSignals = ["SAQCC", "SANS 10139", "SANS 14520", "Commercial & Industr
         Engineering-led fire detection and gaseous suppression for critical infrastructure.
       </h1>
 
-      <p class="mt-5 max-w-2xl text-lg leading-8 text-white/72">
+      <p class="mt-4 max-w-2xl text-base leading-7 text-white/72">
         Commercial and industrial systems designed, installed, serviced and maintained for lifecycle support, compliance alignment and operational continuity.
       </p>
 
-      <div class="mt-6 flex flex-wrap gap-2">
+      <div class="mt-5 flex flex-wrap gap-2">
         {trustSignals.map((item) => (
           <span class="border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-bold uppercase text-white/72">
             {item}
@@ -48,15 +48,12 @@ const trustSignals = ["SAQCC", "SANS 10139", "SANS 14520", "Commercial & Industr
         ))}
       </div>
 
-      <div class="mt-8 flex flex-wrap gap-3">
+      <div class="mt-6 flex flex-wrap gap-3">
         <a href="/contact?intent=site-assessment" class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
           Request Site Assessment
         </a>
         <a href="/emergency-support" class="rounded-md border border-red-400/50 px-6 py-4 font-semibold text-white hover:bg-red-500/15">
           Emergency Support
-        </a>
-        <a href="/gas-suppression" class="rounded-md border border-white/20 px-6 py-4 font-semibold text-white/80 hover:bg-white/10 hover:text-white">
-          Explore Systems
         </a>
       </div>
     </div>

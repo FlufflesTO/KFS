@@ -12,6 +12,8 @@
     "build": "astro build",
     "build:staging": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 staging",
     "build:production:kharon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 production",
+    "audit:site": "node scripts/audit-site.mjs",
+    "validate:site": "npm run build:staging && npm run audit:site",
     "preview": "astro preview",
     "auth:cloudflare": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 login",
     "cloudflare:whoami": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 whoami",
