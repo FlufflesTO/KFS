@@ -4,7 +4,7 @@ Astro + TailwindCSS website for Kharon commercial and industrial fire detection,
 
 ## Deployment Targets
 
-- Host: Cloudflare Pages
+- Host: Cloudflare Workers/Pages on Cloudflare's Astro SSR adapter output
 - Project: `kharon-website`
 - Staging/test canonical domain: `https://www.tequit.co.za`
 - Staging/test apex alias: `https://tequit.co.za`
@@ -12,7 +12,7 @@ Astro + TailwindCSS website for Kharon commercial and industrial fire detection,
 - Final redirect domain: `https://kharon.co.za`
 - Staging portal host: `https://portal.tequit.co.za`
 - Final portal host: `https://portal.kharon.co.za`
-- Portal CTA: routed to `/contact#portal-access` until the separate portal app is ready
+- Portal CTA: routed to `https://portal.tequit.co.za/portal/login` for the live SSR portal
 - Contact email: `admin@kharon.co.za` by default
 - Build command: `npm run build`
 - Output directory: `dist`
@@ -41,7 +41,7 @@ npm run deploy:cloudflare
 npm run dev
 ```
 
-The current test canonical domain is `https://www.tequit.co.za`; the intended production canonical domain is `https://www.kharon.co.za`. Portal CTAs route to contact until the separate portal app is ready. Domain-level apex/www forwarding must be configured in Cloudflare Redirect Rules or Bulk Redirects, not in Pages `_redirects`.
+The current test canonical domain is `https://www.tequit.co.za`; the intended production canonical domain is `https://www.kharon.co.za`. Portal access is live on `https://portal.tequit.co.za/portal/login`. Domain-level apex/www forwarding must be configured in Cloudflare Redirect Rules or Bulk Redirects, not in Pages `_redirects`.
 
 Use `npm run build:production:kharon` only when preparing the final Kharon production cutover.
 

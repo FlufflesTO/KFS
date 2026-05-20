@@ -31,25 +31,59 @@ Clarity over cleverness. Structure over decoration. Trust over marketing. Reliab
 
 Implemented:
 
-- Static-first Astro site with Tailwind and code-native SVG/HTML technical visuals.
+- Astro 6 SSR site on the Cloudflare adapter, serving the public website and the portal from one codebase.
+- Public shell remains lightweight and mostly server-rendered with code-native SVG/HTML technical visuals.
 - Required pages: `/`, `/gas-suppression`, `/fire-detection`, `/compliance-maintenance`, `/critical-infrastructure`, `/emergency-support`, `/security-systems`, `/industries`, `/about`, `/contact`.
+- Portal routes: `/portal/login`, `/portal/tech/dashboard`, `/portal/admin/dashboard`, `/portal/client/dashboard`, `/portal/finance/dashboard`.
+- Portal APIs: `/portal/api/auth`, `/portal/api/submit-jobcard`, `/portal/api/approve-quote`, `/portal/api/file/[...key]`.
 - Core components: `BaseLayout`, `Header`, `Footer`, `CinematicHero`, `RouteMatrix`, `Hero`, `ContextualInquiry`, `ComplianceStrip`, `SectorRiskGrid`, `EngineeringSystems`, `AuthorityEvidence`, `EmergencyResponse`, `SectionHeading`, `Button`.
 - SEO basics: canonical URLs, OpenGraph tags, `robots.txt`, `sitemap.xml`, LocalBusiness JSON-LD.
 - Accessibility basics: skip link, visible focus state, semantic sections, labelled contact form, reduced-motion CSS.
 - Secure dependency baseline with current installed stack.
+- Cloudflare resources: D1 binding `DB`, R2 binding `STORAGE`, `SESSION_SECRET`, and `kharon_session_token` session cookie.
+- Live staging hosts verified on 2026-05-20:
+  - `https://www.tequit.co.za/`
+  - `https://portal.tequit.co.za/portal/login`
 
 Open constraints:
 
 - Original roadmap specified Astro 4. Current dependency audit required a secure upgrade path beyond Astro 4. Treat exact Astro version as a compatibility constraint to revisit only if the deployment target strictly requires Astro 4.
 - The previous React/Three.js hero chunk has been removed to preserve static-first performance. The homepage now uses a CSS/SVG fake-3D cinematic Kharon mark instead of live WebGL.
 - Industrial imagery is currently represented by code-native schematic visuals, not final photographic or optimized image assets.
+- Portal data is seeded only for staging. Production user onboarding, password reset, audit logging and operational data management still require dedicated workflows.
+
+## Current Review And Recommendations
+
+Review date: 2026-05-20.
+
+Verified live status:
+
+- Public homepage: `200 OK` on `https://www.tequit.co.za/`.
+- Contact page: `200 OK`.
+- Sitemap: `200 OK` with XML content type.
+- Portal login: `200 OK` on `https://portal.tequit.co.za/portal/login`.
+- Protected portal dashboard: unauthenticated `/portal/tech/dashboard` returns `302` to login.
+- Authenticated technician dashboard smoke check returns `200` with a valid session cookie.
+- Public `Access Records` links now route to the portal login instead of the contact flow.
+
+Immediate refinements recommended:
+
+- Replace shared temporary staging passwords with per-user credentials and document a controlled reset process.
+- Add logout, first-login password rotation and password reset before broader internal use.
+- Add admin CRUD for sites, systems, users and jobs to remove direct D1 editing from normal operations.
+- Add audit logging before sensitive client records and financial approvals become operationally authoritative.
+- Add rate limiting for login and write APIs before production cutover.
+- Add a real signature pad and stronger generated jobcard PDF evidence before field technicians depend on the closure flow.
+- Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
+- Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
 
 ## Master Feature List
 
 ### Foundation
 
-- Static-first Astro architecture.
-- No required client hydration for the public site shell.
+- Astro SSR architecture using the Cloudflare adapter.
+- Public shell should remain no-hydration unless a visible feature requires client JavaScript.
+- Portal pages use SSR and Cloudflare bindings for D1/R2 operations.
 - Shared site data module for navigation, SEO, sitemap, industries, and contact details.
 - Stable project structure:
   - `src/layouts`
@@ -60,6 +94,10 @@ Open constraints:
   - `src/styles`
   - `src/assets`
   - `src/content`
+  - `src/lib/server`
+  - `src/middleware.js`
+  - `schema.sql`
+  - `migrations`
 
 ### Brand And Trust
 
@@ -79,7 +117,7 @@ Open constraints:
   - Security Systems
 - Mobile slide-over menu with dark background and large tap targets.
 - Persistent CTA: `Request Site Assessment`.
-- Client portal link where relevant.
+- `Access Records` link in header, mobile menu, footer and contact page routes to the live portal login.
 - Keyboard-accessible dropdown and menu escape behavior.
 
 ### Pages
@@ -99,6 +137,11 @@ Open constraints:
 - Industries page with commercial and industrial environment coverage.
 - About page with Kharon positioning, engineering discipline, operating model and trust signals.
 - Contact page with accessible enquiry form and direct contact routes.
+- Portal login page with role-directed authentication.
+- Technician dashboard for assigned dispatches and jobcard closure.
+- Admin dashboard for completed works, active dispatches and lifecycle exposure.
+- Client dashboard for system status, maintenance dates, jobcard downloads and quote approval.
+- Finance dashboard for pending invoices, receipts and balance summaries.
 
 ### Component System
 
@@ -199,7 +242,7 @@ Open constraints:
 
 ### Performance
 
-- Static rendering by default.
+- Server rendering by default for Cloudflare deployment.
 - Minimal hydration.
 - No live 3D runtime in the public shell.
 - CSS/SVG cinematic visuals only.
@@ -207,6 +250,70 @@ Open constraints:
 - Compressed local assets.
 - No unnecessary global JavaScript.
 - Lighthouse target: 95+ for performance, accessibility, best practices and SEO.
+
+### Portal Operations
+
+Purpose:
+
+Provide a secure operational portal for Kharon staff, clients and finance users while keeping the public website and portal in one maintainable Astro codebase.
+
+Current implementation:
+
+- RBAC roles: `tech`, `admin`, `client`, `finance`.
+- Session cookie: `kharon_session_token`, HttpOnly, Secure, SameSite=Strict, 12-hour expiry.
+- Password storage: PBKDF2 SHA-256 hashes generated by `npm run portal:hash-password`.
+- Middleware protects `/portal/*`, bypassing login and auth API only.
+- D1 tables: `users`, `sites`, `systems`, `jobs`, `financial_records`.
+- R2 stores generated jobcard PDFs under `jobcards/job-[jobId]-completed.pdf`.
+- Technician job closure updates job status, lifecycle dates, R2 documentation and finance records.
+- Client file downloads are permission-checked against site ownership.
+
+Operational gaps to resolve before replacing manual back-office processes:
+
+- User lifecycle:
+  - [ ] Admin UI for creating, disabling and role-changing users.
+  - [ ] Forced temporary-password rotation on first login.
+  - [ ] Password reset workflow through verified email.
+  - [ ] Session revocation or logout endpoint.
+  - [ ] Optional MFA for admin and finance roles.
+- Data administration:
+  - [ ] Admin CRUD for sites, systems and technician assignments.
+  - [ ] Import path for existing client/site/system records.
+  - [ ] Controlled seed process that does not store hashes in committed files.
+  - [ ] Data retention policy for jobcards, quotes, invoices and audit evidence.
+- Technician workflow:
+  - [ ] Replace pasted signature data URL with a proper touchscreen signature pad.
+  - [ ] Add job status transition from Scheduled to In Progress.
+  - [ ] Add offline/poor-signal handling expectations for field work.
+  - [ ] Capture parts used, fault categories, photos and follow-up actions.
+  - [ ] Improve generated jobcard PDF to include visual signature and richer site/system evidence.
+- Admin workflow:
+  - [ ] Dispatch planner for scheduling jobs and assigning technicians.
+  - [ ] Lifecycle due calendar by site, system type and risk tier.
+  - [ ] Exception queues for overdue systems, missing documentation and failed service closure.
+  - [ ] Export operational reports for management review.
+- Client workflow:
+  - [ ] Client account-to-site management for multi-site customers.
+  - [ ] Quote approval history and confirmation receipts.
+  - [ ] Maintenance request submission from the client dashboard.
+  - [ ] Per-document access logs for sensitive records.
+- Finance workflow:
+  - [ ] Invoice number generation and immutable ledger references.
+  - [ ] Payment capture and reconciliation states.
+  - [ ] Export to accounting workflow or CSV.
+  - [ ] Approval controls before invoices are marked settled.
+- Security and audit:
+  - [ ] Audit table for auth, record access, status changes and financial changes.
+  - [ ] Rate limiting for login and write endpoints.
+  - [ ] CSRF protection for browser-submitted state-changing requests.
+  - [ ] Structured error telemetry and Cloudflare log review process.
+  - [ ] Per-role authorization tests.
+- Operations and support:
+  - [ ] Written SOP for onboarding users, assigning jobs and closing jobcards.
+  - [ ] Incident response procedure for portal access issues.
+  - [ ] Backup/export process for D1 and R2 evidence.
+  - [ ] Production cutover checklist for `portal.kharon.co.za`.
+  - [ ] Monitoring checks for login, dashboard redirect and D1/R2 availability.
 
 ## Master User Operation
 
@@ -231,8 +338,20 @@ Open constraints:
 ### Existing Client Operation
 
 1. User lands on homepage or contact page.
-2. User finds `Records Access` in header, mobile menu, or footer.
-3. User lands on the contact page's records-access section for service records, maintenance scheduling or compliance documentation requests.
+2. User finds `Access Records` in header, mobile menu, footer or the contact page.
+3. User lands on `https://portal.tequit.co.za/portal/login` during staging.
+4. User signs in and is routed to the dashboard allowed by their role.
+5. New account requests still use the contact form until the portal has an account request workflow.
+
+### Internal Portal Operation
+
+1. Admin creates or updates site/system/user records in D1 using controlled scripts until an admin CRUD UI exists.
+2. Technician signs in to `/portal/tech/dashboard`.
+3. Technician closes assigned dispatch with comments and captured signature evidence.
+4. Portal stores generated jobcard PDF in R2, marks the job completed, advances system next due date by six months and creates an unpaid finance record.
+5. Finance reviews ledger entries in `/portal/finance/dashboard`.
+6. Client sees system lifecycle status and permitted jobcard files in `/portal/client/dashboard`.
+7. Admin monitors active jobs, completed work and due systems in `/portal/admin/dashboard`.
 
 ### Internal Maintenance Operation
 
@@ -254,6 +373,9 @@ Open constraints:
 - [x] Add `src/assets` and define asset guidance.
 - [x] Add `src/content` and define content guidance.
 - [x] Confirm secure current Astro baseline is accepted for this implementation.
+- [x] Switch deployment to Cloudflare SSR adapter.
+- [x] Add Cloudflare D1 and R2 bindings.
+- [x] Add server-side portal utility layer.
 
 ### Content
 
@@ -314,7 +436,7 @@ Open constraints:
 
 ### Performance
 
-- [x] Static Astro build passes.
+- [x] Astro SSR build passes.
 - [x] Dependency audit passes.
 - [ ] Reduce 3D client chunk warning.
 - [ ] Add responsive local image optimization.
@@ -323,15 +445,35 @@ Open constraints:
 
 ### Deployment
 
-- [x] Build produces static output in `dist`.
-- [x] Add Cloudflare Pages deployment config.
+- [x] Build produces Cloudflare SSR output in `dist`.
+- [x] Add Cloudflare deployment config.
 - [x] Add production environment notes.
 - [x] Add preview deployment smoke checklist.
 - [x] Add DNS/canonical verification checklist.
 
+### Portal Operations
+
+- [x] Add D1 schema for users, sites, systems, jobs and financial records.
+- [x] Add RBAC middleware for portal routes.
+- [x] Add authentication endpoint and signed session cookie.
+- [x] Add technician jobcard closure endpoint with D1/R2 writes.
+- [x] Add protected document retrieval endpoint.
+- [x] Add quote approval endpoint.
+- [x] Add role dashboards for technician, admin, client and finance.
+- [x] Add portal login routing from public website CTAs.
+- [x] Verify live staging portal login and protected dashboard redirect behavior.
+- [ ] Add logout endpoint.
+- [ ] Add admin CRUD screens.
+- [ ] Add password reset and first-login rotation.
+- [ ] Add rate limiting and audit logging.
+- [ ] Add signature pad UI and richer jobcard PDF evidence.
+- [ ] Add dispatch scheduling workflow.
+- [ ] Add monitoring and backup SOPs.
+- [ ] Add migration plan from `portal.tequit.co.za` to `portal.kharon.co.za`.
+
 ## Phased Implementation
 
-### Phase 1: Static Foundation
+### Phase 1: Website Foundation
 
 Goal:
 
@@ -471,7 +613,7 @@ Partially complete.
 
 Goal:
 
-Make the site ready for Cloudflare Pages.
+Make the website and portal ready for Cloudflare's serverless deployment model.
 
 Tasks:
 
@@ -506,7 +648,7 @@ Tasks:
 
 Status:
 
-Cloudflare Pages selected for the Tequit production stack. Deployment config lives in `wrangler.jsonc`; static headers are emitted from `public/_headers`. Pages `_redirects` is reserved for path-level redirects only; apex/www redirects belong in Cloudflare Redirect Rules or Bulk Redirects.
+Cloudflare is selected for the Tequit staging stack. Deployment config lives in `wrangler.jsonc`; the Astro Cloudflare adapter emits SSR Worker output and static assets. Domain-level apex/www redirects belong in Cloudflare Redirect Rules or Bulk Redirects.
 
 ## Verification Commands
 
