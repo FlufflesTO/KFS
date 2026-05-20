@@ -82,12 +82,12 @@ const desktopLinkClass = (active) =>
 
     <div class="hidden items-center gap-3 lg:flex">
       <a
-        href={site.portalContactPath}
-        aria-label="Request client lifecycle records access."
+        href={site.portalLoginPath}
+        aria-label="Open the secure Kharon portal."
         title={site.portalStatus}
         class="rounded-md border border-white/15 px-5 py-3 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white"
       >
-        Records Access
+        Access Records
       </a>
 
       <a href="/contact?intent=site-assessment" class="rounded-md bg-kharon-purple px-5 py-3 text-sm font-semibold text-white hover:bg-kharon-blue">
@@ -129,8 +129,8 @@ const desktopLinkClass = (active) =>
             Request Site Assessment
           </a>
 
-          <a href={site.portalContactPath} class="rounded-md border border-white/15 px-6 py-4 text-center font-semibold text-white">
-            Records Access
+          <a href={site.portalLoginPath} class="rounded-md border border-white/15 px-6 py-4 text-center font-semibold text-white">
+            Access Records
           </a>
         </nav>
       </div>

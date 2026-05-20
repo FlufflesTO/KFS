@@ -10,8 +10,8 @@ export const site = {
     "Commercial and industrial fire detection, clean-agent gas suppression and compliance maintenance for critical environments.",
   url: siteUrl,
   portalUrl,
-  portalStatus: "Request access to lifecycle records, service history or maintenance coordination through the contact flow.",
-  portalContactPath: "/contact#portal-access",
+  portalStatus: "Open the secure Kharon operations portal for lifecycle records, dispatches, client systems and finance workspaces.",
+  portalLoginPath: `${portalUrl}/portal/login`,
   email: contactEmail,
   ogImage: "/og/kharon-og.svg"
 };

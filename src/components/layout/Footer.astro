@@ -16,7 +16,7 @@ import { site, solutionLinks } from "../../data/site.js";
       <a href="/">Home</a>
       {solutionLinks.map((link) => <a href={link.href}>{link.label}</a>)}
       <a href="/contact?intent=site-assessment">Assessment Intake</a>
-      <a href={site.portalContactPath} title={site.portalStatus}>Records Access</a>
+      <a href={site.portalLoginPath} title={site.portalStatus}>Access Records</a>
     </div>
 
     <p class="mt-8 text-sm text-white/50">

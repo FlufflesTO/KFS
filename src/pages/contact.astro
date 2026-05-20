@@ -41,7 +41,7 @@ const requestTypes = [
             Email: <span class="font-semibold text-kharon-purple">admin [at] kharon.co.za</span>
           </p>
           <p>
-            Client records: <a class="font-semibold text-kharon-purple" href={site.portalContactPath}>request records access</a>
+            Client records: <a class="font-semibold text-kharon-purple" href={site.portalLoginPath}>open the secure portal</a>
           </p>
         </div>
 
@@ -50,11 +50,14 @@ const requestTypes = [
             Records Access
           </p>
           <h2 class="mt-3 text-2xl font-bold text-kharon-black">
-            Request access to service records or maintenance coordination.
+            Access service records and maintenance coordination.
           </h2>
           <p class="mt-4 leading-7 text-kharon-grey">
-            Use the enquiry form for current client requests, service records, maintenance scheduling, compliance documentation or account access questions while the dedicated client records workflow is being separated from the public site.
+            Existing portal users can sign in directly. New account requests, service-record queries and maintenance coordination questions can still be submitted through the enquiry form.
           </p>
+          <a href={site.portalLoginPath} class="mt-5 inline-flex rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue">
+            Open Portal
+          </a>
         </div>
       </div>
 
