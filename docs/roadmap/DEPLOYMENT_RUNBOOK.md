@@ -160,6 +160,49 @@ npm run build:production:kharon
 npm run deploy:cloudflare
 ```
 
+### Portal Serverless Backend
+
+The portal is now built as an Astro 6 SSR bundle for Cloudflare's serverless runtime. Validate before deployment:
+
+```powershell
+npm run validate:site
+```
+
+Apply the D1 schema locally:
+
+```powershell
+npx wrangler d1 execute kharon-portal --local --file=schema.sql
+```
+
+Apply the D1 schema remotely:
+
+```powershell
+npx wrangler d1 execute kharon-portal --remote --file=schema.sql
+```
+
+Generate a PBKDF2 password hash before inserting users:
+
+```powershell
+npm run portal:hash-password -- "replace-with-a-strong-password"
+```
+
+Required Cloudflare bindings:
+
+- D1 binding: `DB`
+- D1 database: `kharon-portal`
+- D1 database id: `327db922-1c44-438d-8328-af7ba33e9ae0`
+- R2 binding: `STORAGE`
+- R2 bucket: `kharon-portal-storage`
+- Session cookie: `kharon_session_token`
+- Required secret: `SESSION_SECRET`
+
+Allowed portal roles:
+
+- `tech`
+- `admin`
+- `client`
+- `finance`
+
 ### Google Workspace Email DNS
 
 Because Kharon uses Google Workspace for `admin@kharon.co.za` and `connor@kharon.co.za`, email DNS belongs on the `kharon.co.za` zone, not the temporary `tequit.co.za` test zone unless Tequit also needs mail.

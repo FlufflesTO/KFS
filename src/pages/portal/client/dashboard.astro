@@ -1,0 +1,124 @@
+---
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+let systems = [];
+let quotes = [];
+let loadError = "";
+
+try {
+  const db = getDatabase();
+  if (!user.siteId) {
+    loadError = "This client account is not mapped to a site.";
+  } else {
+    systems = (await db.prepare(
+      `SELECT systems.id, systems.system_type, systems.coverage_area, systems.last_service_date, systems.next_due_date,
+              jobs.id AS latest_job_id, jobs.documentation_path, jobs.completed_at
+       FROM systems
+       LEFT JOIN jobs ON jobs.id = (
+         SELECT j.id FROM jobs j
+         WHERE j.system_id = systems.id AND j.documentation_path IS NOT NULL
+         ORDER BY j.completed_at DESC
+         LIMIT 1
+       )
+       WHERE systems.site_id = ?1
+       ORDER BY systems.next_due_date ASC`
+    ).bind(user.siteId).all()).results || [];
+
+    quotes = (await db.prepare(
+      `SELECT id, amount, item_type, payment_status, distribution_date, reference
+       FROM financial_records
+       WHERE site_id = ?1 AND item_type = 'Quote' AND payment_status = 'Pending Approval'
+       ORDER BY distribution_date ASC`
+    ).bind(user.siteId).all()).results || [];
+  }
+} catch (error) {
+  console.error("client dashboard failed", error);
+  loadError = "Client system records could not be loaded.";
+}
+---
+
+<PortalLayout title="Client Gateway | Kharon Portal" active="client" user={user}>
+  <section class="bg-kharon-black px-6 py-10 text-white">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase text-kharon-cyan">Client self-service gateway</p>
+      <h1 class="mt-3 text-3xl font-bold">System status and lifecycle records</h1>
+      <p class="mt-4 max-w-3xl text-white/65">Read-only visibility over protected systems, upcoming maintenance dates and completed jobcard records.</p>
+    </div>
+  </section>
+
+  <section class="px-6 py-8">
+    <div class="mx-auto grid max-w-7xl gap-6">
+      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+
+      <div class="grid gap-4 lg:grid-cols-2">
+        {systems.map((system) => (
+          <article class="border border-kharon-border bg-white p-5">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="text-xs font-bold uppercase text-kharon-purple">{system.system_type}</p>
+                <h2 class="mt-2 text-xl font-bold">{system.coverage_area}</h2>
+              </div>
+              <span class="rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">Due {system.next_due_date}</span>
+            </div>
+            <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Last service</dt><dd>{system.last_service_date || "No service date recorded"}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">System ID</dt><dd>{system.id}</dd></div>
+            </dl>
+            {system.documentation_path ? (
+              <a class="mt-5 inline-flex rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue" href={`/portal/api/file/${system.documentation_path}`}>
+                Download latest jobcard
+              </a>
+            ) : (
+              <p class="mt-5 text-sm text-kharon-grey">No completed jobcard document is linked yet.</p>
+            )}
+          </article>
+        ))}
+      </div>
+
+      <section class="border border-kharon-border bg-white p-5">
+        <h2 class="text-xl font-bold">Pending quote approvals</h2>
+        <div class="mt-5 grid gap-3">
+          {quotes.length === 0 && <p class="text-kharon-grey">No pending quotes are awaiting approval.</p>}
+          {quotes.map((quote) => (
+            <article class="flex flex-wrap items-center justify-between gap-4 border border-kharon-border bg-kharon-light p-4">
+              <div>
+                <p class="font-semibold">{quote.reference || quote.id}</p>
+                <p class="text-sm text-kharon-grey">R {Number(quote.amount).toFixed(2)} / {quote.distribution_date}</p>
+              </div>
+              <button class="rounded-md border border-kharon-purple px-5 py-3 font-semibold text-kharon-purple" data-quote-id={quote.id}>
+                Approve quote
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <script>
+    for (const button of document.querySelectorAll("[data-quote-id]")) {
+      button.addEventListener("click", async () => {
+        button.setAttribute("disabled", "true");
+        const response = await fetch("/portal/api/approve-quote", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ recordId: button.getAttribute("data-quote-id") })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          button.removeAttribute("disabled");
+          button.textContent = result.message || "Approval failed";
+          button.classList.add("border-red-600", "text-red-700");
+          return;
+        }
+        button.textContent = "Approved";
+        button.classList.remove("border-kharon-purple", "text-kharon-purple");
+        button.classList.add("border-kharon-blue", "text-kharon-blue");
+      });
+    }
+  </script>
+</PortalLayout>

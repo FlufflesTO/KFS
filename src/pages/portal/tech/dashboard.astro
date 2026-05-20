@@ -1,0 +1,112 @@
+---
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+let jobs = [];
+let loadError = "";
+
+try {
+  const db = getDatabase();
+  const query = user.role === "admin"
+    ? `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
+              systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address
+       FROM jobs
+       INNER JOIN systems ON systems.id = jobs.system_id
+       INNER JOIN sites ON sites.id = systems.site_id
+       WHERE jobs.status IN ('Scheduled', 'In Progress')
+       ORDER BY jobs.scheduled_date ASC`
+    : `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
+              systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address
+       FROM jobs
+       INNER JOIN systems ON systems.id = jobs.system_id
+       INNER JOIN sites ON sites.id = systems.site_id
+       WHERE jobs.assigned_technician_id = ?1 AND jobs.status IN ('Scheduled', 'In Progress')
+       ORDER BY jobs.scheduled_date ASC`;
+
+  const result = user.role === "admin"
+    ? await db.prepare(query).all()
+    : await db.prepare(query).bind(user.id).all();
+  jobs = result.results || [];
+} catch (error) {
+  console.error("technician dashboard failed", error);
+  loadError = "Assigned dispatches could not be loaded.";
+}
+---
+
+<PortalLayout title="Technician Dispatches | Kharon Portal" active="tech" user={user}>
+  <section class="bg-kharon-black px-6 py-10 text-white">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase text-kharon-cyan">Technician workspace</p>
+      <h1 class="mt-3 text-3xl font-bold">Assigned dispatch closure</h1>
+      <p class="mt-4 max-w-3xl text-white/65">
+        Close scheduled field work with comments and captured client signature. Completed jobcards update lifecycle dates and finance automatically.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-6 py-8">
+    <div class="mx-auto grid max-w-7xl gap-5">
+      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+      {jobs.length === 0 && !loadError && <p class="border border-kharon-border bg-white p-4 text-kharon-grey">No scheduled dispatches are currently assigned.</p>}
+
+      {jobs.map((job) => (
+        <article class="grid gap-5 border border-kharon-border bg-white p-5 lg:grid-cols-[1fr_0.9fr]">
+          <div>
+            <p class="text-xs font-bold uppercase text-kharon-purple">{job.status}</p>
+            <h2 class="mt-2 text-xl font-bold text-kharon-black">{job.owner_company_name}</h2>
+            <p class="mt-2 text-sm text-kharon-grey">{job.physical_address}</p>
+            <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+              <div><dt class="font-bold uppercase text-kharon-grey/70">System</dt><dd>{job.system_type}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Coverage</dt><dd>{job.coverage_area}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Scheduled</dt><dd>{job.scheduled_date}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Job ID</dt><dd>{job.id}</dd></div>
+            </dl>
+            {job.site_notes && <p class="mt-5 border-l-4 border-kharon-blue bg-kharon-light p-4 text-sm text-kharon-grey">{job.site_notes}</p>}
+          </div>
+
+          <form class="jobcard-form grid gap-4 border border-kharon-border bg-kharon-light p-4" data-job-id={job.id} data-system-id={job.system_id}>
+            <input type="hidden" name="jobId" value={job.id} />
+            <input type="hidden" name="systemId" value={job.system_id} />
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Technician comments
+              <textarea name="techComments" class="min-h-28 rounded-md border border-kharon-border px-4 py-3" maxlength="3000" required></textarea>
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Signature image data URL
+              <textarea name="signatureBase64" class="min-h-24 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" placeholder="data:image/png;base64,..." required></textarea>
+            </label>
+            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue">Submit completed jobcard</button>
+            <p class="jobcard-result hidden text-sm font-semibold"></p>
+          </form>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <script>
+    for (const form of document.querySelectorAll(".jobcard-form")) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const result = form.querySelector(".jobcard-result");
+        result.classList.add("hidden");
+        const data = new FormData(form);
+        const response = await fetch("/portal/api/submit-jobcard", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            jobId: data.get("jobId"),
+            systemId: data.get("systemId"),
+            techComments: data.get("techComments"),
+            signatureBase64: data.get("signatureBase64")
+          })
+        });
+        const body = await response.json();
+        result.textContent = body.ok ? `Completed. Document: ${body.documentationPath}` : body.message || "Submission failed.";
+        result.className = `jobcard-result text-sm font-semibold ${body.ok ? "text-kharon-blue" : "text-red-700"}`;
+      });
+    }
+  </script>
+</PortalLayout>

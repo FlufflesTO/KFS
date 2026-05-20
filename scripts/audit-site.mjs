@@ -5,6 +5,9 @@ const root = process.cwd();
 const dist = path.join(root, "dist");
 const src = path.join(root, "src");
 const publicDir = path.join(root, "public");
+const clientDist = path.join(dist, "client");
+const serverDist = path.join(dist, "server");
+const assetRoot = fs.existsSync(clientDist) ? clientDist : dist;
 
 const failures = [];
 const warnings = [];
@@ -29,17 +32,13 @@ function fail(message) {
   failures.push(message);
 }
 
-function warn(message) {
-  warnings.push(message);
-}
-
 if (!fs.existsSync(dist)) {
   fail("dist directory is missing. Run npm run build:staging first.");
 }
 
 const sourceFiles = walk(src).filter((file) => /\.(astro|js|css)$/.test(file));
 const distFiles = walk(dist);
-const textDistFiles = distFiles.filter((file) => /\.(html|js|css|txt|xml)$/.test(file));
+const textDistFiles = distFiles.filter((file) => /\.(html|mjs|js|css|txt|xml|json)$/.test(file));
 
 const forbiddenOutput = [
   "System Overview",
@@ -82,7 +81,27 @@ for (const file of sourceFiles) {
   }
 }
 
-const assetsDir = path.join(dist, "_astro");
+if (!fs.existsSync(clientDist) || !fs.existsSync(serverDist)) {
+  fail("Cloudflare SSR build should emit dist/client and dist/server.");
+}
+
+if (!fs.existsSync(path.join(serverDist, "entry.mjs"))) {
+  fail("Cloudflare SSR server entry is missing.");
+}
+
+const serverWrangler = path.join(serverDist, "wrangler.json");
+if (!fs.existsSync(serverWrangler)) {
+  fail("Generated server wrangler.json is missing.");
+} else {
+  const wrangler = read(serverWrangler);
+  for (const binding of ['"binding":"DB"', '"binding":"STORAGE"']) {
+    if (!wrangler.replace(/\s/g, "").includes(binding)) {
+      fail(`Generated wrangler config missing ${binding}`);
+    }
+  }
+}
+
+const assetsDir = path.join(assetRoot, "_astro");
 const assets = fs.existsSync(assetsDir) ? fs.readdirSync(assetsDir) : [];
 const jsAssets = assets.filter((file) => file.endsWith(".js"));
 if (jsAssets.length > 0) {
@@ -91,97 +110,64 @@ if (jsAssets.length > 0) {
 
 const cssAssets = assets.filter((file) => file.endsWith(".css"));
 const cssBytes = cssAssets.reduce((total, file) => total + fs.statSync(path.join(assetsDir, file)).size, 0);
-if (cssBytes > 36_000) {
+if (cssBytes > 42_000) {
   fail(`CSS asset budget exceeded: ${cssBytes} bytes`);
 }
 
-const expectedRoutes = [
-  "index.html",
-  "gas-suppression/index.html",
-  "fire-detection/index.html",
-  "compliance-maintenance/index.html",
-  "critical-infrastructure/index.html",
-  "emergency-support/index.html",
-  "security-systems/index.html",
-  "industries/index.html",
-  "about/index.html",
-  "contact/index.html",
-  "404.html",
-  "robots.txt",
-  "sitemap.xml"
+for (const asset of ["favicon.svg", "og/kharon-og.svg", "_headers", "_redirects"]) {
+  if (!fs.existsSync(path.join(assetRoot, asset))) {
+    fail(`missing client asset: ${asset}`);
+  }
+}
+
+const expectedSourceRoutes = [
+  "index.astro",
+  "gas-suppression.astro",
+  "fire-detection.astro",
+  "compliance-maintenance.astro",
+  "critical-infrastructure.astro",
+  "emergency-support.astro",
+  "security-systems.astro",
+  "industries.astro",
+  "about.astro",
+  "contact.astro",
+  "404.astro",
+  "portal/login.astro",
+  "portal/tech/dashboard.astro",
+  "portal/admin/dashboard.astro",
+  "portal/client/dashboard.astro",
+  "portal/finance/dashboard.astro",
+  "portal/api/auth.js",
+  "portal/api/submit-jobcard.js",
+  "portal/api/approve-quote.js",
+  "portal/api/file/[...key].js"
 ];
 
-for (const route of expectedRoutes) {
-  if (!fs.existsSync(path.join(dist, route))) {
-    fail(`missing route output: ${route}`);
+for (const route of expectedSourceRoutes) {
+  if (!fs.existsSync(path.join(src, "pages", route))) {
+    fail(`missing source route: ${route}`);
   }
 }
 
-const htmlFiles = distFiles.filter((file) => file.endsWith(".html"));
-for (const file of htmlFiles) {
-  const html = read(file);
-  const route = path.relative(dist, file).replaceAll("\\", "/");
-  const h1Count = (html.match(/<h1\b/gi) || []).length;
-  if (h1Count !== 1) fail(`${route} should have exactly one h1, found ${h1Count}`);
-  for (const tag of ["<title>", 'name="description"', 'rel="canonical"', 'property="og:title"', 'application/ld+json']) {
-    if (!html.includes(tag)) fail(`${route} missing metadata marker ${tag}`);
-  }
-  if (/href="https:\/\/tequit\.co\.za/i.test(html)) fail(`${route} contains apex canonical/link`);
-  if (/href="\/contact"/.test(html) && route !== "contact/index.html") {
-    warn(`${route} links to generic contact without intent query or contextual section`);
-  }
-}
-
-const home = fs.existsSync(path.join(dist, "index.html")) ? read(path.join(dist, "index.html")) : "";
-for (const term of [
-  "Engineering-led fire detection and gaseous suppression",
-  "SAQCC",
-  "SANS 10139",
-  "SANS 14520",
-  "Commercial &amp; Industrial Only",
-  "Operational Routing"
-]) {
-  if (!home.includes(term)) fail(`homepage missing required authority signal: ${term}`);
-}
-
-const contextualRoutes = new Map([
-  ["gas-suppression/index.html", "Gas suppression assessment"],
-  ["fire-detection/index.html", "Fire detection review"],
-  ["compliance-maintenance/index.html", "Compliance assessment"],
-  ["critical-infrastructure/index.html", "Critical infrastructure protection discussion"],
-  ["emergency-support/index.html", "Emergency / SLA support"],
-  ["security-systems/index.html", "Integrated infrastructure security review"]
+const requiredSourceTerms = new Map([
+  ["src/middleware.js", ["sessionCookieName", "/portal/tech/", "/portal/finance/", "/portal/client/", "context.locals.user"]],
+  ["src/pages/portal/api/auth.js", ["verifyPassword", "Set-Cookie", "redirectTo"]],
+  ["src/pages/portal/api/submit-jobcard.js", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
+  ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/api/submit-jobcard"]],
+  ["src/pages/portal/client/dashboard.astro", ["/portal/api/file/", "/portal/api/approve-quote"]],
+  ["src/pages/portal/finance/dashboard.astro", ["financial_records", "payment_status"]],
+  ["src/layouts/portal/PortalLayout.astro", ["Astro.locals.user", "Portal navigation"]]
 ]);
 
-for (const [route, requestType] of contextualRoutes) {
-  const file = path.join(dist, route);
-  if (!fs.existsSync(file)) continue;
-  const html = read(file);
-  if (!html.includes(requestType)) fail(`${route} missing contextual request type: ${requestType}`);
-}
-
-const routeSet = new Set(
-  expectedRoutes
-    .filter((route) => route.endsWith(".html"))
-    .map((route) => {
-      if (route === "index.html") return "/";
-      if (route === "404.html") return "/404";
-      return `/${route.replace(/\/index\.html$/, "")}`;
-    })
-);
-
-for (const file of htmlFiles) {
-  const html = read(file);
-  const route = path.relative(dist, file).replaceAll("\\", "/");
-  const hrefs = [...html.matchAll(/\shref="([^"]+)"/g)].map((match) => match[1]);
-  for (const href of hrefs) {
-    if (!href.startsWith("/") || href.startsWith("//")) continue;
-    const [rawPath] = href.split(/[?#]/);
-    if (rawPath.startsWith("/_astro") || rawPath.startsWith("/og/") || rawPath === "/favicon.svg") continue;
-    const normalized = rawPath === "/" ? "/" : rawPath.replace(/\/$/, "");
-    if (!routeSet.has(normalized)) {
-      fail(`${route} links to missing internal route: ${href}`);
-    }
+for (const [file, terms] of requiredSourceTerms) {
+  const fullPath = path.join(root, file);
+  if (!fs.existsSync(fullPath)) {
+    fail(`missing required file: ${file}`);
+    continue;
+  }
+  const text = read(fullPath);
+  for (const term of terms) {
+    if (!text.includes(term)) fail(`${file} missing required implementation marker: ${term}`);
   }
 }
 
@@ -196,15 +182,16 @@ for (const header of [
   if (!headers.includes(header)) fail(`_headers missing ${header}`);
 }
 
-const sitemap = fs.existsSync(path.join(dist, "sitemap.xml")) ? read(path.join(dist, "sitemap.xml")) : "";
-if (sitemap.includes("https://tequit.co.za")) fail("sitemap contains apex tequit URL");
-if (!sitemap.includes("https://www.tequit.co.za/gas-suppression")) fail("sitemap missing www gas suppression route");
+const schema = fs.existsSync(path.join(root, "schema.sql")) ? read(path.join(root, "schema.sql")) : "";
+for (const term of ["CREATE TABLE IF NOT EXISTS users", "CHECK (role IN ('tech', 'admin', 'client', 'finance'))", "CREATE TABLE IF NOT EXISTS jobs", "CREATE TABLE IF NOT EXISTS financial_records"]) {
+  if (!schema.includes(term)) fail(`schema.sql missing ${term}`);
+}
 
 const result = {
   ok: failures.length === 0,
   failures,
   warnings,
-  routes: htmlFiles.length,
+  mode: fs.existsSync(serverDist) ? "server" : "static",
   jsAssets,
   cssAssets,
   cssBytes

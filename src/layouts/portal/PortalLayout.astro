@@ -1,0 +1,65 @@
+---
+import "../../styles/global.css";
+
+const {
+  title = "Kharon Portal",
+  active = "",
+  user = Astro.locals.user
+} = Astro.props;
+
+const roleLinks = {
+  tech: [{ label: "Dispatches", href: "/portal/tech/dashboard", key: "tech" }],
+  admin: [
+    { label: "Admin Matrix", href: "/portal/admin/dashboard", key: "admin" },
+    { label: "Technician View", href: "/portal/tech/dashboard", key: "tech" },
+    { label: "Finance", href: "/portal/finance/dashboard", key: "finance" }
+  ],
+  client: [{ label: "Systems", href: "/portal/client/dashboard", key: "client" }],
+  finance: [{ label: "Ledger", href: "/portal/finance/dashboard", key: "finance" }]
+};
+
+const links = roleLinks[user?.role] || [];
+---
+
+<!doctype html>
+<html lang="en-ZA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#0B0D0F" />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="bg-kharon-light">
+    <header class="border-b border-white/10 bg-kharon-black text-white">
+      <div class="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
+        <a href="/portal" class="grid">
+          <span class="text-sm font-bold uppercase">Kharon Portal</span>
+          <span class="text-xs uppercase text-white/55">Lifecycle operations</span>
+        </a>
+
+        <nav class="flex flex-wrap items-center gap-2" aria-label="Portal navigation">
+          {links.map((link) => (
+            <a
+              href={link.href}
+              aria-current={active === link.key ? "page" : undefined}
+              class={`rounded-md border px-4 py-2 text-sm font-semibold ${active === link.key ? "border-kharon-cyan bg-kharon-cyan/10 text-white" : "border-white/10 text-white/70 hover:border-white/30 hover:text-white"}`}
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        <div class="text-right text-sm">
+          <p class="font-semibold">{user?.name}</p>
+          <p class="uppercase text-white/50">{user?.role}</p>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

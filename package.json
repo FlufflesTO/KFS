@@ -14,6 +14,7 @@
     "build:production:kharon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 production",
     "audit:site": "node scripts/audit-site.mjs",
     "validate:site": "npm run build:staging && npm run audit:site",
+    "portal:hash-password": "node scripts/hash-password.mjs",
     "preview": "astro preview",
     "auth:cloudflare": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 login",
     "cloudflare:whoami": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 whoami",
@@ -26,11 +27,15 @@
     "deploy:cloudflare:preview": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 preview"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^13.5.3",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.3.3",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
     "wrangler": "^4.92.0"
+  },
+  "overrides": {
+    "ws": "^8.20.1"
   }
 }
