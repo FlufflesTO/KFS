@@ -15,7 +15,7 @@ function base64UrlEncode(input) {
 }
 
 const salt = crypto.randomUUID();
-const iterations = 210000;
+const iterations = 100000;
 const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
 const derived = await crypto.subtle.deriveBits(
   {

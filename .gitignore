@@ -12,6 +12,7 @@ dist/
 .env
 .env.*
 !.env.example
+seed-users.sql
 
 # Logs
 *.log

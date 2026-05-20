@@ -60,7 +60,11 @@ export async function createSessionToken(user) {
   };
 
   const encodedPayload = base64UrlEncode(JSON.stringify(payload));
-  const signature = await crypto.subtle.sign("HMAC", await hmacKey(getSessionSecret()), textEncoder.encode(encodedPayload));
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    await hmacKey(getSessionSecret()),
+    textEncoder.encode(encodedPayload)
+  );
 
   return `${encodedPayload}.${base64UrlEncode(new Uint8Array(signature))}`;
 }
@@ -107,7 +111,7 @@ export async function hashPassword(password, salt = crypto.randomUUID()) {
     throw new Error("Password must be at least 12 characters.");
   }
 
-  const iterations = 210000;
+  const iterations = 100000;
   const keyMaterial = await crypto.subtle.importKey("raw", textEncoder.encode(password), "PBKDF2", false, ["deriveBits"]);
   const derived = await crypto.subtle.deriveBits(
     {
@@ -130,7 +134,7 @@ export async function verifyPassword(password, storedHash) {
   if (scheme !== "pbkdf2_sha256" || !iterationsText || !encodedSalt || !encodedHash) return false;
 
   const iterations = Number(iterationsText);
-  if (!Number.isInteger(iterations) || iterations < 100000) return false;
+  if (!Number.isInteger(iterations) || iterations < 10000 || iterations > 100000) return false;
 
   const salt = textDecoder.decode(base64UrlDecode(encodedSalt));
   const keyMaterial = await crypto.subtle.importKey("raw", textEncoder.encode(password), "PBKDF2", false, ["deriveBits"]);
