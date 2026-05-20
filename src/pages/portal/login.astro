@@ -34,7 +34,13 @@ const next = Astro.url.searchParams.get("next") || "/portal";
             Password
             <input class="rounded-md border border-white/15 bg-black/30 px-4 py-3 text-white" name="password" type="password" autocomplete="current-password" required />
           </label>
-          <p id="login-error" class="hidden rounded-md border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100"></p>
+          <p
+            id="login-error"
+            role="alert"
+            aria-live="polite"
+            class="hidden rounded-md border px-4 py-3 text-sm font-semibold"
+            style="border-color: #f87171; background: #fff1f2; color: #7f1d1d;"
+          ></p>
           <button class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
             Sign in
           </button>
