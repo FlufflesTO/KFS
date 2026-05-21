@@ -152,6 +152,8 @@ const expectedSourceRoutes = [
   "portal/api/auth.js",
   "portal/api/submit-jobcard.js",
   "portal/api/approve-quote.js",
+  "portal/api/finance/payments.js",
+  "portal/api/finance/export.js",
   "portal/api/file/[...key].js"
 ];
 
@@ -167,7 +169,9 @@ const requiredSourceTerms = new Map([
   ["src/pages/portal/api/submit-jobcard.js", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
   ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/api/submit-jobcard"]],
   ["src/pages/portal/client/dashboard.astro", ["/portal/api/file/", "/portal/api/approve-quote"]],
-  ["src/pages/portal/finance/dashboard.astro", ["financial_records", "payment_status"]],
+  ["src/pages/portal/finance/dashboard.astro", ["financial_records", "payment_status", "/portal/api/finance/export", "/portal/api/finance/payments"]],
+  ["src/pages/portal/api/finance/payments.js", ["finance.payment", "Payment", "Settled"]],
+  ["src/pages/portal/api/finance/export.js", ["finance.export", "text/csv", "content-disposition"]],
   ["src/layouts/portal/PortalLayout.astro", ["Astro.locals.user", "Portal navigation"]]
 ]);
 

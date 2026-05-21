@@ -68,6 +68,7 @@ function rateLimitConfig(pathname) {
     "/portal/api/submit-jobcard": { scope: "portal.jobcard_submit", maxAttempts: 20, windowSeconds: 15 * 60 },
     "/portal/api/change-password": { scope: "portal.change_password", maxAttempts: 10, windowSeconds: 15 * 60 },
     "/portal/api/logout": { scope: "portal.logout", maxAttempts: 20, windowSeconds: 15 * 60 },
+    "/portal/api/finance/payments": { scope: "portal.finance.payments", maxAttempts: 40, windowSeconds: 15 * 60 },
     "/portal/api/admin/users": { scope: "portal.admin.users", maxAttempts: 60, windowSeconds: 15 * 60 },
     "/portal/api/admin/sites": { scope: "portal.admin.sites", maxAttempts: 60, windowSeconds: 15 * 60 },
     "/portal/api/admin/systems": { scope: "portal.admin.systems", maxAttempts: 60, windowSeconds: 15 * 60 },

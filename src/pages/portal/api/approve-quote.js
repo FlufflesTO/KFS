@@ -4,6 +4,12 @@ import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorize
 
 export const prerender = false;
 
+function invoiceReference(recordId) {
+  const date = new Date().toISOString().slice(0, 10).replaceAll("-", "");
+  const suffix = String(recordId).replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toUpperCase();
+  return `INV-${date}-${suffix}`;
+}
+
 export async function POST({ request, locals }) {
   try {
     const user = locals.user;
@@ -20,7 +26,7 @@ export async function POST({ request, locals }) {
     const db = getDatabase();
     const record = await db
       .prepare(
-        `SELECT id, site_id, item_type, payment_status
+        `SELECT id, site_id, item_type, payment_status, reference
          FROM financial_records
          WHERE id = ?1
          LIMIT 1`
@@ -61,10 +67,11 @@ export async function POST({ request, locals }) {
         `UPDATE financial_records
          SET item_type = 'Invoice',
              payment_status = 'Unpaid',
-             distribution_date = date('now')
+             distribution_date = date('now'),
+             reference = COALESCE(reference, ?2)
          WHERE id = ?1`
       )
-      .bind(recordId)
+      .bind(recordId, invoiceReference(recordId))
       .run();
 
     await auditEvent(db, request, {

@@ -171,6 +171,28 @@ Monitoring and backup production gate:
 - [x] Site audit script passes.
 - [x] No secrets committed.
 
+## Review Update - 2026-05-21 Finance Ledger Hardening Pass
+
+Scope for this pass:
+
+- Generate durable invoice references when client-approved quotes become invoices.
+- Add finance-only payment capture for unpaid invoices without allowing clients or technicians to settle records.
+- Add a finance CSV export endpoint for accounting handoff.
+- Keep external accounting package integration out of scope until the target accounting workflow is confirmed.
+
+Finance production gate:
+
+- [x] Roadmap updated before implementation.
+- [x] Invoice reference generation implemented.
+- [x] Payment capture endpoint implemented.
+- [x] Finance CSV export implemented.
+- [x] Finance actions remain RBAC protected.
+- [x] Finance actions remain CSRF protected by middleware.
+- [x] Finance actions remain audit logged.
+- [ ] Build passes.
+- [ ] Site audit script passes.
+- [ ] No secrets committed.
+
 ## Master Feature List
 
 ### Foundation
@@ -397,10 +419,10 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Client-visible request status and linked scheduled dispatch reference.
   - [ ] Per-document access logs for sensitive records.
 - Finance workflow:
-  - [ ] Invoice number generation and immutable ledger references.
-  - [ ] Payment capture and reconciliation states.
-  - [ ] Export to accounting workflow or CSV.
-  - [ ] Approval controls before invoices are marked settled.
+  - [x] Invoice number generation and immutable ledger references.
+  - [x] Payment capture and reconciliation states.
+  - [x] Export to accounting workflow or CSV.
+  - [x] Approval controls before invoices are marked settled.
 - Security and audit:
   - [x] Audit table for auth, record access, status changes and financial changes.
   - [x] Rate limiting for login endpoint.
