@@ -31,6 +31,16 @@ export function forbidden(message = "You do not have permission to perform this 
   return json({ ok: false, error: "forbidden", message }, { status: 403 });
 }
 
+export function tooManyRequests(message = "Too many requests. Try again later.", retryAfter = 60) {
+  return json(
+    { ok: false, error: "rate_limited", message, retryAfter },
+    {
+      status: 429,
+      headers: { "retry-after": String(retryAfter) }
+    }
+  );
+}
+
 export function serverError(message = "The request could not be completed.") {
   return json({ ok: false, error: "server_error", message }, { status: 500 });
 }

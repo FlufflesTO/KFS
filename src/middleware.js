@@ -3,6 +3,9 @@ import { sessionCookieName, verifySessionToken } from "./lib/server/auth.js";
 
 const loginPath = "/portal/login";
 const authApiPath = "/portal/api/auth";
+const logoutApiPath = "/portal/api/logout";
+const passwordPath = "/portal/account/password";
+const passwordApiPath = "/portal/api/change-password";
 const portalRootPath = "/portal";
 
 function redirectToLogin(context) {
@@ -66,6 +69,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   context.locals.user = user;
+
+  if (user.forcePasswordChange && pathname !== passwordPath && pathname !== passwordApiPath && pathname !== logoutApiPath) {
+    return context.redirect(passwordPath, 302);
+  }
 
   if (pathname === portalRootPath || pathname === `${portalRootPath}/`) {
     return redirectToRoleDashboard(context, user.role);

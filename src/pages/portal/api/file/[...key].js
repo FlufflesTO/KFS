@@ -1,9 +1,10 @@
 import { getBindings } from "../../../../lib/server/bindings.js";
+import { auditEvent } from "../../../../lib/server/audit.js";
 import { forbidden, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
 
 export const prerender = false;
 
-export async function GET({ params, locals }) {
+export async function GET({ params, locals, request }) {
   try {
     const user = locals.user;
     if (!user) return unauthorized();
@@ -25,7 +26,17 @@ export async function GET({ params, locals }) {
       .bind(key)
       .first();
 
-    if (!record) return forbidden("Document is not available.");
+    if (!record) {
+      await auditEvent(db, request, {
+        eventType: "document.access",
+        entityType: "r2_object",
+        entityId: key,
+        outcome: "failure",
+        user,
+        metadata: { reason: "missing_record" }
+      });
+      return forbidden("Document is not available.");
+    }
 
     const allowed =
       user.role === "admin" ||
@@ -33,10 +44,29 @@ export async function GET({ params, locals }) {
       (user.role === "tech" && record.assigned_technician_id === user.id) ||
       (user.role === "client" && record.site_id === user.siteId);
 
-    if (!allowed) return forbidden("Document access is not permitted for this account.");
+    if (!allowed) {
+      await auditEvent(db, request, {
+        eventType: "document.access",
+        entityType: "r2_object",
+        entityId: key,
+        outcome: "blocked",
+        user,
+        metadata: { siteId: record.site_id }
+      });
+      return forbidden("Document access is not permitted for this account.");
+    }
 
     const object = await storage.get(key);
     if (!object) return new Response("Not found", { status: 404 });
+
+    await auditEvent(db, request, {
+      eventType: "document.access",
+      entityType: "r2_object",
+      entityId: key,
+      outcome: "success",
+      user,
+      metadata: { siteId: record.site_id }
+    });
 
     const headers = new Headers();
     object.writeHttpMetadata(headers);

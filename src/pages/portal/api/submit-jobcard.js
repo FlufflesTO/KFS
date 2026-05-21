@@ -1,4 +1,5 @@
 import { getBindings, getStandardServiceFee } from "../../../lib/server/bindings.js";
+import { auditEvent } from "../../../lib/server/audit.js";
 import { buildJobcardPdf } from "../../../lib/server/jobcardPdf.js";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
 
@@ -51,14 +52,38 @@ export async function POST({ request, locals }) {
       .first();
 
     if (!job) {
+      await auditEvent(db, request, {
+        eventType: "jobcard.close",
+        entityType: "job",
+        entityId: jobId,
+        outcome: "failure",
+        user,
+        metadata: { reason: "missing_job_system", systemId }
+      });
       return badRequest("The requested job and system mapping was not found.");
     }
 
     if (job.assigned_technician_id !== user.id) {
+      await auditEvent(db, request, {
+        eventType: "jobcard.close",
+        entityType: "job",
+        entityId: jobId,
+        outcome: "blocked",
+        user,
+        metadata: { reason: "wrong_technician", assignedTechnicianId: job.assigned_technician_id }
+      });
       return forbidden("This job is not assigned to the authenticated technician.");
     }
 
     if (!["Scheduled", "In Progress"].includes(job.status)) {
+      await auditEvent(db, request, {
+        eventType: "jobcard.close",
+        entityType: "job",
+        entityId: jobId,
+        outcome: "failure",
+        user,
+        metadata: { reason: "invalid_status", currentStatus: job.status }
+      });
       return badRequest("Only scheduled or in-progress jobs can be closed.", { currentStatus: job.status });
     }
 
@@ -121,6 +146,20 @@ export async function POST({ request, locals }) {
         )
         .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, `Standard service invoice for job ${jobId}`)
     ]);
+
+    await auditEvent(db, request, {
+      eventType: "jobcard.close",
+      entityType: "job",
+      entityId: jobId,
+      outcome: "success",
+      user,
+      metadata: {
+        systemId,
+        documentationPath,
+        nextDueDate,
+        financialRecordId
+      }
+    });
 
     return json({
       ok: true,

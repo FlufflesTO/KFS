@@ -55,6 +55,7 @@ export async function createSessionToken(user) {
     email: String(user.email),
     role: user.role,
     siteId: user.site_id || null,
+    forcePasswordChange: Boolean(user.force_password_change),
     iat: issuedAt,
     exp: issuedAt + sessionDurationSeconds
   };
@@ -97,6 +98,7 @@ export async function verifySessionToken(token) {
     email: payload.email,
     role: payload.role,
     siteId: payload.siteId || null,
+    forcePasswordChange: Boolean(payload.forcePasswordChange),
     expiresAt: new Date(Number(payload.exp) * 1000).toISOString()
   };
 }
@@ -104,6 +106,11 @@ export async function verifySessionToken(token) {
 export function sessionCookie(token) {
   const secure = env.ENVIRONMENT === "local" ? "" : " Secure;";
   return `${sessionCookieName}=${token}; Path=/portal; HttpOnly;${secure} SameSite=Strict; Max-Age=${sessionDurationSeconds}`;
+}
+
+export function expiredSessionCookie() {
+  const secure = env.ENVIRONMENT === "local" ? "" : " Secure;";
+  return `${sessionCookieName}=; Path=/portal; HttpOnly;${secure} SameSite=Strict; Max-Age=0`;
 }
 
 export async function hashPassword(password, salt = crypto.randomUUID()) {

@@ -69,7 +69,7 @@ Verified live status:
 Immediate refinements recommended:
 
 - Replace shared temporary staging passwords with per-user credentials and document a controlled reset process.
-- Add logout, first-login password rotation and password reset before broader internal use.
+- Add password reset before broader internal use; logout and first-login password rotation are now implemented.
 - Add admin CRUD for sites, systems, users and jobs to remove direct D1 editing from normal operations.
 - Add audit logging before sensitive client records and financial approvals become operationally authoritative.
 - Add rate limiting for login and write APIs before production cutover.
@@ -303,8 +303,9 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [ ] Export to accounting workflow or CSV.
   - [ ] Approval controls before invoices are marked settled.
 - Security and audit:
-  - [ ] Audit table for auth, record access, status changes and financial changes.
-  - [ ] Rate limiting for login and write endpoints.
+  - [x] Audit table for auth, record access, status changes and financial changes.
+  - [x] Rate limiting for login endpoint.
+  - [ ] Rate limiting for write endpoints beyond login.
   - [ ] CSRF protection for browser-submitted state-changing requests.
   - [ ] Structured error telemetry and Cloudflare log review process.
   - [ ] Per-role authorization tests.
@@ -462,10 +463,11 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add role dashboards for technician, admin, client and finance.
 - [x] Add portal login routing from public website CTAs.
 - [x] Verify live staging portal login and protected dashboard redirect behavior.
-- [ ] Add logout endpoint.
+- [x] Add logout endpoint.
 - [ ] Add admin CRUD screens.
-- [ ] Add password reset and first-login rotation.
-- [ ] Add rate limiting and audit logging.
+- [x] Add first-login password rotation path.
+- [ ] Add password reset.
+- [x] Add login rate limiting and audit logging.
 - [ ] Add signature pad UI and richer jobcard PDF evidence.
 - [ ] Add dispatch scheduling workflow.
 - [ ] Add monitoring and backup SOPs.

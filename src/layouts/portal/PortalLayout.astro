@@ -18,7 +18,10 @@ const roleLinks = {
   finance: [{ label: "Ledger", href: "/portal/finance/dashboard", key: "finance" }]
 };
 
-const links = roleLinks[user?.role] || [];
+const links = [
+  ...(roleLinks[user?.role] || []),
+  { label: "Password", href: "/portal/account/password", key: "password" }
+];
 ---
 
 <!doctype html>
@@ -51,9 +54,16 @@ const links = roleLinks[user?.role] || [];
           ))}
         </nav>
 
-        <div class="text-right text-sm">
-          <p class="font-semibold">{user?.name}</p>
-          <p class="uppercase text-white/50">{user?.role}</p>
+        <div class="flex items-center gap-4 text-right text-sm">
+          <div>
+            <p class="font-semibold">{user?.name}</p>
+            <p class="uppercase text-white/50">{user?.role}</p>
+          </div>
+          <form id="portal-logout-form">
+            <button class="rounded-md border border-white/15 px-4 py-2 font-semibold text-white/70 hover:border-white/30 hover:text-white" type="submit">
+              Logout
+            </button>
+          </form>
         </div>
       </div>
     </header>
@@ -61,5 +71,14 @@ const links = roleLinks[user?.role] || [];
     <main>
       <slot />
     </main>
+    <script>
+      const logoutForm = document.querySelector("#portal-logout-form");
+      logoutForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const response = await fetch("/portal/api/logout", { method: "POST" });
+        const body = await response.json().catch(() => ({ redirectTo: "/portal/login" }));
+        window.location.href = body.redirectTo || "/portal/login";
+      });
+    </script>
   </body>
 </html>

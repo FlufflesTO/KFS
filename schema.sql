@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS users (
   role TEXT NOT NULL CHECK (role IN ('tech', 'admin', 'client', 'finance')),
   site_id TEXT REFERENCES sites(id) ON DELETE SET NULL,
   is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  force_password_change INTEGER NOT NULL DEFAULT 0 CHECK (force_password_change IN (0, 1)),
+  password_changed_at TEXT,
+  last_login_at TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
@@ -66,6 +69,28 @@ CREATE TABLE IF NOT EXISTS financial_records (
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
+CREATE TABLE IF NOT EXISTS audit_events (
+  id TEXT PRIMARY KEY,
+  actor_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  actor_role TEXT CHECK (actor_role IS NULL OR actor_role IN ('tech', 'admin', 'client', 'finance')),
+  event_type TEXT NOT NULL CHECK (length(trim(event_type)) BETWEEN 3 AND 80),
+  entity_type TEXT NOT NULL CHECK (length(trim(entity_type)) BETWEEN 2 AND 80),
+  entity_id TEXT,
+  outcome TEXT NOT NULL CHECK (outcome IN ('success', 'failure', 'blocked')),
+  ip_hash TEXT,
+  user_agent TEXT,
+  metadata_json TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS portal_rate_limits (
+  rate_key TEXT PRIMARY KEY,
+  scope TEXT NOT NULL,
+  window_start INTEGER NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_site_id ON users(site_id);
 CREATE INDEX IF NOT EXISTS idx_sites_owner_company ON sites(owner_company_name);
@@ -74,6 +99,9 @@ CREATE INDEX IF NOT EXISTS idx_jobs_technician_status ON jobs(assigned_technicia
 CREATE INDEX IF NOT EXISTS idx_jobs_system_status ON jobs(system_id, status);
 CREATE INDEX IF NOT EXISTS idx_financial_site_status ON financial_records(site_id, payment_status, distribution_date);
 CREATE INDEX IF NOT EXISTS idx_financial_job ON financial_records(job_id);
+CREATE INDEX IF NOT EXISTS idx_audit_events_actor_created ON audit_events(actor_user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_events_type_created ON audit_events(event_type, created_at);
+CREATE INDEX IF NOT EXISTS idx_rate_limits_scope_window ON portal_rate_limits(scope, window_start);
 
 CREATE TRIGGER IF NOT EXISTS trg_users_updated_at
 AFTER UPDATE ON users

@@ -1,4 +1,5 @@
 import { getDatabase } from "../../../lib/server/bindings.js";
+import { auditEvent } from "../../../lib/server/audit.js";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
 
 export const prerender = false;
@@ -28,10 +29,30 @@ export async function POST({ request, locals }) {
       .first();
 
     if (!record || record.site_id !== user.siteId) {
+      await auditEvent(db, request, {
+        eventType: "quote.approve",
+        entityType: "financial_record",
+        entityId: recordId,
+        outcome: "blocked",
+        user,
+        metadata: { reason: "not_found_or_wrong_site" }
+      });
       return forbidden("Quote approval is not permitted for this account.");
     }
 
     if (record.item_type !== "Quote" || record.payment_status !== "Pending Approval") {
+      await auditEvent(db, request, {
+        eventType: "quote.approve",
+        entityType: "financial_record",
+        entityId: recordId,
+        outcome: "failure",
+        user,
+        metadata: {
+          reason: "invalid_state",
+          itemType: record.item_type,
+          paymentStatus: record.payment_status
+        }
+      });
       return badRequest("Only pending quote records can be approved.");
     }
 
@@ -45,6 +66,15 @@ export async function POST({ request, locals }) {
       )
       .bind(recordId)
       .run();
+
+    await auditEvent(db, request, {
+      eventType: "quote.approve",
+      entityType: "financial_record",
+      entityId: recordId,
+      outcome: "success",
+      user,
+      metadata: { siteId: user.siteId }
+    });
 
     return json({ ok: true, recordId, itemType: "Invoice", paymentStatus: "Unpaid" });
   } catch (error) {

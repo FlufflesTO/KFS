@@ -187,6 +187,13 @@ Apply the D1 schema remotely:
 npx wrangler d1 execute kharon-portal --remote --file=schema.sql
 ```
 
+Apply incremental portal operations migrations when upgrading an existing database:
+
+```powershell
+npx wrangler d1 execute kharon-portal --local --file=migrations/0002_portal_operations.sql
+npx wrangler d1 execute kharon-portal --remote --file=migrations/0002_portal_operations.sql
+```
+
 Generate a PBKDF2 password hash before inserting users:
 
 ```powershell
@@ -227,6 +234,22 @@ Remove-Item .\auth-test.json,.\portal-cookies.txt -ErrorAction SilentlyContinue
 ```
 
 Expected authenticated result: `/portal/tech/dashboard` returns `200`.
+
+Logout smoke check:
+
+```powershell
+curl.exe -i -b .\portal-cookies.txt -c .\portal-cookies-after.txt -X POST https://portal.tequit.co.za/portal/api/logout -H "Origin: https://portal.tequit.co.za"
+curl.exe -I -b .\portal-cookies-after.txt https://portal.tequit.co.za/portal/tech/dashboard
+```
+
+Expected result: logout returns `200` and the next dashboard request returns `302` to login.
+
+Audit and rate-limit checks:
+
+```powershell
+npx wrangler d1 execute kharon-portal --remote --command "SELECT event_type, outcome, COUNT(*) AS count FROM audit_events GROUP BY event_type, outcome ORDER BY event_type, outcome;"
+npx wrangler d1 execute kharon-portal --remote --command "SELECT scope, COUNT(*) AS keys, MAX(attempts) AS max_attempts FROM portal_rate_limits GROUP BY scope;"
+```
 
 ### Google Workspace Email DNS
 

@@ -1,6 +1,8 @@
 import { getDatabase } from "../../../lib/server/bindings.js";
+import { auditEvent } from "../../../lib/server/audit.js";
 import { createSessionToken, sessionCookie, verifyPassword } from "../../../lib/server/auth.js";
-import { badRequest, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
+import { consumeRateLimit, resetRateLimit } from "../../../lib/server/rateLimit.js";
+import { badRequest, json, methodNotAllowed, serverError, tooManyRequests, unauthorized } from "../../../lib/server/http.js";
 
 export const prerender = false;
 
@@ -34,15 +36,34 @@ export async function POST({ request }) {
     const body = await readCredentials(request);
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "");
+    const db = getDatabase();
 
     if (!email || !password) {
       return badRequest("Email and password are required.");
     }
 
-    const db = getDatabase();
+    const rateLimit = await consumeRateLimit(db, request, {
+      scope: "portal.login",
+      subject: email,
+      maxAttempts: 8,
+      windowSeconds: 15 * 60
+    });
+
+    if (!rateLimit.allowed) {
+      await auditEvent(db, request, {
+        eventType: "auth.rate_limited",
+        entityType: "user",
+        entityId: email,
+        outcome: "blocked",
+        subject: email,
+        metadata: { attempts: rateLimit.attempts, retryAfter: rateLimit.retryAfter }
+      });
+      return tooManyRequests("Too many sign-in attempts. Try again later.", rateLimit.retryAfter);
+    }
+
     const user = await db
       .prepare(
-        `SELECT id, name, email, password_hash, role, site_id
+        `SELECT id, name, email, password_hash, role, site_id, force_password_change
          FROM users
          WHERE email = ?1 AND is_active = 1
          LIMIT 1`
@@ -51,16 +72,45 @@ export async function POST({ request }) {
       .first();
 
     if (!user) {
+      await auditEvent(db, request, {
+        eventType: "auth.login",
+        entityType: "user",
+        entityId: email,
+        outcome: "failure",
+        subject: email,
+        metadata: { reason: "unknown_user" }
+      });
       return unauthorized("Invalid email or password.");
     }
 
     const verified = await verifyPassword(password, user.password_hash);
     if (!verified) {
+      await auditEvent(db, request, {
+        eventType: "auth.login",
+        entityType: "user",
+        entityId: user.id,
+        outcome: "failure",
+        user,
+        subject: email,
+        metadata: { reason: "bad_password" }
+      });
       return unauthorized("Invalid email or password.");
     }
 
     const token = await createSessionToken(user);
-    const destination = roleDestinations[user.role] || "/portal/login";
+    const destination = user.force_password_change ? "/portal/account/password" : roleDestinations[user.role] || "/portal/login";
+
+    await resetRateLimit(db, request, { scope: "portal.login", subject: email });
+    await db.prepare(`UPDATE users SET last_login_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1`).bind(user.id).run();
+    await auditEvent(db, request, {
+      eventType: "auth.login",
+      entityType: "user",
+      entityId: user.id,
+      outcome: "success",
+      user,
+      subject: email,
+      metadata: { redirectTo: destination }
+    });
 
     return json(
       {
@@ -70,7 +120,8 @@ export async function POST({ request }) {
           name: user.name,
           email: user.email,
           role: user.role,
-          siteId: user.site_id || null
+          siteId: user.site_id || null,
+          forcePasswordChange: Boolean(user.force_password_change)
         },
         redirectTo: destination
       },
