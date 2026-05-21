@@ -4,6 +4,34 @@ import Hero from "../components/sections/Hero.astro";
 import EmergencyResponse from "../components/sections/EmergencyResponse.astro";
 import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
 import Footer from "../components/layout/Footer.astro";
+import { site } from "../data/site.js";
+
+const emergencyRoutes = [
+  {
+    title: "Critical system fault",
+    text: "Use this route for live fire-panel faults, suppression impairments, isolated systems or a protection condition affecting operations.",
+    action: "Call / Escalate Fault",
+    href: "/contact?intent=emergency-support"
+  },
+  {
+    title: "Existing client records",
+    text: "Open the portal for service history, system records, maintenance requests and linked jobcard documentation.",
+    action: "Access Records",
+    href: site.portalLoginPath
+  },
+  {
+    title: "Urgent technical request",
+    text: "Route urgent assessment requests where a technician review, system diagnosis or maintenance intervention is required.",
+    action: "Request Urgent Support",
+    href: "/contact?intent=urgent-technical-request"
+  },
+  {
+    title: "Compliance intervention",
+    text: "Use this path for overdue inspections, missing documentation, insurer queries or audit-sensitive system concerns.",
+    action: "Start Compliance Route",
+    href: "/contact?intent=compliance-intervention"
+  }
+];
 ---
 
 <BaseLayout
@@ -16,6 +44,30 @@ import Footer from "../components/layout/Footer.astro";
   />
 
   <EmergencyResponse />
+
+  <section class="bg-white py-16">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="max-w-3xl">
+        <p class="text-sm font-bold uppercase text-kharon-purple">Decision Route</p>
+        <h2 class="mt-3 text-3xl font-bold text-kharon-black">Select the route that matches the operational consequence.</h2>
+        <p class="mt-4 leading-7 text-kharon-grey">
+          Emergency handling should separate live system faults, existing client record access, urgent technical requests and compliance interventions.
+        </p>
+      </div>
+
+      <div class="mt-10 grid gap-5 md:grid-cols-2">
+        {emergencyRoutes.map((route) => (
+          <article class="rounded-lg border border-kharon-border bg-kharon-light p-6">
+            <h3 class="text-xl font-bold text-kharon-black">{route.title}</h3>
+            <p class="mt-3 leading-7 text-kharon-grey">{route.text}</p>
+            <a class="mt-6 inline-flex rounded-md bg-kharon-purple px-5 py-3 text-sm font-semibold text-white hover:bg-kharon-blue" href={route.href}>
+              {route.action}
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
 
   <ContextualInquiry
     eyebrow="Support Request"

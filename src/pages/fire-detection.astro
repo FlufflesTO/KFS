@@ -6,13 +6,30 @@ import ProofGrid from "../components/sections/ProofGrid.astro";
 import EngineeringSystems from "../components/sections/EngineeringSystems.astro";
 import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
 import Footer from "../components/layout/Footer.astro";
-import { capabilityProof, pageMeta } from "../data/site.js";
+import { pageMeta } from "../data/site.js";
 
-const proofItems = capabilityProof.detection.map((item, index) => ({
-  title: item,
-  text: "Structured to make alarms, response paths and maintenance responsibilities intelligible over time.",
-  status: `Detection 0${index + 1}`
-}));
+const proofItems = [
+  {
+    title: "Addressable loop structure",
+    text: "Device loops, isolators and panel visibility are planned so faults can be located and service work can be directed quickly.",
+    status: "Detection 01"
+  },
+  {
+    title: "Zoning and cause-effect",
+    text: "Alarm zones, evacuation signals, plant interfaces and suppression triggers are mapped to the way the facility actually operates.",
+    status: "Detection 02"
+  },
+  {
+    title: "Detector environment fit",
+    text: "Detection choices are matched to dust, airflow, ceiling height, access limitations and nuisance-alarm exposure.",
+    status: "Detection 03"
+  },
+  {
+    title: "Diagnostics and records",
+    text: "Fault patterns, device history and service notes are retained as evidence for responsible persons and future technicians.",
+    status: "Detection 04"
+  }
+];
 ---
 
 <BaseLayout title={pageMeta.fireDetection.title} description={pageMeta.fireDetection.description}>

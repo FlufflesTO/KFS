@@ -80,6 +80,75 @@ Immediate refinements recommended:
 - Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
 - Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
 
+## Review Update - 2026-05-21 Portal Security And Production Hardening
+
+Current staging assessment:
+
+- Public Tequit site is strategically aligned with Kharon's commercial and industrial gas suppression and fire detection positioning.
+- Portal login route is live at `https://portal.tequit.co.za/portal/login`.
+- Portal architecture is promising for staging: Astro SSR, Cloudflare D1, Cloudflare R2, role dashboards, admin CRUD, jobcard closure, client maintenance request flow and finance visibility.
+- Portal is not yet production-authoritative. Tequit remains a staging and test domain until the Kharon cutover is deliberately approved.
+
+Public-site refinements required:
+
+- Replace repeated proof-card copy with unique, specific proof points.
+- Ensure `/about` is visibly linked from the footer and preferably from header/company navigation.
+- Strengthen `/emergency-support` with clearer emergency decision CTAs:
+  - Critical fault or call route.
+  - Existing client or Access Records route.
+  - Urgent technical request route.
+  - Compliance intervention route.
+- Maintain capability hierarchy:
+  1. Gas Suppression.
+  2. Fire Detection.
+  3. Compliance & Maintenance.
+  4. Integrated Security support.
+
+Portal production blockers:
+
+- Add CSRF protection to every browser-submitted authenticated state-changing POST. Login remains intentionally exempt because it has no authenticated session before submission; login abuse control is handled by existing login rate limiting.
+- Add rate limiting to write APIs beyond login.
+- Replace shared staging credentials with unique per-user credentials.
+- Keep first-login password rotation.
+- Add password reset workflow.
+- Add optional MFA path for admin and finance roles.
+- Add backup/export SOP for D1 and R2.
+- Add monitoring checks for login, dashboard redirects, D1 availability and R2 document retrieval.
+- Add manual RBAC abuse-test checklist.
+
+Portal workflow gaps:
+
+- Technician workflow still requires photo evidence support and poor-signal/offline expectations.
+- Finance workflow still requires invoice numbers, payment capture, reconciliation states and export path.
+- Admin operations need richer validation and import/export paths.
+- Public case evidence and approved industrial imagery remain outstanding.
+
+Production Gate Checklist:
+
+- [x] Roadmap updated before implementation.
+- [x] CSRF token system implemented.
+- [x] All portal POST endpoints enforce CSRF except intentionally documented exceptions.
+- [x] Write endpoint rate limiting implemented.
+- [x] Role abuse tests documented.
+- [ ] Manual staging credential QA completed.
+- [x] Public duplicate copy removed.
+- [x] About link visible.
+- [x] Emergency page decision CTAs improved.
+- [x] Build passes.
+- [x] Site audit script passes.
+- [x] No secrets committed.
+
+Pass intake status before implementation:
+
+- CSRF protection: implemented for authenticated portal write APIs; login remains intentionally exempt before authentication.
+- Rate limiting beyond login: implemented with endpoint-specific portal write limits.
+- Password reset: incomplete.
+- MFA: incomplete.
+- Backup/export SOP: incomplete.
+- Public proof-copy refinement: complete for current proof-card duplication pass.
+- About visibility: complete in footer and primary navigation data.
+- Emergency CTA refinement: complete for critical fault, existing client records, urgent technical request and compliance intervention routes.
+
 ## Master Feature List
 
 ### Foundation

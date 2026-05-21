@@ -104,6 +104,7 @@ export const solutionLinks = [
 
 export const mainLinks = [
   { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
   { label: "Sectors", href: "/industries" },
   { label: "Compliance", href: "/compliance-maintenance" },
   { label: "Emergency", href: "/emergency-support" },

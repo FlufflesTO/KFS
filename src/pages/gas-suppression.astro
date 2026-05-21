@@ -6,13 +6,30 @@ import ProofGrid from "../components/sections/ProofGrid.astro";
 import EngineeringSystems from "../components/sections/EngineeringSystems.astro";
 import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
 import Footer from "../components/layout/Footer.astro";
-import { capabilityProof, pageMeta } from "../data/site.js";
+import { pageMeta } from "../data/site.js";
 
-const proofItems = capabilityProof.suppression.map((item, index) => ({
-  title: item,
-  text: "Built around continuity, controlled activation and maintainable infrastructure for critical technical spaces.",
-  status: `Suppression 0${index + 1}`
-}));
+const proofItems = [
+  {
+    title: "Clean-agent design intent",
+    text: "Agent selection is framed around protected asset value, occupancy, discharge constraints and downtime consequence.",
+    status: "Suppression 01"
+  },
+  {
+    title: "Protected volume and hold time",
+    text: "Room boundaries, leakage paths and hold-time expectations are treated as part of the suppression system, not separate building details.",
+    status: "Suppression 02"
+  },
+  {
+    title: "Cylinder bank lifecycle",
+    text: "Cylinder condition, pressure status, signage, access and service records stay visible through the operating life of the installation.",
+    status: "Suppression 03"
+  },
+  {
+    title: "Release and abort logic",
+    text: "Manual release, abort, alarms and discharge sequencing are coordinated so operators understand the route from detection to release.",
+    status: "Suppression 04"
+  }
+];
 ---
 
 <BaseLayout title={pageMeta.gasSuppression.title} description={pageMeta.gasSuppression.description}>

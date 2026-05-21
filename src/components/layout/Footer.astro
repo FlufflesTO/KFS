@@ -14,6 +14,7 @@ import { site, solutionLinks } from "../../data/site.js";
 
     <div class="mt-10 flex flex-wrap gap-6 text-sm text-white/60">
       <a href="/">Home</a>
+      <a href="/about">About</a>
       {solutionLinks.map((link) => <a href={link.href}>{link.label}</a>)}
       <a href="/contact?intent=site-assessment">Assessment Intake</a>
       <a href={site.portalLoginPath} title={site.portalStatus}>Access Records</a>

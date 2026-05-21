@@ -39,6 +39,11 @@ if (!fs.existsSync(dist)) {
 const sourceFiles = walk(src).filter((file) => /\.(astro|js|css)$/.test(file));
 const distFiles = walk(dist);
 const textDistFiles = distFiles.filter((file) => /\.(html|mjs|js|css|txt|xml|json)$/.test(file));
+const repoTextFiles = walk(root).filter((file) => {
+  const relative = rel(file);
+  if (relative.startsWith("node_modules/") || relative.startsWith("dist/") || relative.startsWith(".wrangler/") || relative.startsWith(".git/")) return false;
+  return /\.(astro|js|mjs|css|md|sql|json|jsonc|ps1|txt)$/.test(file);
+});
 
 const forbiddenOutput = [
   "System Overview",
@@ -168,6 +173,73 @@ for (const [file, terms] of requiredSourceTerms) {
   const text = read(fullPath);
   for (const term of terms) {
     if (!text.includes(term)) fail(`${file} missing required implementation marker: ${term}`);
+  }
+}
+
+const roadmap = path.join(root, "docs", "roadmap", "MASTER_ROADMAP.md");
+if (!fs.existsSync(roadmap)) {
+  fail("MASTER_ROADMAP.md is missing.");
+} else {
+  const text = read(roadmap);
+  for (const term of [
+    "Review Update - 2026-05-21 Portal Security And Production Hardening",
+    "CSRF",
+    "Production Gate Checklist"
+  ]) {
+    if (!text.includes(term)) fail(`MASTER_ROADMAP.md missing production hardening marker: ${term}`);
+  }
+}
+
+const csrfPath = path.join(root, "src", "lib", "server", "csrf.js");
+if (!fs.existsSync(csrfPath)) {
+  fail("src/lib/server/csrf.js is missing.");
+} else {
+  const text = read(csrfPath);
+  for (const term of ["createCsrfToken", "verifyCsrfRequest", "csrfHiddenInput", "csrfMetaTag", "Security token is missing or invalid."]) {
+    if (!text.includes(term)) fail(`csrf.js missing required marker: ${term}`);
+  }
+}
+
+const middlewareText = fs.existsSync(path.join(root, "src", "middleware.js")) ? read(path.join(root, "src", "middleware.js")) : "";
+for (const term of ["verifyCsrfRequest", "portal.maintenance_request", "portal.admin.users", "security.rate_limit"]) {
+  if (!middlewareText.includes(term)) fail(`middleware missing portal write hardening marker: ${term}`);
+}
+
+const portalSourceText = sourceFiles.map((file) => read(file)).join("\n");
+if (!portalSourceText.includes("x-csrf-token") && !portalSourceText.includes("csrfToken")) {
+  fail("portal source missing CSRF token submission marker.");
+}
+
+const footerText = fs.existsSync(path.join(root, "src", "components", "layout", "Footer.astro"))
+  ? read(path.join(root, "src", "components", "layout", "Footer.astro"))
+  : "";
+const headerText = fs.existsSync(path.join(root, "src", "components", "layout", "Header.astro"))
+  ? read(path.join(root, "src", "components", "layout", "Header.astro"))
+  : "";
+const siteDataText = fs.existsSync(path.join(root, "src", "data", "site.js")) ? read(path.join(root, "src", "data", "site.js")) : "";
+if (!footerText.includes('href="/about"') && !headerText.includes('href="/about"') && !siteDataText.includes('href: "/about"')) {
+  fail("About link is not visible in footer/header source.");
+}
+
+const emergencyText = fs.existsSync(path.join(root, "src", "pages", "emergency-support.astro"))
+  ? read(path.join(root, "src", "pages", "emergency-support.astro"))
+  : "";
+for (const term of ["Critical system fault", "Access Records", "Urgent technical request", "Compliance intervention"]) {
+  if (!emergencyText.includes(term)) fail(`emergency-support page missing decision CTA language: ${term}`);
+}
+
+const forbiddenSecretLikeStrings = [
+  ["your", "secure", "password"].join("-"),
+  ["replace", "with", "current", "test", "password"].join("-"),
+  `password${123}`,
+  `P@ssw${0}rd`,
+  `admin${123}`,
+  `tech${123}`
+];
+for (const file of repoTextFiles) {
+  const text = read(file);
+  for (const term of forbiddenSecretLikeStrings) {
+    if (text.includes(term)) fail(`forbidden temporary password marker "${term}" found in ${rel(file)}`);
   }
 }
 

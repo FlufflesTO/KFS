@@ -243,7 +243,7 @@ curl.exe -I https://portal.tequit.co.za/portal/tech/dashboard
 Authenticated dashboard smoke check:
 
 ```powershell
-Set-Content -Path .\auth-test.json -Value '{"email":"tech@kharon.co.za","password":"replace-with-current-test-password"}'
+Set-Content -Path .\auth-test.json -Value '{"email":"tech@kharon.co.za","password":"<enter QA password supplied outside the repo>"}'
 curl.exe -s -c .\portal-cookies.txt -X POST https://portal.tequit.co.za/portal/api/auth -H "Content-Type: application/json" --data-binary "@auth-test.json"
 curl.exe -I -b .\portal-cookies.txt https://portal.tequit.co.za/portal/tech/dashboard
 Remove-Item .\auth-test.json,.\portal-cookies.txt -ErrorAction SilentlyContinue

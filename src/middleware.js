@@ -1,8 +1,9 @@
 import { defineMiddleware } from "astro/middleware";
 import { sessionCookieName, verifySessionToken } from "./lib/server/auth.js";
-import { createCsrfToken, csrfCookie, csrfCookieName, verifyCsrfToken } from "./lib/server/csrf.js";
+import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
 import { getDatabase } from "./lib/server/bindings.js";
 import { consumeRateLimit } from "./lib/server/rateLimit.js";
+import { auditEvent } from "./lib/server/audit.js";
 
 const loginPath = "/portal/login";
 const authApiPath = "/portal/api/auth";
@@ -48,16 +49,6 @@ function isStateChangingPortalApi(request, pathname) {
   return pathname.startsWith("/portal/api/") && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
 }
 
-function csrfForbidden() {
-  return new Response(JSON.stringify({ ok: false, error: "csrf_failed", message: "Request verification failed." }), {
-    status: 403,
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-      "cache-control": "no-store"
-    }
-  });
-}
-
 function rateLimitResponse(retryAfter) {
   return new Response(JSON.stringify({ ok: false, error: "rate_limited", message: "Too many portal write requests. Try again shortly.", retryAfter }), {
     status: 429,
@@ -67,6 +58,24 @@ function rateLimitResponse(retryAfter) {
       "retry-after": String(retryAfter)
     }
   });
+}
+
+function rateLimitConfig(pathname) {
+  const configs = {
+    "/portal/api/maintenance-request": { scope: "portal.maintenance_request", maxAttempts: 10, windowSeconds: 15 * 60 },
+    "/portal/api/approve-quote": { scope: "portal.quote_approval", maxAttempts: 20, windowSeconds: 15 * 60 },
+    "/portal/api/job-status": { scope: "portal.job_status", maxAttempts: 30, windowSeconds: 15 * 60 },
+    "/portal/api/submit-jobcard": { scope: "portal.jobcard_submit", maxAttempts: 20, windowSeconds: 15 * 60 },
+    "/portal/api/change-password": { scope: "portal.change_password", maxAttempts: 10, windowSeconds: 15 * 60 },
+    "/portal/api/logout": { scope: "portal.logout", maxAttempts: 20, windowSeconds: 15 * 60 },
+    "/portal/api/admin/users": { scope: "portal.admin.users", maxAttempts: 60, windowSeconds: 15 * 60 },
+    "/portal/api/admin/sites": { scope: "portal.admin.sites", maxAttempts: 60, windowSeconds: 15 * 60 },
+    "/portal/api/admin/systems": { scope: "portal.admin.systems", maxAttempts: 60, windowSeconds: 15 * 60 },
+    "/portal/api/admin/jobs": { scope: "portal.admin.jobs", maxAttempts: 60, windowSeconds: 15 * 60 },
+    "/portal/api/admin/maintenance-requests": { scope: "portal.admin.maintenance_requests", maxAttempts: 60, windowSeconds: 15 * 60 }
+  };
+
+  return configs[pathname] || { scope: `portal.write.${pathname.replaceAll("/", ".")}`.slice(0, 80), maxAttempts: 45, windowSeconds: 15 * 60 };
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -107,18 +116,34 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.csrfToken = csrfToken;
 
   if (isStateChangingPortalApi(context.request, pathname)) {
-    const submittedToken = context.request.headers.get("x-csrf-token");
-    if (!submittedToken || submittedToken !== csrfToken || !(await verifyCsrfToken(submittedToken, user))) {
-      return csrfForbidden();
+    const db = getDatabase();
+    if (!(await verifyCsrfRequest(context.request, user))) {
+      await auditEvent(db, context.request, {
+        eventType: "security.csrf",
+        entityType: "portal_api",
+        entityId: pathname,
+        outcome: "blocked",
+        user
+      });
+      return csrfErrorResponse();
     }
 
-    const limit = await consumeRateLimit(getDatabase(), context.request, {
-      scope: `write:${pathname}`.slice(0, 80),
+    const config = rateLimitConfig(pathname);
+    const limit = await consumeRateLimit(db, context.request, {
+      scope: config.scope,
       subject: user.id,
-      maxAttempts: 45,
-      windowSeconds: 300
+      maxAttempts: config.maxAttempts,
+      windowSeconds: config.windowSeconds
     });
     if (!limit.allowed) {
+      await auditEvent(db, context.request, {
+        eventType: "security.rate_limit",
+        entityType: "portal_api",
+        entityId: pathname,
+        outcome: "blocked",
+        metadata: { scope: config.scope, retryAfter: limit.retryAfter },
+        user
+      });
       return rateLimitResponse(limit.retryAfter);
     }
   }

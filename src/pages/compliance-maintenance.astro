@@ -7,13 +7,30 @@ import TrustModules from "../components/sections/TrustModules.astro";
 import EngineeringSystems from "../components/sections/EngineeringSystems.astro";
 import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
 import Footer from "../components/layout/Footer.astro";
-import { capabilityProof, pageMeta, trustModules } from "../data/site.js";
+import { pageMeta, trustModules } from "../data/site.js";
 
-const proofItems = capabilityProof.compliance.map((item, index) => ({
-  title: item,
-  text: "Focused on making system condition, servicing and lifecycle decisions visible to responsible operators.",
-  status: `Control 0${index + 1}`
-}));
+const proofItems = [
+  {
+    title: "Service interval control",
+    text: "Recurring inspections and maintenance dates are tracked against system type, site risk and overdue exposure.",
+    status: "Control 01"
+  },
+  {
+    title: "Jobcard evidence",
+    text: "Service activity, technician comments, customer signatures and documentation paths are captured as operational proof.",
+    status: "Control 02"
+  },
+  {
+    title: "Defect classification",
+    text: "Faults and defects should be separated by urgency, affected system and required follow-up instead of disappearing into general notes.",
+    status: "Control 03"
+  },
+  {
+    title: "Lifecycle due-date governance",
+    text: "Completed service work advances the next due date so compliance visibility remains tied to actual field activity.",
+    status: "Control 04"
+  }
+];
 ---
 
 <BaseLayout title={pageMeta.compliance.title} description={pageMeta.compliance.description}>

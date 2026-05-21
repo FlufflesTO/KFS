@@ -22,9 +22,9 @@ function base64UrlDecode(input) {
 }
 
 function getSecret() {
-  const secret = env.SESSION_SECRET || env.AUTH_SECRET || "";
+  const secret = env.CSRF_SECRET || env.SESSION_SECRET || env.AUTH_SECRET || "";
   if (secret.length < 32) {
-    throw new Error("SESSION_SECRET must be configured with at least 32 characters.");
+    throw new Error("CSRF_SECRET or SESSION_SECRET must be configured with at least 32 characters.");
   }
   return secret;
 }
@@ -62,6 +62,37 @@ export async function verifyCsrfToken(token, user) {
   const payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload)));
   if (payload.sub !== String(user.id) || !payload.exp) return false;
   return Number(payload.exp) > Math.floor(Date.now() / 1000);
+}
+
+export async function verifyCsrfRequest(request, user) {
+  const submittedToken = request.headers.get("x-csrf-token");
+  return verifyCsrfToken(submittedToken, user);
+}
+
+function escapeAttribute(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+export function csrfHiddenInput(token) {
+  return `<input type="hidden" name="csrfToken" value="${escapeAttribute(token)}">`;
+}
+
+export function csrfMetaTag(token) {
+  return `<meta name="kharon-csrf-token" content="${escapeAttribute(token)}">`;
+}
+
+export function csrfErrorResponse() {
+  return new Response(JSON.stringify({ ok: false, message: "Security token is missing or invalid." }), {
+    status: 403,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    }
+  });
 }
 
 export function csrfCookie(token) {

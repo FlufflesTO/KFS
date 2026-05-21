@@ -5,13 +5,30 @@ import SplitFeature from "../components/sections/SplitFeature.astro";
 import ProofGrid from "../components/sections/ProofGrid.astro";
 import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
 import Footer from "../components/layout/Footer.astro";
-import { capabilityProof, pageMeta } from "../data/site.js";
+import { pageMeta } from "../data/site.js";
 
-const proofItems = capabilityProof.security.map((item, index) => ({
-  title: item,
-  text: "Security is treated as part of a critical-site operating model, integrated with access, monitoring and resilience priorities.",
-  status: `Security 0${index + 1}`
-}));
+const proofItems = [
+  {
+    title: "Controlled access support",
+    text: "Access control is positioned around accountable movement through protected areas, plant rooms and operational zones.",
+    status: "Security 01"
+  },
+  {
+    title: "CCTV as site evidence",
+    text: "Video systems support incident review and operational awareness without displacing fire detection or suppression priorities.",
+    status: "Security 02"
+  },
+  {
+    title: "IDS for infrastructure context",
+    text: "Intrusion detection is framed as a secondary layer around high-value commercial infrastructure and service access points.",
+    status: "Security 03"
+  },
+  {
+    title: "Integrated operations",
+    text: "Security integrations are assessed against controlled access, auditability and facility response requirements.",
+    status: "Security 04"
+  }
+];
 ---
 
 <BaseLayout title={pageMeta.security.title} description={pageMeta.security.description}>
