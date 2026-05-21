@@ -20,6 +20,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Local operational exports
+backups/
+monitor-results/
+
 # OS / editor noise
 .DS_Store
 Thumbs.db

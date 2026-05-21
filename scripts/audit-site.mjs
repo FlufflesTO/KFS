@@ -41,7 +41,14 @@ const distFiles = walk(dist);
 const textDistFiles = distFiles.filter((file) => /\.(html|mjs|js|css|txt|xml|json)$/.test(file));
 const repoTextFiles = walk(root).filter((file) => {
   const relative = rel(file);
-  if (relative.startsWith("node_modules/") || relative.startsWith("dist/") || relative.startsWith(".wrangler/") || relative.startsWith(".git/")) return false;
+  if (
+    relative.startsWith("node_modules/") ||
+    relative.startsWith("dist/") ||
+    relative.startsWith(".wrangler/") ||
+    relative.startsWith(".git/") ||
+    relative.startsWith("backups/") ||
+    relative.startsWith("monitor-results/")
+  ) return false;
   return /\.(astro|js|mjs|css|md|sql|json|jsonc|ps1|txt)$/.test(file);
 });
 
@@ -183,11 +190,36 @@ if (!fs.existsSync(roadmap)) {
   const text = read(roadmap);
   for (const term of [
     "Review Update - 2026-05-21 Portal Security And Production Hardening",
+    "Review Update - 2026-05-21 Monitoring And Backup SOP Pass",
     "CSRF",
     "Production Gate Checklist"
   ]) {
     if (!text.includes(term)) fail(`MASTER_ROADMAP.md missing production hardening marker: ${term}`);
   }
+}
+
+const operationsSop = path.join(root, "docs", "roadmap", "OPERATIONS_SOP.md");
+if (!fs.existsSync(operationsSop)) {
+  fail("OPERATIONS_SOP.md is missing.");
+} else {
+  const text = read(operationsSop);
+  for (const term of ["Monitoring Check", "D1 Backup", "R2 Evidence Backup", "portal:monitor", "portal:backup:d1"]) {
+    if (!text.includes(term)) fail(`OPERATIONS_SOP.md missing operational marker: ${term}`);
+  }
+}
+
+for (const script of ["scripts/portal-monitor.ps1", "scripts/portal-backup.ps1"]) {
+  if (!fs.existsSync(path.join(root, script))) fail(`missing operational script: ${script}`);
+}
+
+const packageJson = fs.existsSync(path.join(root, "package.json")) ? read(path.join(root, "package.json")) : "";
+for (const term of ["portal:monitor", "portal:backup:d1"]) {
+  if (!packageJson.includes(term)) fail(`package.json missing operational script: ${term}`);
+}
+
+const gitignore = fs.existsSync(path.join(root, ".gitignore")) ? read(path.join(root, ".gitignore")) : "";
+for (const term of ["backups/", "monitor-results/"]) {
+  if (!gitignore.includes(term)) fail(`.gitignore missing local operational export path: ${term}`);
 }
 
 const csrfPath = path.join(root, "src", "lib", "server", "csrf.js");

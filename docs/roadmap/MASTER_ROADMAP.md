@@ -149,6 +149,28 @@ Pass intake status before implementation:
 - About visibility: complete in footer and primary navigation data.
 - Emergency CTA refinement: complete for critical fault, existing client records, urgent technical request and compliance intervention routes.
 
+## Review Update - 2026-05-21 Monitoring And Backup SOP Pass
+
+Scope for this pass:
+
+- Add an operator-run monitoring check for public site availability, portal login availability, protected dashboard redirect behavior, D1 availability and R2 availability.
+- Add a D1/R2 backup/export SOP that keeps generated evidence outside git by default.
+- Add npm scripts for repeatable local operations without embedding Cloudflare credentials or staging passwords.
+- Keep password reset, MFA, technician photo/offline support and finance reconciliation out of scope for this pass.
+
+Monitoring and backup production gate:
+
+- [x] Roadmap updated before implementation.
+- [x] Monitoring script added.
+- [x] D1 availability check included.
+- [x] R2 availability check included.
+- [x] Public and portal HTTP checks included.
+- [x] Backup/export SOP documented.
+- [x] Generated backup output excluded from git.
+- [x] Build passes.
+- [x] Site audit script passes.
+- [x] No secrets committed.
+
 ## Master Feature List
 
 ### Foundation
@@ -389,9 +411,9 @@ Operational gaps to resolve before replacing manual back-office processes:
 - Operations and support:
   - [ ] Written SOP for onboarding users, assigning jobs and closing jobcards.
   - [ ] Incident response procedure for portal access issues.
-  - [ ] Backup/export process for D1 and R2 evidence.
+  - [x] Backup/export process for D1 and R2 evidence.
   - [ ] Production cutover checklist for `portal.kharon.co.za`.
-  - [ ] Monitoring checks for login, dashboard redirect and D1/R2 availability.
+  - [x] Monitoring checks for login, dashboard redirect and D1/R2 availability.
 
 ## Master User Operation
 
@@ -548,7 +570,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add signature pad UI and richer jobcard PDF evidence.
 - [ ] Add dispatch scheduling workflow.
 - [x] Convert client requests into scheduled dispatches.
-- [ ] Add monitoring and backup SOPs.
+- [x] Add monitoring and backup SOPs.
 - [ ] Add migration plan from `portal.tequit.co.za` to `portal.kharon.co.za`.
 
 ## Phased Implementation
