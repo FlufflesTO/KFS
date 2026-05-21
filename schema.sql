@@ -69,6 +69,20 @@ CREATE TABLE IF NOT EXISTS financial_records (
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
+CREATE TABLE IF NOT EXISTS maintenance_requests (
+  id TEXT PRIMARY KEY,
+  site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  system_id TEXT REFERENCES systems(id) ON DELETE SET NULL,
+  requester_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  request_type TEXT NOT NULL CHECK (request_type IN ('Maintenance', 'Fault', 'Compliance Documentation', 'Quote Request', 'Emergency Follow-up')),
+  priority TEXT NOT NULL DEFAULT 'Routine' CHECK (priority IN ('Routine', 'Urgent', 'Critical')),
+  status TEXT NOT NULL DEFAULT 'New' CHECK (status IN ('New', 'Reviewing', 'Scheduled', 'Closed')),
+  subject TEXT NOT NULL CHECK (length(trim(subject)) BETWEEN 3 AND 160),
+  message TEXT NOT NULL CHECK (length(trim(message)) BETWEEN 10 AND 2000),
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
 CREATE TABLE IF NOT EXISTS audit_events (
   id TEXT PRIMARY KEY,
   actor_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
@@ -99,6 +113,9 @@ CREATE INDEX IF NOT EXISTS idx_jobs_technician_status ON jobs(assigned_technicia
 CREATE INDEX IF NOT EXISTS idx_jobs_system_status ON jobs(system_id, status);
 CREATE INDEX IF NOT EXISTS idx_financial_site_status ON financial_records(site_id, payment_status, distribution_date);
 CREATE INDEX IF NOT EXISTS idx_financial_job ON financial_records(job_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_requests_site_status ON maintenance_requests(site_id, status, created_at);
+CREATE INDEX IF NOT EXISTS idx_maintenance_requests_status_priority ON maintenance_requests(status, priority, created_at);
+CREATE INDEX IF NOT EXISTS idx_maintenance_requests_system ON maintenance_requests(system_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_actor_created ON audit_events(actor_user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_events_type_created ON audit_events(event_type, created_at);
 CREATE INDEX IF NOT EXISTS idx_rate_limits_scope_window ON portal_rate_limits(scope, window_start);
@@ -136,4 +153,11 @@ AFTER UPDATE ON financial_records
 FOR EACH ROW
 BEGIN
   UPDATE financial_records SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = OLD.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_maintenance_requests_updated_at
+AFTER UPDATE ON maintenance_requests
+FOR EACH ROW
+BEGIN
+  UPDATE maintenance_requests SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = OLD.id;
 END;

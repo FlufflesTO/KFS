@@ -8,6 +8,10 @@ const user = Astro.locals.user;
 let completed = [];
 let active = [];
 let due = [];
+let clientRequests = [];
+let overdue = [];
+let missingDocs = [];
+let financeFollowup = [];
 let loadError = "";
 
 try {
@@ -40,6 +44,49 @@ try {
      ORDER BY systems.next_due_date ASC
      LIMIT 12`
   ).all()).results || [];
+
+  clientRequests = (await db.prepare(
+    `SELECT maintenance_requests.id, maintenance_requests.request_type, maintenance_requests.priority,
+            maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
+            sites.owner_company_name, systems.coverage_area
+     FROM maintenance_requests
+     INNER JOIN sites ON sites.id = maintenance_requests.site_id
+     LEFT JOIN systems ON systems.id = maintenance_requests.system_id
+     WHERE maintenance_requests.status IN ('New', 'Reviewing')
+     ORDER BY
+       CASE maintenance_requests.priority WHEN 'Critical' THEN 1 WHEN 'Urgent' THEN 2 ELSE 3 END,
+       maintenance_requests.created_at ASC
+     LIMIT 12`
+  ).all()).results || [];
+
+  overdue = (await db.prepare(
+    `SELECT systems.id, systems.system_type, systems.coverage_area, systems.next_due_date, sites.owner_company_name
+     FROM systems
+     INNER JOIN sites ON sites.id = systems.site_id
+     WHERE date(systems.next_due_date) < date('now')
+     ORDER BY systems.next_due_date ASC
+     LIMIT 12`
+  ).all()).results || [];
+
+  missingDocs = (await db.prepare(
+    `SELECT jobs.id, jobs.completed_at, systems.system_type, systems.coverage_area, sites.owner_company_name
+     FROM jobs
+     INNER JOIN systems ON systems.id = jobs.system_id
+     INNER JOIN sites ON sites.id = systems.site_id
+     WHERE jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL
+     ORDER BY jobs.completed_at DESC
+     LIMIT 12`
+  ).all()).results || [];
+
+  financeFollowup = (await db.prepare(
+    `SELECT sites.owner_company_name, COUNT(financial_records.id) AS record_count, SUM(financial_records.amount) AS amount
+     FROM financial_records
+     INNER JOIN sites ON sites.id = financial_records.site_id
+     WHERE financial_records.payment_status IN ('Pending Approval', 'Unpaid')
+     GROUP BY sites.id
+     ORDER BY amount DESC
+     LIMIT 8`
+  ).all()).results || [];
 } catch (error) {
   console.error("admin dashboard failed", error);
   loadError = "Admin matrix data could not be loaded.";
@@ -56,9 +103,10 @@ try {
   </section>
 
   <section class="px-6 py-8">
-    <div class="mx-auto grid max-w-7xl gap-6 xl:grid-cols-3">
-      {loadError && <p class="xl:col-span-3 border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+    <div class="mx-auto grid max-w-7xl gap-6">
+      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
 
+      <div class="grid gap-6 xl:grid-cols-3">
       <div class="border border-kharon-border bg-white p-5">
         <h2 class="text-xl font-bold">Completed works</h2>
         <div class="mt-5 grid gap-3">
@@ -97,6 +145,69 @@ try {
           ))}
         </div>
       </div>
+      </div>
+
+      <section class="grid gap-6 xl:grid-cols-2">
+        <article class="border border-kharon-border bg-white p-5">
+          <h2 class="text-xl font-bold">Client request queue</h2>
+          <div class="mt-5 grid gap-3">
+            {clientRequests.length === 0 && <p class="text-kharon-grey">No new client requests require review.</p>}
+            {clientRequests.map((item) => (
+              <article class="border-l-4 border-kharon-purple bg-kharon-light p-4">
+                <div class="flex flex-wrap justify-between gap-3">
+                  <div>
+                    <p class="font-semibold">{item.owner_company_name}</p>
+                    <p class="text-sm text-kharon-grey">{item.subject}</p>
+                    <p class="mt-1 text-xs uppercase text-kharon-grey/70">{item.request_type} / {item.coverage_area || "General site request"}</p>
+                  </div>
+                  <span class="h-fit rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">{item.priority}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </article>
+
+        <article class="border border-kharon-border bg-white p-5">
+          <h2 class="text-xl font-bold">Exception queue</h2>
+          <div class="mt-5 grid gap-5">
+            <div>
+              <p class="text-sm font-bold uppercase text-kharon-red">Overdue systems</p>
+              <div class="mt-3 grid gap-2">
+                {overdue.length === 0 && <p class="text-sm text-kharon-grey">No overdue lifecycle items.</p>}
+                {overdue.map((item) => (
+                  <p class="border-l-4 border-kharon-red bg-kharon-light p-3 text-sm">
+                    <span class="font-semibold">{item.owner_company_name}</span> / {item.system_type} / {item.coverage_area} / due {item.next_due_date}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p class="text-sm font-bold uppercase text-kharon-purple">Missing documentation</p>
+              <div class="mt-3 grid gap-2">
+                {missingDocs.length === 0 && <p class="text-sm text-kharon-grey">No completed jobs are missing documentation.</p>}
+                {missingDocs.map((item) => (
+                  <p class="border-l-4 border-kharon-purple bg-kharon-light p-3 text-sm">
+                    <span class="font-semibold">{item.owner_company_name}</span> / {item.id} / {item.completed_at || "completed"}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p class="text-sm font-bold uppercase text-kharon-blue">Finance follow-up</p>
+              <div class="mt-3 grid gap-2">
+                {financeFollowup.length === 0 && <p class="text-sm text-kharon-grey">No pending finance follow-up.</p>}
+                {financeFollowup.map((item) => (
+                  <p class="border-l-4 border-kharon-blue bg-kharon-light p-3 text-sm">
+                    <span class="font-semibold">{item.owner_company_name}</span> / {item.record_count} open records / R {Number(item.amount || 0).toFixed(2)}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
     </div>
   </section>
 </PortalLayout>

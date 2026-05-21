@@ -7,6 +7,7 @@ export const prerender = false;
 const user = Astro.locals.user;
 let systems = [];
 let quotes = [];
+let requests = [];
 let loadError = "";
 
 try {
@@ -33,6 +34,17 @@ try {
        FROM financial_records
        WHERE site_id = ?1 AND item_type = 'Quote' AND payment_status = 'Pending Approval'
        ORDER BY distribution_date ASC`
+    ).bind(user.siteId).all()).results || [];
+
+    requests = (await db.prepare(
+      `SELECT maintenance_requests.id, maintenance_requests.request_type, maintenance_requests.priority,
+              maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
+              systems.coverage_area
+       FROM maintenance_requests
+       LEFT JOIN systems ON systems.id = maintenance_requests.system_id
+       WHERE maintenance_requests.site_id = ?1
+       ORDER BY maintenance_requests.created_at DESC
+       LIMIT 8`
     ).bind(user.siteId).all()).results || [];
   }
 } catch (error) {
@@ -96,10 +108,90 @@ try {
           ))}
         </div>
       </section>
+
+      <section class="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <article class="border border-kharon-border bg-white p-5">
+          <h2 class="text-xl font-bold">Request maintenance support</h2>
+          <p class="mt-2 text-sm text-kharon-grey">Submit operational requests tied to this client account and site.</p>
+          <form id="maintenance-request-form" class="mt-5 grid gap-3">
+            <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId">
+              <option value="">General site request</option>
+              {systems.map((system) => <option value={system.id}>{system.system_type} / {system.coverage_area}</option>)}
+            </select>
+            <select class="rounded-md border border-kharon-border px-4 py-3" name="requestType" required>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Fault">Fault</option>
+              <option value="Compliance Documentation">Compliance Documentation</option>
+              <option value="Quote Request">Quote Request</option>
+              <option value="Emergency Follow-up">Emergency Follow-up</option>
+            </select>
+            <select class="rounded-md border border-kharon-border px-4 py-3" name="priority" required>
+              <option value="Routine">Routine</option>
+              <option value="Urgent">Urgent</option>
+              <option value="Critical">Critical</option>
+            </select>
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="subject" maxlength="160" placeholder="Request subject" required />
+            <textarea class="min-h-28 rounded-md border border-kharon-border px-4 py-3" name="message" maxlength="2000" placeholder="Describe the requirement, fault symptoms, documentation need or preferred timing." required></textarea>
+            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue">Submit request</button>
+            <p id="maintenance-request-result" class="hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+          </form>
+        </article>
+
+        <article class="border border-kharon-border bg-white p-5">
+          <h2 class="text-xl font-bold">Recent service requests</h2>
+          <div class="mt-5 grid gap-3">
+            {requests.length === 0 && <p class="text-kharon-grey">No client maintenance requests have been submitted.</p>}
+            {requests.map((request) => (
+              <article class="border-l-4 border-kharon-blue bg-kharon-light p-4">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p class="font-semibold">{request.subject}</p>
+                    <p class="text-sm text-kharon-grey">{request.request_type} / {request.coverage_area || "General site request"}</p>
+                  </div>
+                  <span class="rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">{request.status}</span>
+                </div>
+                <p class="mt-2 text-xs uppercase text-kharon-grey/70">{request.priority} / {request.created_at}</p>
+              </article>
+            ))}
+          </div>
+        </article>
+      </section>
     </div>
   </section>
 
   <script>
+    const requestForm = document.querySelector("#maintenance-request-form");
+    if (requestForm) {
+      requestForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const result = document.querySelector("#maintenance-request-result");
+        const formData = new FormData(requestForm);
+        result.classList.add("hidden");
+
+        const response = await fetch("/portal/api/maintenance-request", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            systemId: formData.get("systemId"),
+            requestType: formData.get("requestType"),
+            priority: formData.get("priority"),
+            subject: formData.get("subject"),
+            message: formData.get("message")
+          })
+        });
+        const body = await response.json();
+        if (!response.ok || !body.ok) {
+          result.textContent = body.message || "Request submission failed.";
+          result.className = "rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+          return;
+        }
+
+        result.textContent = `Request submitted: ${body.id}`;
+        result.className = "rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+        requestForm.reset();
+      });
+    }
+
     for (const button of document.querySelectorAll("[data-quote-id]")) {
       button.addEventListener("click", async () => {
         button.setAttribute("disabled", "true");

@@ -35,7 +35,7 @@ Implemented:
 - Public shell remains lightweight and mostly server-rendered with code-native SVG/HTML technical visuals.
 - Required pages: `/`, `/gas-suppression`, `/fire-detection`, `/compliance-maintenance`, `/critical-infrastructure`, `/emergency-support`, `/security-systems`, `/industries`, `/about`, `/contact`.
 - Portal routes: `/portal/login`, `/portal/tech/dashboard`, `/portal/admin/dashboard`, `/portal/client/dashboard`, `/portal/finance/dashboard`.
-- Portal APIs: `/portal/api/auth`, `/portal/api/job-status`, `/portal/api/submit-jobcard`, `/portal/api/approve-quote`, `/portal/api/file/[...key]`.
+- Portal APIs: `/portal/api/auth`, `/portal/api/job-status`, `/portal/api/submit-jobcard`, `/portal/api/maintenance-request`, `/portal/api/approve-quote`, `/portal/api/file/[...key]`.
 - Core components: `BaseLayout`, `Header`, `Footer`, `CinematicHero`, `RouteMatrix`, `Hero`, `ContextualInquiry`, `ComplianceStrip`, `SectorRiskGrid`, `EngineeringSystems`, `AuthorityEvidence`, `EmergencyResponse`, `SectionHeading`, `Button`.
 - SEO basics: canonical URLs, OpenGraph tags, `robots.txt`, `sitemap.xml`, LocalBusiness JSON-LD.
 - Accessibility basics: skip link, visible focus state, semantic sections, labelled contact form, reduced-motion CSS.
@@ -74,6 +74,7 @@ Immediate refinements recommended:
 - Add audit logging before sensitive client records and financial approvals become operationally authoritative.
 - Add rate limiting for login and write APIs before production cutover.
 - Technician job closure now has a touchscreen signature pad, start-job transition and richer generated jobcard PDF evidence; continue hardening with photos, offline expectations and field exception handling.
+- Client maintenance requests and admin exception queues are now D1-backed; continue hardening with request status management, scheduling conversion and notification workflows.
 - Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
 - Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
 
@@ -140,8 +141,10 @@ Immediate refinements recommended:
 - Portal login page with role-directed authentication.
 - Technician dashboard for assigned dispatches and jobcard closure.
 - Admin dashboard for completed works, active dispatches and lifecycle exposure.
+- Admin exception queues for client requests, overdue lifecycle items, missing documentation and finance follow-up.
 - Admin operations page for user, site, system and job administration.
 - Client dashboard for system status, maintenance dates, jobcard downloads and quote approval.
+- Client maintenance request submission and recent request tracking.
 - Finance dashboard for pending invoices, receipts and balance summaries.
 
 ### Component System
@@ -292,12 +295,12 @@ Operational gaps to resolve before replacing manual back-office processes:
 - Admin workflow:
   - [ ] Dispatch planner for scheduling jobs and assigning technicians.
   - [ ] Lifecycle due calendar by site, system type and risk tier.
-  - [ ] Exception queues for overdue systems, missing documentation and failed service closure.
+  - [x] Exception queues for overdue systems, missing documentation and finance follow-up.
   - [ ] Export operational reports for management review.
 - Client workflow:
   - [ ] Client account-to-site management for multi-site customers.
   - [ ] Quote approval history and confirmation receipts.
-  - [ ] Maintenance request submission from the client dashboard.
+  - [x] Maintenance request submission from the client dashboard.
   - [ ] Per-document access logs for sensitive records.
 - Finance workflow:
   - [ ] Invoice number generation and immutable ledger references.

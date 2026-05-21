@@ -7,6 +7,7 @@ export const prerender = false;
 const user = Astro.locals.user;
 let records = [];
 let totals = { unpaid: 0, pending: 0, settled: 0 };
+let aging = { current: 0, thirty: 0, sixty: 0 };
 let loadError = "";
 
 try {
@@ -27,6 +28,16 @@ try {
     if (record.payment_status === "Unpaid") totals.unpaid += amount;
     if (record.payment_status === "Pending Approval") totals.pending += amount;
     if (record.payment_status === "Settled") totals.settled += amount;
+
+    if (record.payment_status !== "Settled") {
+      const ageDays = Math.max(0, Math.floor((Date.now() - new Date(`${record.distribution_date}T00:00:00Z`).getTime()) / 86400000));
+      if (ageDays >= 60) aging.sixty += amount;
+      else if (ageDays >= 30) aging.thirty += amount;
+      else aging.current += amount;
+      record.age_days = ageDays;
+    } else {
+      record.age_days = 0;
+    }
   }
 } catch (error) {
   console.error("finance dashboard failed", error);
@@ -53,6 +64,12 @@ try {
         <article class="border border-kharon-border bg-white p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Settled</p><p class="mt-2 text-2xl font-bold">R {totals.settled.toFixed(2)}</p></article>
       </div>
 
+      <div class="grid gap-4 md:grid-cols-3">
+        <article class="border border-kharon-border bg-white p-5"><p class="text-xs font-bold uppercase text-kharon-blue">Open 0-29 days</p><p class="mt-2 text-xl font-bold">R {aging.current.toFixed(2)}</p></article>
+        <article class="border border-kharon-border bg-white p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Open 30-59 days</p><p class="mt-2 text-xl font-bold">R {aging.thirty.toFixed(2)}</p></article>
+        <article class="border border-kharon-border bg-white p-5"><p class="text-xs font-bold uppercase text-kharon-red">Open 60+ days</p><p class="mt-2 text-xl font-bold">R {aging.sixty.toFixed(2)}</p></article>
+      </div>
+
       <div class="overflow-x-auto border border-kharon-border bg-white">
         <table class="w-full min-w-[760px] border-collapse text-left text-sm">
           <thead class="bg-kharon-charcoal text-white">
@@ -62,6 +79,7 @@ try {
               <th class="p-4">Status</th>
               <th class="p-4">Amount</th>
               <th class="p-4">Date</th>
+              <th class="p-4">Age</th>
               <th class="p-4">Reference</th>
             </tr>
           </thead>
@@ -73,6 +91,7 @@ try {
                 <td class="p-4">{record.payment_status}</td>
                 <td class="p-4">R {Number(record.amount).toFixed(2)}</td>
                 <td class="p-4">{record.distribution_date}</td>
+                <td class="p-4">{record.payment_status === "Settled" ? "-" : `${record.age_days}d`}</td>
                 <td class="p-4">{record.reference || record.id}</td>
               </tr>
             ))}
