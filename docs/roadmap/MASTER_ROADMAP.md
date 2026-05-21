@@ -70,7 +70,7 @@ Immediate refinements recommended:
 
 - Replace shared temporary staging passwords with per-user credentials and document a controlled reset process.
 - Add password reset before broader internal use; logout and first-login password rotation are now implemented.
-- Add admin CRUD for sites, systems, users and jobs to remove direct D1 editing from normal operations.
+- Admin CRUD foundations for sites, systems, users and jobs are now implemented in `/portal/admin/operations`; continue hardening with richer validation, imports and reporting.
 - Add audit logging before sensitive client records and financial approvals become operationally authoritative.
 - Add rate limiting for login and write APIs before production cutover.
 - Add a real signature pad and stronger generated jobcard PDF evidence before field technicians depend on the closure flow.
@@ -140,6 +140,7 @@ Immediate refinements recommended:
 - Portal login page with role-directed authentication.
 - Technician dashboard for assigned dispatches and jobcard closure.
 - Admin dashboard for completed works, active dispatches and lifecycle exposure.
+- Admin operations page for user, site, system and job administration.
 - Client dashboard for system status, maintenance dates, jobcard downloads and quote approval.
 - Finance dashboard for pending invoices, receipts and balance summaries.
 
@@ -271,13 +272,14 @@ Current implementation:
 Operational gaps to resolve before replacing manual back-office processes:
 
 - User lifecycle:
-  - [ ] Admin UI for creating, disabling and role-changing users.
+  - [x] Admin UI for creating, disabling and role-changing users.
   - [ ] Forced temporary-password rotation on first login.
   - [ ] Password reset workflow through verified email.
   - [ ] Session revocation or logout endpoint.
   - [ ] Optional MFA for admin and finance roles.
 - Data administration:
-  - [ ] Admin CRUD for sites, systems and technician assignments.
+  - [x] Admin CRUD foundations for sites, systems and technician assignments.
+  - [ ] Bulk import/export paths for sites, systems and users.
   - [ ] Import path for existing client/site/system records.
   - [ ] Controlled seed process that does not store hashes in committed files.
   - [ ] Data retention policy for jobcards, quotes, invoices and audit evidence.
@@ -464,7 +466,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add portal login routing from public website CTAs.
 - [x] Verify live staging portal login and protected dashboard redirect behavior.
 - [x] Add logout endpoint.
-- [ ] Add admin CRUD screens.
+- [x] Add admin CRUD screens.
 - [x] Add first-login password rotation path.
 - [ ] Add password reset.
 - [x] Add login rate limiting and audit logging.

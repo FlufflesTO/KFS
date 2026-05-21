@@ -217,6 +217,14 @@ Allowed portal roles:
 - `client`
 - `finance`
 
+Admin operations route:
+
+- `/portal/admin/operations`
+- Requires `admin` role.
+- Manages users, sites, protected systems and scheduled jobs.
+- User records are deactivated instead of hard-deleted to preserve audit history.
+- Sites, systems and jobs are created or updated, not destructively deleted.
+
 Live smoke checks:
 
 ```powershell
