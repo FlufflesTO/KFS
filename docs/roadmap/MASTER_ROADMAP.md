@@ -76,6 +76,7 @@ Immediate refinements recommended:
 - Technician job closure now has a touchscreen signature pad, start-job transition and richer generated jobcard PDF evidence; continue hardening with photos, offline expectations and field exception handling.
 - Client maintenance requests and admin exception queues are now D1-backed; continue hardening with request status management, scheduling conversion and notification workflows.
 - Admins can now update client request status and convert requests into scheduled dispatches linked back to the client request.
+- Authenticated portal write APIs now require a signed CSRF token and inherit central write-rate limiting from middleware.
 - Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
 - Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
 
@@ -277,9 +278,9 @@ Operational gaps to resolve before replacing manual back-office processes:
 
 - User lifecycle:
   - [x] Admin UI for creating, disabling and role-changing users.
-  - [ ] Forced temporary-password rotation on first login.
+  - [x] Forced temporary-password rotation on first login.
   - [ ] Password reset workflow through verified email.
-  - [ ] Session revocation or logout endpoint.
+  - [x] Session revocation or logout endpoint.
   - [ ] Optional MFA for admin and finance roles.
 - Data administration:
   - [x] Admin CRUD foundations for sites, systems and technician assignments.
@@ -312,8 +313,8 @@ Operational gaps to resolve before replacing manual back-office processes:
 - Security and audit:
   - [x] Audit table for auth, record access, status changes and financial changes.
   - [x] Rate limiting for login endpoint.
-  - [ ] Rate limiting for write endpoints beyond login.
-  - [ ] CSRF protection for browser-submitted state-changing requests.
+  - [x] Rate limiting for write endpoints beyond login.
+  - [x] CSRF protection for browser-submitted state-changing requests.
   - [ ] Structured error telemetry and Cloudflare log review process.
   - [ ] Per-role authorization tests.
 - Operations and support:

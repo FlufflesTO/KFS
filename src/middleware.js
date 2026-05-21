@@ -1,5 +1,8 @@
 import { defineMiddleware } from "astro/middleware";
 import { sessionCookieName, verifySessionToken } from "./lib/server/auth.js";
+import { createCsrfToken, csrfCookie, csrfCookieName, verifyCsrfToken } from "./lib/server/csrf.js";
+import { getDatabase } from "./lib/server/bindings.js";
+import { consumeRateLimit } from "./lib/server/rateLimit.js";
 
 const loginPath = "/portal/login";
 const authApiPath = "/portal/api/auth";
@@ -41,6 +44,31 @@ function pathContainsTraversal(pathname) {
   }
 }
 
+function isStateChangingPortalApi(request, pathname) {
+  return pathname.startsWith("/portal/api/") && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
+}
+
+function csrfForbidden() {
+  return new Response(JSON.stringify({ ok: false, error: "csrf_failed", message: "Request verification failed." }), {
+    status: 403,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    }
+  });
+}
+
+function rateLimitResponse(retryAfter) {
+  return new Response(JSON.stringify({ ok: false, error: "rate_limited", message: "Too many portal write requests. Try again shortly.", retryAfter }), {
+    status: 429,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "retry-after": String(retryAfter)
+    }
+  });
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
@@ -70,17 +98,50 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   context.locals.user = user;
 
+  let csrfToken = context.cookies.get(csrfCookieName)?.value;
+  let shouldSetCsrfCookie = false;
+  if (!(await verifyCsrfToken(csrfToken, user))) {
+    csrfToken = await createCsrfToken(user);
+    shouldSetCsrfCookie = true;
+  }
+  context.locals.csrfToken = csrfToken;
+
+  if (isStateChangingPortalApi(context.request, pathname)) {
+    const submittedToken = context.request.headers.get("x-csrf-token");
+    if (!submittedToken || submittedToken !== csrfToken || !(await verifyCsrfToken(submittedToken, user))) {
+      return csrfForbidden();
+    }
+
+    const limit = await consumeRateLimit(getDatabase(), context.request, {
+      scope: `write:${pathname}`.slice(0, 80),
+      subject: user.id,
+      maxAttempts: 45,
+      windowSeconds: 300
+    });
+    if (!limit.allowed) {
+      return rateLimitResponse(limit.retryAfter);
+    }
+  }
+
   if (user.forcePasswordChange && pathname !== passwordPath && pathname !== passwordApiPath && pathname !== logoutApiPath) {
-    return context.redirect(passwordPath, 302);
+    const response = context.redirect(passwordPath, 302);
+    if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
+    return response;
   }
 
   if (pathname === portalRootPath || pathname === `${portalRootPath}/`) {
-    return redirectToRoleDashboard(context, user.role);
+    const response = redirectToRoleDashboard(context, user.role);
+    if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
+    return response;
   }
 
   if (!allowedForPath(pathname, user.role)) {
-    return redirectToRoleDashboard(context, user.role);
+    const response = redirectToRoleDashboard(context, user.role);
+    if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
+    return response;
   }
 
-  return next();
+  const response = await next();
+  if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
+  return response;
 });

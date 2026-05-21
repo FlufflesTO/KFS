@@ -32,8 +32,17 @@ const links = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#0B0D0F" />
+    <meta name="kharon-csrf-token" content={Astro.locals.csrfToken || ""} />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline>
+      window.kharonPortalFetch = (input, init = {}) => {
+        const token = document.querySelector('meta[name="kharon-csrf-token"]')?.content || "";
+        const headers = new Headers(init.headers || {});
+        if (token && !headers.has("x-csrf-token")) headers.set("x-csrf-token", token);
+        return fetch(input, { ...init, headers });
+      };
+    </script>
   </head>
   <body class="bg-kharon-light">
     <header class="border-b border-white/10 bg-kharon-black text-white">
@@ -76,7 +85,7 @@ const links = [
       const logoutForm = document.querySelector("#portal-logout-form");
       logoutForm?.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const response = await fetch("/portal/api/logout", { method: "POST" });
+        const response = await window.kharonPortalFetch("/portal/api/logout", { method: "POST" });
         const body = await response.json().catch(() => ({ redirectTo: "/portal/login" }));
         window.location.href = body.redirectTo || "/portal/login";
       });

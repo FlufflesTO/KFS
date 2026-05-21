@@ -188,7 +188,7 @@ try {
     for (const button of document.querySelectorAll(".start-job")) {
       button.addEventListener("click", async () => {
         button.disabled = true;
-        const response = await fetch("/portal/api/job-status", {
+        const response = await window.kharonPortalFetch("/portal/api/job-status", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ jobId: button.dataset.jobId, status: "In Progress" })
@@ -215,7 +215,7 @@ try {
           result.className = "jobcard-result text-sm font-semibold text-red-700";
           return;
         }
-        const response = await fetch("/portal/api/submit-jobcard", {
+        const response = await window.kharonPortalFetch("/portal/api/submit-jobcard", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({

@@ -275,7 +275,7 @@ try {
         const result = form.querySelector(".admin-result");
         result.classList.add("hidden");
 
-        const response = await fetch(form.dataset.endpoint, {
+        const response = await window.kharonPortalFetch(form.dataset.endpoint, {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(formPayload(form))

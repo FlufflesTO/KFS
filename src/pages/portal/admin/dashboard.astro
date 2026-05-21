@@ -255,7 +255,7 @@ try {
   </section>
   <script>
     async function postJson(url, payload) {
-      const response = await fetch(url, {
+      const response = await window.kharonPortalFetch(url, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload)

@@ -169,7 +169,7 @@ try {
         const formData = new FormData(requestForm);
         result.classList.add("hidden");
 
-        const response = await fetch("/portal/api/maintenance-request", {
+        const response = await window.kharonPortalFetch("/portal/api/maintenance-request", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -196,7 +196,7 @@ try {
     for (const button of document.querySelectorAll("[data-quote-id]")) {
       button.addEventListener("click", async () => {
         button.setAttribute("disabled", "true");
-        const response = await fetch("/portal/api/approve-quote", {
+        const response = await window.kharonPortalFetch("/portal/api/approve-quote", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ recordId: button.getAttribute("data-quote-id") })
