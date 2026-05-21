@@ -101,6 +101,11 @@ try {
               <textarea name="followUpActions" class="min-h-20 rounded-md border border-kharon-border px-4 py-3" maxlength="1000" placeholder="No follow-up required, or describe required action."></textarea>
             </label>
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Photo evidence
+              <span class="text-xs font-normal text-kharon-grey">Optional. Up to 3 JPEG, PNG or WebP images, maximum 1.5 MB each. Capture only relevant system, panel, label, defect or completion evidence.</span>
+              <input name="evidencePhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple class="rounded-md border border-kharon-border bg-white px-4 py-3" />
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
               Client / responsible person signature
               <span class="text-xs font-normal text-kharon-grey">Sign inside the box. Clear and re-sign if the capture is not legible.</span>
               <canvas class="signature-pad h-40 w-full touch-none rounded-md border border-kharon-border bg-white" width="720" height="220" aria-label="Signature capture area"></canvas>
@@ -210,6 +215,28 @@ try {
         const result = form.querySelector(".jobcard-result");
         result.classList.add("hidden");
         const data = new FormData(form);
+        const evidenceInput = form.querySelector('input[name="evidencePhotos"]');
+        const evidenceFiles = Array.from(evidenceInput?.files || []);
+        if (evidenceFiles.length > 3) {
+          result.textContent = "A maximum of 3 evidence photos can be attached.";
+          result.className = "jobcard-result text-sm font-semibold text-red-700";
+          return;
+        }
+        const evidencePhotos = [];
+        for (const [index, file] of evidenceFiles.entries()) {
+          if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 1572864) {
+            result.textContent = `Evidence photo ${index + 1} must be JPEG, PNG or WebP and 1.5 MB or smaller.`;
+            result.className = "jobcard-result text-sm font-semibold text-red-700";
+            return;
+          }
+          const dataUri = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ""));
+            reader.onerror = () => reject(new Error("Photo could not be read."));
+            reader.readAsDataURL(file);
+          });
+          evidencePhotos.push({ dataUri, caption: file.name || `Evidence photo ${index + 1}` });
+        }
         if (!data.get("signatureBase64")) {
           result.textContent = "A captured signature is required.";
           result.className = "jobcard-result text-sm font-semibold text-red-700";
@@ -226,7 +253,8 @@ try {
             partsUsed: data.get("partsUsed"),
             followUpActions: data.get("followUpActions"),
             signatureBase64: data.get("signatureBase64"),
-            signatureStrokes: JSON.parse(data.get("signatureStrokes") || "[]")
+            signatureStrokes: JSON.parse(data.get("signatureStrokes") || "[]"),
+            evidencePhotos
           })
         });
         const body = await response.json();

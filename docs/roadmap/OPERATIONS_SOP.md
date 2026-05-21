@@ -89,3 +89,21 @@ Retention:
 - Repeat the monitoring script after adding `portal.kharon.co.za`.
 - Confirm D1 and R2 bindings point to the intended production resources.
 - Confirm backup exports are taken before switching client operations from Tequit staging to Kharon production.
+
+## Field Photo Evidence And Poor-Signal Expectations
+
+Technicians may attach up to 3 job evidence photos during jobcard closure. Evidence should be limited to relevant operational proof such as panel state, device condition, labels, defects, completed corrective work or protected-room context.
+
+Current limits:
+
+- Maximum 3 images per submitted jobcard.
+- Accepted formats: JPEG, PNG and WebP.
+- Maximum size: 1.5 MB per image.
+- Evidence is stored in R2 under `job-evidence/` and indexed in D1.
+
+Poor-signal operating expectation:
+
+- The current portal is an online workflow. It does not yet provide full offline queueing or background sync.
+- If signal is unstable, technicians should capture photos on the device first, complete the jobcard once a stable connection is available and avoid closing the browser before submission completes.
+- If submission fails after field work is complete, the technician should retain local photos and notes, then retry when connected or escalate to admin for manual dispatch closure.
+- Future offline support should add a local draft queue, upload retry state and clear user warnings before it is treated as production offline-capable.

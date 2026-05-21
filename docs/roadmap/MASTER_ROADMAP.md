@@ -189,9 +189,33 @@ Finance production gate:
 - [x] Finance actions remain RBAC protected.
 - [x] Finance actions remain CSRF protected by middleware.
 - [x] Finance actions remain audit logged.
-- [ ] Build passes.
-- [ ] Site audit script passes.
-- [ ] No secrets committed.
+- [x] Build passes.
+- [x] Site audit script passes.
+- [x] No secrets committed.
+
+## Review Update - 2026-05-21 Technician Evidence Hardening Pass
+
+Scope for this pass:
+
+- Add job evidence metadata for technician photo uploads.
+- Store accepted technician evidence images in R2 under a controlled job evidence prefix.
+- Link evidence images to the relevant job, system, technician and evidence type in D1.
+- Add technician dashboard controls for limited photo evidence capture during jobcard closure.
+- Document poor-signal field expectations without claiming full offline sync support.
+
+Technician evidence production gate:
+
+- [x] Roadmap updated before implementation.
+- [x] D1 evidence metadata table added.
+- [x] R2 photo evidence storage implemented.
+- [x] Technician jobcard UI accepts photo evidence.
+- [x] Evidence upload size and count limits implemented.
+- [x] Evidence writes remain technician-assignment protected.
+- [x] Evidence writes remain audit logged.
+- [x] Poor-signal expectations documented.
+- [x] Build passes.
+- [x] Site audit script passes.
+- [x] No secrets committed.
 
 ## Master Feature List
 
@@ -404,8 +428,8 @@ Operational gaps to resolve before replacing manual back-office processes:
 - Technician workflow:
   - [x] Replace pasted signature data URL with a proper touchscreen signature pad.
   - [x] Add job status transition from Scheduled to In Progress.
-  - [ ] Add offline/poor-signal handling expectations for field work.
-  - [ ] Capture parts used, fault categories, photos and follow-up actions.
+  - [x] Add offline/poor-signal handling expectations for field work.
+  - [x] Capture parts used, fault categories, photos and follow-up actions.
   - [x] Improve generated jobcard PDF to include visual signature and richer site/system evidence.
 - Admin workflow:
   - [ ] Dispatch planner for scheduling jobs and assigning technicians.

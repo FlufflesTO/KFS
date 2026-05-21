@@ -167,7 +167,8 @@ const requiredSourceTerms = new Map([
   ["src/middleware.js", ["sessionCookieName", "/portal/tech/", "/portal/finance/", "/portal/client/", "context.locals.user"]],
   ["src/pages/portal/api/auth.js", ["verifyPassword", "Set-Cookie", "redirectTo"]],
   ["src/pages/portal/api/submit-jobcard.js", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
-  ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/api/submit-jobcard"]],
+  ["src/pages/portal/api/file/[...key].js", ["job-evidence/", "job_evidence_files"]],
+  ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/api/submit-jobcard", "evidencePhotos"]],
   ["src/pages/portal/client/dashboard.astro", ["/portal/api/file/", "/portal/api/approve-quote"]],
   ["src/pages/portal/finance/dashboard.astro", ["financial_records", "payment_status", "/portal/api/finance/export", "/portal/api/finance/payments"]],
   ["src/pages/portal/api/finance/payments.js", ["finance.payment", "Payment", "Settled"]],
@@ -293,6 +294,10 @@ for (const header of [
 const schema = fs.existsSync(path.join(root, "schema.sql")) ? read(path.join(root, "schema.sql")) : "";
 for (const term of ["CREATE TABLE IF NOT EXISTS users", "CHECK (role IN ('tech', 'admin', 'client', 'finance'))", "CREATE TABLE IF NOT EXISTS jobs", "CREATE TABLE IF NOT EXISTS financial_records"]) {
   if (!schema.includes(term)) fail(`schema.sql missing ${term}`);
+}
+
+for (const term of ["CREATE TABLE IF NOT EXISTS job_evidence_files", "storage_path TEXT NOT NULL UNIQUE", "idx_job_evidence_job"]) {
+  if (!schema.includes(term)) fail(`schema.sql missing evidence marker: ${term}`);
 }
 
 const result = {

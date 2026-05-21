@@ -19,6 +19,35 @@ function addMonths(date, months) {
   return next.toISOString().slice(0, 10);
 }
 
+function imageDataUriToEvidence(value, index) {
+  const dataUri = String(value?.dataUri || "");
+  const caption = String(value?.caption || `Evidence photo ${index + 1}`).trim().slice(0, 160);
+  const match = dataUri.match(/^data:(image\/(?:jpeg|png|webp));base64,(?<data>[A-Za-z0-9+/=]+)$/);
+  if (!match?.groups?.data) {
+    throw new Error(`Evidence photo ${index + 1} must be a JPEG, PNG or WebP image.`);
+  }
+
+  const binary = atob(match.groups.data);
+  const bytes = new Uint8Array(binary.length);
+  for (let byteIndex = 0; byteIndex < binary.length; byteIndex += 1) bytes[byteIndex] = binary.charCodeAt(byteIndex);
+
+  if (bytes.length < 128 || bytes.length > 1572864) {
+    throw new Error(`Evidence photo ${index + 1} must be between 128 bytes and 1.5 MB.`);
+  }
+
+  return {
+    bytes,
+    contentType: match[1],
+    caption
+  };
+}
+
+function normalizeEvidencePhotos(value) {
+  if (!Array.isArray(value)) return [];
+  if (value.length > 3) throw new Error("A maximum of 3 evidence photos can be submitted per jobcard.");
+  return value.map(imageDataUriToEvidence);
+}
+
 export async function POST({ request, locals }) {
   try {
     const user = locals.user;
@@ -34,6 +63,7 @@ export async function POST({ request, locals }) {
     const faultCategory = String(payload.faultCategory || "Routine service").trim().slice(0, 120);
     const partsUsed = String(payload.partsUsed || "None recorded").trim().slice(0, 500);
     const followUpActions = String(payload.followUpActions || "No follow-up actions recorded").trim().slice(0, 1000);
+    const evidencePhotos = normalizeEvidencePhotos(payload.evidencePhotos);
 
     if (techComments.length < 3 || techComments.length > 3000) {
       return badRequest("Technician comments must be between 3 and 3000 characters.");
@@ -100,6 +130,16 @@ export async function POST({ request, locals }) {
     const documentationPath = `jobcards/job-${jobId}-completed.pdf`;
     const financialRecordId = crypto.randomUUID();
     const amount = getStandardServiceFee();
+    const evidenceRecords = evidencePhotos.map((photo, index) => {
+      const id = crypto.randomUUID();
+      const extension = photo.contentType === "image/png" ? "png" : photo.contentType === "image/webp" ? "webp" : "jpg";
+      return {
+        ...photo,
+        id,
+        storagePath: `job-evidence/job-${jobId}/${id}.${extension}`,
+        index
+      };
+    });
 
     const { pdfBytes, signatureHash } = await buildJobcardPdf({
       jobId,
@@ -137,7 +177,23 @@ export async function POST({ request, locals }) {
       }
     });
 
-    await db.batch([
+    for (const evidence of evidenceRecords) {
+      await storage.put(evidence.storagePath, evidence.bytes, {
+        httpMetadata: {
+          contentType: evidence.contentType,
+          contentDisposition: `inline; filename="job-${jobId}-evidence-${evidence.index + 1}"`
+        },
+        customMetadata: {
+          jobId,
+          systemId,
+          technicianId: user.id,
+          evidenceType: "Photo",
+          completedAt: completedAt.toISOString()
+        }
+      });
+    }
+
+    const batchStatements = [
       db
         .prepare(
           `UPDATE jobs
@@ -165,7 +221,22 @@ export async function POST({ request, locals }) {
              (?1, ?2, ?3, ?4, 'Invoice', 'Unpaid', ?5, ?6)`
         )
         .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, `Standard service invoice for job ${jobId}`)
-    ]);
+    ];
+
+    for (const evidence of evidenceRecords) {
+      batchStatements.push(
+        db
+          .prepare(
+            `INSERT INTO job_evidence_files
+               (id, job_id, system_id, uploaded_by_user_id, evidence_type, storage_path, content_type, file_size_bytes, caption)
+             VALUES
+               (?1, ?2, ?3, ?4, 'Photo', ?5, ?6, ?7, ?8)`
+          )
+          .bind(evidence.id, jobId, systemId, user.id, evidence.storagePath, evidence.contentType, evidence.bytes.length, evidence.caption)
+      );
+    }
+
+    await db.batch(batchStatements);
 
     await auditEvent(db, request, {
       eventType: "jobcard.close",
@@ -180,7 +251,8 @@ export async function POST({ request, locals }) {
         financialRecordId,
         faultCategory,
         partsUsed,
-        followUpActions
+        followUpActions,
+        evidenceCount: evidenceRecords.length
       }
     });
 
@@ -190,6 +262,7 @@ export async function POST({ request, locals }) {
       systemId,
       status: "Completed",
       documentationPath,
+      evidencePaths: evidenceRecords.map((record) => record.storagePath),
       nextDueDate,
       financialRecordId
     });
