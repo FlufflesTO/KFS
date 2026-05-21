@@ -119,6 +119,16 @@ CREATE TABLE IF NOT EXISTS portal_rate_limits (
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL UNIQUE CHECK (length(token_hash) = 64),
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_site_id ON users(site_id);
 CREATE INDEX IF NOT EXISTS idx_sites_owner_company ON sites(owner_company_name);
@@ -136,6 +146,8 @@ CREATE INDEX IF NOT EXISTS idx_audit_events_type_created ON audit_events(event_t
 CREATE INDEX IF NOT EXISTS idx_job_evidence_job ON job_evidence_files(job_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_job_evidence_system ON job_evidence_files(system_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_rate_limits_scope_window ON portal_rate_limits(scope, window_start);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expiry ON password_reset_tokens(expires_at, used_at);
 
 CREATE TRIGGER IF NOT EXISTS trg_users_updated_at
 AFTER UPDATE ON users

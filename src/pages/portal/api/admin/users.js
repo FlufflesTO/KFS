@@ -1,6 +1,7 @@
 import { getDatabase } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { hashPassword } from "../../../../lib/server/auth.js";
+import { createResetToken, resetTokenExpiry, sha256Hex } from "../../../../lib/server/resetToken.js";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
 import { cleanBoolean, cleanChoice, cleanEmail, cleanId, cleanText, readJson, requireAdmin } from "../../../../lib/server/admin.js";
 
@@ -16,7 +17,7 @@ export async function POST({ request, locals }) {
 
   try {
     const body = await readJson(request);
-    const action = cleanChoice(body.action || "create", "action", ["create", "update", "deactivate"]);
+    const action = cleanChoice(body.action || "create", "action", ["create", "update", "deactivate", "reset-link"]);
 
     if (action === "create") {
       const id = crypto.randomUUID();
@@ -63,6 +64,39 @@ export async function POST({ request, locals }) {
         user: locals.user
       });
       return json({ ok: true, id });
+    }
+
+    if (action === "reset-link") {
+      const target = await db.prepare(`SELECT id, email, is_active FROM users WHERE id = ?1 LIMIT 1`).bind(id).first();
+      if (!target || !target.is_active) return badRequest("Only active users can receive password reset links.");
+
+      const token = createResetToken();
+      const tokenHash = await sha256Hex(token);
+      const resetId = crypto.randomUUID();
+      const expiresAt = resetTokenExpiry(1);
+
+      await db
+        .prepare(
+          `INSERT INTO password_reset_tokens
+             (id, user_id, token_hash, expires_at, created_by_user_id)
+           VALUES
+             (?1, ?2, ?3, ?4, ?5)`
+        )
+        .bind(resetId, id, tokenHash, expiresAt, locals.user.id)
+        .run();
+
+      await auditEvent(db, request, {
+        eventType: "admin.user.reset_link",
+        entityType: "user",
+        entityId: id,
+        outcome: "success",
+        user: locals.user,
+        metadata: { expiresAt }
+      });
+
+      const url = new URL(request.url);
+      const resetUrl = `${url.origin}/portal/reset?token=${encodeURIComponent(token)}`;
+      return json({ ok: true, id, resetUrl, expiresAt });
     }
 
     const name = cleanText(body.name, "name", { min: 2, max: 160 });

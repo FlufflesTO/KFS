@@ -107,3 +107,21 @@ Poor-signal operating expectation:
 - If signal is unstable, technicians should capture photos on the device first, complete the jobcard once a stable connection is available and avoid closing the browser before submission completes.
 - If submission fails after field work is complete, the technician should retain local photos and notes, then retry when connected or escalate to admin for manual dispatch closure.
 - Future offline support should add a local draft queue, upload retry state and clear user warnings before it is treated as production offline-capable.
+
+## Password Reset Operations
+
+Administrators can issue a password reset link from `/portal/admin/operations`.
+
+Controls:
+
+- Reset tokens are generated randomly and only the SHA-256 hash is stored in D1.
+- Reset links expire after 1 hour.
+- Reset tokens are single-use.
+- Reset completion forces the account through the existing password rotation flow after login.
+- Reset link creation and reset completion are audit logged.
+
+Operational rule:
+
+- Do not send reset links through public chat or commit them to files.
+- Until an email provider is selected, deliver reset links only through an approved external channel controlled by Kharon operations.
+- If a reset link is exposed or sent to the wrong recipient, issue a fresh reset link and treat the old one as compromised until it expires.

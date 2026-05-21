@@ -1,0 +1,86 @@
+---
+import "../../styles/global.css";
+
+export const prerender = false;
+
+const token = Astro.url.searchParams.get("token") || "";
+---
+
+<!doctype html>
+<html lang="en-ZA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Kharon Portal Password Reset</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="min-h-screen bg-kharon-black text-white">
+    <main class="grid min-h-screen place-items-center px-6 py-12">
+      <section class="w-full max-w-md border border-white/10 bg-white/[0.04] p-8">
+        <p class="text-xs font-bold uppercase text-kharon-cyan">Secure operations portal</p>
+        <h1 class="mt-3 text-3xl font-bold">Reset portal password</h1>
+        <p class="mt-4 leading-7 text-white/65">
+          Enter a new password for the issued reset link. You will be asked to rotate it again after sign-in if account policy requires it.
+        </p>
+
+        <form id="reset-form" class="mt-8 grid gap-5">
+          <input type="hidden" name="token" value={token} />
+          <label class="grid gap-2 text-sm font-semibold">
+            New password
+            <input class="rounded-md border border-white/15 bg-black/30 px-4 py-3 text-white" name="password" type="password" minlength="14" autocomplete="new-password" required />
+          </label>
+          <label class="grid gap-2 text-sm font-semibold">
+            Confirm password
+            <input class="rounded-md border border-white/15 bg-black/30 px-4 py-3 text-white" name="confirmPassword" type="password" minlength="14" autocomplete="new-password" required />
+          </label>
+          <p
+            id="reset-result"
+            role="alert"
+            aria-live="polite"
+            class="hidden rounded-md border px-4 py-3 text-sm font-semibold"
+          ></p>
+          <button class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
+            Reset password
+          </button>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const form = document.querySelector("#reset-form");
+      const result = document.querySelector("#reset-result");
+
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        result.classList.add("hidden");
+        const formData = new FormData(form);
+        if (formData.get("password") !== formData.get("confirmPassword")) {
+          result.textContent = "Passwords do not match.";
+          result.className = "rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+          return;
+        }
+
+        const response = await fetch("/portal/api/reset-password", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            token: formData.get("token"),
+            password: formData.get("password")
+          })
+        });
+        const body = await response.json().catch(() => ({ ok: false, message: "Password reset failed." }));
+        if (!response.ok || !body.ok) {
+          result.textContent = body.message || "Password reset failed.";
+          result.className = "rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+          return;
+        }
+        result.textContent = "Password reset. Redirecting to login...";
+        result.className = "rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+        window.setTimeout(() => {
+          window.location.href = body.redirectTo || "/portal/login";
+        }, 900);
+      });
+    </script>
+  </body>
+</html>

@@ -7,6 +7,8 @@ import { auditEvent } from "./lib/server/audit.js";
 
 const loginPath = "/portal/login";
 const authApiPath = "/portal/api/auth";
+const resetPath = "/portal/reset";
+const resetApiPath = "/portal/api/reset-password";
 const logoutApiPath = "/portal/api/logout";
 const passwordPath = "/portal/account/password";
 const passwordApiPath = "/portal/api/change-password";
@@ -90,7 +92,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return new Response("Invalid portal path.", { status: 400 });
   }
 
-  if (pathname === loginPath || pathname === authApiPath) {
+  if (pathname === loginPath || pathname === authApiPath || pathname === resetPath || pathname === resetApiPath) {
     return next();
   }
 

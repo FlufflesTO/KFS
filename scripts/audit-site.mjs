@@ -150,6 +150,8 @@ const expectedSourceRoutes = [
   "portal/client/dashboard.astro",
   "portal/finance/dashboard.astro",
   "portal/api/auth.js",
+  "portal/reset.astro",
+  "portal/api/reset-password.js",
   "portal/api/submit-jobcard.js",
   "portal/api/approve-quote.js",
   "portal/api/finance/payments.js",
@@ -166,6 +168,9 @@ for (const route of expectedSourceRoutes) {
 const requiredSourceTerms = new Map([
   ["src/middleware.js", ["sessionCookieName", "/portal/tech/", "/portal/finance/", "/portal/client/", "context.locals.user"]],
   ["src/pages/portal/api/auth.js", ["verifyPassword", "Set-Cookie", "redirectTo"]],
+  ["src/pages/portal/api/admin/users.js", ["reset-link", "password_reset_tokens", "resetUrl"]],
+  ["src/pages/portal/api/reset-password.js", ["auth.password_reset", "password_reset_tokens", "hashPassword"]],
+  ["src/pages/portal/reset.astro", ["/portal/api/reset-password", "Reset portal password"]],
   ["src/pages/portal/api/submit-jobcard.js", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
   ["src/pages/portal/api/file/[...key].js", ["job-evidence/", "job_evidence_files"]],
   ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/api/submit-jobcard", "evidencePhotos"]],
@@ -298,6 +303,10 @@ for (const term of ["CREATE TABLE IF NOT EXISTS users", "CHECK (role IN ('tech',
 
 for (const term of ["CREATE TABLE IF NOT EXISTS job_evidence_files", "storage_path TEXT NOT NULL UNIQUE", "idx_job_evidence_job"]) {
   if (!schema.includes(term)) fail(`schema.sql missing evidence marker: ${term}`);
+}
+
+for (const term of ["CREATE TABLE IF NOT EXISTS password_reset_tokens", "token_hash TEXT NOT NULL UNIQUE", "idx_password_reset_tokens_expiry"]) {
+  if (!schema.includes(term)) fail(`schema.sql missing password reset marker: ${term}`);
 }
 
 const result = {

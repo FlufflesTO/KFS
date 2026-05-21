@@ -175,6 +175,9 @@ try {
               <div class="grid gap-2">
                 <input class="rounded-md border border-kharon-border px-3 py-2" name="password" type="password" placeholder="Optional reset password" />
                 <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                <button class="generate-reset-link rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" type="button" data-user-id={record.id}>
+                  Issue reset link
+                </button>
               </div>
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
             </form>
@@ -289,6 +292,27 @@ try {
 
         result.textContent = `Saved ${body.id || ""}`.trim();
         result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+      });
+    }
+
+    for (const button of document.querySelectorAll(".generate-reset-link")) {
+      button.addEventListener("click", async () => {
+        const form = button.closest("form");
+        const result = form.querySelector(".admin-result");
+        result.classList.add("hidden");
+        const response = await window.kharonPortalFetch("/portal/api/admin/users", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "reset-link", id: button.dataset.userId })
+        });
+        const body = await response.json().catch(() => ({ ok: false, message: "Reset link could not be issued." }));
+        if (!response.ok || !body.ok) {
+          result.textContent = body.message || "Reset link could not be issued.";
+          result.className = "admin-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900 lg:col-span-6";
+          return;
+        }
+        result.textContent = `Reset link, valid until ${body.expiresAt}: ${body.resetUrl}`;
+        result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 lg:col-span-6";
       });
     }
   </script>

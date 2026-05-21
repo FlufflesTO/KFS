@@ -217,6 +217,30 @@ Technician evidence production gate:
 - [x] Site audit script passes.
 - [x] No secrets committed.
 
+## Review Update - 2026-05-21 Password Reset Foundation Pass
+
+Scope for this pass:
+
+- Add a password reset token table that stores only token hashes.
+- Allow admins to issue short-lived single-use password reset links from the portal operations screen.
+- Add a public reset page that accepts a reset token and new password.
+- Add a reset endpoint that consumes the token, rotates the password and forces first login password rotation.
+- Keep outbound email delivery out of scope until a mail provider is selected; issued links must be delivered through an approved external channel.
+
+Password reset production gate:
+
+- [x] Roadmap updated before implementation.
+- [x] Password reset token table added.
+- [x] Admin reset-link action implemented.
+- [x] Public reset page implemented.
+- [x] Reset endpoint implemented.
+- [x] Reset tokens stored as hashes only.
+- [x] Reset tokens expire and are single-use.
+- [x] Reset events are audit logged.
+- [x] Build passes.
+- [x] Site audit script passes.
+- [x] No secrets committed.
+
 ## Master Feature List
 
 ### Foundation
@@ -416,7 +440,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 - User lifecycle:
   - [x] Admin UI for creating, disabling and role-changing users.
   - [x] Forced temporary-password rotation on first login.
-  - [ ] Password reset workflow through verified email.
+  - [x] Password reset workflow through admin-issued reset links; provider-backed email delivery still pending.
   - [x] Session revocation or logout endpoint.
   - [ ] Optional MFA for admin and finance roles.
 - Data administration:
@@ -611,7 +635,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add logout endpoint.
 - [x] Add admin CRUD screens.
 - [x] Add first-login password rotation path.
-- [ ] Add password reset.
+- [x] Add password reset.
 - [x] Add login rate limiting and audit logging.
 - [x] Add signature pad UI and richer jobcard PDF evidence.
 - [ ] Add dispatch scheduling workflow.
