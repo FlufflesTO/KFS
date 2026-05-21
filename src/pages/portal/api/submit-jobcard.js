@@ -30,6 +30,10 @@ export async function POST({ request, locals }) {
     const systemId = cleanId(payload.systemId, "systemId");
     const techComments = String(payload.techComments || "").trim();
     const signatureBase64 = String(payload.signatureBase64 || "");
+    const signatureStrokes = Array.isArray(payload.signatureStrokes) ? payload.signatureStrokes : [];
+    const faultCategory = String(payload.faultCategory || "Routine service").trim().slice(0, 120);
+    const partsUsed = String(payload.partsUsed || "None recorded").trim().slice(0, 500);
+    const followUpActions = String(payload.followUpActions || "No follow-up actions recorded").trim().slice(0, 1000);
 
     if (techComments.length < 3 || techComments.length > 3000) {
       return badRequest("Technician comments must be between 3 and 3000 characters.");
@@ -42,9 +46,12 @@ export async function POST({ request, locals }) {
     const { db, storage } = getBindings();
     const job = await db
       .prepare(
-        `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, systems.site_id
+        `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, jobs.scheduled_date, jobs.job_type,
+                systems.site_id, systems.system_type, systems.coverage_area,
+                sites.owner_company_name, sites.physical_address
          FROM jobs
          INNER JOIN systems ON systems.id = jobs.system_id
+         INNER JOIN sites ON sites.id = systems.site_id
          WHERE jobs.id = ?1 AND jobs.system_id = ?2
          LIMIT 1`
       )
@@ -100,7 +107,19 @@ export async function POST({ request, locals }) {
       technician: user,
       techComments,
       signatureBase64,
-      completedAt: completedAt.toISOString()
+      signatureStrokes,
+      completedAt: completedAt.toISOString(),
+      evidence: {
+        ownerCompanyName: job.owner_company_name,
+        physicalAddress: job.physical_address,
+        systemType: job.system_type,
+        coverageArea: job.coverage_area,
+        scheduledDate: job.scheduled_date,
+        jobType: job.job_type,
+        faultCategory,
+        partsUsed,
+        followUpActions
+      }
     });
 
     await storage.put(documentationPath, pdfBytes, {
@@ -113,7 +132,8 @@ export async function POST({ request, locals }) {
         systemId,
         technicianId: user.id,
         signatureSha256: signatureHash,
-        completedAt: completedAt.toISOString()
+        completedAt: completedAt.toISOString(),
+        faultCategory
       }
     });
 
@@ -157,7 +177,10 @@ export async function POST({ request, locals }) {
         systemId,
         documentationPath,
         nextDueDate,
-        financialRecordId
+        financialRecordId,
+        faultCategory,
+        partsUsed,
+        followUpActions
       }
     });
 
@@ -173,6 +196,10 @@ export async function POST({ request, locals }) {
   } catch (error) {
     if (error instanceof SyntaxError) {
       return badRequest("Request body must be valid JSON.");
+    }
+
+    if (error.message) {
+      return badRequest(error.message);
     }
 
     console.error("submit jobcard failed", error);

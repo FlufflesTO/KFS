@@ -35,7 +35,7 @@ Implemented:
 - Public shell remains lightweight and mostly server-rendered with code-native SVG/HTML technical visuals.
 - Required pages: `/`, `/gas-suppression`, `/fire-detection`, `/compliance-maintenance`, `/critical-infrastructure`, `/emergency-support`, `/security-systems`, `/industries`, `/about`, `/contact`.
 - Portal routes: `/portal/login`, `/portal/tech/dashboard`, `/portal/admin/dashboard`, `/portal/client/dashboard`, `/portal/finance/dashboard`.
-- Portal APIs: `/portal/api/auth`, `/portal/api/submit-jobcard`, `/portal/api/approve-quote`, `/portal/api/file/[...key]`.
+- Portal APIs: `/portal/api/auth`, `/portal/api/job-status`, `/portal/api/submit-jobcard`, `/portal/api/approve-quote`, `/portal/api/file/[...key]`.
 - Core components: `BaseLayout`, `Header`, `Footer`, `CinematicHero`, `RouteMatrix`, `Hero`, `ContextualInquiry`, `ComplianceStrip`, `SectorRiskGrid`, `EngineeringSystems`, `AuthorityEvidence`, `EmergencyResponse`, `SectionHeading`, `Button`.
 - SEO basics: canonical URLs, OpenGraph tags, `robots.txt`, `sitemap.xml`, LocalBusiness JSON-LD.
 - Accessibility basics: skip link, visible focus state, semantic sections, labelled contact form, reduced-motion CSS.
@@ -73,7 +73,7 @@ Immediate refinements recommended:
 - Admin CRUD foundations for sites, systems, users and jobs are now implemented in `/portal/admin/operations`; continue hardening with richer validation, imports and reporting.
 - Add audit logging before sensitive client records and financial approvals become operationally authoritative.
 - Add rate limiting for login and write APIs before production cutover.
-- Add a real signature pad and stronger generated jobcard PDF evidence before field technicians depend on the closure flow.
+- Technician job closure now has a touchscreen signature pad, start-job transition and richer generated jobcard PDF evidence; continue hardening with photos, offline expectations and field exception handling.
 - Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
 - Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
 
@@ -284,11 +284,11 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [ ] Controlled seed process that does not store hashes in committed files.
   - [ ] Data retention policy for jobcards, quotes, invoices and audit evidence.
 - Technician workflow:
-  - [ ] Replace pasted signature data URL with a proper touchscreen signature pad.
-  - [ ] Add job status transition from Scheduled to In Progress.
+  - [x] Replace pasted signature data URL with a proper touchscreen signature pad.
+  - [x] Add job status transition from Scheduled to In Progress.
   - [ ] Add offline/poor-signal handling expectations for field work.
   - [ ] Capture parts used, fault categories, photos and follow-up actions.
-  - [ ] Improve generated jobcard PDF to include visual signature and richer site/system evidence.
+  - [x] Improve generated jobcard PDF to include visual signature and richer site/system evidence.
 - Admin workflow:
   - [ ] Dispatch planner for scheduling jobs and assigning technicians.
   - [ ] Lifecycle due calendar by site, system type and risk tier.
@@ -470,7 +470,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add first-login password rotation path.
 - [ ] Add password reset.
 - [x] Add login rate limiting and audit logging.
-- [ ] Add signature pad UI and richer jobcard PDF evidence.
+- [x] Add signature pad UI and richer jobcard PDF evidence.
 - [ ] Add dispatch scheduling workflow.
 - [ ] Add monitoring and backup SOPs.
 - [ ] Add migration plan from `portal.tequit.co.za` to `portal.kharon.co.za`.

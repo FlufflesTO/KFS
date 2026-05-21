@@ -12,14 +12,14 @@ try {
   const db = getDatabase();
   const query = user.role === "admin"
     ? `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-              systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address
+              jobs.job_type, systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
        WHERE jobs.status IN ('Scheduled', 'In Progress')
        ORDER BY jobs.scheduled_date ASC`
     : `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-              systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address
+              jobs.job_type, systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
@@ -61,23 +61,53 @@ try {
             <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
               <div><dt class="font-bold uppercase text-kharon-grey/70">System</dt><dd>{job.system_type}</dd></div>
               <div><dt class="font-bold uppercase text-kharon-grey/70">Coverage</dt><dd>{job.coverage_area}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Job Type</dt><dd>{job.job_type}</dd></div>
               <div><dt class="font-bold uppercase text-kharon-grey/70">Scheduled</dt><dd>{job.scheduled_date}</dd></div>
               <div><dt class="font-bold uppercase text-kharon-grey/70">Job ID</dt><dd>{job.id}</dd></div>
             </dl>
             {job.site_notes && <p class="mt-5 border-l-4 border-kharon-blue bg-kharon-light p-4 text-sm text-kharon-grey">{job.site_notes}</p>}
+            {job.status === "Scheduled" && (
+              <button class="start-job mt-5 rounded-md border border-kharon-blue px-5 py-3 text-sm font-semibold text-kharon-blue hover:bg-kharon-blue hover:text-white" data-job-id={job.id}>
+                Start job
+              </button>
+            )}
           </div>
 
           <form class="jobcard-form grid gap-4 border border-kharon-border bg-kharon-light p-4" data-job-id={job.id} data-system-id={job.system_id}>
             <input type="hidden" name="jobId" value={job.id} />
             <input type="hidden" name="systemId" value={job.system_id} />
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Fault / work category
+              <select name="faultCategory" class="rounded-md border border-kharon-border px-4 py-3">
+                <option value="Routine service">Routine service</option>
+                <option value="Fault response">Fault response</option>
+                <option value="Compliance inspection">Compliance inspection</option>
+                <option value="Panel issue">Panel issue</option>
+                <option value="Detection device issue">Detection device issue</option>
+                <option value="Suppression release infrastructure">Suppression release infrastructure</option>
+                <option value="Follow-up required">Follow-up required</option>
+              </select>
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
               Technician comments
               <textarea name="techComments" class="min-h-28 rounded-md border border-kharon-border px-4 py-3" maxlength="3000" required></textarea>
             </label>
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Signature image data URL
-              <textarea name="signatureBase64" class="min-h-24 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" placeholder="data:image/png;base64,..." required></textarea>
+              Parts used
+              <input name="partsUsed" class="rounded-md border border-kharon-border px-4 py-3" maxlength="500" placeholder="None / detector head / battery / cylinder label / other" />
             </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Follow-up actions
+              <textarea name="followUpActions" class="min-h-20 rounded-md border border-kharon-border px-4 py-3" maxlength="1000" placeholder="No follow-up required, or describe required action."></textarea>
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Client / responsible person signature
+              <span class="text-xs font-normal text-kharon-grey">Sign inside the box. Clear and re-sign if the capture is not legible.</span>
+              <canvas class="signature-pad h-40 w-full touch-none rounded-md border border-kharon-border bg-white" width="720" height="220" aria-label="Signature capture area"></canvas>
+              <input type="hidden" name="signatureBase64" required />
+              <input type="hidden" name="signatureStrokes" />
+            </label>
+            <button type="button" class="clear-signature rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey hover:bg-white">Clear signature</button>
             <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue">Submit completed jobcard</button>
             <p class="jobcard-result hidden text-sm font-semibold"></p>
           </form>
@@ -87,12 +117,104 @@ try {
   </section>
 
   <script>
+    function pointFromEvent(canvas, event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
+        y: Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height))
+      };
+    }
+
+    function drawStroke(canvas, stroke) {
+      if (stroke.length < 2) return;
+      const context = canvas.getContext("2d");
+      context.lineWidth = 3;
+      context.lineCap = "round";
+      context.lineJoin = "round";
+      context.strokeStyle = "#0B0D0F";
+      context.beginPath();
+      context.moveTo(stroke[0].x * canvas.width, stroke[0].y * canvas.height);
+      for (const point of stroke.slice(1)) {
+        context.lineTo(point.x * canvas.width, point.y * canvas.height);
+      }
+      context.stroke();
+    }
+
+    for (const form of document.querySelectorAll(".jobcard-form")) {
+      const canvas = form.querySelector(".signature-pad");
+      const clearButton = form.querySelector(".clear-signature");
+      const signatureInput = form.querySelector('input[name="signatureBase64"]');
+      const strokesInput = form.querySelector('input[name="signatureStrokes"]');
+      const context = canvas.getContext("2d");
+      const strokes = [];
+      let activeStroke = null;
+
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      canvas.addEventListener("pointerdown", (event) => {
+        canvas.setPointerCapture(event.pointerId);
+        activeStroke = [pointFromEvent(canvas, event)];
+      });
+
+      canvas.addEventListener("pointermove", (event) => {
+        if (!activeStroke) return;
+        activeStroke.push(pointFromEvent(canvas, event));
+        drawStroke(canvas, activeStroke.slice(-2));
+      });
+
+      function finishSignature() {
+        if (activeStroke && activeStroke.length > 1) {
+          strokes.push(activeStroke);
+          signatureInput.value = canvas.toDataURL("image/png");
+          strokesInput.value = JSON.stringify(strokes);
+        }
+        activeStroke = null;
+      }
+
+      canvas.addEventListener("pointerup", finishSignature);
+      canvas.addEventListener("pointercancel", finishSignature);
+
+      clearButton.addEventListener("click", () => {
+        strokes.length = 0;
+        activeStroke = null;
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        signatureInput.value = "";
+        strokesInput.value = "";
+      });
+    }
+
+    for (const button of document.querySelectorAll(".start-job")) {
+      button.addEventListener("click", async () => {
+        button.disabled = true;
+        const response = await fetch("/portal/api/job-status", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ jobId: button.dataset.jobId, status: "In Progress" })
+        });
+        const body = await response.json();
+        if (body.ok) {
+          button.textContent = "In progress";
+          button.className = "start-job mt-5 rounded-md bg-kharon-blue px-5 py-3 text-sm font-semibold text-white";
+        } else {
+          button.disabled = false;
+          button.textContent = body.message || "Start failed";
+        }
+      });
+    }
+
     for (const form of document.querySelectorAll(".jobcard-form")) {
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const result = form.querySelector(".jobcard-result");
         result.classList.add("hidden");
         const data = new FormData(form);
+        if (!data.get("signatureBase64")) {
+          result.textContent = "A captured signature is required.";
+          result.className = "jobcard-result text-sm font-semibold text-red-700";
+          return;
+        }
         const response = await fetch("/portal/api/submit-jobcard", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -100,7 +222,11 @@ try {
             jobId: data.get("jobId"),
             systemId: data.get("systemId"),
             techComments: data.get("techComments"),
-            signatureBase64: data.get("signatureBase64")
+            faultCategory: data.get("faultCategory"),
+            partsUsed: data.get("partsUsed"),
+            followUpActions: data.get("followUpActions"),
+            signatureBase64: data.get("signatureBase64"),
+            signatureStrokes: JSON.parse(data.get("signatureStrokes") || "[]")
           })
         });
         const body = await response.json();
