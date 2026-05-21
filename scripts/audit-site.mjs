@@ -150,6 +150,8 @@ const expectedSourceRoutes = [
   "portal/client/dashboard.astro",
   "portal/finance/dashboard.astro",
   "portal/api/auth.js",
+  "portal/account/mfa.astro",
+  "portal/api/mfa.js",
   "portal/reset.astro",
   "portal/api/reset-password.js",
   "portal/api/submit-jobcard.js",
@@ -167,8 +169,10 @@ for (const route of expectedSourceRoutes) {
 
 const requiredSourceTerms = new Map([
   ["src/middleware.js", ["sessionCookieName", "/portal/tech/", "/portal/finance/", "/portal/client/", "context.locals.user"]],
-  ["src/pages/portal/api/auth.js", ["verifyPassword", "Set-Cookie", "redirectTo"]],
-  ["src/pages/portal/api/admin/users.js", ["reset-link", "password_reset_tokens", "resetUrl"]],
+  ["src/pages/portal/api/auth.js", ["verifyPassword", "verifyTotpCode", "Set-Cookie", "redirectTo"]],
+  ["src/pages/portal/api/admin/users.js", ["reset-link", "password_reset_tokens", "resetUrl", "mfa_required"]],
+  ["src/pages/portal/account/mfa.astro", ["/portal/api/mfa", "Multi-factor authentication", "Generate authenticator setup"]],
+  ["src/pages/portal/api/mfa.js", ["auth.mfa_enable", "encryptMfaSecret", "verifyTotpCode"]],
   ["src/pages/portal/api/reset-password.js", ["auth.password_reset", "password_reset_tokens", "hashPassword"]],
   ["src/pages/portal/reset.astro", ["/portal/api/reset-password", "Reset portal password"]],
   ["src/pages/portal/api/submit-jobcard.js", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
@@ -307,6 +311,10 @@ for (const term of ["CREATE TABLE IF NOT EXISTS job_evidence_files", "storage_pa
 
 for (const term of ["CREATE TABLE IF NOT EXISTS password_reset_tokens", "token_hash TEXT NOT NULL UNIQUE", "idx_password_reset_tokens_expiry"]) {
   if (!schema.includes(term)) fail(`schema.sql missing password reset marker: ${term}`);
+}
+
+for (const term of ["mfa_required INTEGER NOT NULL DEFAULT 0", "mfa_secret_encrypted TEXT", "idx_users_mfa_required"]) {
+  if (!schema.includes(term)) fail(`schema.sql missing MFA marker: ${term}`);
 }
 
 const result = {

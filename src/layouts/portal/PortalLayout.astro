@@ -21,7 +21,8 @@ const roleLinks = {
 
 const links = [
   ...(roleLinks[user?.role] || []),
-  { label: "Password", href: "/portal/account/password", key: "password" }
+  { label: "Password", href: "/portal/account/password", key: "password" },
+  ...(["admin", "finance"].includes(user?.role) ? [{ label: "MFA", href: "/portal/account/mfa", key: "mfa" }] : [])
 ];
 ---
 

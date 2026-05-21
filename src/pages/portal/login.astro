@@ -34,6 +34,10 @@ const next = Astro.url.searchParams.get("next") || "/portal";
             Password
             <input class="rounded-md border border-white/15 bg-black/30 px-4 py-3 text-white" name="password" type="password" autocomplete="current-password" required />
           </label>
+          <label class="grid gap-2 text-sm font-semibold">
+            Authenticator code
+            <input class="rounded-md border border-white/15 bg-black/30 px-4 py-3 text-white" name="mfaCode" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" placeholder="Required if MFA is enabled" />
+          </label>
           <p
             id="login-error"
             role="alert"
@@ -64,7 +68,8 @@ const next = Astro.url.searchParams.get("next") || "/portal";
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             email: formData.get("email"),
-            password: formData.get("password")
+            password: formData.get("password"),
+            mfaCode: formData.get("mfaCode")
           })
         });
         const result = await response.json();

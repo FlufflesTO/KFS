@@ -12,6 +12,8 @@ const resetApiPath = "/portal/api/reset-password";
 const logoutApiPath = "/portal/api/logout";
 const passwordPath = "/portal/account/password";
 const passwordApiPath = "/portal/api/change-password";
+const mfaPath = "/portal/account/mfa";
+const mfaApiPath = "/portal/api/mfa";
 const portalRootPath = "/portal";
 
 function redirectToLogin(context) {
@@ -69,6 +71,7 @@ function rateLimitConfig(pathname) {
     "/portal/api/job-status": { scope: "portal.job_status", maxAttempts: 30, windowSeconds: 15 * 60 },
     "/portal/api/submit-jobcard": { scope: "portal.jobcard_submit", maxAttempts: 20, windowSeconds: 15 * 60 },
     "/portal/api/change-password": { scope: "portal.change_password", maxAttempts: 10, windowSeconds: 15 * 60 },
+    "/portal/api/mfa": { scope: "portal.mfa", maxAttempts: 20, windowSeconds: 15 * 60 },
     "/portal/api/logout": { scope: "portal.logout", maxAttempts: 20, windowSeconds: 15 * 60 },
     "/portal/api/finance/payments": { scope: "portal.finance.payments", maxAttempts: 40, windowSeconds: 15 * 60 },
     "/portal/api/admin/users": { scope: "portal.admin.users", maxAttempts: 60, windowSeconds: 15 * 60 },
@@ -153,6 +156,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (user.forcePasswordChange && pathname !== passwordPath && pathname !== passwordApiPath && pathname !== logoutApiPath) {
     const response = context.redirect(passwordPath, 302);
+    if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
+    return response;
+  }
+
+  if (user.mfaRequired && !user.mfaEnabled && pathname !== mfaPath && pathname !== mfaApiPath && pathname !== logoutApiPath) {
+    const response = context.redirect(mfaPath, 302);
     if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
     return response;
   }

@@ -16,7 +16,7 @@ let loadError = "";
 try {
   const db = getDatabase();
   users = (await db.prepare(
-    `SELECT id, name, email, role, site_id, is_active, force_password_change, last_login_at
+    `SELECT id, name, email, role, site_id, is_active, force_password_change, mfa_required, mfa_enabled, last_login_at
      FROM users
      ORDER BY role, name`
   ).all()).results || [];
@@ -86,6 +86,7 @@ try {
             </select>
             <input class="rounded-md border border-kharon-border px-4 py-3" name="password" type="password" minlength="14" placeholder="Temporary password" required />
             <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="forcePasswordChange" checked /> Force password change</label>
+            <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="mfaRequired" /> Require MFA for admin/finance roles</label>
             <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create user</button>
             <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
           </form>
@@ -171,6 +172,10 @@ try {
               <div class="grid gap-2 text-sm">
                 <label><input type="checkbox" name="isActive" checked={Boolean(record.is_active)} /> Active</label>
                 <label><input type="checkbox" name="forcePasswordChange" checked={Boolean(record.force_password_change)} /> Rotate password</label>
+                {["admin", "finance"].includes(record.role) && (
+                  <label><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
+                )}
+                {record.mfa_enabled && <span class="text-xs font-bold uppercase text-emerald-700">MFA enabled</span>}
               </div>
               <div class="grid gap-2">
                 <input class="rounded-md border border-kharon-border px-3 py-2" name="password" type="password" placeholder="Optional reset password" />
@@ -178,6 +183,11 @@ try {
                 <button class="generate-reset-link rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" type="button" data-user-id={record.id}>
                   Issue reset link
                 </button>
+                {record.mfa_enabled && (
+                  <button class="reset-mfa rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900" type="button" data-user-id={record.id}>
+                    Reset MFA
+                  </button>
+                )}
               </div>
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
             </form>
@@ -312,6 +322,27 @@ try {
           return;
         }
         result.textContent = `Reset link, valid until ${body.expiresAt}: ${body.resetUrl}`;
+        result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 lg:col-span-6";
+      });
+    }
+
+    for (const button of document.querySelectorAll(".reset-mfa")) {
+      button.addEventListener("click", async () => {
+        const form = button.closest("form");
+        const result = form.querySelector(".admin-result");
+        result.classList.add("hidden");
+        const response = await window.kharonPortalFetch("/portal/api/admin/users", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "reset-mfa", id: button.dataset.userId })
+        });
+        const body = await response.json().catch(() => ({ ok: false, message: "MFA could not be reset." }));
+        if (!response.ok || !body.ok) {
+          result.textContent = body.message || "MFA could not be reset.";
+          result.className = "admin-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900 lg:col-span-6";
+          return;
+        }
+        result.textContent = "MFA reset. The user must enrol again if MFA is required.";
         result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 lg:col-span-6";
       });
     }

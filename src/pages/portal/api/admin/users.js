@@ -17,7 +17,7 @@ export async function POST({ request, locals }) {
 
   try {
     const body = await readJson(request);
-    const action = cleanChoice(body.action || "create", "action", ["create", "update", "deactivate", "reset-link"]);
+    const action = cleanChoice(body.action || "create", "action", ["create", "update", "deactivate", "reset-link", "reset-mfa"]);
 
     if (action === "create") {
       const id = crypto.randomUUID();
@@ -28,15 +28,16 @@ export async function POST({ request, locals }) {
       const password = cleanText(body.password, "password", { min: 14, max: 200 });
       const passwordHash = await hashPassword(password);
       const forcePasswordChange = cleanBoolean(body.forcePasswordChange ?? true);
+      const mfaRequired = ["admin", "finance"].includes(role) ? cleanBoolean(body.mfaRequired) : 0;
 
       await db
         .prepare(
           `INSERT INTO users
-             (id, name, email, password_hash, role, site_id, is_active, force_password_change)
+             (id, name, email, password_hash, role, site_id, is_active, force_password_change, mfa_required)
            VALUES
-             (?1, ?2, ?3, ?4, ?5, ?6, 1, ?7)`
+             (?1, ?2, ?3, ?4, ?5, ?6, 1, ?7, ?8)`
         )
-        .bind(id, name, email, passwordHash, role, siteId, forcePasswordChange)
+        .bind(id, name, email, passwordHash, role, siteId, forcePasswordChange, mfaRequired)
         .run();
 
       await auditEvent(db, request, {
@@ -45,7 +46,7 @@ export async function POST({ request, locals }) {
         entityId: id,
         outcome: "success",
         user: locals.user,
-        metadata: { role, siteId }
+        metadata: { role, siteId, mfaRequired: Boolean(mfaRequired) }
       });
 
       return json({ ok: true, id });
@@ -99,11 +100,39 @@ export async function POST({ request, locals }) {
       return json({ ok: true, id, resetUrl, expiresAt });
     }
 
+    if (action === "reset-mfa") {
+      const target = await db.prepare(`SELECT id, role, is_active FROM users WHERE id = ?1 LIMIT 1`).bind(id).first();
+      if (!target || !target.is_active) return badRequest("Only active users can have MFA reset.");
+      if (!["admin", "finance"].includes(target.role)) return badRequest("MFA reset is limited to admin and finance accounts.");
+
+      await db
+        .prepare(
+          `UPDATE users
+           SET mfa_enabled = 0,
+               mfa_secret_encrypted = NULL,
+               mfa_enabled_at = NULL
+           WHERE id = ?1`
+        )
+        .bind(id)
+        .run();
+
+      await auditEvent(db, request, {
+        eventType: "admin.user.mfa_reset",
+        entityType: "user",
+        entityId: id,
+        outcome: "success",
+        user: locals.user
+      });
+
+      return json({ ok: true, id });
+    }
+
     const name = cleanText(body.name, "name", { min: 2, max: 160 });
     const role = cleanChoice(body.role, "role", roles);
     const siteId = cleanId(body.siteId, "siteId", { required: false });
     const isActive = cleanBoolean(body.isActive);
     const forcePasswordChange = cleanBoolean(body.forcePasswordChange);
+    const mfaRequired = ["admin", "finance"].includes(role) ? cleanBoolean(body.mfaRequired) : 0;
 
     await db
       .prepare(
@@ -112,10 +141,11 @@ export async function POST({ request, locals }) {
              role = ?2,
              site_id = ?3,
              is_active = ?4,
-             force_password_change = ?5
-         WHERE id = ?6`
+             force_password_change = ?5,
+             mfa_required = ?6
+         WHERE id = ?7`
       )
-      .bind(name, role, siteId, isActive, forcePasswordChange, id)
+      .bind(name, role, siteId, isActive, forcePasswordChange, mfaRequired, id)
       .run();
 
     if (body.password) {
@@ -132,7 +162,7 @@ export async function POST({ request, locals }) {
       entityId: id,
       outcome: "success",
       user: locals.user,
-      metadata: { role, siteId, isActive, forcePasswordChange, passwordReset: Boolean(body.password) }
+      metadata: { role, siteId, isActive, forcePasswordChange, mfaRequired: Boolean(mfaRequired), passwordReset: Boolean(body.password) }
     });
 
     return json({ ok: true, id });

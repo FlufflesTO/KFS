@@ -34,7 +34,12 @@ export async function POST({ request, locals }) {
     }
 
     const record = await db
-      .prepare(`SELECT id, name, email, password_hash, role, site_id FROM users WHERE id = ?1 AND is_active = 1 LIMIT 1`)
+      .prepare(
+        `SELECT id, name, email, password_hash, role, site_id, mfa_required, mfa_enabled
+         FROM users
+         WHERE id = ?1 AND is_active = 1
+         LIMIT 1`
+      )
       .bind(user.id)
       .first();
 
@@ -86,7 +91,7 @@ export async function POST({ request, locals }) {
     });
 
     return json(
-      { ok: true, redirectTo: "/portal" },
+      { ok: true, redirectTo: record.mfa_required && !record.mfa_enabled ? "/portal/account/mfa" : "/portal" },
       {
         headers: {
           "Set-Cookie": sessionCookie(token)

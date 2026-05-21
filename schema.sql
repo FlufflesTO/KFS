@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS users (
   site_id TEXT REFERENCES sites(id) ON DELETE SET NULL,
   is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
   force_password_change INTEGER NOT NULL DEFAULT 0 CHECK (force_password_change IN (0, 1)),
+  mfa_required INTEGER NOT NULL DEFAULT 0 CHECK (mfa_required IN (0, 1)),
+  mfa_enabled INTEGER NOT NULL DEFAULT 0 CHECK (mfa_enabled IN (0, 1)),
+  mfa_secret_encrypted TEXT,
+  mfa_enabled_at TEXT,
   password_changed_at TEXT,
   last_login_at TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
@@ -131,6 +135,7 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
 
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_site_id ON users(site_id);
+CREATE INDEX IF NOT EXISTS idx_users_mfa_required ON users(role, mfa_required, mfa_enabled);
 CREATE INDEX IF NOT EXISTS idx_sites_owner_company ON sites(owner_company_name);
 CREATE INDEX IF NOT EXISTS idx_systems_site_due ON systems(site_id, next_due_date);
 CREATE INDEX IF NOT EXISTS idx_jobs_technician_status ON jobs(assigned_technician_id, status, scheduled_date);

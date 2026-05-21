@@ -12,6 +12,22 @@ Use this checklist against staging credentials supplied outside the repository. 
 - [ ] Disabled user cannot login.
 - [ ] Force-password-change user is redirected to `/portal/account/password`.
 
+## MFA
+
+- [ ] Admin can access `/portal/account/mfa`.
+- [ ] Finance can access `/portal/account/mfa`.
+- [ ] Technician and client accounts see that MFA is not required for their role.
+- [ ] Admin can mark an admin or finance account as MFA-required from `/portal/admin/operations`.
+- [ ] MFA-required admin or finance user is redirected to `/portal/account/mfa` after password rotation.
+- [ ] MFA setup generates an authenticator setup key and provisioning URI.
+- [ ] Invalid MFA enable code is rejected and audit logged.
+- [ ] Valid MFA enable code turns MFA on and redirects to the correct dashboard.
+- [ ] Login for an MFA-enabled account fails without a 6-digit authenticator code.
+- [ ] Login for an MFA-enabled account fails with an invalid authenticator code.
+- [ ] Login for an MFA-enabled account succeeds with a valid authenticator code.
+- [ ] User can disable MFA only with a valid current authenticator code.
+- [ ] Admin can reset MFA for an admin or finance account after identity verification.
+
 ## RBAC Routing
 
 - [ ] Client accessing `/portal/admin/dashboard` redirects or blocks.

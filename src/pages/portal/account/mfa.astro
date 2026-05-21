@@ -1,0 +1,181 @@
+---
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+let mfa = { required: Boolean(user?.mfaRequired), enabled: Boolean(user?.mfaEnabled), eligible: ["admin", "finance"].includes(user?.role) };
+let loadError = "";
+
+try {
+  const db = getDatabase();
+  const record = await db
+    .prepare(`SELECT mfa_required, mfa_enabled FROM users WHERE id = ?1 AND is_active = 1 LIMIT 1`)
+    .bind(user.id)
+    .first();
+  if (record) {
+    mfa = {
+      required: Boolean(record.mfa_required),
+      enabled: Boolean(record.mfa_enabled),
+      eligible: ["admin", "finance"].includes(user?.role)
+    };
+  }
+} catch (error) {
+  console.error("mfa page failed", error);
+  loadError = "MFA status could not be loaded.";
+}
+---
+
+<PortalLayout title="MFA Control | Kharon Portal" active="mfa" user={user}>
+  <section class="bg-kharon-black px-6 py-10 text-white">
+    <div class="mx-auto max-w-4xl">
+      <p class="text-xs font-bold uppercase text-kharon-cyan">Account control</p>
+      <h1 class="mt-3 text-3xl font-bold">Multi-factor authentication</h1>
+      <p class="mt-4 max-w-2xl text-white/65">
+        Admin and finance accounts can enrol an authenticator app before accessing sensitive operational and ledger workflows.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-6 py-8">
+    <div class="mx-auto grid max-w-3xl gap-6">
+      {loadError && <p class="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900">{loadError}</p>}
+
+      {!mfa.eligible && (
+        <article class="border border-kharon-border bg-white p-6">
+          <h2 class="text-xl font-bold">Not required for this role</h2>
+          <p class="mt-3 leading-7 text-kharon-muted">
+            MFA enrolment is currently limited to admin and finance accounts. Technician and client account controls remain password, session and RBAC protected.
+          </p>
+        </article>
+      )}
+
+      {mfa.eligible && (
+        <article class="border border-kharon-border bg-white p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase text-kharon-purple">Current status</p>
+              <h2 class="mt-2 text-xl font-bold">{mfa.enabled ? "MFA enabled" : mfa.required ? "MFA required" : "MFA available"}</h2>
+            </div>
+            <span class={`rounded-full border px-3 py-1 text-xs font-bold uppercase ${mfa.enabled ? "border-emerald-300 bg-emerald-50 text-emerald-900" : mfa.required ? "border-amber-300 bg-amber-50 text-amber-900" : "border-kharon-border bg-kharon-light text-kharon-muted"}`}>
+              {mfa.enabled ? "Protected" : mfa.required ? "Setup required" : "Optional"}
+            </span>
+          </div>
+
+          {!mfa.enabled && (
+            <div class="mt-6 grid gap-5">
+              <button id="start-mfa" class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue" type="button">
+                Generate authenticator setup
+              </button>
+
+              <div id="mfa-setup" class="hidden grid gap-4 rounded-md border border-kharon-border bg-kharon-light p-4">
+                <p class="text-sm font-semibold text-kharon-black">Add this account manually in your authenticator app.</p>
+                <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+                  Setup key
+                  <input id="mfa-secret" class="rounded-md border border-kharon-border bg-white px-4 py-3 font-mono text-sm" readonly />
+                </label>
+                <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+                  Authenticator URI
+                  <textarea id="mfa-uri" class="min-h-24 rounded-md border border-kharon-border bg-white px-4 py-3 font-mono text-xs" readonly></textarea>
+                </label>
+                <form id="enable-mfa-form" class="grid gap-4">
+                  <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+                    6-digit code
+                    <input class="rounded-md border border-kharon-border px-4 py-3" name="code" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" required />
+                  </label>
+                  <button class="rounded-md bg-kharon-blue px-6 py-4 font-semibold text-white" type="submit">
+                    Enable MFA
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {mfa.enabled && (
+            <form id="disable-mfa-form" class="mt-6 grid gap-4 rounded-md border border-kharon-border bg-kharon-light p-4">
+              <p class="text-sm font-semibold text-kharon-black">Disabling MFA requires a current authenticator code.</p>
+              <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+                6-digit code
+                <input class="rounded-md border border-kharon-border px-4 py-3" name="code" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" required />
+              </label>
+              <button class="rounded-md border border-red-300 bg-red-50 px-6 py-4 font-semibold text-red-900" type="submit">
+                Disable MFA
+              </button>
+            </form>
+          )}
+
+          <p id="mfa-result" class="mt-5 hidden rounded-md border px-4 py-3 text-sm font-semibold" role="alert" aria-live="polite"></p>
+        </article>
+      )}
+    </div>
+  </section>
+
+  <script>
+    const startButton = document.querySelector("#start-mfa");
+    const setupPanel = document.querySelector("#mfa-setup");
+    const secretInput = document.querySelector("#mfa-secret");
+    const uriInput = document.querySelector("#mfa-uri");
+    const enableForm = document.querySelector("#enable-mfa-form");
+    const disableForm = document.querySelector("#disable-mfa-form");
+    const result = document.querySelector("#mfa-result");
+
+    function showResult(message, ok = false) {
+      if (!result) return;
+      result.textContent = message;
+      result.className = ok
+        ? "mt-5 rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900"
+        : "mt-5 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+    }
+
+    startButton?.addEventListener("click", async () => {
+      const response = await window.kharonPortalFetch("/portal/api/mfa", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "setup" })
+      });
+      const body = await response.json().catch(() => ({ ok: false, message: "MFA setup could not be started." }));
+      if (!response.ok || !body.ok) {
+        showResult(body.message || "MFA setup could not be started.");
+        return;
+      }
+      secretInput.value = body.secret;
+      uriInput.value = body.provisioningUri;
+      setupPanel.classList.remove("hidden");
+      showResult("Setup key generated. Verify the first authenticator code to enable MFA.", true);
+    });
+
+    enableForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const formData = new FormData(enableForm);
+      const response = await window.kharonPortalFetch("/portal/api/mfa", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "enable", secret: secretInput.value, code: formData.get("code") })
+      });
+      const body = await response.json().catch(() => ({ ok: false, message: "MFA could not be enabled." }));
+      if (!response.ok || !body.ok) {
+        showResult(body.message || "MFA could not be enabled.");
+        return;
+      }
+      showResult("MFA enabled. Redirecting...", true);
+      window.location.href = body.redirectTo || "/portal";
+    });
+
+    disableForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const formData = new FormData(disableForm);
+      const response = await window.kharonPortalFetch("/portal/api/mfa", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "disable", code: formData.get("code") })
+      });
+      const body = await response.json().catch(() => ({ ok: false, message: "MFA could not be disabled." }));
+      if (!response.ok || !body.ok) {
+        showResult(body.message || "MFA could not be disabled.");
+        return;
+      }
+      window.location.href = body.redirectTo || "/portal/account/mfa";
+    });
+  </script>
+</PortalLayout>

@@ -125,3 +125,16 @@ Operational rule:
 - Do not send reset links through public chat or commit them to files.
 - Until an email provider is selected, deliver reset links only through an approved external channel controlled by Kharon operations.
 - If a reset link is exposed or sent to the wrong recipient, issue a fresh reset link and treat the old one as compromised until it expires.
+
+## MFA Operations
+
+Admin and finance users can enrol an authenticator app at `/portal/account/mfa`.
+
+Operational rules:
+
+- MFA uses app-based 6-digit TOTP codes only in this foundation phase.
+- Admins can mark admin and finance users as MFA-required from `/portal/admin/operations`.
+- A user marked as MFA-required is redirected to MFA setup after password rotation and before normal dashboard access.
+- Once MFA is enabled, login requires email, password and a valid authenticator code before issuing a session cookie.
+- TOTP secrets are encrypted before storage and must never be copied into documentation, tickets or screenshots.
+- If a user loses access to their authenticator, an admin must disable and re-issue MFA through a controlled support process after identity verification.

@@ -241,6 +241,31 @@ Password reset production gate:
 - [x] Site audit script passes.
 - [x] No secrets committed.
 
+## Review Update - 2026-05-21 Admin Finance MFA Foundation Pass
+
+Scope for this pass:
+
+- Add database fields for per-user MFA requirement, MFA enablement and encrypted TOTP secret storage.
+- Add a repo-native TOTP utility for setup and verification without adding a third-party authentication dependency.
+- Add account MFA setup, verification and disable endpoints protected by authenticated session, CSRF and rate limiting.
+- Add a portal account MFA page so admin and finance users can enrol authenticator apps.
+- Update login so accounts with enabled MFA must provide a valid one-time code before receiving a session.
+- Allow admins to mark admin and finance accounts as MFA-required from portal operations.
+- Keep SMS, email OTP and hardware security-key support out of scope for this foundation pass.
+
+MFA production gate:
+
+- [x] Roadmap updated before implementation.
+- [x] MFA database fields added.
+- [x] TOTP setup and verification utility implemented.
+- [x] Account MFA setup page implemented.
+- [x] Login enforces MFA when enabled.
+- [x] Admin MFA-required control implemented for admin and finance users.
+- [x] MFA events audit logged.
+- [x] Build passes.
+- [x] Site audit script passes.
+- [x] No secrets committed.
+
 ## Master Feature List
 
 ### Foundation
@@ -442,7 +467,7 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Forced temporary-password rotation on first login.
   - [x] Password reset workflow through admin-issued reset links; provider-backed email delivery still pending.
   - [x] Session revocation or logout endpoint.
-  - [ ] Optional MFA for admin and finance roles.
+  - [x] Optional MFA for admin and finance roles.
 - Data administration:
   - [x] Admin CRUD foundations for sites, systems and technician assignments.
   - [ ] Bulk import/export paths for sites, systems and users.
