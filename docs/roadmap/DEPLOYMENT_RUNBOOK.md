@@ -121,11 +121,18 @@ Use Cloudflare Redirect Rules or Bulk Redirects for this. Do not add full-domain
 
 ### Portal DNS And Routing
 
-`portal.tequit.co.za` is attached to the SSR Worker deployment, not the static Pages hostname. The public `www` and apex hostnames can continue serving the public site, but portal traffic must resolve to the Worker route/custom domain.
+`portal.tequit.co.za`, `www.tequit.co.za` and `tequit.co.za` are attached to the SSR Worker deployment. Do not leave public traffic on the old static Pages deployment, otherwise public navigation can drift from the portal-backed SSR build.
+
+Current Tequit Worker routes in `wrangler.jsonc`:
+
+- `tequit.co.za/*`
+- `www.tequit.co.za/*`
+- `portal.tequit.co.za/*`
 
 Expected checks:
 
 ```powershell
+curl.exe -I https://www.tequit.co.za/contact/
 curl.exe -I https://portal.tequit.co.za/portal/login
 curl.exe -I https://portal.tequit.co.za/portal/tech/dashboard
 ```
@@ -134,8 +141,9 @@ Expected results:
 
 - `/portal/login` returns `200`.
 - Protected dashboards return `302` to `/portal/login?...` when unauthenticated.
+- Public `Access Records` links render `https://portal.tequit.co.za/portal/login`.
 
-If `portal.tequit.co.za` returns the public site's 404 page, it is attached to the wrong Cloudflare application. Remove the `portal.tequit.co.za` custom domain from the Pages/static app and add it as a custom domain or route on the Worker deployment that serves `kharon-website.kharonops.workers.dev`.
+If `www.tequit.co.za` or `portal.tequit.co.za` serves stale Pages output, it is attached to the wrong Cloudflare application. Remove the affected custom domain from the Pages/static app or add a Worker route/custom domain on the Worker deployment.
 
 After the DNS/custom domain is saved, re-check routing:
 

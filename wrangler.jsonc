@@ -2,6 +2,20 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "kharon-website",
   "compatibility_date": "2026-05-20",
+  "routes": [
+    {
+      "pattern": "tequit.co.za/*",
+      "zone_name": "tequit.co.za"
+    },
+    {
+      "pattern": "www.tequit.co.za/*",
+      "zone_name": "tequit.co.za"
+    },
+    {
+      "pattern": "portal.tequit.co.za/*",
+      "zone_name": "tequit.co.za"
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
