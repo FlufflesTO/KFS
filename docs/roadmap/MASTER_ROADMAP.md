@@ -35,7 +35,7 @@ Implemented:
 - Public shell remains lightweight and mostly server-rendered with code-native SVG/HTML technical visuals.
 - Required pages: `/`, `/gas-suppression`, `/fire-detection`, `/compliance-maintenance`, `/critical-infrastructure`, `/emergency-support`, `/security-systems`, `/industries`, `/about`, `/contact`.
 - Portal routes: `/portal/login`, `/portal/tech/dashboard`, `/portal/admin/dashboard`, `/portal/client/dashboard`, `/portal/finance/dashboard`.
-- Portal APIs: `/portal/api/auth`, `/portal/api/job-status`, `/portal/api/submit-jobcard`, `/portal/api/maintenance-request`, `/portal/api/approve-quote`, `/portal/api/file/[...key]`.
+- Portal APIs: `/portal/api/auth`, `/portal/api/job-status`, `/portal/api/submit-jobcard`, `/portal/api/maintenance-request`, `/portal/api/admin/maintenance-requests`, `/portal/api/approve-quote`, `/portal/api/file/[...key]`.
 - Core components: `BaseLayout`, `Header`, `Footer`, `CinematicHero`, `RouteMatrix`, `Hero`, `ContextualInquiry`, `ComplianceStrip`, `SectorRiskGrid`, `EngineeringSystems`, `AuthorityEvidence`, `EmergencyResponse`, `SectionHeading`, `Button`.
 - SEO basics: canonical URLs, OpenGraph tags, `robots.txt`, `sitemap.xml`, LocalBusiness JSON-LD.
 - Accessibility basics: skip link, visible focus state, semantic sections, labelled contact form, reduced-motion CSS.
@@ -75,6 +75,7 @@ Immediate refinements recommended:
 - Add rate limiting for login and write APIs before production cutover.
 - Technician job closure now has a touchscreen signature pad, start-job transition and richer generated jobcard PDF evidence; continue hardening with photos, offline expectations and field exception handling.
 - Client maintenance requests and admin exception queues are now D1-backed; continue hardening with request status management, scheduling conversion and notification workflows.
+- Admins can now update client request status and convert requests into scheduled dispatches linked back to the client request.
 - Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
 - Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
 
@@ -301,6 +302,7 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [ ] Client account-to-site management for multi-site customers.
   - [ ] Quote approval history and confirmation receipts.
   - [x] Maintenance request submission from the client dashboard.
+  - [x] Client-visible request status and linked scheduled dispatch reference.
   - [ ] Per-document access logs for sensitive records.
 - Finance workflow:
   - [ ] Invoice number generation and immutable ledger references.
@@ -475,6 +477,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add login rate limiting and audit logging.
 - [x] Add signature pad UI and richer jobcard PDF evidence.
 - [ ] Add dispatch scheduling workflow.
+- [x] Convert client requests into scheduled dispatches.
 - [ ] Add monitoring and backup SOPs.
 - [ ] Add migration plan from `portal.tequit.co.za` to `portal.kharon.co.za`.
 

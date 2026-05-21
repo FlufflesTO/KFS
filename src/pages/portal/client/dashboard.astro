@@ -39,7 +39,7 @@ try {
     requests = (await db.prepare(
       `SELECT maintenance_requests.id, maintenance_requests.request_type, maintenance_requests.priority,
               maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
-              systems.coverage_area
+              maintenance_requests.linked_job_id, systems.coverage_area
        FROM maintenance_requests
        LEFT JOIN systems ON systems.id = maintenance_requests.system_id
        WHERE maintenance_requests.site_id = ?1
@@ -147,6 +147,7 @@ try {
                   <div>
                     <p class="font-semibold">{request.subject}</p>
                     <p class="text-sm text-kharon-grey">{request.request_type} / {request.coverage_area || "General site request"}</p>
+                    {request.linked_job_id && <p class="mt-1 text-xs font-bold uppercase text-kharon-blue">Scheduled dispatch: {request.linked_job_id}</p>}
                   </div>
                   <span class="rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">{request.status}</span>
                 </div>

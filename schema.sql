@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
   status TEXT NOT NULL DEFAULT 'New' CHECK (status IN ('New', 'Reviewing', 'Scheduled', 'Closed')),
   subject TEXT NOT NULL CHECK (length(trim(subject)) BETWEEN 3 AND 160),
   message TEXT NOT NULL CHECK (length(trim(message)) BETWEEN 10 AND 2000),
+  linked_job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
@@ -116,6 +117,7 @@ CREATE INDEX IF NOT EXISTS idx_financial_job ON financial_records(job_id);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_site_status ON maintenance_requests(site_id, status, created_at);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_status_priority ON maintenance_requests(status, priority, created_at);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_system ON maintenance_requests(system_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_requests_linked_job ON maintenance_requests(linked_job_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_actor_created ON audit_events(actor_user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_events_type_created ON audit_events(event_type, created_at);
 CREATE INDEX IF NOT EXISTS idx_rate_limits_scope_window ON portal_rate_limits(scope, window_start);

@@ -12,6 +12,8 @@ let clientRequests = [];
 let overdue = [];
 let missingDocs = [];
 let financeFollowup = [];
+let technicians = [];
+let requestSystems = [];
 let loadError = "";
 
 try {
@@ -46,17 +48,27 @@ try {
   ).all()).results || [];
 
   clientRequests = (await db.prepare(
-    `SELECT maintenance_requests.id, maintenance_requests.request_type, maintenance_requests.priority,
-            maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
+    `SELECT maintenance_requests.id, maintenance_requests.site_id, maintenance_requests.system_id,
+            maintenance_requests.request_type, maintenance_requests.priority,
+            maintenance_requests.status, maintenance_requests.subject, maintenance_requests.message,
+            maintenance_requests.created_at, maintenance_requests.linked_job_id,
             sites.owner_company_name, systems.coverage_area
      FROM maintenance_requests
      INNER JOIN sites ON sites.id = maintenance_requests.site_id
      LEFT JOIN systems ON systems.id = maintenance_requests.system_id
-     WHERE maintenance_requests.status IN ('New', 'Reviewing')
+     WHERE maintenance_requests.status IN ('New', 'Reviewing', 'Scheduled')
      ORDER BY
        CASE maintenance_requests.priority WHEN 'Critical' THEN 1 WHEN 'Urgent' THEN 2 ELSE 3 END,
        maintenance_requests.created_at ASC
      LIMIT 12`
+  ).all()).results || [];
+
+  technicians = (await db.prepare(
+    `SELECT id, name FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name`
+  ).all()).results || [];
+
+  requestSystems = (await db.prepare(
+    `SELECT id, site_id, system_type, coverage_area FROM systems ORDER BY coverage_area`
   ).all()).results || [];
 
   overdue = (await db.prepare(
@@ -153,14 +165,45 @@ try {
           <div class="mt-5 grid gap-3">
             {clientRequests.length === 0 && <p class="text-kharon-grey">No new client requests require review.</p>}
             {clientRequests.map((item) => (
-              <article class="border-l-4 border-kharon-purple bg-kharon-light p-4">
+              <article class="request-card border-l-4 border-kharon-purple bg-kharon-light p-4" data-request-id={item.id}>
                 <div class="flex flex-wrap justify-between gap-3">
                   <div>
                     <p class="font-semibold">{item.owner_company_name}</p>
                     <p class="text-sm text-kharon-grey">{item.subject}</p>
                     <p class="mt-1 text-xs uppercase text-kharon-grey/70">{item.request_type} / {item.coverage_area || "General site request"}</p>
+                    <p class="mt-2 text-sm text-kharon-grey">{item.message}</p>
+                    {item.linked_job_id && <p class="mt-2 text-xs font-bold uppercase text-kharon-blue">Dispatch: {item.linked_job_id}</p>}
                   </div>
-                  <span class="h-fit rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">{item.priority}</span>
+                  <span class="h-fit rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">{item.priority} / {item.status}</span>
+                </div>
+                <div class="mt-4 grid gap-3">
+                  <form class="request-status-form flex flex-wrap gap-2" data-request-id={item.id}>
+                    <input type="hidden" name="requestId" value={item.id} />
+                    <select class="rounded-md border border-kharon-border px-3 py-2 text-sm" name="status">
+                      {["New", "Reviewing", "Closed"].map((status) => <option value={status} selected={item.status === status}>{status}</option>)}
+                    </select>
+                    <button class="rounded-md border border-kharon-blue px-4 py-2 text-sm font-semibold text-kharon-blue">Update status</button>
+                    <p class="request-result hidden text-sm font-semibold"></p>
+                  </form>
+                  {!item.linked_job_id && (
+                    <form class="request-schedule-form grid gap-2 lg:grid-cols-5" data-request-id={item.id}>
+                      <input type="hidden" name="requestId" value={item.id} />
+                      <select class="rounded-md border border-kharon-border px-3 py-2 text-sm lg:col-span-2" name="systemId" required>
+                        <option value="">Select system</option>
+                        {requestSystems.filter((system) => system.site_id === item.site_id).map((system) => (
+                          <option value={system.id} selected={system.id === item.system_id}>{system.system_type} / {system.coverage_area}</option>
+                        ))}
+                      </select>
+                      <select class="rounded-md border border-kharon-border px-3 py-2 text-sm" name="assignedTechnicianId">
+                        <option value="">Unassigned</option>
+                        {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
+                      </select>
+                      <input class="rounded-md border border-kharon-border px-3 py-2 text-sm" name="scheduledDate" type="date" required />
+                      <button class="rounded-md bg-kharon-purple px-4 py-2 text-sm font-semibold text-white">Schedule dispatch</button>
+                      <input class="rounded-md border border-kharon-border px-3 py-2 text-sm lg:col-span-2" name="jobType" value={item.request_type} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2 text-sm lg:col-span-3" name="siteNotes" value={`${item.subject}: ${item.message}`.slice(0, 900)} />
+                    </form>
+                  )}
                 </div>
               </article>
             ))}
@@ -210,4 +253,62 @@ try {
       </section>
     </div>
   </section>
+  <script>
+    async function postJson(url, payload) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const body = await response.json();
+      if (!response.ok || !body.ok) throw new Error(body.message || "Request failed.");
+      return body;
+    }
+
+    for (const form of document.querySelectorAll(".request-status-form")) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const result = form.querySelector(".request-result");
+        const data = new FormData(form);
+        try {
+          const body = await postJson("/portal/api/admin/maintenance-requests", {
+            action: "updateStatus",
+            requestId: data.get("requestId"),
+            status: data.get("status")
+          });
+          result.textContent = `Status: ${body.status}`;
+          result.className = "request-result text-sm font-semibold text-kharon-blue";
+        } catch (error) {
+          result.textContent = error.message;
+          result.className = "request-result text-sm font-semibold text-red-700";
+        }
+      });
+    }
+
+    for (const form of document.querySelectorAll(".request-schedule-form")) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const card = form.closest(".request-card");
+        const result = card.querySelector(".request-result");
+        const data = new FormData(form);
+        try {
+          const body = await postJson("/portal/api/admin/maintenance-requests", {
+            action: "scheduleDispatch",
+            requestId: data.get("requestId"),
+            systemId: data.get("systemId"),
+            assignedTechnicianId: data.get("assignedTechnicianId"),
+            scheduledDate: data.get("scheduledDate"),
+            jobType: data.get("jobType"),
+            siteNotes: data.get("siteNotes")
+          });
+          result.textContent = `Scheduled dispatch: ${body.jobId}`;
+          result.className = "request-result text-sm font-semibold text-kharon-blue";
+          form.remove();
+        } catch (error) {
+          result.textContent = error.message;
+          result.className = "request-result text-sm font-semibold text-red-700";
+        }
+      });
+    }
+  </script>
 </PortalLayout>
