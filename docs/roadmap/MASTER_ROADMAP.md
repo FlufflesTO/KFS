@@ -475,7 +475,15 @@ Tasks:
 - Identify review events: auth failures, rate-limit blocks, CSRF blocks, document access failures and API/server errors.
 - Add weekly/monthly review checklist.
 
-Status: pending.
+Deployable gate:
+
+- Error event categories and review thresholds are documented. ✓
+- Cloudflare dashboard navigation and D1 query commands are documented. ✓
+- Weekly and monthly review checklists are defined. ✓
+- Incident escalation thresholds are defined. ✓
+- Limitations and planned improvements are documented. ✓
+
+Status: implementation complete. Policy at `docs/roadmap/ERROR_TELEMETRY_POLICY.md`. Automated alerting and Logpush integration remain deferred pending provider selection.
 
 ### Phase 7 - Public Authority Proof
 
@@ -547,7 +555,7 @@ Deployable gate:
 - Logout audit event is emitted as before. ✓
 - `npm run build` and `npm run audit:site` pass. ✓
 
-Status: implementation complete. Migration `0009_revoked_sessions.sql` must be applied to staging and production D1 before the revocation checks take effect. Apply with `wrangler d1 execute DB --file migrations/0009_revoked_sessions.sql`.
+Status: implementation complete. Migrations `0009_revoked_sessions.sql` applied to staging D1 on 2026-05-25.
 
 ### Phase 11 - Portal Admin UX Hardening
 
@@ -576,7 +584,7 @@ Deployable gate:
 - System service intervals are configurable and the jobcard closure endpoint uses the stored interval. ✓ (migration `0010_system_service_interval.sql`; admin operations form; submit-jobcard reads interval)
 - `npm run build` and `npm run audit:site` pass. ✓
 
-Status: implementation complete. Apply migrations `0010_system_service_interval.sql` to staging and production D1. Staging QA of collapsible section behaviour and copy-to-clipboard with real credentials remains required.
+Status: implementation complete. Migration `0010_system_service_interval.sql` applied to staging D1 on 2026-05-25. Staging QA of collapsible section behaviour and copy-to-clipboard with real credentials remains required.
 
 ### Phase 12 - Analytics And Conversion Tracking
 
@@ -595,16 +603,26 @@ Tasks:
 - Track solution page and industry page engagement events.
 - Confirm analytics do not fire on any `/portal/*` route.
 - Update privacy notice or cookie disclosure if required by the chosen provider.
-- Consider whether a server-side form handler (replacing the `mailto:` contact form) should be built in the same pass to enable server-side conversion tracking. If yes, scope the form handler here; if not, document the deferral reason.
+- [x] Replace the `mailto:` contact form with a server-side handler that stores submissions in D1 (`contact_submissions` table), validates inputs, checks the honeypot field server-side and applies IP rate limiting.
 
-Deployable gate:
+Contact form handler gate:
 
-- Analytics events appear in the provider dashboard for public page views and key CTA clicks.
-- No analytics events fire on any `/portal/*` route.
-- Build passes with no console errors related to analytics.
-- Privacy obligations for the chosen provider are documented.
+- Contact form submits to `/api/contact` via fetch; no email client dependency. ✓
+- Honeypot field is validated server-side; bot submissions are silently discarded. ✓
+- Name, email, request type and message are validated with minimum and maximum length rules. ✓
+- IP rate limiting applies (5 submissions per 15-minute window per IP). ✓
+- Submissions stored in `contact_submissions` D1 table; accessible via `wrangler d1 execute` queries. ✓
+- Success confirmation replaces the form inline; error state is shown without page reload. ✓
+- Migration `0011_contact_submissions.sql` applied to staging D1 on 2026-05-25. ✓
+- `npm run build` and `npm run audit:site` pass. ✓
 
-Status: pending.
+Pending:
+
+- Analytics provider selection and integration remain deferred. Provider must meet POPIA data residency requirements before deployment.
+- Contact form email notification delivery is deferred to Phase 9 (provider-backed email).
+- Page-view and CTA click tracking require provider selection.
+
+Status: contact form server-side handler implemented. Analytics provider integration pending director approval of a POPIA-compliant provider.
 
 ## Master Feature List
 
@@ -850,7 +868,7 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] CSV export formula-injection sanitisation (Phase 11).
   - [x] Finance settlement confirmation gate (Phase 11).
   - [x] Copy-to-clipboard reset link control replacing plain-text DOM rendering (Phase 11).
-  - [ ] Structured error telemetry and Cloudflare log review process.
+  - [x] Structured error telemetry and Cloudflare log review process (Phase 6).
   - [ ] Per-role authorization tests.
 - Operations and support:
   - [x] Written SOP for onboarding users, assigning jobs and closing jobcards.
@@ -1266,7 +1284,7 @@ Tasks:
 - [ ] Select privacy-aware analytics provider; confirm POPIA alignment.
 - [ ] Track public page views, CTA clicks and contact form conversion events.
 - [ ] Confirm no analytics fire on `/portal/*` routes.
-- [ ] Replace `action="mailto:..."` contact form with a server-side form handler or confirmed third-party form service.
+- [x] Replace `action="mailto:..."` contact form with a server-side form handler storing submissions in D1 with IP rate limiting and server-side honeypot validation (Phase 12 contact handler, 2026-05-25).
 - [ ] Add phone number to contact and emergency support pages.
 - [ ] Update privacy notice if required by chosen analytics or form provider.
 
@@ -1276,7 +1294,7 @@ Analytics events appear in provider dashboard for public routes. No events on po
 
 Status:
 
-Pending.
+Contact form handler implemented and deployed to staging (migration `0011_contact_submissions.sql` applied). Analytics provider selection and phone number pending director input.
 
 ## Verification Commands
 

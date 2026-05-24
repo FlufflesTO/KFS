@@ -62,16 +62,9 @@ const requestTypes = [
       </div>
 
       <form
-        id="emergency-support"
+        id="contact-form"
         class="grid gap-5 rounded-lg border border-kharon-border bg-kharon-light p-6"
-        action={`mailto:${site.email}`}
-        method="post"
-        enctype="text/plain"
       >
-        <p id="contact-help" class="text-sm text-kharon-grey">
-          Submission opens your default email client with prefilled details for secure review.
-        </p>
-
         <label class="sr-only" for="website-field">Website</label>
         <input
           id="website-field"
@@ -107,7 +100,7 @@ const requestTypes = [
 
         <label class="grid gap-2 text-sm font-semibold text-kharon-black">
           Request Type
-          <select class="rounded-md border border-kharon-border px-4 py-3 font-normal" name="priority" required>
+          <select class="rounded-md border border-kharon-border px-4 py-3 font-normal" name="requestType" required>
             {requestTypes.map((item) => <option value={item}>{item}</option>)}
           </select>
         </label>
@@ -118,15 +111,60 @@ const requestTypes = [
             class="min-h-36 rounded-md border border-kharon-border px-4 py-3 font-normal"
             name="message"
             maxlength="3000"
-            aria-describedby="contact-help"
             required
           ></textarea>
         </label>
 
-        <button class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
+        <p id="contact-result" class="hidden text-sm font-semibold" aria-live="polite"></p>
+
+        <button id="contact-submit" class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
           Submit Enquiry
         </button>
       </form>
+      <script>
+        const form = document.getElementById("contact-form");
+        const result = document.getElementById("contact-result");
+        const submitBtn = document.getElementById("contact-submit");
+
+        form?.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Sending…";
+          result.className = "hidden text-sm font-semibold";
+
+          const data = new FormData(form);
+          const payload = {
+            website: data.get("website") || "",
+            name: data.get("name") || "",
+            email: data.get("email") || "",
+            requestType: data.get("requestType") || "",
+            message: data.get("message") || ""
+          };
+
+          try {
+            const response = await fetch("/api/contact", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            const body = await response.json().catch(() => ({ ok: false, message: "Submission failed." }));
+
+            if (body.ok) {
+              form.innerHTML = `<p class="py-4 text-base font-semibold text-kharon-purple">Enquiry received. Kharon will be in contact shortly.</p>`;
+            } else {
+              result.textContent = body.message || "Submission failed. Try emailing admin@kharon.co.za directly.";
+              result.className = "text-sm font-semibold text-red-700";
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Submit Enquiry";
+            }
+          } catch {
+            result.textContent = "Could not reach the server. Try emailing admin@kharon.co.za directly.";
+            result.className = "text-sm font-semibold text-red-700";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit Enquiry";
+          }
+        });
+      </script>
     </div>
   </section>
 
