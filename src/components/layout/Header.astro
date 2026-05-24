@@ -15,6 +15,9 @@ const isLinkActive = (href) => href.includes("#") ? false : normalizePath(href) 
 const isSolutionsActive = solutionLinks.some((item) => isLinkActive(item.href));
 const desktopLinkClass = (active) =>
   `text-sm font-semibold ${active ? "text-white" : "text-white/75 hover:text-white"}`;
+
+const solutionHrefs = new Set(solutionLinks.map((l) => l.href));
+const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
 ---
 
 <header class="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-kharon-black/90 backdrop-blur-xl">
@@ -46,8 +49,8 @@ const desktopLinkClass = (active) =>
           </svg>
         </summary>
 
-        <div
-          role="menu"
+        <nav
+          aria-label="Solutions"
           class="absolute left-0 top-8 w-72 rounded-lg border border-white/10 bg-kharon-charcoal p-3 shadow-2xl"
         >
           {
@@ -56,7 +59,6 @@ const desktopLinkClass = (active) =>
               return (
                 <a
                   href={link.href}
-                  role="menuitem"
                   aria-current={active ? "page" : undefined}
                   class={`block rounded-md px-4 py-3 text-sm ${active ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
                 >
@@ -65,7 +67,7 @@ const desktopLinkClass = (active) =>
               );
             })
           }
-        </div>
+        </nav>
       </details>
 
       {
@@ -111,7 +113,7 @@ const desktopLinkClass = (active) =>
       <div class="fixed inset-x-0 top-20 z-[90] max-h-[calc(100vh-5rem)] overflow-y-auto border-t border-white/10 bg-kharon-black px-4 py-6 shadow-2xl sm:px-6 sm:py-8">
         <nav class="grid gap-1" aria-label="Mobile navigation">
           {
-            [...mainLinks.slice(0, 1), ...solutionLinks, ...mainLinks.slice(1)].map((link) => {
+            [...mobilePrimaryLinks.slice(0, 1), ...solutionLinks, ...mobilePrimaryLinks.slice(1)].map((link) => {
               const active = isLinkActive(link.href);
               return (
                 <a
@@ -137,3 +139,29 @@ const desktopLinkClass = (active) =>
     </details>
   </div>
 </header>
+
+<script>
+  const solutionsDropdown = document.querySelector<HTMLDetailsElement>("details.group");
+  if (solutionsDropdown) {
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && solutionsDropdown.open) {
+        solutionsDropdown.removeAttribute("open");
+        solutionsDropdown.querySelector("summary")?.focus();
+      }
+    });
+    document.addEventListener("click", (event) => {
+      if (!solutionsDropdown.contains(event.target as Node)) {
+        solutionsDropdown.removeAttribute("open");
+      }
+    });
+  }
+
+  const mobileMenu = document.querySelector<HTMLDetailsElement>("details.mobile-menu");
+  if (mobileMenu) {
+    for (const link of mobileMenu.querySelectorAll("nav a")) {
+      link.addEventListener("click", () => {
+        mobileMenu.removeAttribute("open");
+      });
+    }
+  }
+</script>
