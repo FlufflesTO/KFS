@@ -120,7 +120,10 @@ try {
 
       <div class="grid gap-5 xl:grid-cols-3 xl:gap-6">
       <div class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Completed works</h2>
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-xl font-bold">Completed works</h2>
+          <a href="/portal/tech/history" class="text-xs font-semibold text-kharon-purple hover:underline">View all</a>
+        </div>
         <div class="mt-5 grid gap-3">
           {completed.map((item) => (
             <article class="border-l-4 border-kharon-blue bg-kharon-light p-4">
@@ -133,7 +136,10 @@ try {
       </div>
 
       <div class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Active dispatches</h2>
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-xl font-bold">Active dispatches</h2>
+          <a href="/portal/admin/planning" class="text-xs font-semibold text-kharon-purple hover:underline">View all in Planning</a>
+        </div>
         <div class="mt-5 grid gap-3">
           {active.map((item) => (
             <article class="border-l-4 border-kharon-purple bg-kharon-light p-4">
@@ -146,7 +152,10 @@ try {
       </div>
 
       <div class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Lifecycle due dates</h2>
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-xl font-bold">Lifecycle due dates</h2>
+          <a href="/portal/admin/planning" class="text-xs font-semibold text-kharon-purple hover:underline">View all in Planning</a>
+        </div>
         <div class="mt-5 grid gap-3">
           {due.map((item) => (
             <article class="border-l-4 border-kharon-red bg-kharon-light p-4">

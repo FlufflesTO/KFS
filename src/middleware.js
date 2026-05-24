@@ -1,5 +1,5 @@
 import { defineMiddleware } from "astro/middleware";
-import { sessionCookieName, verifySessionToken } from "./lib/server/auth.js";
+import { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } from "./lib/server/auth.js";
 import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
 import { getDatabase } from "./lib/server/bindings.js";
 import { consumeRateLimit } from "./lib/server/rateLimit.js";
@@ -101,6 +101,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
+  const db = getDatabase();
   const token = context.cookies.get(sessionCookieName)?.value;
   if (!token) {
     return redirectToLogin(context);
@@ -109,7 +110,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const user = await verifySessionToken(token);
   if (!user) {
     const response = redirectToLogin(context);
-    response.headers.append("Set-Cookie", `${sessionCookieName}=; Path=/portal; HttpOnly; Secure; SameSite=Strict; Max-Age=0`);
+    response.headers.append("Set-Cookie", expiredSessionCookie());
+    return response;
+  }
+
+  if (await isTokenRevoked(db, token)) {
+    const response = redirectToLogin(context);
+    response.headers.append("Set-Cookie", expiredSessionCookie());
     return response;
   }
 
@@ -124,7 +131,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.csrfToken = csrfToken;
 
   if (isStateChangingPortalApi(context.request, pathname)) {
-    const db = getDatabase();
     if (!(await verifyCsrfRequest(context.request, user))) {
       await auditEvent(db, context.request, {
         eventType: "security.csrf",

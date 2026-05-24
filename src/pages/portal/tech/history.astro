@@ -1,0 +1,113 @@
+---
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+let jobs = [];
+let loadError = "";
+
+try {
+  const db = getDatabase();
+  const query = user.role === "admin"
+    ? `SELECT jobs.id, jobs.completed_at, jobs.status, jobs.job_type,
+              jobs.tech_comments, jobs.documentation_path,
+              systems.system_type, systems.coverage_area,
+              sites.owner_company_name
+       FROM jobs
+       INNER JOIN systems ON systems.id = jobs.system_id
+       INNER JOIN sites ON sites.id = systems.site_id
+       WHERE jobs.status IN ('Completed', 'Invoiced')
+       ORDER BY jobs.completed_at DESC
+       LIMIT 80`
+    : `SELECT jobs.id, jobs.completed_at, jobs.status, jobs.job_type,
+              jobs.tech_comments, jobs.documentation_path,
+              systems.system_type, systems.coverage_area,
+              sites.owner_company_name
+       FROM jobs
+       INNER JOIN systems ON systems.id = jobs.system_id
+       INNER JOIN sites ON sites.id = systems.site_id
+       WHERE jobs.assigned_technician_id = ?1
+         AND jobs.status IN ('Completed', 'Invoiced')
+       ORDER BY jobs.completed_at DESC
+       LIMIT 80`;
+
+  const result = user.role === "admin"
+    ? await db.prepare(query).all()
+    : await db.prepare(query).bind(user.id).all();
+  jobs = result.results || [];
+} catch (error) {
+  console.error("technician history failed", error);
+  loadError = "Job history could not be loaded.";
+}
+---
+
+<PortalLayout title="Job History | Kharon Portal" active="tech-history" user={user}>
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase text-kharon-cyan">Technician records</p>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Completed job history</h1>
+      <p class="mt-4 max-w-3xl text-white/65">
+        Closed and invoiced dispatches for {user.role === "admin" ? "all technicians" : "your account"}.
+        Most recent 80 jobs.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
+    <div class="mx-auto max-w-7xl">
+      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+
+      {!loadError && jobs.length === 0 && (
+        <p class="text-kharon-grey">No completed jobs found.</p>
+      )}
+
+      {jobs.length > 0 && (
+        <div class="overflow-x-auto">
+          <table class="min-w-full border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-kharon-border bg-kharon-light">
+                <th class="px-4 py-3 text-left font-semibold">Completed</th>
+                <th class="px-4 py-3 text-left font-semibold">Status</th>
+                <th class="px-4 py-3 text-left font-semibold">Site</th>
+                <th class="px-4 py-3 text-left font-semibold">System</th>
+                <th class="px-4 py-3 text-left font-semibold">Type</th>
+                <th class="px-4 py-3 text-left font-semibold">Comments</th>
+                <th class="px-4 py-3 text-left font-semibold">Jobcard</th>
+              </tr>
+            </thead>
+            <tbody>
+              {jobs.map((job) => (
+                <tr class="border-b border-kharon-border hover:bg-kharon-light">
+                  <td class="px-4 py-3 whitespace-nowrap">{job.completed_at ? job.completed_at.slice(0, 10) : "-"}</td>
+                  <td class="px-4 py-3">
+                    <span class={`inline-block rounded px-2 py-0.5 text-xs font-bold uppercase ${job.status === "Invoiced" ? "bg-emerald-100 text-emerald-800" : "bg-kharon-light text-kharon-grey"}`}>
+                      {job.status}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3">{job.owner_company_name}</td>
+                  <td class="px-4 py-3">{job.coverage_area}</td>
+                  <td class="px-4 py-3 whitespace-nowrap">{job.system_type}</td>
+                  <td class="px-4 py-3 max-w-xs truncate" title={job.tech_comments || ""}>{job.tech_comments || "-"}</td>
+                  <td class="px-4 py-3">
+                    {job.documentation_path ? (
+                      <a
+                        href={`/portal/api/file/${job.documentation_path}`}
+                        class="font-semibold text-kharon-purple hover:underline"
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        PDF
+                      </a>
+                    ) : "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  </section>
+</PortalLayout>

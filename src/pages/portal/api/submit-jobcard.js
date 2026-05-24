@@ -78,6 +78,7 @@ export async function POST({ request, locals }) {
       .prepare(
         `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, jobs.scheduled_date, jobs.job_type,
                 systems.site_id, systems.system_type, systems.coverage_area,
+                systems.service_interval_months,
                 sites.owner_company_name, sites.physical_address
          FROM jobs
          INNER JOIN systems ON systems.id = jobs.system_id
@@ -126,7 +127,8 @@ export async function POST({ request, locals }) {
 
     const completedAt = new Date();
     const serviceDate = completedAt.toISOString().slice(0, 10);
-    const nextDueDate = addMonths(completedAt, 6);
+    const serviceIntervalMonths = Number.isInteger(job.service_interval_months) && job.service_interval_months >= 1 ? job.service_interval_months : 6;
+    const nextDueDate = addMonths(completedAt, serviceIntervalMonths);
     const documentationPath = `jobcards/job-${jobId}-completed.pdf`;
     const financialRecordId = crypto.randomUUID();
     const amount = getStandardServiceFee();

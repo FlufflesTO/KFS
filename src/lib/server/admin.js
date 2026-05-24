@@ -68,3 +68,15 @@ export function cleanChoice(value, fieldName, allowed) {
 export function cleanBoolean(value) {
   return value === true || value === 1 || value === "1" || value === "true" ? 1 : 0;
 }
+
+export function cleanInt(value, fieldName, options = {}) {
+  const min = options.min ?? 1;
+  const max = options.max ?? Number.MAX_SAFE_INTEGER;
+  const fallback = options.fallback ?? null;
+  const raw = value === null || value === undefined || value === "" ? null : Number(value);
+  if (raw === null && fallback !== null) return fallback;
+  if (!Number.isInteger(raw) || raw < min || raw > max) {
+    throw new Error(`${fieldName} must be an integer between ${min} and ${max}.`);
+  }
+  return raw;
+}

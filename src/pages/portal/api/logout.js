@@ -1,14 +1,19 @@
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { auditEvent } from "../../../lib/server/audit.js";
-import { expiredSessionCookie } from "../../../lib/server/auth.js";
+import { expiredSessionCookie, revokeSessionToken, sessionCookieName } from "../../../lib/server/auth.js";
 import { expiredCsrfCookie } from "../../../lib/server/csrf.js";
 import { json, methodNotAllowed } from "../../../lib/server/http.js";
 
 export const prerender = false;
 
-export async function POST({ request, locals }) {
+export async function POST({ request, locals, cookies }) {
   const db = getDatabase();
   const user = locals.user || null;
+
+  const token = cookies.get(sessionCookieName)?.value;
+  if (token) {
+    await revokeSessionToken(db, token);
+  }
 
   if (user) {
     await auditEvent(db, request, {

@@ -8,12 +8,16 @@ const {
 } = Astro.props;
 
 const roleLinks = {
-  tech: [{ label: "Dispatches", href: "/portal/tech/dashboard", key: "tech" }],
+  tech: [
+    { label: "Dispatches", href: "/portal/tech/dashboard", key: "tech" },
+    { label: "Job History", href: "/portal/tech/history", key: "tech-history" }
+  ],
   admin: [
     { label: "Admin Matrix", href: "/portal/admin/dashboard", key: "admin" },
     { label: "Planning", href: "/portal/admin/planning", key: "planning" },
     { label: "Operations", href: "/portal/admin/operations", key: "operations" },
     { label: "Technician View", href: "/portal/tech/dashboard", key: "tech" },
+    { label: "Job History", href: "/portal/tech/history", key: "tech-history" },
     { label: "Finance", href: "/portal/finance/dashboard", key: "finance" }
   ],
   client: [

@@ -117,6 +117,45 @@ export function expiredSessionCookie() {
   return `${sessionCookieName}=; Path=/portal; HttpOnly;${secure} SameSite=Strict; Max-Age=0`;
 }
 
+export async function tokenFingerprint(token) {
+  const hash = await crypto.subtle.digest("SHA-256", textEncoder.encode(token));
+  return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+export async function isTokenRevoked(db, token) {
+  try {
+    const fp = await tokenFingerprint(token);
+    const now = Math.floor(Date.now() / 1000);
+    const row = await db.prepare(
+      "SELECT 1 FROM revoked_sessions WHERE fingerprint = ? AND expires_at > ?"
+    ).bind(fp, now).first();
+    return row !== null;
+  } catch {
+    return false;
+  }
+}
+
+export async function revokeSessionToken(db, token) {
+  try {
+    const fp = await tokenFingerprint(token);
+    const now = Math.floor(Date.now() / 1000);
+    let expiresAt = now + sessionDurationSeconds;
+    const [encodedPayload] = token.split(".");
+    if (encodedPayload) {
+      try {
+        const payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload)));
+        if (payload.exp && Number.isInteger(payload.exp)) expiresAt = payload.exp;
+      } catch {}
+    }
+    await db.batch([
+      db.prepare("INSERT OR IGNORE INTO revoked_sessions (fingerprint, expires_at) VALUES (?, ?)").bind(fp, expiresAt),
+      db.prepare("DELETE FROM revoked_sessions WHERE expires_at <= ?").bind(now)
+    ]);
+  } catch (error) {
+    console.error("revokeSessionToken failed", error);
+  }
+}
+
 export async function hashPassword(password, salt = crypto.randomUUID()) {
   if (typeof password !== "string" || password.length < 12) {
     throw new Error("Password must be at least 12 characters.");

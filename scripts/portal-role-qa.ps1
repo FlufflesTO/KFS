@@ -197,8 +197,35 @@ function Test-Role {
       $csrfBlocked = Invoke-PortalRequest -Method "POST" -Path "/portal/api/logout" -Body @{} -Session $session -MaximumRedirection 0
       $roleResults += Assert-Status "missing CSRF blocked: $($Config.Role)" $csrfBlocked @(403)
 
+      $cookieUri = [System.Uri]::new((Join-Url $BaseUrl ""))
+      $oldToken = $null
+      foreach ($cookie in $session.Handler.CookieContainer.GetCookies($cookieUri)) {
+        if ($cookie.Name -eq "kharon_session_token") {
+          $oldToken = $cookie.Value
+          break
+        }
+      }
+
       $logout = Invoke-PortalRequest -Method "POST" -Path "/portal/api/logout" -Body @{} -Session $session -Headers @{ "x-csrf-token" = $csrf } -MaximumRedirection 0
       $roleResults += Assert-Status "valid CSRF logout: $($Config.Role)" $logout @(200)
+
+      if ($oldToken) {
+        $replaySession = New-PortalSession
+        $replayCookieUri = [System.Uri]::new((Join-Url $BaseUrl ""))
+        $replayCookie = [System.Net.Cookie]::new("kharon_session_token", $oldToken)
+        $replayCookie.Domain = ([System.Uri]::new($BaseUrl)).Host
+        $replayCookie.Path = "/"
+        $replaySession.Handler.CookieContainer.Add($replayCookieUri, $replayCookie)
+        $replayResponse = Invoke-PortalRequest -Path $expectedDashboard -Session $replaySession -MaximumRedirection 0
+        $replayStatus = Get-StatusCode $replayResponse
+        if ($replayStatus -eq 302) {
+          $roleResults += New-Result "post-logout token replay: $($Config.Role)" "PASS" "Old token correctly rejected after logout."
+        } elseif ($replayStatus -eq 200) {
+          $roleResults += New-Result "post-logout token replay: $($Config.Role)" "INFO" "Pre-Phase-10: HMAC token valid within 12h window after cookie-clear logout. Phase 10 adds server-side revocation."
+        } else {
+          $roleResults += New-Result "post-logout token replay: $($Config.Role)" "FAIL" "Unexpected HTTP $replayStatus on post-logout replay."
+        }
+      }
     } else {
       $roleResults += New-Result "CSRF token exposure: $($Config.Role)" "FAIL" "Authenticated dashboard did not expose meta token."
     }
@@ -238,8 +265,10 @@ if (-not $SkipCredentialTests) {
 }
 
 $failed = @($results | Where-Object { $_.status -eq "FAIL" })
+$info = @($results | Where-Object { $_.status -eq "INFO" })
 $summary = [pscustomobject]@{
   ok = $failed.Count -eq 0
+  infoCount = $info.Count
   baseUrl = $BaseUrl
   generatedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
   results = $results

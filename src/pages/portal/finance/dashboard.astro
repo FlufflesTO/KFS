@@ -121,6 +121,12 @@ try {
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const result = form.querySelector(".payment-result");
+        const refInput = form.querySelector("[name='paymentReference']");
+        const ref = refInput?.value?.trim() || "";
+        const confirmed = window.confirm(
+          `Mark this invoice as settled?\n\nPayment reference: ${ref || "(none entered)"}\n\nThis action cannot be undone.`
+        );
+        if (!confirmed) return;
         const payload = Object.fromEntries(new FormData(form).entries());
         payload.recordId = form.dataset.recordId;
         result.textContent = "Capturing payment...";

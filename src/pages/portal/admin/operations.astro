@@ -31,7 +31,8 @@ try {
 
   systems = (await db.prepare(
     `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area, systems.manufacturer,
-            systems.model_reference, systems.next_due_date, sites.owner_company_name
+            systems.model_reference, systems.next_due_date, systems.service_interval_months,
+            sites.owner_company_name
      FROM systems
      INNER JOIN sites ON sites.id = systems.site_id
      ORDER BY sites.owner_company_name, systems.coverage_area`
@@ -44,7 +45,7 @@ try {
      INNER JOIN systems ON systems.id = jobs.system_id
      INNER JOIN sites ON sites.id = systems.site_id
      ORDER BY jobs.scheduled_date DESC
-     LIMIT 40`
+     LIMIT 80`
   ).all()).results || [];
 
   technicians = users.filter((item) => item.role === "tech" && item.is_active);
@@ -171,6 +172,10 @@ try {
             <input class="rounded-md border border-kharon-border px-4 py-3" name="manufacturer" placeholder="Manufacturer" />
             <input class="rounded-md border border-kharon-border px-4 py-3" name="modelReference" placeholder="Model/reference" />
             <input class="rounded-md border border-kharon-border px-4 py-3" name="nextDueDate" type="date" value={today} required />
+            <div class="flex items-center gap-3">
+              <label class="whitespace-nowrap text-sm font-semibold">Service interval (months)</label>
+              <input class="w-24 rounded-md border border-kharon-border px-3 py-2" name="serviceIntervalMonths" type="number" min="1" max="36" value="6" required />
+            </div>
             <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create system</button>
             <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
           </form>
@@ -248,9 +253,13 @@ try {
       </article>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Users</h2>
+        <details class="ops-section" open>
+          <summary class="flex cursor-pointer items-center justify-between">
+            <h2 class="text-xl font-bold">Users <span class="ml-2 text-sm font-normal text-kharon-grey">({users.length})</span></h2>
+            <span class="text-sm text-kharon-purple">Toggle</span>
+          </summary>
         <div class="mt-5 grid gap-4">
-          {users.map((record) => (
+          {users.slice(0, 15).map((record) => (
             <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6" data-endpoint="/portal/api/admin/users">
               <input type="hidden" name="action" value="update" />
               <input type="hidden" name="id" value={record.id} />
@@ -286,78 +295,227 @@ try {
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
             </form>
           ))}
+          {users.length > 15 && (
+            <details class="ops-overflow mt-2">
+              <summary class="cursor-pointer rounded-md border border-kharon-border bg-kharon-light px-4 py-3 text-sm font-semibold text-kharon-purple">
+                Show {users.length - 15} more users…
+              </summary>
+              <div class="mt-4 grid gap-4">
+                {users.slice(15).map((record) => (
+                  <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6" data-endpoint="/portal/api/admin/users">
+                    <input type="hidden" name="action" value="update" />
+                    <input type="hidden" name="id" value={record.id} />
+                    <input class="rounded-md border border-kharon-border px-3 py-2" name="name" value={record.name} />
+                    <input class="rounded-md border border-kharon-border px-3 py-2" value={record.email} disabled />
+                    <select class="rounded-md border border-kharon-border px-3 py-2" name="role">
+                      {["tech", "admin", "client", "finance"].map((role) => <option value={role} selected={record.role === role}>{role}</option>)}
+                    </select>
+                    <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
+                      <option value="">No site</option>
+                      {sites.map((site) => <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>)}
+                    </select>
+                    <div class="grid gap-2 text-sm">
+                      <label><input type="checkbox" name="isActive" checked={Boolean(record.is_active)} /> Active</label>
+                      <label><input type="checkbox" name="forcePasswordChange" checked={Boolean(record.force_password_change)} /> Rotate password</label>
+                      {["admin", "finance"].includes(record.role) && (
+                        <label><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
+                      )}
+                      {record.mfa_enabled && <span class="text-xs font-bold uppercase text-emerald-700">MFA enabled</span>}
+                    </div>
+                    <div class="grid gap-2">
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="password" type="password" placeholder="Optional reset password" />
+                      <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                      <button class="generate-reset-link rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" type="button" data-user-id={record.id}>
+                        Issue reset link
+                      </button>
+                      {record.mfa_enabled && (
+                        <button class="reset-mfa rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900" type="button" data-user-id={record.id}>
+                          Reset MFA
+                        </button>
+                      )}
+                    </div>
+                    <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
+                  </form>
+                ))}
+              </div>
+            </details>
+          )}
         </div>
+        </details>
       </article>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Sites</h2>
-        <div class="mt-5 grid gap-4">
-          {sites.map((record) => (
-            <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6" data-endpoint="/portal/api/admin/sites">
-              <input type="hidden" name="action" value="update" />
-              <input type="hidden" name="id" value={record.id} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="ownerCompanyName" value={record.owner_company_name} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPerson" value={record.site_contact_person} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPhone" value={record.site_contact_phone || ""} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="billingEmails" value={record.billing_emails} />
-              <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-              <textarea class="min-h-20 rounded-md border border-kharon-border px-3 py-2 lg:col-span-6" name="physicalAddress">{record.physical_address}</textarea>
-              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
-            </form>
-          ))}
-        </div>
+        <details class="ops-section">
+          <summary class="flex cursor-pointer items-center justify-between">
+            <h2 class="text-xl font-bold">Sites <span class="ml-2 text-sm font-normal text-kharon-grey">({sites.length})</span></h2>
+            <span class="text-sm text-kharon-purple">Toggle</span>
+          </summary>
+          <div class="mt-5 grid gap-4">
+            {sites.slice(0, 15).map((record) => (
+              <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6" data-endpoint="/portal/api/admin/sites">
+                <input type="hidden" name="action" value="update" />
+                <input type="hidden" name="id" value={record.id} />
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="ownerCompanyName" value={record.owner_company_name} />
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPerson" value={record.site_contact_person} />
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPhone" value={record.site_contact_phone || ""} />
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="billingEmails" value={record.billing_emails} />
+                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                <textarea class="min-h-20 rounded-md border border-kharon-border px-3 py-2 lg:col-span-6" name="physicalAddress">{record.physical_address}</textarea>
+                <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
+              </form>
+            ))}
+            {sites.length > 15 && (
+              <details class="ops-overflow mt-2">
+                <summary class="cursor-pointer rounded-md border border-kharon-border bg-kharon-light px-4 py-3 text-sm font-semibold text-kharon-purple">
+                  Show {sites.length - 15} more sites…
+                </summary>
+                <div class="mt-4 grid gap-4">
+                  {sites.slice(15).map((record) => (
+                    <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6" data-endpoint="/portal/api/admin/sites">
+                      <input type="hidden" name="action" value="update" />
+                      <input type="hidden" name="id" value={record.id} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="ownerCompanyName" value={record.owner_company_name} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPerson" value={record.site_contact_person} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPhone" value={record.site_contact_phone || ""} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="billingEmails" value={record.billing_emails} />
+                      <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                      <textarea class="min-h-20 rounded-md border border-kharon-border px-3 py-2 lg:col-span-6" name="physicalAddress">{record.physical_address}</textarea>
+                      <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
+                    </form>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        </details>
       </article>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Systems</h2>
-        <div class="mt-5 grid gap-4">
-          {systems.map((record) => (
-            <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/systems">
-              <input type="hidden" name="action" value="update" />
-              <input type="hidden" name="id" value={record.id} />
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
-                {sites.map((site) => <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>)}
-              </select>
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="systemType">
-                {["Gas Suppression", "Fire Detection"].map((type) => <option value={type} selected={record.system_type === type}>{type}</option>)}
-              </select>
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="coverageArea" value={record.coverage_area} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="manufacturer" value={record.manufacturer || ""} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="modelReference" value={record.model_reference || ""} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="nextDueDate" type="date" value={record.next_due_date} />
-              <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-            </form>
-          ))}
-        </div>
+        <details class="ops-section">
+          <summary class="flex cursor-pointer items-center justify-between">
+            <h2 class="text-xl font-bold">Systems <span class="ml-2 text-sm font-normal text-kharon-grey">({systems.length})</span></h2>
+            <span class="text-sm text-kharon-purple">Toggle</span>
+          </summary>
+          <div class="mt-5 grid gap-4">
+            {systems.slice(0, 15).map((record) => (
+              <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/systems">
+                <input type="hidden" name="action" value="update" />
+                <input type="hidden" name="id" value={record.id} />
+                <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
+                  {sites.map((site) => <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>)}
+                </select>
+                <select class="rounded-md border border-kharon-border px-3 py-2" name="systemType">
+                  {["Gas Suppression", "Fire Detection"].map((type) => <option value={type} selected={record.system_type === type}>{type}</option>)}
+                </select>
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="coverageArea" value={record.coverage_area} />
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="manufacturer" value={record.manufacturer || ""} />
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="modelReference" value={record.model_reference || ""} />
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="nextDueDate" type="date" value={record.next_due_date} />
+                <div class="flex items-center gap-2">
+                  <label class="text-xs font-semibold whitespace-nowrap">Interval (mo.)</label>
+                  <input class="w-16 rounded-md border border-kharon-border px-2 py-2 text-sm" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} />
+                </div>
+                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+              </form>
+            ))}
+            {systems.length > 15 && (
+              <details class="ops-overflow mt-2">
+                <summary class="cursor-pointer rounded-md border border-kharon-border bg-kharon-light px-4 py-3 text-sm font-semibold text-kharon-purple">
+                  Show {systems.length - 15} more systems…
+                </summary>
+                <div class="mt-4 grid gap-4">
+                  {systems.slice(15).map((record) => (
+                    <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/systems">
+                      <input type="hidden" name="action" value="update" />
+                      <input type="hidden" name="id" value={record.id} />
+                      <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
+                        {sites.map((site) => <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>)}
+                      </select>
+                      <select class="rounded-md border border-kharon-border px-3 py-2" name="systemType">
+                        {["Gas Suppression", "Fire Detection"].map((type) => <option value={type} selected={record.system_type === type}>{type}</option>)}
+                      </select>
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="coverageArea" value={record.coverage_area} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="manufacturer" value={record.manufacturer || ""} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="modelReference" value={record.model_reference || ""} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="nextDueDate" type="date" value={record.next_due_date} />
+                      <div class="flex items-center gap-2">
+                        <label class="text-xs font-semibold whitespace-nowrap">Interval (mo.)</label>
+                        <input class="w-16 rounded-md border border-kharon-border px-2 py-2 text-sm" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} />
+                      </div>
+                      <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                      <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+                    </form>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        </details>
       </article>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Jobs</h2>
-        <div class="mt-5 grid gap-4">
-          {jobs.map((record) => (
-            <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/jobs">
-              <input type="hidden" name="action" value="update" />
-              <input type="hidden" name="id" value={record.id} />
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
-                {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
-              </select>
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
-                <option value="">Unassigned</option>
-                {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
-              </select>
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
-                {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
-              </select>
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
-              <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-            </form>
-          ))}
-        </div>
+        <details class="ops-section">
+          <summary class="flex cursor-pointer items-center justify-between">
+            <h2 class="text-xl font-bold">Jobs <span class="ml-2 text-sm font-normal text-kharon-grey">({jobs.length})</span></h2>
+            <span class="text-sm text-kharon-purple">Toggle</span>
+          </summary>
+          <div class="mt-5 grid gap-4">
+            {jobs.slice(0, 20).map((record) => (
+              <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/jobs">
+                <input type="hidden" name="action" value="update" />
+                <input type="hidden" name="id" value={record.id} />
+                <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
+                  {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
+                </select>
+                <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
+                  <option value="">Unassigned</option>
+                  {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
+                </select>
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
+                <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
+                  {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
+                </select>
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
+                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+              </form>
+            ))}
+            {jobs.length > 20 && (
+              <details class="ops-overflow mt-2">
+                <summary class="cursor-pointer rounded-md border border-kharon-border bg-kharon-light px-4 py-3 text-sm font-semibold text-kharon-purple">
+                  Show {jobs.length - 20} more jobs…
+                </summary>
+                <div class="mt-4 grid gap-4">
+                  {jobs.slice(20).map((record) => (
+                    <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/jobs">
+                      <input type="hidden" name="action" value="update" />
+                      <input type="hidden" name="id" value={record.id} />
+                      <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
+                        {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
+                      </select>
+                      <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
+                        <option value="">Unassigned</option>
+                        {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
+                      </select>
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
+                      <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
+                        {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
+                      </select>
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
+                      <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                      <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+                    </form>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        </details>
       </article>
     </div>
   </section>
@@ -437,15 +595,25 @@ try {
         if (!response.ok) {
           result.textContent = body.message || "Import failed.";
           result.className = "import-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+          result.classList.remove("hidden");
           return;
         }
         const failures = body.failures?.length || 0;
-        result.textContent = failures
-          ? `Import completed with ${failures} failed row(s). Review the JSON response in browser network tools before retrying.`
-          : `Imported ${body.results?.length || 0} row(s) successfully.`;
-        result.className = failures
-          ? "import-result rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900"
-          : "import-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+        if (failures) {
+          const list = document.createElement("ul");
+          list.className = "mt-2 list-disc pl-5 text-xs font-normal";
+          for (const f of body.failures) {
+            const li = document.createElement("li");
+            li.textContent = `Row ${f.rowNumber ?? "?"}: ${f.message || "Unknown error"}`;
+            list.append(li);
+          }
+          result.textContent = `Import completed with ${failures} failed row(s):`;
+          result.className = "import-result rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900";
+          result.append(list);
+        } else {
+          result.textContent = `Imported ${body.results?.length || 0} row(s) successfully.`;
+          result.className = "import-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+        }
       });
     }
 
@@ -465,8 +633,19 @@ try {
           result.className = "admin-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900 lg:col-span-6";
           return;
         }
-        result.textContent = `Reset link, valid until ${body.expiresAt}: ${body.resetUrl}`;
+        const resetUrl = String(body.resetUrl || "");
+        result.textContent = `Reset link issued — valid until ${body.expiresAt}. `;
         result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 lg:col-span-6";
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.textContent = "Copy link";
+        copyBtn.className = "ml-1 inline-flex items-center rounded-md border border-emerald-600 px-2 py-0.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100";
+        copyBtn.addEventListener("click", async () => {
+          await navigator.clipboard.writeText(resetUrl).catch(() => null);
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => { copyBtn.textContent = "Copy link"; }, 2500);
+        });
+        result.append(copyBtn);
       });
     }
 

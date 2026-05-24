@@ -1,7 +1,7 @@
 import { getDatabase } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
-import { cleanChoice, cleanDate, cleanId, cleanText, readJson, requireAdmin } from "../../../../lib/server/admin.js";
+import { cleanChoice, cleanDate, cleanId, cleanInt, cleanText, readJson, requireAdmin } from "../../../../lib/server/admin.js";
 
 export const prerender = false;
 
@@ -23,16 +23,17 @@ export async function POST({ request, locals }) {
     const manufacturer = cleanText(body.manufacturer, "manufacturer", { required: false, max: 120 });
     const modelReference = cleanText(body.modelReference, "modelReference", { required: false, max: 120 });
     const nextDueDate = cleanDate(body.nextDueDate, "nextDueDate");
+    const serviceIntervalMonths = cleanInt(body.serviceIntervalMonths, "serviceIntervalMonths", { min: 1, max: 36, fallback: 6 });
 
     if (action === "create") {
       await db
         .prepare(
           `INSERT INTO systems
-             (id, site_id, system_type, coverage_area, manufacturer, model_reference, next_due_date)
+             (id, site_id, system_type, coverage_area, manufacturer, model_reference, next_due_date, service_interval_months)
            VALUES
-             (?1, ?2, ?3, ?4, ?5, ?6, ?7)`
+             (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`
         )
-        .bind(id, siteId, systemType, coverageArea, manufacturer, modelReference, nextDueDate)
+        .bind(id, siteId, systemType, coverageArea, manufacturer, modelReference, nextDueDate, serviceIntervalMonths)
         .run();
     } else if (action === "update") {
       await db
@@ -43,10 +44,11 @@ export async function POST({ request, locals }) {
                coverage_area = ?3,
                manufacturer = ?4,
                model_reference = ?5,
-               next_due_date = ?6
-           WHERE id = ?7`
+               next_due_date = ?6,
+               service_interval_months = ?7
+           WHERE id = ?8`
         )
-        .bind(siteId, systemType, coverageArea, manufacturer, modelReference, nextDueDate, id)
+        .bind(siteId, systemType, coverageArea, manufacturer, modelReference, nextDueDate, serviceIntervalMonths, id)
         .run();
     } else {
       return badRequest("action is invalid.");

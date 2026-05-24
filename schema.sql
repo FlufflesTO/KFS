@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS systems (
   coverage_area TEXT NOT NULL CHECK (length(trim(coverage_area)) BETWEEN 2 AND 200),
   manufacturer TEXT,
   model_reference TEXT,
+  service_interval_months INTEGER NOT NULL DEFAULT 6 CHECK (service_interval_months BETWEEN 1 AND 36),
   last_service_date TEXT,
   last_checked_at TEXT,
   next_due_date TEXT NOT NULL,
@@ -180,6 +181,13 @@ CREATE INDEX IF NOT EXISTS idx_document_access_path_created ON document_access_l
 CREATE INDEX IF NOT EXISTS idx_rate_limits_scope_window ON portal_rate_limits(scope, window_start);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expiry ON password_reset_tokens(expires_at, used_at);
+
+CREATE TABLE IF NOT EXISTS revoked_sessions (
+  fingerprint TEXT PRIMARY KEY NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_revoked_sessions_expires ON revoked_sessions (expires_at);
 
 CREATE TRIGGER IF NOT EXISTS trg_users_updated_at
 AFTER UPDATE ON users
