@@ -334,6 +334,38 @@ Document access production gate:
 - [x] Site audit script passes.
 - [x] No secrets committed.
 
+## Review Update - 2026-05-24 Full Site And Portal Code Review
+
+Scope:
+
+Full code review of the public website and portal as deployed on tequit.co.za staging. All findings are distributed into the outstanding build phases below and into new phases added by this review.
+
+Note on staging domain:
+
+`tequit.co.za` is the deliberate staging and build domain. The `site.js` default URL fallback to `https://www.tequit.co.za` is intentional during this period. `PUBLIC_SITE_URL`, `PUBLIC_PORTAL_URL` and `PUBLIC_CONTACT_EMAIL` must be updated only at director-approved production cutover to `kharon.co.za`. No code changes are required for the domain switch; only environment variable updates are needed. Google Workspace `kharon.co.za` email addresses will be available for Phase 9 (email delivery) once the cutover is approved.
+
+Public website findings:
+
+- Contact form uses `action="mailto:..."` with no server-side handler. The honeypot field has no backend check and is inert. No submission confirmation is shown if the user's email client is unconfigured. This is the primary conversion risk for an enterprise B2B site.
+- No phone number appears on the contact page or emergency support page. For a fire and security business this is a meaningful content gap, particularly for emergency scenarios.
+- OG image is declared as `image/svg+xml`. Facebook, LinkedIn and WhatsApp do not render SVG OG images; social share previews will be blank or broken. Replacement with a PNG or JPEG at the same path is required before public launch.
+- Mobile navigation has a duplicate Compliance entry: `solutionLinks` includes Compliance & Maintenance (`/compliance-maintenance`) and `mainLinks.slice(1)` includes a second Compliance link resolving to the same route.
+- The Solutions dropdown uses `<details>/<summary>` with `role="menu"` on the inner container. Arrow-key navigation expected of a `role="menu"` landmark is not implemented, creating a keyboard accessibility gap.
+- `format-detection` meta is set to `telephone=no, address=no, email=no` globally. If a phone number is added to the site, iOS and Android auto-linking will be blocked unless this tag is updated.
+- No web analytics are present on any public page. There is no visibility into traffic sources, page engagement or contact form conversion.
+
+Portal findings:
+
+- Session tokens are stateless HMAC tokens with a 12-hour expiry. Logout clears the browser cookie but does not invalidate the token server-side. A captured token remains usable for up to 12 hours after the legitimate user logs out.
+- The `next_due_date` after jobcard closure is hardcoded to six months for all system types. SANS 10139 (fire detection) and SANS 14520 (gas suppression) specify different service cadences and some clients may require quarterly or annual intervals.
+- Admin-issued password reset links are rendered as plain text into the portal operations page DOM. The full URL persists in the rendered page until the admin navigates away. A copy-to-clipboard control should replace plain-text rendering so the URL is not stored in the page or browser history.
+- No portal list view has pagination. The admin dashboard caps sections at 12 records, planning views at 60 to 80 records and the finance ledger at 80. Historical records beyond these caps are not accessible.
+- The admin operations page renders all users, sites, systems and jobs as inline edit forms on one page. This becomes unusable at production record volumes.
+- CSV import failure details are not surfaced on the page. Users are directed to open browser network tools to review which rows failed and why.
+- Technicians cannot view their completed job history from the technician dashboard. There is no way to reference past submissions or confirm an earlier jobcard.
+- CSV exports do not sanitize formula-injection prefixes. Cells starting with `=`, `+`, `-` or `@` will be interpreted as formulas when the exported file is opened in Excel or Google Sheets.
+- The finance ledger "Mark settled" action applies immediately on submit with no confirmation step. A misclick or accidental form submission permanently settles the record.
+
 ## Outstanding Build Phases - 2026-05-24
 
 These phases control the remaining work after the portal security, evidence, retention and document-access hardening passes.
@@ -354,17 +386,24 @@ Tasks:
 - Confirm no horizontal overflow on any public or portal route.
 - Run responsive screenshots or equivalent browser QA across key viewport sizes.
 - Run Lighthouse or equivalent after changes.
+- Fix duplicate Compliance link in mobile navigation: `solutionLinks` and `mainLinks.slice(1)` both resolve to `/compliance-maintenance`; remove the redundant entry from the mobile menu build.
+- Add mobile menu auto-close behavior so the `<details>` element closes after a nav link is tapped.
+- Fix Solutions dropdown keyboard navigation: either replace `role="menu"` on the container with a plain `role="navigation"` group, or add arrow-key and Escape handlers to match the ARIA menu pattern.
+- Remove or scope the `format-detection` meta tag so iOS and Android can auto-link phone numbers once a phone number is added to the site.
 
 Deployable gate:
 
 - Public pages remain readable without horizontal scrolling at mobile, tablet and desktop widths.
 - Portal dashboards remain usable on mobile and tablet.
 - Header and portal navigation wrap or scroll intentionally without covering content.
+- Mobile navigation shows no duplicate route labels.
+- Mobile menu closes automatically after a nav link tap.
+- Solutions dropdown keyboard navigation matches its declared ARIA role.
 - `npm run build` and `npm run audit:site` pass.
 
 Status:
 
-Implementation pass complete. Local build and site audit pass. Manual/browser screenshot QA across desktop, tablet and mobile remains required before closing the phase.
+Implementation pass complete. Local build and site audit pass. Manual/browser screenshot QA across desktop, tablet and mobile remains required before closing the phase. Navigation fixes from the 2026-05-24 code review are added to this phase scope.
 
 ### Phase 2 - Portal QA And Role Hardening
 
@@ -377,9 +416,12 @@ Tasks:
 - Confirm RBAC abuse cases block or redirect correctly.
 - Confirm document access logs populate for allowed and blocked records.
 - Confirm CSRF and rate limit failures behave correctly.
+- Confirm that after logout the former session cookie no longer grants portal access (pre-condition for Phase 10 server-side revocation; document if only cookie-clear behaviour is present at time of QA).
+- Confirm CSV exports open cleanly in Excel and Google Sheets without formula execution (pre-condition for Phase 11 injection sanitisation).
+- Confirm the admin operations page "Mark settled" action requires an explicit confirmation before applying (pre-condition for Phase 11 confirmation gate).
 - Record QA outcomes and remaining risks.
 
-Status: in progress. Add an automated non-secret QA harness for login/protected-route smoke checks and optional credential-backed role assertions; manual staging execution with externally supplied credentials remains required.
+Status: in progress. Add an automated non-secret QA harness for login/protected-route smoke checks and optional credential-backed role assertions; manual staging execution with externally supplied credentials remains required. Additional test cases from the 2026-05-24 code review added to scope.
 
 ### Phase 3 - Portal Operations SOP Completion
 
@@ -452,7 +494,7 @@ Status: pending.
 
 ### Phase 8 - Image Optimization And Performance Governance
 
-Goal: harden performance after real media is added.
+Goal: harden performance after real media is added and resolve known asset format gaps.
 
 Tasks:
 
@@ -461,6 +503,7 @@ Tasks:
 - Re-run Lighthouse after image integration.
 - Add bundle budget or build warning policy.
 - Resolve practical chunk warnings.
+- Replace `/og/kharon-og.svg` with a PNG or JPEG equivalent. The current OG image is declared as `image/svg+xml`; Facebook, LinkedIn and WhatsApp do not render SVG OG images. The `og:image:type` meta in `BaseLayout.astro` must be updated to match.
 
 Status: pending.
 
@@ -476,6 +519,90 @@ Tasks:
 - Log delivery attempts.
 - Keep tokens hashed and single-use.
 - Confirm no credentials enter the repository.
+
+Status: pending.
+
+### Phase 10 - Session Token Revocation
+
+Goal: prevent captured or stolen tokens from remaining valid after logout.
+
+Background:
+
+Session tokens are stateless HMAC tokens with a 12-hour expiry. Logout currently clears the browser cookie but does not invalidate the token server-side. A token captured before logout (via XSS, network intercept or shared device) remains cryptographically valid until it expires naturally. For a portal handling financial records and client site data this is a meaningful risk.
+
+Tasks:
+
+- Add a `revoked_sessions` D1 table keyed on token fingerprint (HMAC of the full token) with an expiry timestamp column.
+- Update the logout endpoint to insert the active token's fingerprint into the revocation table before clearing the cookie.
+- Update `verifySessionToken` in `auth.js` to reject any token whose fingerprint exists in the revocation table.
+- Add a periodic cleanup routine or D1 TTL policy to purge revocation rows whose expiry has passed, preventing unbounded table growth.
+- Keep the stateless HMAC structure intact; only tokens explicitly added to the revocation table are rejected.
+- Update the QA checklist to confirm that a former session cookie is rejected after logout.
+
+Deployable gate:
+
+- Logging out and immediately retrying with the former session cookie returns a `302` redirect to login.
+- A fresh login after logout issues a new token that is accepted normally.
+- Revocation table rows are pruned after their expiry column passes.
+- Logout audit event is emitted as before.
+- `npm run build` and `npm run audit:site` pass.
+
+Status: pending.
+
+### Phase 11 - Portal Admin UX Hardening
+
+Goal: make admin operations, planning views and portal workflows usable at production record volumes, and close security and UX gaps identified in the 2026-05-24 code review.
+
+Tasks:
+
+- Add pagination or load-more controls to admin dashboard sections (completed works, active dispatches, lifecycle due dates).
+- Add pagination or search/filter to the admin operations page users, sites, systems and jobs inline tables to replace the current 40-record hard cap.
+- Add collapsible or tabbed sections to the admin operations page to reduce page density.
+- Surface CSV import failure row details directly on the page in a structured list; remove the instruction to inspect browser network tools.
+- Replace the plain-text reset link DOM rendering in the admin operations page with a copy-to-clipboard control so the full URL is not stored persistently in the rendered page.
+- Add an explicit confirmation dialog before the finance ledger "Mark settled" action is applied.
+- Add a technician completed job history view showing jobs with status Completed or Invoiced assigned to the authenticated technician.
+- Sanitize formula-injection prefixes (`=`, `+`, `-`, `@`) on all CSV export cells across users, sites, systems and finance exports to prevent formula execution in Excel and Google Sheets.
+- Add a configurable service interval per system type to replace the hardcoded six-month `next_due_date` calculation in `submit-jobcard.js`. Store interval months on the `systems` table or as a site-level default; fall back to six months if not set.
+
+Deployable gate:
+
+- Admin can navigate beyond the first record cap in each list view.
+- Import failure details are visible on the page without opening network tools.
+- Reset link is shown in a copy-to-clipboard control; the raw URL is not exposed in persistent DOM markup.
+- Finance settlement requires an explicit confirmation step before the record is updated.
+- Technician can view their own completed job history.
+- CSV exports opened in Excel and Google Sheets do not trigger formula execution on any cell.
+- System service intervals are configurable and the jobcard closure endpoint uses the stored interval.
+- `npm run build` and `npm run audit:site` pass.
+
+Status: pending.
+
+### Phase 12 - Analytics And Conversion Tracking
+
+Goal: add visibility into public site traffic, lead generation paths and CTA conversion so the site can be evaluated before and after the kharon.co.za cutover.
+
+Background:
+
+No analytics are present on any public page. There is no visibility into which traffic sources are reaching the site, which pages are being engaged with, or whether contact form submissions are completing. This gap means the director review and post-cutover period will have no baseline data.
+
+Tasks:
+
+- Select and integrate a privacy-aware analytics provider. Confirm data residency aligns with South African POPIA requirements before deploying any tracking.
+- Track page views across all public routes.
+- Track contact form submission attempts and completions.
+- Track CTA clicks: Request Site Assessment, Emergency Support, Access Records.
+- Track solution page and industry page engagement events.
+- Confirm analytics do not fire on any `/portal/*` route.
+- Update privacy notice or cookie disclosure if required by the chosen provider.
+- Consider whether a server-side form handler (replacing the `mailto:` contact form) should be built in the same pass to enable server-side conversion tracking. If yes, scope the form handler here; if not, document the deferral reason.
+
+Deployable gate:
+
+- Analytics events appear in the provider dashboard for public page views and key CTA clicks.
+- No analytics events fire on any `/portal/*` route.
+- Build passes with no console errors related to analytics.
+- Privacy obligations for the chosen provider are documented.
 
 Status: pending.
 
@@ -693,14 +820,19 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Add offline/poor-signal handling expectations for field work.
   - [x] Capture parts used, fault categories, photos and follow-up actions.
   - [x] Improve generated jobcard PDF to include visual signature and richer site/system evidence.
+  - [ ] Add completed job history view for technicians (Phase 11).
 - Admin workflow:
-  - [ ] Dispatch planner for scheduling jobs and assigning technicians.
-  - [ ] Lifecycle due calendar by site, system type and risk tier.
+  - [x] Dispatch planner for scheduling jobs and assigning technicians.
+  - [x] Lifecycle due calendar by site, system type and risk tier.
   - [x] Exception queues for overdue systems, missing documentation and finance follow-up.
-  - [ ] Export operational reports for management review.
+  - [x] Export operational reports for management review.
+  - [ ] Pagination and search controls on admin operations list views (Phase 11).
+  - [ ] Collapsible or tabbed sections on admin operations page (Phase 11).
+  - [ ] Import failure row details surfaced on page (Phase 11).
+  - [ ] Configurable service interval per system type replacing hardcoded six months (Phase 11).
 - Client workflow:
-  - [ ] Client account-to-site management for multi-site customers.
-  - [ ] Quote approval history and confirmation receipts.
+  - [x] Client account-to-site management for multi-site customers.
+  - [x] Quote approval history and confirmation receipts.
   - [x] Maintenance request submission from the client dashboard.
   - [x] Client-visible request status and linked scheduled dispatch reference.
   - [x] Per-document access logs for sensitive records.
@@ -714,6 +846,10 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Rate limiting for login endpoint.
   - [x] Rate limiting for write endpoints beyond login.
   - [x] CSRF protection for browser-submitted state-changing requests.
+  - [ ] Server-side session token revocation on logout (Phase 10).
+  - [ ] CSV export formula-injection sanitisation (Phase 11).
+  - [ ] Finance settlement confirmation gate (Phase 11).
+  - [ ] Copy-to-clipboard reset link control replacing plain-text DOM rendering (Phase 11).
   - [ ] Structured error telemetry and Cloudflare log review process.
   - [ ] Per-role authorization tests.
 - Operations and support:
@@ -829,6 +965,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add LocalBusiness schema.
 - [x] Add unique meta descriptions per page.
 - [x] Add OpenGraph image once a brand image asset exists.
+- [ ] Replace SVG OG image with PNG or JPEG and update `og:image:type` meta.
 - [x] Validate generated sitemap in built output.
 
 ### Accessibility
@@ -838,6 +975,9 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add labelled contact form.
 - [x] Add reduced-motion support.
 - [x] Add keyboard-accessible mobile menu escape behavior.
+- [ ] Fix duplicate Compliance link in mobile navigation.
+- [ ] Add mobile menu auto-close on nav link tap.
+- [ ] Fix Solutions dropdown ARIA role and keyboard navigation pattern.
 - [ ] Audit keyboard flow in Browser across desktop and mobile.
 - [ ] Run automated accessibility check when tooling is available.
 - [ ] Verify all color combinations against WCAG AA.
@@ -876,9 +1016,17 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add password reset.
 - [x] Add login rate limiting and audit logging.
 - [x] Add signature pad UI and richer jobcard PDF evidence.
-- [ ] Add dispatch scheduling workflow.
+- [x] Add dispatch scheduling workflow.
 - [x] Convert client requests into scheduled dispatches.
 - [x] Add monitoring and backup SOPs.
+- [ ] Add server-side session token revocation on logout (Phase 10).
+- [ ] Add pagination and search to admin operations list views (Phase 11).
+- [ ] Add technician completed job history view (Phase 11).
+- [ ] Sanitize CSV export cells against formula injection (Phase 11).
+- [ ] Add confirmation gate to finance Mark settled action (Phase 11).
+- [ ] Replace reset link plain-text DOM rendering with copy-to-clipboard control (Phase 11).
+- [ ] Add configurable service interval per system type (Phase 11).
+- [ ] Add web analytics to public site (Phase 12).
 - [ ] Add migration plan from `portal.tequit.co.za` to `portal.kharon.co.za`.
 
 ## Phased Implementation
@@ -1059,6 +1207,76 @@ Tasks:
 Status:
 
 Cloudflare is selected for the Tequit staging stack. Deployment config lives in `wrangler.jsonc`; the Astro Cloudflare adapter emits SSR Worker output and static assets. Domain-level apex/www redirects belong in Cloudflare Redirect Rules or Bulk Redirects.
+
+### Phase 8: Session Security Hardening
+
+Goal:
+
+Close the session revocation gap so logout is fully effective server-side.
+
+Tasks:
+
+- [ ] Add revoked sessions table to D1 schema.
+- [ ] Update logout endpoint to write token fingerprint to revocation table.
+- [ ] Update `verifySessionToken` to reject revoked fingerprints.
+- [ ] Add revocation table cleanup for expired rows.
+- [ ] Update QA checklist to verify former session cookie is rejected post-logout.
+
+Deployable gate:
+
+Former session cookie rejected after logout. Fresh login works normally. Revocation table stays bounded.
+
+Status:
+
+Pending. Blocked on D1 schema migration.
+
+### Phase 9: Portal Admin UX And Export Hardening
+
+Goal:
+
+Make the admin portal usable at production record volumes and close the data quality and UX gaps identified in the 2026-05-24 code review.
+
+Tasks:
+
+- [ ] Add pagination or load-more to all capped admin list views.
+- [ ] Add collapsible or tabbed layout to admin operations page.
+- [ ] Surface CSV import failure details on the page.
+- [ ] Replace reset link plain-text DOM rendering with copy-to-clipboard control.
+- [ ] Add confirmation dialog before finance Mark settled action.
+- [ ] Add technician completed job history view.
+- [ ] Sanitize formula-injection prefixes on all CSV export cells.
+- [ ] Add configurable service interval per system type on the systems table.
+
+Deployable gate:
+
+All items above pass manual QA. `npm run build` and `npm run audit:site` pass.
+
+Status:
+
+Pending.
+
+### Phase 10: Analytics And Contact Form
+
+Goal:
+
+Add conversion visibility and replace the mailto contact form with a server-side handler.
+
+Tasks:
+
+- [ ] Select privacy-aware analytics provider; confirm POPIA alignment.
+- [ ] Track public page views, CTA clicks and contact form conversion events.
+- [ ] Confirm no analytics fire on `/portal/*` routes.
+- [ ] Replace `action="mailto:..."` contact form with a server-side form handler or confirmed third-party form service.
+- [ ] Add phone number to contact and emergency support pages.
+- [ ] Update privacy notice if required by chosen analytics or form provider.
+
+Deployable gate:
+
+Analytics events appear in provider dashboard for public routes. No events on portal routes. Contact form submission confirmed in staging without requiring a local email client. Phone number is visible on contact and emergency pages.
+
+Status:
+
+Pending.
 
 ## Verification Commands
 
