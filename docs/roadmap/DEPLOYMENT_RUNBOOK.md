@@ -57,7 +57,7 @@ Gate requirements:
 - Audit reports `0 vulnerabilities`.
 - `robots.txt` and `sitemap.xml` are present in build output.
 - `404.html` is present and contains `noindex, nofollow`.
-- Contact page shows form and the configured `PUBLIC_CONTACT_EMAIL`.
+- Contact page shows form with Name, Email, Request Type and Message fields and a Submit button. Form uses `/api/contact` POST (not `mailto:`).
 - Header and footer include `Access Records` CTAs pointing to the active portal login.
 - `dist/_headers` and `dist/_redirects` are present.
 - Domain-level apex/www redirects are configured through Cloudflare Redirect Rules or Bulk Redirects, not Pages `_redirects`.
@@ -195,12 +195,32 @@ Apply the D1 schema remotely:
 npx wrangler d1 execute kharon-portal --remote --file=schema.sql
 ```
 
-Apply incremental portal operations migrations when upgrading an existing database:
+Apply incremental migrations when upgrading an existing database. Apply each pending migration in order:
 
 ```powershell
-npx wrangler d1 execute kharon-portal --local --file=migrations/0002_portal_operations.sql
-npx wrangler d1 execute kharon-portal --remote --file=migrations/0002_portal_operations.sql
+npx wrangler d1 execute DB --local --file=migrations/0001_kharon_portal.sql
+npx wrangler d1 execute DB --remote --file=migrations/0001_kharon_portal.sql
 ```
+
+Current migrations and their scope:
+
+| File | Scope |
+|------|-------|
+| `0001_kharon_portal.sql` | Initial portal schema |
+| `0002_portal_operations.sql` | Admin CRUD operations |
+| `0003_client_requests.sql` | Maintenance requests |
+| `0004_request_dispatch_link.sql` | Request-to-job linking |
+| `0005_job_evidence_files.sql` | Photo evidence metadata |
+| `0006_password_reset_tokens.sql` | Password reset |
+| `0007_user_mfa.sql` | TOTP MFA |
+| `0008_document_access_logs.sql` | Document access ledger |
+| `0009_revoked_sessions.sql` | Session token revocation |
+| `0010_system_service_interval.sql` | Configurable service intervals |
+| `0011_contact_submissions.sql` | Public contact form storage |
+
+For a fresh database, apply `schema.sql` first (full schema including all migrations). For an existing database, identify the highest applied migration and apply only the subsequent files in order.
+
+Applied to staging D1 as of 2026-05-25: all migrations through `0011`.
 
 Generate a PBKDF2 password hash before inserting users:
 
@@ -306,7 +326,8 @@ Run after every production deployment:
    - Email input
    - Request Type select
    - Message textarea
-   - Submit button
+   - Submit button (submits to `/api/contact`, not `mailto:`)
+   - Successful submission shows inline confirmation; no email client is required
 5. Browser console has no hydration errors on fresh load.
 6. Latest hardening audit is recorded in `docs/roadmap/HARDENING_AUDIT.md`.
 

@@ -332,8 +332,26 @@ Import controls:
 - System import requires the exact header: `id,site_id,system_type,coverage_area,manufacturer,model_reference,next_due_date`.
 - A blank `id` creates a new record. An existing `id` updates that record.
 - Imports are limited to 250 rows per request and return row-level success or failure details.
+- Systems imported via CSV receive the default 6-month service interval (`service_interval_months = 6`). To set a custom interval, edit the system record individually in `/portal/admin/operations` after import.
 - User bulk import is intentionally not enabled until a controlled temporary-password and reset-link delivery process is approved.
 - Operators should export current data before any import, validate `site_id` values for system imports and retain the source CSV in the approved internal evidence location outside git.
+
+## Error Telemetry Review
+
+The controlling policy is `docs/roadmap/ERROR_TELEMETRY_POLICY.md`.
+
+Run D1 audit queries as documented in that file to review auth failures, rate-limit blocks, CSRF blocks and document access failures.
+
+Minimum cadence:
+
+- Weekly: 15-minute review using the weekly checklist in the policy.
+- Monthly: 30-minute review using the monthly checklist.
+
+Contact form submissions are stored in `contact_submissions` and must be reviewed and forwarded manually until a Phase 9 email notification is configured:
+
+```powershell
+npx wrangler d1 execute DB --remote --command "SELECT id, name, email, request_type, submitted_at FROM contact_submissions ORDER BY submitted_at DESC LIMIT 20"
+```
 
 ## Retention Review
 

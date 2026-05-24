@@ -36,10 +36,11 @@ Harness coverage:
 - [ ] Authenticated dashboard exposes a CSRF token.
 - [ ] Missing CSRF token is blocked.
 - [ ] Valid CSRF token is accepted for logout.
+- [ ] Post-logout token replay returns `302` to login (Phase 10 session revocation active).
 
 The harness does not replace the manual data-access and document-access tests below.
 
-## Authentication
+## Authentication And Session
 
 - [ ] Valid admin login succeeds and routes to the admin dashboard.
 - [ ] Valid technician login succeeds and routes to the technician dashboard.
@@ -48,6 +49,8 @@ The harness does not replace the manual data-access and document-access tests be
 - [ ] Invalid password fails with a visible error and no session is issued.
 - [ ] Disabled user cannot login.
 - [ ] Force-password-change user is redirected to `/portal/account/password`.
+- [ ] After logout, presenting the former session cookie to a protected dashboard returns `302` to login (server-side revocation).
+- [ ] A fresh login after logout succeeds and issues a new session cookie.
 
 ## MFA
 
@@ -102,3 +105,31 @@ The harness does not replace the manual data-access and document-access tests be
 - [ ] Missing document returns a safe error.
 - [ ] Evidence photo download creates a `document_access_logs` success row.
 - [ ] Document access log includes actor role, storage path, document type, outcome and site context where available.
+
+## Technician Workflow
+
+- [ ] Technician can view assigned dispatches at `/portal/tech/dashboard`.
+- [ ] Technician can start a Scheduled job (status changes to In Progress).
+- [ ] Technician can submit a completed jobcard with comments and signature.
+- [ ] Jobcard closure updates `next_due_date` on the system record using the configured `service_interval_months`.
+- [ ] Technician can view completed job history at `/portal/tech/history`.
+- [ ] Technician job history shows only jobs assigned to the authenticated technician.
+- [ ] Admin accessing `/portal/tech/history` can see all completed jobs.
+
+## Admin UX
+
+- [ ] Admin operations page sections are collapsible (users, sites, systems, jobs).
+- [ ] Admin operations page overflow records are accessible via expand control.
+- [ ] CSV import failure details are shown on the page (not in network tools).
+- [ ] Password reset link is shown as copy-to-clipboard only; raw URL is not visible in the DOM after copying.
+- [ ] Finance ledger "Mark settled" requires explicit confirmation before applying.
+- [ ] Admin can set `service_interval_months` on a system record from operations.
+
+## Public Contact Form
+
+- [ ] Contact form at `/contact` submits to `/api/contact` via POST (not `mailto:`).
+- [ ] Successful submission shows an inline confirmation message; no page reload or email client required.
+- [ ] Submission with a filled honeypot field returns success but does not store a record in D1.
+- [ ] Submission with missing required fields shows a validation error.
+- [ ] More than 5 submissions from the same IP within 15 minutes returns HTTP 429.
+- [ ] Submission appears in `contact_submissions` D1 table: `npx wrangler d1 execute DB --remote --command "SELECT id, name, email, request_type, submitted_at FROM contact_submissions ORDER BY submitted_at DESC LIMIT 5"`.

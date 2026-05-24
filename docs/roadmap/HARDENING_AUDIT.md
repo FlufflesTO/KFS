@@ -59,3 +59,45 @@ The public site is static-first, deployable on Cloudflare Pages, and hardened fo
 - `https://tequit.co.za/` currently serves the same hardened site instead of redirecting to `https://www.tequit.co.za/`.
 - The current Wrangler OAuth token can read the `tequit.co.za` zone but returned an authentication error for zone Rulesets API access.
 - This cannot be resolved inside the Pages bundle because Cloudflare Pages `_redirects` does not support domain-level redirects. Add the Redirect Rule in the Cloudflare dashboard or with a token that has Dynamic URL Redirects Write / Zone Rulesets permissions.
+
+---
+
+## Audit Update — 2026-05-25
+
+Scope of this update: SSR portal security state, contact form handler, session revocation, and current build posture.
+
+### Architecture State
+
+- Site is now Astro 6 SSR on the Cloudflare adapter. Public pages and portal routes share one Worker deployment.
+- Public pages remain no-hydration where possible; portal pages use inline `<script>` blocks with no bundled client JavaScript.
+- CSS budget: 46,000 bytes. Current output: 44,372 bytes. No public JS bundle is emitted.
+
+### Portal Security Additions Since May 2026-05-18
+
+- **Session token revocation (Phase 10):** Logout inserts a SHA-256 token fingerprint into `revoked_sessions` D1 table. Middleware checks revocation on every portal request. Migration `0009_revoked_sessions.sql` applied to staging.
+- **CSRF protection:** User-bound HMAC tokens delivered via meta tag, validated in middleware for all authenticated portal write POSTs. Login is intentionally exempt.
+- **Rate limiting:** Per-endpoint limits on all portal write APIs. Public contact endpoint rate-limited at 5 per 15-minute window per IP.
+- **TOTP MFA:** Admin and finance users can enrol an authenticator app. MFA-required flag enforced in middleware.
+- **Password reset:** Single-use token hashes stored in D1; admin-issued reset links are copy-to-clipboard only; no plain-text URL persists in the DOM.
+- **CSV formula injection:** Tab-prefix sanitization on all exported cells.
+- **Document access logging:** Every jobcard PDF and evidence photo download is recorded in `document_access_logs` with actor, role, outcome and IP hash.
+- **Audit log:** Auth, CSRF, rate-limit, data-change and document-access events recorded in `audit_events`.
+
+### Contact Form
+
+- Contact form no longer uses `action="mailto:..."`. Submissions POST to `/api/contact`, are validated server-side, and stored in D1 `contact_submissions`. Honeypot is checked server-side. No email-client dependency.
+
+### CSP Note
+
+- The `script-src 'unsafe-inline'` policy accommodates both the JSON-LD block in `BaseLayout.astro` and the portal inline script blocks. No eval, innerHTML or dynamic script creation is used in application code.
+- Portal inline scripts use `window.kharonPortalFetch`, which injects the CSRF token on every request; this helper is also declared inline.
+
+### Lighthouse
+
+- Last recorded Lighthouse scores were 100 across all categories on the public shell before portal additions. Re-run Lighthouse against the current public homepage after Phase 7 imagery is added.
+
+### Remaining Gaps
+
+- No automated alerting or Logpush configured. See `docs/roadmap/ERROR_TELEMETRY_POLICY.md`.
+- OG image is still SVG. Facebook, LinkedIn and WhatsApp will not render it. A PNG replacement is deferred to Phase 8 pending approved imagery.
+- Analytics not yet integrated. Deferred to Phase 12 pending POPIA-compliant provider selection.
