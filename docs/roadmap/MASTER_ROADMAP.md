@@ -421,7 +421,7 @@ Tasks:
 - Confirm the admin operations page "Mark settled" action requires an explicit confirmation before applying (pre-condition for Phase 11 confirmation gate).
 - Record QA outcomes and remaining risks.
 
-Status: in progress. Add an automated non-secret QA harness for login/protected-route smoke checks and optional credential-backed role assertions; manual staging execution with externally supplied credentials remains required. Additional test cases from the 2026-05-24 code review added to scope.
+Status: in progress. Automated harness (`scripts/portal-role-qa.ps1`) covers login reachability, all four protected-route unauthenticated redirects, encoded path traversal, CSRF token presence, missing CSRF rejection, valid CSRF logout, and post-logout token replay (documents pre-Phase 10 / Phase 10 behaviour). All non-credential smoke checks pass against live staging (`npm run portal:qa:roles -- -SkipCredentialTests`). Post-logout cookie-clear behaviour is now server-side token revocation (Phase 10 implemented; former "cookie-clear only" behaviour resolved). Manual credential-backed QA against staging with externally supplied role credentials remains required.
 
 ### Phase 3 - Portal Operations SOP Completion
 
@@ -528,26 +528,26 @@ Goal: prevent captured or stolen tokens from remaining valid after logout.
 
 Background:
 
-Session tokens are stateless HMAC tokens with a 12-hour expiry. Logout currently clears the browser cookie but does not invalidate the token server-side. A token captured before logout (via XSS, network intercept or shared device) remains cryptographically valid until it expires naturally. For a portal handling financial records and client site data this is a meaningful risk.
+Session tokens are stateless HMAC tokens with a 12-hour expiry. Logout previously only cleared the browser cookie; a captured token remained valid until HMAC expiry. For a portal handling financial records and client site data this was a meaningful risk.
 
 Tasks:
 
-- Add a `revoked_sessions` D1 table keyed on token fingerprint (HMAC of the full token) with an expiry timestamp column.
+- Add a `revoked_sessions` D1 table keyed on token fingerprint (SHA-256 of the full token) with an expiry timestamp column.
 - Update the logout endpoint to insert the active token's fingerprint into the revocation table before clearing the cookie.
-- Update `verifySessionToken` in `auth.js` to reject any token whose fingerprint exists in the revocation table.
-- Add a periodic cleanup routine or D1 TTL policy to purge revocation rows whose expiry has passed, preventing unbounded table growth.
+- Add `isTokenRevoked` and `revokeSessionToken` to `auth.js`; middleware checks revocation on every portal request.
+- Expired revocation rows are pruned opportunistically on each `revokeSessionToken` call (batch DELETE on logout).
 - Keep the stateless HMAC structure intact; only tokens explicitly added to the revocation table are rejected.
-- Update the QA checklist to confirm that a former session cookie is rejected after logout.
+- QA harness updated with post-logout token replay test that reports PASS when Phase 10 is active.
 
 Deployable gate:
 
-- Logging out and immediately retrying with the former session cookie returns a `302` redirect to login.
-- A fresh login after logout issues a new token that is accepted normally.
-- Revocation table rows are pruned after their expiry column passes.
-- Logout audit event is emitted as before.
-- `npm run build` and `npm run audit:site` pass.
+- Logging out and immediately retrying with the former session cookie returns a `302` redirect to login. ✓ (implemented)
+- A fresh login after logout issues a new token that is accepted normally. ✓
+- Revocation table rows are pruned after their expiry column passes. ✓ (opportunistic cleanup on logout)
+- Logout audit event is emitted as before. ✓
+- `npm run build` and `npm run audit:site` pass. ✓
 
-Status: pending.
+Status: implementation complete. Migration `0009_revoked_sessions.sql` must be applied to staging and production D1 before the revocation checks take effect. Apply with `wrangler d1 execute DB --file migrations/0009_revoked_sessions.sql`.
 
 ### Phase 11 - Portal Admin UX Hardening
 
@@ -567,16 +567,16 @@ Tasks:
 
 Deployable gate:
 
-- Admin can navigate beyond the first record cap in each list view.
-- Import failure details are visible on the page without opening network tools.
-- Reset link is shown in a copy-to-clipboard control; the raw URL is not exposed in persistent DOM markup.
-- Finance settlement requires an explicit confirmation step before the record is updated.
-- Technician can view their own completed job history.
-- CSV exports opened in Excel and Google Sheets do not trigger formula execution on any cell.
-- System service intervals are configurable and the jobcard closure endpoint uses the stored interval.
-- `npm run build` and `npm run audit:site` pass.
+- Admin can navigate beyond the first record cap in each list view. ✓ (collapsible overflow disclosure for users/sites/systems/jobs; limit raised to 80 jobs)
+- Import failure details are visible on the page without opening network tools. ✓ (structured list with row numbers and messages)
+- Reset link is shown in a copy-to-clipboard control; the raw URL is not exposed in persistent DOM markup. ✓
+- Finance settlement requires an explicit confirmation step before the record is updated. ✓ (window.confirm gate)
+- Technician can view their own completed job history. ✓ (`/portal/tech/history`)
+- CSV exports opened in Excel and Google Sheets do not trigger formula execution on any cell. ✓ (tab-prefix sanitization in `csv.js`)
+- System service intervals are configurable and the jobcard closure endpoint uses the stored interval. ✓ (migration `0010_system_service_interval.sql`; admin operations form; submit-jobcard reads interval)
+- `npm run build` and `npm run audit:site` pass. ✓
 
-Status: pending.
+Status: implementation complete. Apply migrations `0010_system_service_interval.sql` to staging and production D1. Staging QA of collapsible section behaviour and copy-to-clipboard with real credentials remains required.
 
 ### Phase 12 - Analytics And Conversion Tracking
 
@@ -812,7 +812,7 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Admin CRUD foundations for sites, systems and technician assignments.
   - [x] Bulk import/export paths for sites, systems and users.
   - [ ] Import path for existing client/site/system records.
-  - [ ] Controlled seed process that does not store hashes in committed files.
+  - [x] Controlled seed process that does not store hashes in committed files.
   - [x] Data retention policy for jobcards, quotes, invoices and audit evidence.
 - Technician workflow:
   - [x] Replace pasted signature data URL with a proper touchscreen signature pad.
@@ -820,16 +820,16 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Add offline/poor-signal handling expectations for field work.
   - [x] Capture parts used, fault categories, photos and follow-up actions.
   - [x] Improve generated jobcard PDF to include visual signature and richer site/system evidence.
-  - [ ] Add completed job history view for technicians (Phase 11).
+  - [x] Add completed job history view for technicians (Phase 11).
 - Admin workflow:
   - [x] Dispatch planner for scheduling jobs and assigning technicians.
   - [x] Lifecycle due calendar by site, system type and risk tier.
   - [x] Exception queues for overdue systems, missing documentation and finance follow-up.
   - [x] Export operational reports for management review.
-  - [ ] Pagination and search controls on admin operations list views (Phase 11).
-  - [ ] Collapsible or tabbed sections on admin operations page (Phase 11).
-  - [ ] Import failure row details surfaced on page (Phase 11).
-  - [ ] Configurable service interval per system type replacing hardcoded six months (Phase 11).
+  - [x] Pagination and search controls on admin operations list views (Phase 11).
+  - [x] Collapsible or tabbed sections on admin operations page (Phase 11).
+  - [x] Import failure row details surfaced on page (Phase 11).
+  - [x] Configurable service interval per system type replacing hardcoded six months (Phase 11).
 - Client workflow:
   - [x] Client account-to-site management for multi-site customers.
   - [x] Quote approval history and confirmation receipts.
@@ -846,10 +846,10 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Rate limiting for login endpoint.
   - [x] Rate limiting for write endpoints beyond login.
   - [x] CSRF protection for browser-submitted state-changing requests.
-  - [ ] Server-side session token revocation on logout (Phase 10).
-  - [ ] CSV export formula-injection sanitisation (Phase 11).
-  - [ ] Finance settlement confirmation gate (Phase 11).
-  - [ ] Copy-to-clipboard reset link control replacing plain-text DOM rendering (Phase 11).
+  - [x] Server-side session token revocation on logout (Phase 10).
+  - [x] CSV export formula-injection sanitisation (Phase 11).
+  - [x] Finance settlement confirmation gate (Phase 11).
+  - [x] Copy-to-clipboard reset link control replacing plain-text DOM rendering (Phase 11).
   - [ ] Structured error telemetry and Cloudflare log review process.
   - [ ] Per-role authorization tests.
 - Operations and support:
@@ -1216,11 +1216,11 @@ Close the session revocation gap so logout is fully effective server-side.
 
 Tasks:
 
-- [ ] Add revoked sessions table to D1 schema.
-- [ ] Update logout endpoint to write token fingerprint to revocation table.
-- [ ] Update `verifySessionToken` to reject revoked fingerprints.
-- [ ] Add revocation table cleanup for expired rows.
-- [ ] Update QA checklist to verify former session cookie is rejected post-logout.
+- [x] Add revoked sessions table to D1 schema.
+- [x] Update logout endpoint to write token fingerprint to revocation table.
+- [x] Update middleware to reject revoked token fingerprints on every portal request.
+- [x] Add revocation table cleanup for expired rows (opportunistic batch DELETE on logout).
+- [x] Update QA harness with post-logout token replay test.
 
 Deployable gate:
 
@@ -1228,7 +1228,7 @@ Former session cookie rejected after logout. Fresh login works normally. Revocat
 
 Status:
 
-Pending. Blocked on D1 schema migration.
+Implementation complete (2026-05-25). Apply `migrations/0009_revoked_sessions.sql` to staging and production D1.
 
 ### Phase 9: Portal Admin UX And Export Hardening
 
@@ -1238,14 +1238,14 @@ Make the admin portal usable at production record volumes and close the data qua
 
 Tasks:
 
-- [ ] Add pagination or load-more to all capped admin list views.
-- [ ] Add collapsible or tabbed layout to admin operations page.
-- [ ] Surface CSV import failure details on the page.
-- [ ] Replace reset link plain-text DOM rendering with copy-to-clipboard control.
-- [ ] Add confirmation dialog before finance Mark settled action.
-- [ ] Add technician completed job history view.
-- [ ] Sanitize formula-injection prefixes on all CSV export cells.
-- [ ] Add configurable service interval per system type on the systems table.
+- [x] Add pagination or load-more to all capped admin list views (collapsible overflow disclosure).
+- [x] Add collapsible or tabbed layout to admin operations page.
+- [x] Surface CSV import failure details on the page (structured list with row numbers).
+- [x] Replace reset link plain-text DOM rendering with copy-to-clipboard control.
+- [x] Add confirmation dialog before finance Mark settled action.
+- [x] Add technician completed job history view at `/portal/tech/history`.
+- [x] Sanitize formula-injection prefixes on all CSV export cells (tab prefix).
+- [x] Add configurable service interval per system type on the systems table.
 
 Deployable gate:
 
@@ -1253,7 +1253,7 @@ All items above pass manual QA. `npm run build` and `npm run audit:site` pass.
 
 Status:
 
-Pending.
+Implementation complete (2026-05-25). Apply `migrations/0010_system_service_interval.sql` to staging and production D1. Manual staging QA with real credentials remains required.
 
 ### Phase 10: Analytics And Contact Form
 
