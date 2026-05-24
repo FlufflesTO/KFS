@@ -312,6 +312,28 @@ Data retention production gate:
 - [x] Site audit script passes.
 - [x] No secrets committed.
 
+## Review Update - 2026-05-24 Document Access Ledger Pass
+
+Scope for this pass:
+
+- Add a dedicated D1 document access log for jobcard PDF and technician evidence downloads.
+- Record actor, role, site, storage key, document type, outcome, IP hash and user-agent metadata for each document access attempt.
+- Keep existing `audit_events` writes for general security history while adding a queryable document-specific ledger.
+- Update QA and audit checks so sensitive document access logging remains enforced.
+- Keep user-facing access reports out of scope until reporting requirements are approved.
+
+Document access production gate:
+
+- [x] Roadmap updated before implementation.
+- [x] Document access D1 table added.
+- [x] File endpoint writes document access records.
+- [x] Success, blocked and failure outcomes are logged.
+- [x] QA checklist updated.
+- [x] Site audit checks document access logging.
+- [x] Build passes.
+- [x] Site audit script passes.
+- [x] No secrets committed.
+
 ## Master Feature List
 
 ### Foundation
@@ -536,7 +558,7 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [ ] Quote approval history and confirmation receipts.
   - [x] Maintenance request submission from the client dashboard.
   - [x] Client-visible request status and linked scheduled dispatch reference.
-  - [ ] Per-document access logs for sensitive records.
+  - [x] Per-document access logs for sensitive records.
 - Finance workflow:
   - [x] Invoice number generation and immutable ledger references.
   - [x] Payment capture and reconciliation states.

@@ -58,6 +58,10 @@ Use this checklist against staging credentials supplied outside the repository. 
 ## Documents
 
 - [ ] Valid jobcard PDF download works.
+- [ ] Valid jobcard PDF download creates a `document_access_logs` success row.
 - [ ] Invalid jobcard path is blocked.
+- [ ] Invalid or unauthorized jobcard path creates a `document_access_logs` blocked/failure row where a valid portal session exists.
 - [ ] Path traversal is blocked.
 - [ ] Missing document returns a safe error.
+- [ ] Evidence photo download creates a `document_access_logs` success row.
+- [ ] Document access log includes actor role, storage path, document type, outcome and site context where available.

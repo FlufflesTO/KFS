@@ -181,3 +181,24 @@ Review rules:
 - Take a D1 backup and confirm R2 evidence backup before approving any cleanup.
 - Do not delete R2 jobcards or photo evidence from Cloudflare without a matching D1 review and written approval reference.
 - Password reset tokens and rate-limit counters are eligible for future automated cleanup, but no purge automation is currently enabled.
+
+## Document Access Review
+
+Sensitive record downloads are logged to `document_access_logs` in D1.
+
+Logged fields include:
+
+- Actor user ID and role.
+- Site ID where the document can be mapped to a site.
+- R2 storage path.
+- Document type.
+- Outcome: `success`, `failure` or `blocked`.
+- IP hash and user-agent.
+- Failure or blocked reason where applicable.
+
+Review expectations:
+
+- During staging QA, confirm successful jobcard and evidence downloads create success rows.
+- Confirm unauthorized document access attempts create blocked or failure rows.
+- During production, review document access logs during client disputes, audit requests, suspected credential compromise and evidence-retention reviews.
+- Do not expose raw document access exports to clients without management approval and any required redaction.

@@ -115,6 +115,20 @@ CREATE TABLE IF NOT EXISTS job_evidence_files (
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
+CREATE TABLE IF NOT EXISTS document_access_logs (
+  id TEXT PRIMARY KEY,
+  actor_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  actor_role TEXT CHECK (actor_role IS NULL OR actor_role IN ('tech', 'admin', 'client', 'finance')),
+  site_id TEXT REFERENCES sites(id) ON DELETE SET NULL,
+  storage_path TEXT NOT NULL CHECK (storage_path LIKE 'jobcards/%' OR storage_path LIKE 'job-evidence/%'),
+  document_type TEXT NOT NULL CHECK (document_type IN ('Jobcard PDF', 'Evidence Photo')),
+  outcome TEXT NOT NULL CHECK (outcome IN ('success', 'failure', 'blocked')),
+  ip_hash TEXT,
+  user_agent TEXT,
+  reason TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
 CREATE TABLE IF NOT EXISTS portal_rate_limits (
   rate_key TEXT PRIMARY KEY,
   scope TEXT NOT NULL,
@@ -150,6 +164,9 @@ CREATE INDEX IF NOT EXISTS idx_audit_events_actor_created ON audit_events(actor_
 CREATE INDEX IF NOT EXISTS idx_audit_events_type_created ON audit_events(event_type, created_at);
 CREATE INDEX IF NOT EXISTS idx_job_evidence_job ON job_evidence_files(job_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_job_evidence_system ON job_evidence_files(system_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_document_access_actor_created ON document_access_logs(actor_user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_document_access_site_created ON document_access_logs(site_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_document_access_path_created ON document_access_logs(storage_path, created_at);
 CREATE INDEX IF NOT EXISTS idx_rate_limits_scope_window ON portal_rate_limits(scope, window_start);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expiry ON password_reset_tokens(expires_at, used_at);

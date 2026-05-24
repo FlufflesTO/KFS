@@ -1,5 +1,6 @@
 import { getBindings } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
+import { documentAccessLog } from "../../../../lib/server/documentAccess.js";
 import { forbidden, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
 
 export const prerender = false;
@@ -17,6 +18,7 @@ export async function GET({ params, locals, request }) {
     }
 
     const { db, storage } = getBindings();
+    const documentType = isJobcard ? "Jobcard PDF" : "Evidence Photo";
     const record = isJobcard
       ? await db
         .prepare(
@@ -41,6 +43,13 @@ export async function GET({ params, locals, request }) {
         .first();
 
     if (!record) {
+      await documentAccessLog(db, request, {
+        user,
+        storagePath: key,
+        documentType,
+        outcome: "failure",
+        reason: "missing_record"
+      });
       await auditEvent(db, request, {
         eventType: "document.access",
         entityType: "r2_object",
@@ -59,6 +68,14 @@ export async function GET({ params, locals, request }) {
       (user.role === "client" && record.site_id === user.siteId);
 
     if (!allowed) {
+      await documentAccessLog(db, request, {
+        user,
+        siteId: record.site_id,
+        storagePath: key,
+        documentType,
+        outcome: "blocked",
+        reason: "rbac_denied"
+      });
       await auditEvent(db, request, {
         eventType: "document.access",
         entityType: "r2_object",
@@ -71,8 +88,25 @@ export async function GET({ params, locals, request }) {
     }
 
     const object = await storage.get(key);
-    if (!object) return new Response("Not found", { status: 404 });
+    if (!object) {
+      await documentAccessLog(db, request, {
+        user,
+        siteId: record.site_id,
+        storagePath: key,
+        documentType,
+        outcome: "failure",
+        reason: "missing_r2_object"
+      });
+      return new Response("Not found", { status: 404 });
+    }
 
+    await documentAccessLog(db, request, {
+      user,
+      siteId: record.site_id,
+      storagePath: key,
+      documentType,
+      outcome: "success"
+    });
     await auditEvent(db, request, {
       eventType: "document.access",
       entityType: "r2_object",

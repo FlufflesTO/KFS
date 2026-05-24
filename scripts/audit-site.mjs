@@ -180,7 +180,7 @@ const requiredSourceTerms = new Map([
   ["src/pages/portal/api/reset-password.js", ["auth.password_reset", "password_reset_tokens", "hashPassword"]],
   ["src/pages/portal/reset.astro", ["/portal/api/reset-password", "Reset portal password"]],
   ["src/pages/portal/api/submit-jobcard.js", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
-  ["src/pages/portal/api/file/[...key].js", ["job-evidence/", "job_evidence_files"]],
+  ["src/pages/portal/api/file/[...key].js", ["job-evidence/", "job_evidence_files", "documentAccessLog"]],
   ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/api/submit-jobcard", "evidencePhotos"]],
   ["src/pages/portal/client/dashboard.astro", ["/portal/api/file/", "/portal/api/approve-quote"]],
   ["src/pages/portal/finance/dashboard.astro", ["financial_records", "payment_status", "/portal/api/finance/export", "/portal/api/finance/payments"]],
@@ -222,7 +222,7 @@ if (!fs.existsSync(operationsSop)) {
   fail("OPERATIONS_SOP.md is missing.");
 } else {
   const text = read(operationsSop);
-  for (const term of ["Monitoring Check", "D1 Backup", "R2 Evidence Backup", "Retention Review", "portal:monitor", "portal:backup:d1", "portal:retention:report"]) {
+  for (const term of ["Monitoring Check", "D1 Backup", "R2 Evidence Backup", "Retention Review", "Document Access Review", "portal:monitor", "portal:backup:d1", "portal:retention:report"]) {
     if (!text.includes(term)) fail(`OPERATIONS_SOP.md missing operational marker: ${term}`);
   }
 }
@@ -322,6 +322,10 @@ for (const term of ["CREATE TABLE IF NOT EXISTS users", "CHECK (role IN ('tech',
 
 for (const term of ["CREATE TABLE IF NOT EXISTS job_evidence_files", "storage_path TEXT NOT NULL UNIQUE", "idx_job_evidence_job"]) {
   if (!schema.includes(term)) fail(`schema.sql missing evidence marker: ${term}`);
+}
+
+for (const term of ["CREATE TABLE IF NOT EXISTS document_access_logs", "idx_document_access_actor_created", "idx_document_access_path_created"]) {
+  if (!schema.includes(term)) fail(`schema.sql missing document access marker: ${term}`);
 }
 
 for (const term of ["CREATE TABLE IF NOT EXISTS password_reset_tokens", "token_hash TEXT NOT NULL UNIQUE", "idx_password_reset_tokens_expiry"]) {
