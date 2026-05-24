@@ -266,6 +266,30 @@ MFA production gate:
 - [x] Site audit script passes.
 - [x] No secrets committed.
 
+## Review Update - 2026-05-24 Admin Bulk Import Export Pass
+
+Scope for this pass:
+
+- Add admin-only CSV export endpoints for users, sites and systems.
+- Add admin-only CSV import endpoints for sites and systems with strict headers, validation and row-level failure reporting.
+- Keep user bulk import out of scope until an approved onboarding control is chosen for temporary passwords and reset-link delivery.
+- Add operations screen links and paste-based CSV import panels for controlled staging and production administration.
+- Keep all import/export actions behind existing RBAC, CSRF protection, write rate limiting and audit logging.
+
+Admin import/export production gate:
+
+- [x] Roadmap updated before implementation.
+- [x] User CSV export implemented.
+- [x] Site CSV export implemented.
+- [x] System CSV export implemented.
+- [x] Site CSV import implemented.
+- [x] System CSV import implemented.
+- [x] Operations UI exposes import/export controls.
+- [x] Import actions are audit logged.
+- [x] Build passes.
+- [x] Site audit script passes.
+- [x] No secrets committed.
+
 ## Master Feature List
 
 ### Foundation
@@ -470,7 +494,7 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Optional MFA for admin and finance roles.
 - Data administration:
   - [x] Admin CRUD foundations for sites, systems and technician assignments.
-  - [ ] Bulk import/export paths for sites, systems and users.
+  - [x] Bulk import/export paths for sites, systems and users.
   - [ ] Import path for existing client/site/system records.
   - [ ] Controlled seed process that does not store hashes in committed files.
   - [ ] Data retention policy for jobcards, quotes, invoices and audit evidence.

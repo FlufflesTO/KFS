@@ -67,6 +67,42 @@ try {
     <div class="mx-auto grid max-w-7xl gap-8">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
 
+      <article class="border border-kharon-border bg-white p-5">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-bold uppercase text-kharon-purple">Bulk administration</p>
+            <h2 class="mt-2 text-xl font-bold">CSV import and export</h2>
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-kharon-muted">
+              Export operational records for review, then import controlled site or system updates using the exact CSV headers shown below.
+              User export is read-only; user bulk import remains blocked until password and reset-link delivery controls are approved.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=users">Export users</a>
+            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=sites">Export sites</a>
+            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=systems">Export systems</a>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-5 lg:grid-cols-2">
+          <form class="import-form grid gap-3" data-type="sites">
+            <h3 class="font-bold">Import sites</h3>
+            <p class="rounded-md bg-kharon-light px-3 py-2 font-mono text-xs">id,owner_company_name,physical_address,site_contact_person,site_contact_email,site_contact_phone,billing_emails</p>
+            <textarea class="min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste sites CSV here"></textarea>
+            <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Import sites</button>
+            <p class="import-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+          </form>
+
+          <form class="import-form grid gap-3" data-type="systems">
+            <h3 class="font-bold">Import systems</h3>
+            <p class="rounded-md bg-kharon-light px-3 py-2 font-mono text-xs">id,site_id,system_type,coverage_area,manufacturer,model_reference,next_due_date</p>
+            <textarea class="min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste systems CSV here"></textarea>
+            <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Import systems</button>
+            <p class="import-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+          </form>
+        </div>
+      </article>
+
       <div class="grid gap-6 xl:grid-cols-2">
         <article class="border border-kharon-border bg-white p-5">
           <h2 class="text-xl font-bold">Create user</h2>
@@ -302,6 +338,33 @@ try {
 
         result.textContent = `Saved ${body.id || ""}`.trim();
         result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+      });
+    }
+
+    for (const form of document.querySelectorAll(".import-form")) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const result = form.querySelector(".import-result");
+        result.classList.add("hidden");
+        const formData = new FormData(form);
+        const response = await window.kharonPortalFetch("/portal/api/admin/import", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ type: form.dataset.type, csv: formData.get("csv") })
+        });
+        const body = await response.json().catch(() => ({ ok: false, message: "Import failed." }));
+        if (!response.ok) {
+          result.textContent = body.message || "Import failed.";
+          result.className = "import-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+          return;
+        }
+        const failures = body.failures?.length || 0;
+        result.textContent = failures
+          ? `Import completed with ${failures} failed row(s). Review the JSON response in browser network tools before retrying.`
+          : `Imported ${body.results?.length || 0} row(s) successfully.`;
+        result.className = failures
+          ? "import-result rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900"
+          : "import-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
       });
     }
 

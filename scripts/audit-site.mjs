@@ -150,6 +150,8 @@ const expectedSourceRoutes = [
   "portal/client/dashboard.astro",
   "portal/finance/dashboard.astro",
   "portal/api/auth.js",
+  "portal/api/admin/export.js",
+  "portal/api/admin/import.js",
   "portal/account/mfa.astro",
   "portal/api/mfa.js",
   "portal/reset.astro",
@@ -171,6 +173,8 @@ const requiredSourceTerms = new Map([
   ["src/middleware.js", ["sessionCookieName", "/portal/tech/", "/portal/finance/", "/portal/client/", "context.locals.user"]],
   ["src/pages/portal/api/auth.js", ["verifyPassword", "verifyTotpCode", "Set-Cookie", "redirectTo"]],
   ["src/pages/portal/api/admin/users.js", ["reset-link", "password_reset_tokens", "resetUrl", "mfa_required"]],
+  ["src/pages/portal/api/admin/export.js", ["admin.export", "text/csv", "content-disposition"]],
+  ["src/pages/portal/api/admin/import.js", ["admin.import", "csvObjects", "250 rows"]],
   ["src/pages/portal/account/mfa.astro", ["/portal/api/mfa", "Multi-factor authentication", "Generate authenticator setup"]],
   ["src/pages/portal/api/mfa.js", ["auth.mfa_enable", "encryptMfaSecret", "verifyTotpCode"]],
   ["src/pages/portal/api/reset-password.js", ["auth.password_reset", "password_reset_tokens", "hashPassword"]],
@@ -247,7 +251,7 @@ if (!fs.existsSync(csrfPath)) {
 }
 
 const middlewareText = fs.existsSync(path.join(root, "src", "middleware.js")) ? read(path.join(root, "src", "middleware.js")) : "";
-for (const term of ["verifyCsrfRequest", "portal.maintenance_request", "portal.admin.users", "security.rate_limit"]) {
+for (const term of ["verifyCsrfRequest", "portal.maintenance_request", "portal.admin.users", "portal.admin.import", "security.rate_limit"]) {
   if (!middlewareText.includes(term)) fail(`middleware missing portal write hardening marker: ${term}`);
 }
 

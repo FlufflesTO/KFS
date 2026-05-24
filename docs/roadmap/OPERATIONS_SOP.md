@@ -138,3 +138,22 @@ Operational rules:
 - Once MFA is enabled, login requires email, password and a valid authenticator code before issuing a session cookie.
 - TOTP secrets are encrypted before storage and must never be copied into documentation, tickets or screenshots.
 - If a user loses access to their authenticator, an admin must disable and re-issue MFA through a controlled support process after identity verification.
+
+## Admin CSV Import And Export
+
+Admin CSV controls are available from `/portal/admin/operations`.
+
+Export controls:
+
+- `Export users` produces a read-only user inventory without password hashes or MFA secrets.
+- `Export sites` produces site master data.
+- `Export systems` produces protected-system master data linked by `site_id`.
+
+Import controls:
+
+- Site import requires the exact header: `id,owner_company_name,physical_address,site_contact_person,site_contact_email,site_contact_phone,billing_emails`.
+- System import requires the exact header: `id,site_id,system_type,coverage_area,manufacturer,model_reference,next_due_date`.
+- A blank `id` creates a new record. An existing `id` updates that record.
+- Imports are limited to 250 rows per request and return row-level success or failure details.
+- User bulk import is intentionally not enabled until a controlled temporary-password and reset-link delivery process is approved.
+- Operators should export current data before any import, validate `site_id` values for system imports and retain the source CSV in the approved internal evidence location outside git.
