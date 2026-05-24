@@ -17,6 +17,7 @@
     "portal:hash-password": "node scripts/hash-password.mjs",
     "portal:monitor": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/portal-monitor.ps1",
     "portal:backup:d1": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/portal-backup.ps1",
+    "portal:retention:report": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/portal-retention-report.ps1",
     "preview": "astro preview",
     "auth:cloudflare": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 login",
     "cloudflare:whoami": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 whoami",

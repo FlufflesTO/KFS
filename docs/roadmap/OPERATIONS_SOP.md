@@ -157,3 +157,27 @@ Import controls:
 - Imports are limited to 250 rows per request and return row-level success or failure details.
 - User bulk import is intentionally not enabled until a controlled temporary-password and reset-link delivery process is approved.
 - Operators should export current data before any import, validate `site_id` values for system imports and retain the source CSV in the approved internal evidence location outside git.
+
+## Retention Review
+
+The controlling policy is `docs/roadmap/DATA_RETENTION_POLICY.md`.
+
+Run:
+
+```powershell
+npm run portal:retention:report
+```
+
+The script is non-destructive. It reports records older than the current review thresholds and writes output to `retention-reports/`, which is gitignored.
+
+Minimum cadence:
+
+- Staging: before production cutover and after major seed/import exercises.
+- Production: quarterly, before any evidence cleanup decision and before major system migrations.
+
+Review rules:
+
+- Legal hold overrides all retention thresholds.
+- Take a D1 backup and confirm R2 evidence backup before approving any cleanup.
+- Do not delete R2 jobcards or photo evidence from Cloudflare without a matching D1 review and written approval reference.
+- Password reset tokens and rate-limit counters are eligible for future automated cleanup, but no purge automation is currently enabled.

@@ -209,6 +209,7 @@ if (!fs.existsSync(roadmap)) {
   for (const term of [
     "Review Update - 2026-05-21 Portal Security And Production Hardening",
     "Review Update - 2026-05-21 Monitoring And Backup SOP Pass",
+    "Review Update - 2026-05-24 Data Retention Governance Pass",
     "CSRF",
     "Production Gate Checklist"
   ]) {
@@ -221,22 +222,32 @@ if (!fs.existsSync(operationsSop)) {
   fail("OPERATIONS_SOP.md is missing.");
 } else {
   const text = read(operationsSop);
-  for (const term of ["Monitoring Check", "D1 Backup", "R2 Evidence Backup", "portal:monitor", "portal:backup:d1"]) {
+  for (const term of ["Monitoring Check", "D1 Backup", "R2 Evidence Backup", "Retention Review", "portal:monitor", "portal:backup:d1", "portal:retention:report"]) {
     if (!text.includes(term)) fail(`OPERATIONS_SOP.md missing operational marker: ${term}`);
   }
 }
 
-for (const script of ["scripts/portal-monitor.ps1", "scripts/portal-backup.ps1"]) {
+const retentionPolicy = path.join(root, "docs", "roadmap", "DATA_RETENTION_POLICY.md");
+if (!fs.existsSync(retentionPolicy)) {
+  fail("DATA_RETENTION_POLICY.md is missing.");
+} else {
+  const text = read(retentionPolicy);
+  for (const term of ["Retention Matrix", "Legal Hold", "portal:retention:report", "Jobcard PDFs"]) {
+    if (!text.includes(term)) fail(`DATA_RETENTION_POLICY.md missing retention marker: ${term}`);
+  }
+}
+
+for (const script of ["scripts/portal-monitor.ps1", "scripts/portal-backup.ps1", "scripts/portal-retention-report.ps1"]) {
   if (!fs.existsSync(path.join(root, script))) fail(`missing operational script: ${script}`);
 }
 
 const packageJson = fs.existsSync(path.join(root, "package.json")) ? read(path.join(root, "package.json")) : "";
-for (const term of ["portal:monitor", "portal:backup:d1"]) {
+for (const term of ["portal:monitor", "portal:backup:d1", "portal:retention:report"]) {
   if (!packageJson.includes(term)) fail(`package.json missing operational script: ${term}`);
 }
 
 const gitignore = fs.existsSync(path.join(root, ".gitignore")) ? read(path.join(root, ".gitignore")) : "";
-for (const term of ["backups/", "monitor-results/"]) {
+for (const term of ["backups/", "monitor-results/", "retention-reports/"]) {
   if (!gitignore.includes(term)) fail(`.gitignore missing local operational export path: ${term}`);
 }
 

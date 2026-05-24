@@ -290,6 +290,28 @@ Admin import/export production gate:
 - [x] Site audit script passes.
 - [x] No secrets committed.
 
+## Review Update - 2026-05-24 Data Retention Governance Pass
+
+Scope for this pass:
+
+- Add a written data retention policy for portal jobcards, technician evidence, financial records, maintenance requests, audit events and account security records.
+- Add a non-destructive retention report script that counts records older than policy review thresholds without deleting or modifying D1/R2 data.
+- Add an npm command for operators to run the retention report before production cutover and during recurring governance reviews.
+- Update the operations SOP with review cadence, legal-hold handling and deletion approval rules.
+- Keep automated deletion/purge workflows out of scope until Kharon approves final retention periods and legal review.
+
+Data retention production gate:
+
+- [x] Roadmap updated before implementation.
+- [x] Data retention policy added.
+- [x] Non-destructive retention report script added.
+- [x] Retention report npm script added.
+- [x] Operations SOP updated with retention review workflow.
+- [x] Site audit checks retention artifacts.
+- [x] Build passes.
+- [x] Site audit script passes.
+- [x] No secrets committed.
+
 ## Master Feature List
 
 ### Foundation
@@ -497,7 +519,7 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Bulk import/export paths for sites, systems and users.
   - [ ] Import path for existing client/site/system records.
   - [ ] Controlled seed process that does not store hashes in committed files.
-  - [ ] Data retention policy for jobcards, quotes, invoices and audit evidence.
+  - [x] Data retention policy for jobcards, quotes, invoices and audit evidence.
 - Technician workflow:
   - [x] Replace pasted signature data URL with a proper touchscreen signature pad.
   - [x] Add job status transition from Scheduled to In Progress.

@@ -23,6 +23,7 @@ yarn-error.log*
 # Local operational exports
 backups/
 monitor-results/
+retention-reports/
 
 # OS / editor noise
 .DS_Store
