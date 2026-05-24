@@ -2,6 +2,43 @@
 
 Use this checklist against staging credentials supplied outside the repository. Do not write passwords, session cookies or temporary secrets into this file.
 
+## Automated Harness
+
+Run the non-secret smoke checks first:
+
+```powershell
+npm run portal:qa:roles -- -SkipCredentialTests
+```
+
+Run credential-backed role checks only with credentials supplied through environment variables outside the repository:
+
+```powershell
+$env:KHARON_QA_ADMIN_EMAIL = "admin@example.co.za"
+$env:KHARON_QA_ADMIN_PASSWORD = "<external-password>"
+$env:KHARON_QA_TECH_EMAIL = "tech@example.co.za"
+$env:KHARON_QA_TECH_PASSWORD = "<external-password>"
+$env:KHARON_QA_FINANCE_EMAIL = "finance@example.co.za"
+$env:KHARON_QA_FINANCE_PASSWORD = "<external-password>"
+$env:KHARON_QA_CLIENT_EMAIL = "client@example.co.za"
+$env:KHARON_QA_CLIENT_PASSWORD = "<external-password>"
+npm run portal:qa:roles -- -BaseUrl "https://portal.tequit.co.za" -OutputPath "monitor-results/portal-role-qa.json"
+```
+
+If MFA is enabled for a test account, set `KHARON_QA_ADMIN_MFA` or `KHARON_QA_FINANCE_MFA` immediately before the run. Do not store MFA codes, passwords or session cookies in this file.
+
+Harness coverage:
+
+- [ ] `/portal/login` returns HTTP 200.
+- [ ] Protected dashboards redirect unauthenticated requests to `/portal/login`.
+- [ ] Encoded traversal path returns a safe blocked, redirect or not-found response.
+- [ ] Supplied role credentials can authenticate.
+- [ ] Expected role dashboard is returned unless password rotation or MFA setup is required.
+- [ ] Authenticated dashboard exposes a CSRF token.
+- [ ] Missing CSRF token is blocked.
+- [ ] Valid CSRF token is accepted for logout.
+
+The harness does not replace the manual data-access and document-access tests below.
+
 ## Authentication
 
 - [ ] Valid admin login succeeds and routes to the admin dashboard.

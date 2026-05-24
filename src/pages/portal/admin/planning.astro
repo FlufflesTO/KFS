@@ -1,0 +1,266 @@
+---
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+const today = new Date();
+const todayIso = today.toISOString().slice(0, 10);
+const ninetyDaysFromNow = new Date(today.getTime() + 90 * 86400000).toISOString().slice(0, 10);
+
+let scheduled = [];
+let technicianLoad = [];
+let lifecycle = [];
+let openRequests = [];
+let management = {
+  scheduledJobs: 0,
+  inProgressJobs: 0,
+  overdueSystems: 0,
+  dueSoonSystems: 0,
+  openCriticalRequests: 0,
+  unassignedJobs: 0
+};
+let loadError = "";
+
+function daysUntil(dateText) {
+  if (!dateText) return null;
+  const target = new Date(`${dateText}T00:00:00Z`).getTime();
+  if (Number.isNaN(target)) return null;
+  return Math.ceil((target - Date.now()) / 86400000);
+}
+
+function riskForDueDate(dateText) {
+  const days = daysUntil(dateText);
+  if (days === null) return { label: "Unknown", className: "border-kharon-border bg-kharon-light text-kharon-grey" };
+  if (days < 0) return { label: "Overdue", className: "border-red-300 bg-red-50 text-red-900" };
+  if (days <= 30) return { label: "Due <=30d", className: "border-amber-300 bg-amber-50 text-amber-900" };
+  if (days <= 90) return { label: "Due <=90d", className: "border-kharon-blue/30 bg-kharon-blue/10 text-kharon-blue" };
+  return { label: "Scheduled", className: "border-emerald-300 bg-emerald-50 text-emerald-900" };
+}
+
+try {
+  const db = getDatabase();
+
+  scheduled = (await db.prepare(
+    `SELECT jobs.id, jobs.status, jobs.scheduled_date, jobs.job_type, jobs.assigned_technician_id,
+            users.name AS technician_name, systems.system_type, systems.coverage_area,
+            sites.owner_company_name, sites.physical_address
+     FROM jobs
+     INNER JOIN systems ON systems.id = jobs.system_id
+     INNER JOIN sites ON sites.id = systems.site_id
+     LEFT JOIN users ON users.id = jobs.assigned_technician_id
+     WHERE jobs.status IN ('Scheduled', 'In Progress')
+     ORDER BY jobs.scheduled_date ASC, sites.owner_company_name ASC
+     LIMIT 60`
+  ).all()).results || [];
+
+  technicianLoad = (await db.prepare(
+    `SELECT users.id, users.name,
+            SUM(CASE WHEN jobs.status = 'Scheduled' THEN 1 ELSE 0 END) AS scheduled_count,
+            SUM(CASE WHEN jobs.status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress_count,
+            MIN(jobs.scheduled_date) AS next_dispatch_date
+     FROM users
+     LEFT JOIN jobs ON jobs.assigned_technician_id = users.id AND jobs.status IN ('Scheduled', 'In Progress')
+     WHERE users.role = 'tech' AND users.is_active = 1
+     GROUP BY users.id, users.name
+     ORDER BY scheduled_count DESC, in_progress_count DESC, users.name ASC`
+  ).all()).results || [];
+
+  lifecycle = (await db.prepare(
+    `SELECT systems.id, systems.system_type, systems.coverage_area, systems.manufacturer,
+            systems.model_reference, systems.last_service_date, systems.next_due_date,
+            sites.owner_company_name, sites.physical_address
+     FROM systems
+     INNER JOIN sites ON sites.id = systems.site_id
+     WHERE date(systems.next_due_date) <= date(?1)
+     ORDER BY systems.next_due_date ASC, sites.owner_company_name ASC
+     LIMIT 80`
+  ).bind(ninetyDaysFromNow).all()).results || [];
+
+  openRequests = (await db.prepare(
+    `SELECT maintenance_requests.id, maintenance_requests.request_type, maintenance_requests.priority,
+            maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
+            sites.owner_company_name, systems.coverage_area
+     FROM maintenance_requests
+     INNER JOIN sites ON sites.id = maintenance_requests.site_id
+     LEFT JOIN systems ON systems.id = maintenance_requests.system_id
+     WHERE maintenance_requests.status IN ('New', 'Reviewing')
+     ORDER BY
+       CASE maintenance_requests.priority WHEN 'Critical' THEN 1 WHEN 'Urgent' THEN 2 ELSE 3 END,
+       maintenance_requests.created_at ASC
+     LIMIT 24`
+  ).all()).results || [];
+
+  management = {
+    scheduledJobs: scheduled.filter((job) => job.status === "Scheduled").length,
+    inProgressJobs: scheduled.filter((job) => job.status === "In Progress").length,
+    overdueSystems: lifecycle.filter((system) => (daysUntil(system.next_due_date) ?? 0) < 0).length,
+    dueSoonSystems: lifecycle.filter((system) => {
+      const days = daysUntil(system.next_due_date);
+      return days !== null && days >= 0 && days <= 30;
+    }).length,
+    openCriticalRequests: openRequests.filter((request) => request.priority === "Critical").length,
+    unassignedJobs: scheduled.filter((job) => !job.assigned_technician_id).length
+  };
+} catch (error) {
+  console.error("admin planning failed", error);
+  loadError = "Planning data could not be loaded.";
+}
+---
+
+<PortalLayout title="Planning | Kharon Portal" active="planning" user={user}>
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase text-kharon-cyan">Operational planning</p>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Dispatch load and lifecycle due calendar</h1>
+      <p class="mt-4 max-w-3xl text-white/65">
+        Admin planning view for scheduled jobs, technician load, lifecycle exposure and unresolved client requests.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
+    <div class="mx-auto grid max-w-7xl gap-6">
+      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <article class="border border-kharon-border bg-white p-4">
+          <p class="text-xs font-bold uppercase text-kharon-purple">Scheduled</p>
+          <p class="mt-2 text-2xl font-bold">{management.scheduledJobs}</p>
+        </article>
+        <article class="border border-kharon-border bg-white p-4">
+          <p class="text-xs font-bold uppercase text-kharon-blue">In progress</p>
+          <p class="mt-2 text-2xl font-bold">{management.inProgressJobs}</p>
+        </article>
+        <article class="border border-kharon-border bg-white p-4">
+          <p class="text-xs font-bold uppercase text-kharon-red">Overdue systems</p>
+          <p class="mt-2 text-2xl font-bold">{management.overdueSystems}</p>
+        </article>
+        <article class="border border-kharon-border bg-white p-4">
+          <p class="text-xs font-bold uppercase text-kharon-purple">Due within 30d</p>
+          <p class="mt-2 text-2xl font-bold">{management.dueSoonSystems}</p>
+        </article>
+        <article class="border border-kharon-border bg-white p-4">
+          <p class="text-xs font-bold uppercase text-kharon-red">Critical requests</p>
+          <p class="mt-2 text-2xl font-bold">{management.openCriticalRequests}</p>
+        </article>
+        <article class="border border-kharon-border bg-white p-4">
+          <p class="text-xs font-bold uppercase text-kharon-grey">Unassigned jobs</p>
+          <p class="mt-2 text-2xl font-bold">{management.unassignedJobs}</p>
+        </article>
+      </div>
+
+      <section class="grid gap-6 xl:grid-cols-2">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase text-kharon-purple">Dispatch planner</p>
+              <h2 class="mt-2 text-xl font-bold">Active schedule</h2>
+            </div>
+            <a class="rounded-md border border-kharon-blue px-4 py-2 text-sm font-semibold text-kharon-blue" href="/portal/admin/operations">
+              Create or adjust job
+            </a>
+          </div>
+
+          <div class="mt-5 grid gap-3">
+            {scheduled.length === 0 && <p class="text-kharon-grey">No scheduled or in-progress dispatches.</p>}
+            {scheduled.map((job) => (
+              <article class="grid gap-3 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2">
+                <div class="min-w-0">
+                  <p class="font-semibold">{job.owner_company_name}</p>
+                  <p class="mt-1 text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</p>
+                  <p class="mt-1 text-sm text-kharon-grey">{job.physical_address}</p>
+                </div>
+                <dl class="grid gap-2 text-sm sm:grid-cols-2">
+                  <div><dt class="font-bold uppercase text-kharon-grey/70">Date</dt><dd>{job.scheduled_date}</dd></div>
+                  <div><dt class="font-bold uppercase text-kharon-grey/70">Status</dt><dd>{job.status}</dd></div>
+                  <div><dt class="font-bold uppercase text-kharon-grey/70">Technician</dt><dd>{job.technician_name || "Unassigned"}</dd></div>
+                  <div><dt class="font-bold uppercase text-kharon-grey/70">Type</dt><dd>{job.job_type}</dd></div>
+                </dl>
+              </article>
+            ))}
+          </div>
+        </article>
+
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
+          <p class="text-xs font-bold uppercase text-kharon-blue">Technician load</p>
+          <h2 class="mt-2 text-xl font-bold">Capacity snapshot</h2>
+          <div class="mt-5 grid gap-3">
+            {technicianLoad.length === 0 && <p class="text-kharon-grey">No active technicians found.</p>}
+            {technicianLoad.map((tech) => (
+              <article class="border border-kharon-border bg-kharon-light p-4">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <p class="font-semibold">{tech.name}</p>
+                  <span class="rounded-md border border-kharon-border bg-white px-3 py-1 text-xs font-bold uppercase text-kharon-grey">
+                    Next {tech.next_dispatch_date || "none"}
+                  </span>
+                </div>
+                <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div><dt class="font-bold uppercase text-kharon-grey/70">Scheduled</dt><dd>{tech.scheduled_count || 0}</dd></div>
+                  <div><dt class="font-bold uppercase text-kharon-grey/70">In progress</dt><dd>{tech.in_progress_count || 0}</dd></div>
+                </dl>
+              </article>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section class="grid gap-6 xl:grid-cols-2">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase text-kharon-red">Lifecycle due calendar</p>
+              <h2 class="mt-2 text-xl font-bold">Due and overdue systems through {ninetyDaysFromNow}</h2>
+            </div>
+            <span class="rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">Today {todayIso}</span>
+          </div>
+
+          <div class="mt-5 grid gap-3">
+            {lifecycle.length === 0 && <p class="text-kharon-grey">No systems are due in the next 90 days.</p>}
+            {lifecycle.map((system) => {
+              const risk = riskForDueDate(system.next_due_date);
+              return (
+                <article class="grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-2">
+                  <div class="min-w-0">
+                    <p class="font-semibold">{system.owner_company_name}</p>
+                    <p class="mt-1 text-sm text-kharon-grey">{system.system_type} / {system.coverage_area}</p>
+                    <p class="mt-1 text-xs uppercase text-kharon-grey/70">{system.manufacturer || "Manufacturer not recorded"} / {system.model_reference || "Model not recorded"}</p>
+                  </div>
+                  <div class="grid gap-2 text-sm">
+                    <span class={`rounded-md border px-3 py-2 text-xs font-bold uppercase ${risk.className}`}>{risk.label}</span>
+                    <p><span class="font-bold uppercase text-kharon-grey/70">Next due:</span> {system.next_due_date}</p>
+                    <p><span class="font-bold uppercase text-kharon-grey/70">Last service:</span> {system.last_service_date || "Not recorded"}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </article>
+
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
+          <p class="text-xs font-bold uppercase text-kharon-purple">Open client requests</p>
+          <h2 class="mt-2 text-xl font-bold">Review queue</h2>
+          <div class="mt-5 grid gap-3">
+            {openRequests.length === 0 && <p class="text-kharon-grey">No open client requests need planning review.</p>}
+            {openRequests.map((request) => (
+              <article class="border-l-4 border-kharon-purple bg-kharon-light p-4">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="font-semibold">{request.owner_company_name}</p>
+                    <p class="mt-1 text-sm text-kharon-grey">{request.subject}</p>
+                    <p class="mt-1 text-xs uppercase text-kharon-grey/70">{request.request_type} / {request.coverage_area || "General site request"}</p>
+                  </div>
+                  <span class="rounded-md border border-kharon-border bg-white px-3 py-2 text-xs font-bold uppercase text-kharon-grey">
+                    {request.priority}
+                  </span>
+                </div>
+                <p class="mt-3 text-xs uppercase text-kharon-grey/70">{request.status} / {request.created_at}</p>
+              </article>
+            ))}
+          </div>
+        </article>
+      </section>
+    </div>
+  </section>
+</PortalLayout>

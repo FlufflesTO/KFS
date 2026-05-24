@@ -106,20 +106,20 @@ try {
 ---
 
 <PortalLayout title="Admin Control Panel | Kharon Portal" active="admin" user={user}>
-  <section class="bg-kharon-black px-6 py-10 text-white">
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
     <div class="mx-auto max-w-7xl">
       <p class="text-xs font-bold uppercase text-kharon-cyan">Office control panel</p>
-      <h1 class="mt-3 text-3xl font-bold">Operational dispatch and lifecycle matrix</h1>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Operational dispatch and lifecycle matrix</h1>
       <p class="mt-4 max-w-3xl text-white/65">Completed works, active jobs and upcoming maintenance exposure across client infrastructure.</p>
     </div>
   </section>
 
-  <section class="px-6 py-8">
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto grid max-w-7xl gap-6">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
 
-      <div class="grid gap-6 xl:grid-cols-3">
-      <div class="border border-kharon-border bg-white p-5">
+      <div class="grid gap-5 xl:grid-cols-3 xl:gap-6">
+      <div class="border border-kharon-border bg-white p-4 sm:p-5">
         <h2 class="text-xl font-bold">Completed works</h2>
         <div class="mt-5 grid gap-3">
           {completed.map((item) => (
@@ -132,7 +132,7 @@ try {
         </div>
       </div>
 
-      <div class="border border-kharon-border bg-white p-5">
+      <div class="border border-kharon-border bg-white p-4 sm:p-5">
         <h2 class="text-xl font-bold">Active dispatches</h2>
         <div class="mt-5 grid gap-3">
           {active.map((item) => (
@@ -145,7 +145,7 @@ try {
         </div>
       </div>
 
-      <div class="border border-kharon-border bg-white p-5">
+      <div class="border border-kharon-border bg-white p-4 sm:p-5">
         <h2 class="text-xl font-bold">Lifecycle due dates</h2>
         <div class="mt-5 grid gap-3">
           {due.map((item) => (
@@ -160,7 +160,7 @@ try {
       </div>
 
       <section class="grid gap-6 xl:grid-cols-2">
-        <article class="border border-kharon-border bg-white p-5">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <h2 class="text-xl font-bold">Client request queue</h2>
           <div class="mt-5 grid gap-3">
             {clientRequests.length === 0 && <p class="text-kharon-grey">No new client requests require review.</p>}
@@ -179,29 +179,29 @@ try {
                 <div class="mt-4 grid gap-3">
                   <form class="request-status-form flex flex-wrap gap-2" data-request-id={item.id}>
                     <input type="hidden" name="requestId" value={item.id} />
-                    <select class="rounded-md border border-kharon-border px-3 py-2 text-sm" name="status">
+                    <select class="portal-field sm:w-auto rounded-md border border-kharon-border px-3 py-2 text-sm" name="status">
                       {["New", "Reviewing", "Closed"].map((status) => <option value={status} selected={item.status === status}>{status}</option>)}
                     </select>
-                    <button class="rounded-md border border-kharon-blue px-4 py-2 text-sm font-semibold text-kharon-blue">Update status</button>
+                    <button class="w-full rounded-md border border-kharon-blue px-4 py-2 text-sm font-semibold text-kharon-blue sm:w-auto">Update status</button>
                     <p class="request-result hidden text-sm font-semibold"></p>
                   </form>
                   {!item.linked_job_id && (
                     <form class="request-schedule-form grid gap-2 lg:grid-cols-5" data-request-id={item.id}>
                       <input type="hidden" name="requestId" value={item.id} />
-                      <select class="rounded-md border border-kharon-border px-3 py-2 text-sm lg:col-span-2" name="systemId" required>
+                      <select class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm lg:col-span-2" name="systemId" required>
                         <option value="">Select system</option>
                         {requestSystems.filter((system) => system.site_id === item.site_id).map((system) => (
                           <option value={system.id} selected={system.id === item.system_id}>{system.system_type} / {system.coverage_area}</option>
                         ))}
                       </select>
-                      <select class="rounded-md border border-kharon-border px-3 py-2 text-sm" name="assignedTechnicianId">
+                      <select class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="assignedTechnicianId">
                         <option value="">Unassigned</option>
                         {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
                       </select>
-                      <input class="rounded-md border border-kharon-border px-3 py-2 text-sm" name="scheduledDate" type="date" required />
+                      <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="scheduledDate" type="date" required />
                       <button class="rounded-md bg-kharon-purple px-4 py-2 text-sm font-semibold text-white">Schedule dispatch</button>
-                      <input class="rounded-md border border-kharon-border px-3 py-2 text-sm lg:col-span-2" name="jobType" value={item.request_type} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2 text-sm lg:col-span-3" name="siteNotes" value={`${item.subject}: ${item.message}`.slice(0, 900)} />
+                      <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm lg:col-span-2" name="jobType" value={item.request_type} />
+                      <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm lg:col-span-3" name="siteNotes" value={`${item.subject}: ${item.message}`.slice(0, 900)} />
                     </form>
                   )}
                 </div>
@@ -210,7 +210,7 @@ try {
           </div>
         </article>
 
-        <article class="border border-kharon-border bg-white p-5">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <h2 class="text-xl font-bold">Exception queue</h2>
           <div class="mt-5 grid gap-5">
             <div>

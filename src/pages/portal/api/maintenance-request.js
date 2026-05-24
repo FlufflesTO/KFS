@@ -1,5 +1,6 @@
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { auditEvent } from "../../../lib/server/audit.js";
+import { clientCanAccessSite, clientSiteIds } from "../../../lib/server/clientAccess.js";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
 
 export const prerender = false;
@@ -33,23 +34,31 @@ export async function POST({ request, locals }) {
     const user = locals.user;
     if (!user) return unauthorized();
     if (user.role !== "client") return forbidden("Only client accounts can submit maintenance requests.");
-    if (!user.siteId) return badRequest("This client account is not mapped to a site.");
 
     const body = await request.json();
     const id = crypto.randomUUID();
+    const requestedSiteId = cleanOptionalId(body.siteId, "siteId");
     const systemId = cleanOptionalId(body.systemId, "systemId");
     const requestType = cleanChoice(body.requestType, "requestType", requestTypes);
     const priority = cleanChoice(body.priority || "Routine", "priority", priorities);
     const subject = cleanText(body.subject, "subject", { min: 3, max: 160 });
     const message = cleanText(body.message, "message", { min: 10, max: 2000 });
     const db = getDatabase();
+    const accessibleSites = await clientSiteIds(db, user);
+    if (accessibleSites.length === 0) return badRequest("This client account is not mapped to a site.");
+
+    let siteId = requestedSiteId || user.siteId || accessibleSites[0];
+    if (!(await clientCanAccessSite(db, user, siteId))) {
+      return forbidden("The selected site is not available to this client account.");
+    }
 
     if (systemId) {
       const system = await db
-        .prepare(`SELECT id FROM systems WHERE id = ?1 AND site_id = ?2 LIMIT 1`)
-        .bind(systemId, user.siteId)
+        .prepare(`SELECT id, site_id FROM systems WHERE id = ?1 AND site_id = ?2 LIMIT 1`)
+        .bind(systemId, siteId)
         .first();
       if (!system) return forbidden("The selected system is not available to this client account.");
+      siteId = system.site_id;
     }
 
     await db
@@ -59,7 +68,7 @@ export async function POST({ request, locals }) {
          VALUES
            (?1, ?2, ?3, ?4, ?5, ?6, 'New', ?7, ?8)`
       )
-      .bind(id, user.siteId, systemId, user.id, requestType, priority, subject, message)
+      .bind(id, siteId, systemId, user.id, requestType, priority, subject, message)
       .run();
 
     await auditEvent(db, request, {
@@ -68,7 +77,7 @@ export async function POST({ request, locals }) {
       entityId: id,
       outcome: "success",
       user,
-      metadata: { siteId: user.siteId, systemId, requestType, priority }
+      metadata: { siteId, systemId, requestType, priority }
     });
 
     return json({ ok: true, id, status: "New" });

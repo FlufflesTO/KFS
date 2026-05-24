@@ -1,6 +1,7 @@
 ---
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
+import { clientSites, inClause } from "../../../lib/server/clientAccess.js";
 
 export const prerender = false;
 
@@ -8,44 +9,58 @@ const user = Astro.locals.user;
 let systems = [];
 let quotes = [];
 let requests = [];
+let sites = [];
 let loadError = "";
 
 try {
   const db = getDatabase();
-  if (!user.siteId) {
+  sites = await clientSites(db, user);
+  const siteIds = sites.map((site) => site.id);
+  if (siteIds.length === 0) {
     loadError = "This client account is not mapped to a site.";
   } else {
+    const sitePlaceholders = inClause(siteIds);
     systems = (await db.prepare(
-      `SELECT systems.id, systems.system_type, systems.coverage_area, systems.last_service_date, systems.next_due_date,
+      `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area, systems.last_service_date, systems.next_due_date,
+              sites.owner_company_name,
               jobs.id AS latest_job_id, jobs.documentation_path, jobs.completed_at
        FROM systems
+       INNER JOIN sites ON sites.id = systems.site_id
        LEFT JOIN jobs ON jobs.id = (
          SELECT j.id FROM jobs j
          WHERE j.system_id = systems.id AND j.documentation_path IS NOT NULL
          ORDER BY j.completed_at DESC
          LIMIT 1
        )
-       WHERE systems.site_id = ?1
-       ORDER BY systems.next_due_date ASC`
-    ).bind(user.siteId).all()).results || [];
+       WHERE systems.site_id IN (${sitePlaceholders})
+       ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC`
+    ).bind(...siteIds).all()).results || [];
 
     quotes = (await db.prepare(
-      `SELECT id, amount, item_type, payment_status, distribution_date, reference
+      `SELECT financial_records.id, financial_records.site_id, financial_records.amount,
+              financial_records.item_type, financial_records.payment_status,
+              financial_records.distribution_date, financial_records.reference,
+              sites.owner_company_name
        FROM financial_records
-       WHERE site_id = ?1 AND item_type = 'Quote' AND payment_status = 'Pending Approval'
-       ORDER BY distribution_date ASC`
-    ).bind(user.siteId).all()).results || [];
+       INNER JOIN sites ON sites.id = financial_records.site_id
+       WHERE financial_records.site_id IN (${sitePlaceholders})
+         AND financial_records.item_type = 'Quote'
+         AND financial_records.payment_status = 'Pending Approval'
+       ORDER BY financial_records.distribution_date ASC`
+    ).bind(...siteIds).all()).results || [];
 
     requests = (await db.prepare(
-      `SELECT maintenance_requests.id, maintenance_requests.request_type, maintenance_requests.priority,
+      `SELECT maintenance_requests.id, maintenance_requests.site_id,
+              maintenance_requests.request_type, maintenance_requests.priority,
               maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
-              maintenance_requests.linked_job_id, systems.coverage_area
+              maintenance_requests.linked_job_id, systems.coverage_area, sites.owner_company_name
        FROM maintenance_requests
+       INNER JOIN sites ON sites.id = maintenance_requests.site_id
        LEFT JOIN systems ON systems.id = maintenance_requests.system_id
-       WHERE maintenance_requests.site_id = ?1
+       WHERE maintenance_requests.site_id IN (${sitePlaceholders})
        ORDER BY maintenance_requests.created_at DESC
        LIMIT 8`
-    ).bind(user.siteId).all()).results || [];
+    ).bind(...siteIds).all()).results || [];
   }
 } catch (error) {
   console.error("client dashboard failed", error);
@@ -54,25 +69,49 @@ try {
 ---
 
 <PortalLayout title="Client Gateway | Kharon Portal" active="client" user={user}>
-  <section class="bg-kharon-black px-6 py-10 text-white">
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
     <div class="mx-auto max-w-7xl">
       <p class="text-xs font-bold uppercase text-kharon-cyan">Client self-service gateway</p>
-      <h1 class="mt-3 text-3xl font-bold">System status and lifecycle records</h1>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">System status and lifecycle records</h1>
       <p class="mt-4 max-w-3xl text-white/65">Read-only visibility over protected systems, upcoming maintenance dates and completed jobcard records.</p>
     </div>
   </section>
 
-  <section class="px-6 py-8">
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto grid max-w-7xl gap-6">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
 
+      {sites.length > 0 && (
+        <section class="border border-kharon-border bg-white p-4 sm:p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase text-kharon-purple">Account access</p>
+              <h2 class="mt-2 text-xl font-bold">Mapped client sites</h2>
+            </div>
+            <a class="rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" href="/portal/client/quotes">
+              View quote history
+            </a>
+          </div>
+          <div class="mt-5 grid gap-3 md:grid-cols-2">
+            {sites.map((site) => (
+              <article class="border-l-4 border-kharon-blue bg-kharon-light p-4">
+                <p class="font-semibold">{site.owner_company_name}</p>
+                <p class="mt-1 text-sm text-kharon-grey">{site.physical_address}</p>
+                <p class="mt-2 text-xs uppercase text-kharon-grey/70">{site.site_contact_person} / {site.site_contact_email || "No email recorded"}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
       <div class="grid gap-4 lg:grid-cols-2">
         {systems.map((system) => (
-          <article class="border border-kharon-border bg-white p-5">
+          <article class="border border-kharon-border bg-white p-4 sm:p-5">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p class="text-xs font-bold uppercase text-kharon-purple">{system.system_type}</p>
                 <h2 class="mt-2 text-xl font-bold">{system.coverage_area}</h2>
+                <p class="mt-1 text-sm text-kharon-grey">{system.owner_company_name}</p>
               </div>
               <span class="rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">Due {system.next_due_date}</span>
             </div>
@@ -91,15 +130,18 @@ try {
         ))}
       </div>
 
-      <section class="border border-kharon-border bg-white p-5">
-        <h2 class="text-xl font-bold">Pending quote approvals</h2>
+      <section class="border border-kharon-border bg-white p-4 sm:p-5">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <h2 class="text-xl font-bold">Pending quote approvals</h2>
+          <a class="text-sm font-semibold text-kharon-purple" href="/portal/client/quotes">Open full quote ledger</a>
+        </div>
         <div class="mt-5 grid gap-3">
           {quotes.length === 0 && <p class="text-kharon-grey">No pending quotes are awaiting approval.</p>}
           {quotes.map((quote) => (
             <article class="flex flex-wrap items-center justify-between gap-4 border border-kharon-border bg-kharon-light p-4">
               <div>
                 <p class="font-semibold">{quote.reference || quote.id}</p>
-                <p class="text-sm text-kharon-grey">R {Number(quote.amount).toFixed(2)} / {quote.distribution_date}</p>
+                <p class="text-sm text-kharon-grey">{quote.owner_company_name} / R {Number(quote.amount).toFixed(2)} / {quote.distribution_date}</p>
               </div>
               <button class="rounded-md border border-kharon-purple px-5 py-3 font-semibold text-kharon-purple" data-quote-id={quote.id}>
                 Approve quote
@@ -110,34 +152,37 @@ try {
       </section>
 
       <section class="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-        <article class="border border-kharon-border bg-white p-5">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <h2 class="text-xl font-bold">Request maintenance support</h2>
           <p class="mt-2 text-sm text-kharon-grey">Submit operational requests tied to this client account and site.</p>
           <form id="maintenance-request-form" class="mt-5 grid gap-3">
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId">
-              <option value="">General site request</option>
-              {systems.map((system) => <option value={system.id}>{system.system_type} / {system.coverage_area}</option>)}
+            <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
+              {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
             </select>
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="requestType" required>
+            <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="systemId">
+              <option value="">General site request</option>
+              {systems.map((system) => <option value={system.id} data-site-id={system.site_id}>{system.owner_company_name} / {system.system_type} / {system.coverage_area}</option>)}
+            </select>
+            <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="requestType" required>
               <option value="Maintenance">Maintenance</option>
               <option value="Fault">Fault</option>
               <option value="Compliance Documentation">Compliance Documentation</option>
               <option value="Quote Request">Quote Request</option>
               <option value="Emergency Follow-up">Emergency Follow-up</option>
             </select>
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="priority" required>
+            <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="priority" required>
               <option value="Routine">Routine</option>
               <option value="Urgent">Urgent</option>
               <option value="Critical">Critical</option>
             </select>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="subject" maxlength="160" placeholder="Request subject" required />
-            <textarea class="min-h-28 rounded-md border border-kharon-border px-4 py-3" name="message" maxlength="2000" placeholder="Describe the requirement, fault symptoms, documentation need or preferred timing." required></textarea>
+            <input class="portal-field rounded-md border border-kharon-border px-4 py-3" name="subject" maxlength="160" placeholder="Request subject" required />
+            <textarea class="portal-field min-h-28 rounded-md border border-kharon-border px-4 py-3" name="message" maxlength="2000" placeholder="Describe the requirement, fault symptoms, documentation need or preferred timing." required></textarea>
             <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue">Submit request</button>
             <p id="maintenance-request-result" class="hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
           </form>
         </article>
 
-        <article class="border border-kharon-border bg-white p-5">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <h2 class="text-xl font-bold">Recent service requests</h2>
           <div class="mt-5 grid gap-3">
             {requests.length === 0 && <p class="text-kharon-grey">No client maintenance requests have been submitted.</p>}
@@ -146,7 +191,7 @@ try {
                 <div class="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p class="font-semibold">{request.subject}</p>
-                    <p class="text-sm text-kharon-grey">{request.request_type} / {request.coverage_area || "General site request"}</p>
+                    <p class="text-sm text-kharon-grey">{request.owner_company_name} / {request.request_type} / {request.coverage_area || "General site request"}</p>
                     {request.linked_job_id && <p class="mt-1 text-xs font-bold uppercase text-kharon-blue">Scheduled dispatch: {request.linked_job_id}</p>}
                   </div>
                   <span class="rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">{request.status}</span>
@@ -160,8 +205,25 @@ try {
     </div>
   </section>
 
-  <script>
+  <script is:inline>
     const requestForm = document.querySelector("#maintenance-request-form");
+    const siteSelect = requestForm?.querySelector('select[name="siteId"]');
+    const systemSelect = requestForm?.querySelector('select[name="systemId"]');
+
+    function filterSystemsForSite() {
+      if (!siteSelect || !systemSelect) return;
+      const siteId = siteSelect.value;
+      for (const option of systemSelect.options) {
+        const optionSiteId = option.getAttribute("data-site-id");
+        option.hidden = Boolean(optionSiteId) && optionSiteId !== siteId;
+      }
+      const selectedSiteId = systemSelect.selectedOptions[0]?.getAttribute("data-site-id");
+      if (selectedSiteId && selectedSiteId !== siteId) systemSelect.value = "";
+    }
+
+    siteSelect?.addEventListener("change", filterSystemsForSite);
+    filterSystemsForSite();
+
     if (requestForm) {
       requestForm.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -173,6 +235,7 @@ try {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
+            siteId: formData.get("siteId"),
             systemId: formData.get("systemId"),
             requestType: formData.get("requestType"),
             priority: formData.get("priority"),
@@ -190,6 +253,7 @@ try {
         result.textContent = `Request submitted: ${body.id}`;
         result.className = "rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
         requestForm.reset();
+        filterSystemsForSite();
       });
     }
 

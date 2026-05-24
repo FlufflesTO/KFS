@@ -34,12 +34,19 @@ html {
   color-scheme: light;
 }
 
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   background: white;
   color: var(--kharon-black);
   font-family: "Century Gothic", "Avenir Next", "Segoe UI", sans-serif;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
 .kharon-h1 {
@@ -47,6 +54,7 @@ body {
   font-weight: 700;
   line-height: 1.02;
   letter-spacing: 0;
+  text-wrap: balance;
 }
 
 .kharon-h2 {
@@ -54,6 +62,26 @@ body {
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0;
+  text-wrap: balance;
+}
+
+p,
+li,
+dd,
+dt,
+span,
+a,
+button,
+input,
+select,
+textarea {
+  overflow-wrap: anywhere;
+}
+
+input,
+select,
+textarea {
+  min-width: 0;
 }
 
 ::selection {
@@ -105,6 +133,30 @@ summary::-webkit-details-marker {
   min-height: min(780px, calc(86svh - 5rem));
   background:
     linear-gradient(90deg, rgba(7, 9, 11, 0.98) 0%, rgba(9, 12, 15, 0.92) 48%, rgba(7, 9, 11, 0.98) 100%);
+}
+
+.portal-shell {
+  overflow-x: hidden;
+}
+
+.portal-section {
+  padding-inline: 1rem;
+  padding-block: 1.75rem;
+}
+
+.portal-panel {
+  min-width: 0;
+}
+
+.portal-scroll-x {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.portal-field {
+  min-width: 0;
+  width: 100%;
 }
 
 .hero-cinematic__atmosphere {
@@ -324,14 +376,24 @@ summary::-webkit-details-marker {
 }
 
 @media (max-width: 768px) {
+  .kharon-h1 {
+    font-size: 2.25rem;
+    line-height: 1.08;
+  }
+
+  .kharon-h2 {
+    font-size: 1.85rem;
+    line-height: 1.14;
+  }
+
   .section-padding {
     padding-top: 3.5rem;
     padding-bottom: 3.5rem;
   }
 
   .hero-padding {
-    padding-top: 7rem;
-    padding-bottom: 4rem;
+    padding-top: 6.25rem;
+    padding-bottom: 3rem;
   }
 
   .hero-cinematic {
@@ -339,22 +401,55 @@ summary::-webkit-details-marker {
   }
 
   .hero-cinematic__titan {
-    right: -11rem;
-    top: 7rem;
-    font-size: 28rem;
-    opacity: 0.7;
+    right: -9rem;
+    top: 6rem;
+    font-size: 21rem;
+    opacity: 0.44;
   }
 
   .hero-cinematic__linework {
-    right: -15rem;
-    bottom: -1rem;
-    width: 46rem;
-    opacity: 0.22;
+    right: -18rem;
+    bottom: -2rem;
+    width: 42rem;
+    opacity: 0.16;
   }
 
   .hero-cinematic__floor,
   .hero-cinematic__structure {
     display: none;
+  }
+
+  .hero-page-depth__mark,
+  .hero-page-depth__floor,
+  .hero-page-depth__linework {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .kharon-h1 {
+    font-size: 2rem;
+  }
+
+  .kharon-h2 {
+    font-size: 1.65rem;
+  }
+
+  .hero-cinematic__titan {
+    right: -7.5rem;
+    top: 6.5rem;
+    font-size: 17rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .portal-section {
+    padding-inline: 0.875rem;
+    padding-block: 1.25rem;
+  }
+
+  .portal-panel {
+    padding: 1rem;
   }
 }
 

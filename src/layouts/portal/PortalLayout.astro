@@ -11,11 +11,15 @@ const roleLinks = {
   tech: [{ label: "Dispatches", href: "/portal/tech/dashboard", key: "tech" }],
   admin: [
     { label: "Admin Matrix", href: "/portal/admin/dashboard", key: "admin" },
+    { label: "Planning", href: "/portal/admin/planning", key: "planning" },
     { label: "Operations", href: "/portal/admin/operations", key: "operations" },
     { label: "Technician View", href: "/portal/tech/dashboard", key: "tech" },
     { label: "Finance", href: "/portal/finance/dashboard", key: "finance" }
   ],
-  client: [{ label: "Systems", href: "/portal/client/dashboard", key: "client" }],
+  client: [
+    { label: "Systems", href: "/portal/client/dashboard", key: "client" },
+    { label: "Quotes", href: "/portal/client/quotes", key: "client-quotes" }
+  ],
   finance: [{ label: "Ledger", href: "/portal/finance/dashboard", key: "finance" }]
 };
 
@@ -45,28 +49,28 @@ const links = [
       };
     </script>
   </head>
-  <body class="bg-kharon-light">
+  <body class="portal-shell bg-kharon-light">
     <header class="border-b border-white/10 bg-kharon-black text-white">
-      <div class="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-        <a href="/portal" class="grid">
+      <div class="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
+        <a href="/portal" class="grid min-w-0">
           <span class="text-sm font-bold uppercase">Kharon Portal</span>
           <span class="text-xs uppercase text-white/55">Lifecycle operations</span>
         </a>
 
-        <nav class="flex flex-wrap items-center gap-2" aria-label="Portal navigation">
+        <nav class="order-3 flex w-full items-center gap-2 overflow-x-auto pb-1 lg:order-none lg:w-auto lg:flex-wrap lg:overflow-visible lg:pb-0" aria-label="Portal navigation">
           {links.map((link) => (
             <a
               href={link.href}
               aria-current={active === link.key ? "page" : undefined}
-              class={`rounded-md border px-4 py-2 text-sm font-semibold ${active === link.key ? "border-kharon-cyan bg-kharon-cyan/10 text-white" : "border-white/10 text-white/70 hover:border-white/30 hover:text-white"}`}
+              class={`shrink-0 rounded-md border px-4 py-2 text-sm font-semibold ${active === link.key ? "border-kharon-cyan bg-kharon-cyan/10 text-white" : "border-white/10 text-white/70 hover:border-white/30 hover:text-white"}`}
             >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <div class="flex items-center gap-4 text-right text-sm">
-          <div>
+        <div class="ml-auto flex min-w-0 items-center gap-3 text-right text-sm sm:gap-4">
+          <div class="min-w-0">
             <p class="font-semibold">{user?.name}</p>
             <p class="uppercase text-white/50">{user?.role}</p>
           </div>

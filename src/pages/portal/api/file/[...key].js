@@ -1,5 +1,6 @@
 import { getBindings } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
+import { clientCanAccessSite } from "../../../../lib/server/clientAccess.js";
 import { documentAccessLog } from "../../../../lib/server/documentAccess.js";
 import { forbidden, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
 
@@ -61,11 +62,12 @@ export async function GET({ params, locals, request }) {
       return forbidden("Document is not available.");
     }
 
+    const clientAllowed = user.role === "client" && (await clientCanAccessSite(db, user, record.site_id));
     const allowed =
       user.role === "admin" ||
       user.role === "finance" ||
       (user.role === "tech" && record.assigned_technician_id === user.id) ||
-      (user.role === "client" && record.site_id === user.siteId);
+      clientAllowed;
 
     if (!allowed) {
       await documentAccessLog(db, request, {

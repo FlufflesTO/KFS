@@ -334,6 +334,151 @@ Document access production gate:
 - [x] Site audit script passes.
 - [x] No secrets committed.
 
+## Outstanding Build Phases - 2026-05-24
+
+These phases control the remaining work after the portal security, evidence, retention and document-access hardening passes.
+
+### Phase 1 - Responsive Retune And Visual QA
+
+Goal: ensure the public site and portal work appropriately across desktop, laptop, tablet and mobile viewports.
+
+Tasks:
+
+- Retune public homepage first viewport across desktop wide, laptop, tablet portrait/landscape and mobile.
+- Verify hero text, CTAs, trust strips and cinematic visuals do not crowd, overflow or obscure content.
+- Retune public page headers, section spacing and CTA wrapping.
+- Retune portal dashboards for technician jobcard closure, admin operations, finance ledger and client records.
+- Reduce table/card density issues on small screens.
+- Confirm nav/header behaviour across breakpoints.
+- Tune form controls, touch targets, signature pad and file inputs for mobile use.
+- Confirm no horizontal overflow on any public or portal route.
+- Run responsive screenshots or equivalent browser QA across key viewport sizes.
+- Run Lighthouse or equivalent after changes.
+
+Deployable gate:
+
+- Public pages remain readable without horizontal scrolling at mobile, tablet and desktop widths.
+- Portal dashboards remain usable on mobile and tablet.
+- Header and portal navigation wrap or scroll intentionally without covering content.
+- `npm run build` and `npm run audit:site` pass.
+
+Status:
+
+Implementation pass complete. Local build and site audit pass. Manual/browser screenshot QA across desktop, tablet and mobile remains required before closing the phase.
+
+### Phase 2 - Portal QA And Role Hardening
+
+Goal: prove the portal behaves correctly for every role and abuse case.
+
+Tasks:
+
+- Execute `docs/qa/PORTAL_ROLE_QA_CHECKLIST.md`.
+- Test admin, technician, finance, client, disabled, MFA-enabled and force-password-change users.
+- Confirm RBAC abuse cases block or redirect correctly.
+- Confirm document access logs populate for allowed and blocked records.
+- Confirm CSRF and rate limit failures behave correctly.
+- Record QA outcomes and remaining risks.
+
+Status: in progress. Add an automated non-secret QA harness for login/protected-route smoke checks and optional credential-backed role assertions; manual staging execution with externally supplied credentials remains required.
+
+### Phase 3 - Portal Operations SOP Completion
+
+Goal: make the portal operationally usable by Kharon staff.
+
+Tasks:
+
+- Write onboarding SOP for creating users, assigning roles, setting MFA requirements, issuing reset links and mapping clients to sites.
+- Write dispatch SOP for assigning jobs, technician closure, evidence capture and admin exception handling.
+- Write incident response procedure for portal access issues.
+- Finalize production cutover checklist for `portal.kharon.co.za`.
+
+Status: implementation complete. `OPERATIONS_SOP.md` now covers onboarding, dispatch/jobcard closure, access incident response and production cutover gates. Staff dry-run and production sign-off remain required.
+
+### Phase 4 - Admin Scheduling And Lifecycle Tools
+
+Goal: move admin from CRUD to operational planning.
+
+Tasks:
+
+- Build dispatch planner for scheduling jobs and assigning technicians.
+- Build lifecycle due calendar by site, system type and risk tier.
+- Add operational reports for management review.
+- Improve import path for existing client/site/system records if current CSV flow is insufficient.
+- Add controlled seed process that avoids committed password hashes.
+
+Status: implementation complete. Added `/portal/admin/planning` for dispatch load, lifecycle due calendar, risk bands and management reporting. Added controlled seed process documentation that keeps passwords, hashes, reset links and secrets out of committed seed material. Staff QA and real data import dry-runs remain required.
+
+### Phase 5 - Client Account And Quote History
+
+Goal: improve client-facing record visibility.
+
+Tasks:
+
+- Add client account-to-site management for multi-site customers.
+- Add quote approval history.
+- Add quote confirmation receipts.
+- Improve client document access review/reporting if required.
+- Confirm client users only see mapped sites and permitted records.
+
+Status: implementation complete. Added client multi-site access mapping, admin grant/revoke controls, multi-site-aware client dashboard, client quote/invoice/payment history and multi-site authorization checks for client requests, quote approvals and document downloads. Credential-backed QA and representative client data review remain required.
+
+### Phase 6 - Error Telemetry And Cloudflare Review
+
+Goal: make production failures observable.
+
+Tasks:
+
+- Add structured error telemetry policy.
+- Define Cloudflare log review process.
+- Identify review events: auth failures, rate-limit blocks, CSRF blocks, document access failures and API/server errors.
+- Add weekly/monthly review checklist.
+
+Status: pending.
+
+### Phase 7 - Public Authority Proof
+
+Goal: replace placeholder authority with real approved proof.
+
+Tasks:
+
+- Collect 2-4 approved project examples.
+- Confirm publishable client names, sectors, locations and system details.
+- Add case-study summaries covering challenge, system scope and operational outcome.
+- Add approved industrial photography or anonymised technical imagery.
+- Add compliance and maintenance evidence examples where commercially safe.
+- Replace schematic placeholders where real imagery is stronger.
+
+Status: pending.
+
+### Phase 8 - Image Optimization And Performance Governance
+
+Goal: harden performance after real media is added.
+
+Tasks:
+
+- Convert approved local imagery to Astro Image or equivalent optimized local asset handling.
+- Add responsive image sizes.
+- Re-run Lighthouse after image integration.
+- Add bundle budget or build warning policy.
+- Resolve practical chunk warnings.
+
+Status: pending.
+
+### Phase 9 - Provider-Backed Email Delivery
+
+Goal: remove manual reset-link delivery.
+
+Tasks:
+
+- Select provider/workflow for email delivery.
+- Add password reset email sending.
+- Add secure reset email template.
+- Log delivery attempts.
+- Keep tokens hashed and single-use.
+- Confirm no credentials enter the repository.
+
+Status: pending.
+
 ## Master Feature List
 
 ### Foundation
@@ -572,10 +717,10 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [ ] Structured error telemetry and Cloudflare log review process.
   - [ ] Per-role authorization tests.
 - Operations and support:
-  - [ ] Written SOP for onboarding users, assigning jobs and closing jobcards.
-  - [ ] Incident response procedure for portal access issues.
+  - [x] Written SOP for onboarding users, assigning jobs and closing jobcards.
+  - [x] Incident response procedure for portal access issues.
   - [x] Backup/export process for D1 and R2 evidence.
-  - [ ] Production cutover checklist for `portal.kharon.co.za`.
+  - [x] Production cutover checklist for `portal.kharon.co.za`.
   - [x] Monitoring checks for login, dashboard redirect and D1/R2 availability.
 
 ## Master User Operation

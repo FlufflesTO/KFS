@@ -147,11 +147,14 @@ const expectedSourceRoutes = [
   "portal/login.astro",
   "portal/tech/dashboard.astro",
   "portal/admin/dashboard.astro",
+  "portal/admin/planning.astro",
   "portal/client/dashboard.astro",
+  "portal/client/quotes.astro",
   "portal/finance/dashboard.astro",
   "portal/api/auth.js",
   "portal/api/admin/export.js",
   "portal/api/admin/import.js",
+  "portal/api/admin/client-site-access.js",
   "portal/account/mfa.astro",
   "portal/api/mfa.js",
   "portal/reset.astro",
@@ -175,6 +178,7 @@ const requiredSourceTerms = new Map([
   ["src/pages/portal/api/admin/users.js", ["reset-link", "password_reset_tokens", "resetUrl", "mfa_required"]],
   ["src/pages/portal/api/admin/export.js", ["admin.export", "text/csv", "content-disposition"]],
   ["src/pages/portal/api/admin/import.js", ["admin.import", "csvObjects", "250 rows"]],
+  ["src/pages/portal/api/admin/client-site-access.js", ["admin.client_site_access", "client_site_access", "grant", "revoke"]],
   ["src/pages/portal/account/mfa.astro", ["/portal/api/mfa", "Multi-factor authentication", "Generate authenticator setup"]],
   ["src/pages/portal/api/mfa.js", ["auth.mfa_enable", "encryptMfaSecret", "verifyTotpCode"]],
   ["src/pages/portal/api/reset-password.js", ["auth.password_reset", "password_reset_tokens", "hashPassword"]],
@@ -182,8 +186,10 @@ const requiredSourceTerms = new Map([
   ["src/pages/portal/api/submit-jobcard.js", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
   ["src/pages/portal/api/file/[...key].js", ["job-evidence/", "job_evidence_files", "documentAccessLog"]],
   ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/api/submit-jobcard", "evidencePhotos"]],
-  ["src/pages/portal/client/dashboard.astro", ["/portal/api/file/", "/portal/api/approve-quote"]],
+  ["src/pages/portal/client/dashboard.astro", ["/portal/api/file/", "/portal/api/approve-quote", "Mapped client sites"]],
+  ["src/pages/portal/client/quotes.astro", ["Quote, invoice and payment history", "Commercial ledger", "/portal/api/approve-quote"]],
   ["src/pages/portal/finance/dashboard.astro", ["financial_records", "payment_status", "/portal/api/finance/export", "/portal/api/finance/payments"]],
+  ["src/pages/portal/admin/planning.astro", ["Dispatch planner", "Lifecycle due calendar", "Technician load", "riskForDueDate"]],
   ["src/pages/portal/api/finance/payments.js", ["finance.payment", "Payment", "Settled"]],
   ["src/pages/portal/api/finance/export.js", ["finance.export", "text/csv", "content-disposition"]],
   ["src/layouts/portal/PortalLayout.astro", ["Astro.locals.user", "Portal navigation"]]
@@ -222,7 +228,7 @@ if (!fs.existsSync(operationsSop)) {
   fail("OPERATIONS_SOP.md is missing.");
 } else {
   const text = read(operationsSop);
-  for (const term of ["Monitoring Check", "D1 Backup", "R2 Evidence Backup", "Retention Review", "Document Access Review", "portal:monitor", "portal:backup:d1", "portal:retention:report"]) {
+  for (const term of ["Monitoring Check", "D1 Backup", "R2 Evidence Backup", "Retention Review", "Document Access Review", "User Onboarding SOP", "Dispatch And Jobcard SOP", "Portal Access Incident Response", "Production Cutover Checklist", "portal:monitor", "portal:backup:d1", "portal:retention:report"]) {
     if (!text.includes(term)) fail(`OPERATIONS_SOP.md missing operational marker: ${term}`);
   }
 }
@@ -237,13 +243,31 @@ if (!fs.existsSync(retentionPolicy)) {
   }
 }
 
-for (const script of ["scripts/portal-monitor.ps1", "scripts/portal-backup.ps1", "scripts/portal-retention-report.ps1"]) {
+const controlledSeedProcess = path.join(root, "docs", "roadmap", "CONTROLLED_SEED_PROCESS.md");
+if (!fs.existsSync(controlledSeedProcess)) {
+  fail("CONTROLLED_SEED_PROCESS.md is missing.");
+} else {
+  const text = read(controlledSeedProcess);
+  for (const term of ["Forbidden In Committed Seed Files", "password hashes", "Recommended Seed Order", "Pre-Seed Checklist", "Post-Seed Checklist"]) {
+    if (!text.includes(term)) fail(`CONTROLLED_SEED_PROCESS.md missing seed-control marker: ${term}`);
+  }
+}
+
+for (const script of ["scripts/portal-monitor.ps1", "scripts/portal-backup.ps1", "scripts/portal-retention-report.ps1", "scripts/portal-role-qa.ps1"]) {
   if (!fs.existsSync(path.join(root, script))) fail(`missing operational script: ${script}`);
 }
 
 const packageJson = fs.existsSync(path.join(root, "package.json")) ? read(path.join(root, "package.json")) : "";
-for (const term of ["portal:monitor", "portal:backup:d1", "portal:retention:report"]) {
+for (const term of ["portal:monitor", "portal:backup:d1", "portal:retention:report", "portal:qa:roles"]) {
   if (!packageJson.includes(term)) fail(`package.json missing operational script: ${term}`);
+}
+
+const portalRoleQa = path.join(root, "scripts", "portal-role-qa.ps1");
+if (fs.existsSync(portalRoleQa)) {
+  const text = read(portalRoleQa);
+  for (const term of ["KHARON_QA_ADMIN_EMAIL", "SkipCredentialTests", "missing CSRF blocked", "/portal/tech/dashboard"]) {
+    if (!text.includes(term)) fail(`portal-role-qa.ps1 missing role QA marker: ${term}`);
+  }
 }
 
 const gitignore = fs.existsSync(path.join(root, ".gitignore")) ? read(path.join(root, ".gitignore")) : "";
@@ -326,6 +350,10 @@ for (const term of ["CREATE TABLE IF NOT EXISTS job_evidence_files", "storage_pa
 
 for (const term of ["CREATE TABLE IF NOT EXISTS document_access_logs", "idx_document_access_actor_created", "idx_document_access_path_created"]) {
   if (!schema.includes(term)) fail(`schema.sql missing document access marker: ${term}`);
+}
+
+for (const term of ["CREATE TABLE IF NOT EXISTS client_site_access", "PRIMARY KEY (user_id, site_id)", "idx_client_site_access_site"]) {
+  if (!schema.includes(term)) fail(`schema.sql missing client site access marker: ${term}`);
 }
 
 for (const term of ["CREATE TABLE IF NOT EXISTS password_reset_tokens", "token_hash TEXT NOT NULL UNIQUE", "idx_password_reset_tokens_expiry"]) {

@@ -90,6 +90,183 @@ Retention:
 - Confirm D1 and R2 bindings point to the intended production resources.
 - Confirm backup exports are taken before switching client operations from Tequit staging to Kharon production.
 
+## User Onboarding SOP
+
+Use this process when creating any technician, admin, finance or client user. Do not create shared accounts for production use.
+
+Prerequisites:
+
+- Confirm the requested role: `tech`, `admin`, `finance` or `client`.
+- Confirm whether the user must be mapped to a client site.
+- Confirm whether MFA must be required. MFA should be required for admin and finance accounts unless management approves an exception.
+- Confirm the delivery channel for the first reset link or temporary credential outside the repository.
+
+Admin steps:
+
+1. Sign in as an admin user.
+2. Open `/portal/admin/operations`.
+3. Create or verify the relevant client site before creating a mapped client user.
+4. Create the user with a unique corporate email address.
+5. Select the correct role.
+6. Map client users to the correct site only. Do not map technician, admin or finance users to a client site unless a specific workflow requires it.
+7. Set `Force password change` for every new user.
+8. Set `Require MFA` for admin and finance users where required.
+9. Save the user and confirm the account appears in the user list.
+10. Issue a reset link if password reset delivery is the chosen onboarding path.
+11. Deliver the reset link or temporary credential through the approved external channel only.
+12. Record the onboarding action in the external operations log with operator, user email, role, site mapping and MFA requirement. Do not record passwords.
+
+Acceptance checks:
+
+- The user can sign in.
+- Forced password rotation redirects to `/portal/account/password`.
+- Admin or finance users marked MFA-required redirect to `/portal/account/mfa`.
+- The user reaches only the dashboard allowed by their role.
+- Client users see only the mapped site.
+
+Deactivation:
+
+1. Open `/portal/admin/operations`.
+2. Untick `Active` for the user.
+3. Save the user record.
+4. Run the role QA checklist item for disabled user login.
+5. Record deactivation in the external operations log.
+
+Role changes:
+
+- Treat role changes as access-control changes.
+- Confirm business approval before changing a user to `admin` or `finance`.
+- Re-run RBAC QA for that user after changing role.
+- Require password rotation and MFA review after privileged role changes.
+
+## Dispatch And Jobcard SOP
+
+Use this process for scheduling and closing operational dispatches.
+
+Admin scheduling:
+
+1. Confirm the client site exists.
+2. Confirm the protected system exists and has the correct system type, coverage area, manufacturer and next due date.
+3. Open `/portal/admin/dashboard` to review the client request queue where applicable.
+4. Convert a client request to a scheduled dispatch, or open `/portal/admin/operations` and create a job manually.
+5. Assign the technician if known.
+6. Set the scheduled date.
+7. Use the job type to describe the operational reason: maintenance, fault response, compliance inspection or follow-up.
+8. Keep site notes factual and relevant to field work.
+9. Confirm the job appears in the technician dashboard.
+
+Technician closure:
+
+1. Technician signs in and opens `/portal/tech/dashboard`.
+2. Technician starts the job if it is still scheduled.
+3. Technician selects the fault or work category.
+4. Technician records work comments, parts used and follow-up actions.
+5. Technician attaches up to 3 relevant evidence photos where needed.
+6. Technician captures client or responsible-person signature.
+7. Technician submits the completed jobcard only after confirming the browser is online and stable.
+8. Technician waits for the completion confirmation and document path.
+
+Admin exception handling:
+
+- If the technician cannot submit due to signal problems, retain local photos and notes and retry from stable connectivity.
+- If a job is closed against the wrong system, do not delete evidence manually. Record the issue, preserve the generated jobcard and create a corrective admin note or follow-up dispatch.
+- If evidence photos are wrong or sensitive, escalate before sharing with a client. Do not expose raw R2 paths outside controlled portal routes.
+- If a generated PDF is missing, check `jobs.documentation_path`, R2 object availability and `document_access_logs`.
+
+Finance handoff:
+
+- Completed jobcards automatically create or support finance records where implemented.
+- Finance should review `/portal/finance/dashboard` after job completion.
+- Payment capture must use approved references; do not mark records settled without supporting payment evidence.
+
+## Portal Access Incident Response
+
+Use this process for suspected access issues, credential compromise, role leakage or document-access anomalies.
+
+Severity guide:
+
+- Critical: admin/finance account compromise, unauthorized document access, RBAC bypass, session or CSRF failure.
+- High: client can see another client's records, technician can close another technician's job, disabled user can login.
+- Medium: repeated login failures, MFA lockout, missing jobcard document, failed R2 access.
+- Low: individual password reset, user confusion or expected dashboard redirect issue.
+
+Immediate containment:
+
+1. Disable the affected user in `/portal/admin/operations` where appropriate.
+2. If the issue is privileged, rotate the user's password and reset MFA.
+3. Preserve logs. Do not delete `audit_events`, `document_access_logs`, jobcards or evidence.
+4. Run `npm run portal:monitor`.
+5. Run the relevant role QA checks with external staging credentials where safe.
+6. Export D1 before any manual corrective SQL if production data is involved.
+
+Investigation checklist:
+
+- Identify user ID, role, time window and affected route.
+- Check `audit_events` for login, MFA, password, CSRF and rate-limit entries.
+- Check `document_access_logs` for successful, blocked and failed document access.
+- Confirm the user's `site_id`, `role`, `is_active`, `mfa_required` and `mfa_enabled` fields.
+- Confirm route behavior from the QA checklist.
+- Confirm no secrets, reset links or session tokens were pasted into tickets or source files.
+
+Recovery:
+
+- Re-enable users only after the root cause is understood.
+- Issue a new reset link if password confidence is lost.
+- Require MFA for affected admin or finance users.
+- Record the incident, action taken and residual risk in the external operations log.
+
+Escalation:
+
+- Escalate to management before notifying clients or sharing document access logs.
+- Escalate immediately if any client could view another client's records.
+- Treat any suspected legal or contractual reporting requirement as a management/legal decision, not a developer-only decision.
+
+## Production Cutover Checklist
+
+Use this checklist before moving from Tequit staging to `portal.kharon.co.za`.
+
+DNS and routing:
+
+- [ ] `portal.kharon.co.za` is added as a custom domain on the Cloudflare Worker/Pages target.
+- [ ] DNS is proxied through Cloudflare.
+- [ ] SSL certificate is active.
+- [ ] `https://portal.kharon.co.za/portal/login` returns HTTP 200.
+- [ ] `https://portal.kharon.co.za/portal/admin/dashboard` redirects unauthenticated users to login.
+
+Configuration:
+
+- [ ] Production `SESSION_SECRET` is set and at least 32 characters.
+- [ ] Production `CSRF_SECRET` or equivalent secret is set and at least 32 characters.
+- [ ] Production MFA encryption secret is set if separate from session secrets.
+- [ ] D1 binding `DB` points to the intended production database.
+- [ ] R2 binding `STORAGE` points to the intended production bucket.
+- [ ] No staging passwords, reset links or temporary credentials are committed.
+
+Data:
+
+- [ ] D1 backup/export taken before cutover.
+- [ ] R2 backup or restore verification completed.
+- [ ] Production users are unique per person.
+- [ ] Shared staging credentials are removed or disabled.
+- [ ] Admin and finance MFA requirement is reviewed.
+- [ ] Client users are mapped only to approved sites.
+
+Validation:
+
+- [ ] `npm run build` passes.
+- [ ] `npm run audit:site` passes.
+- [ ] `npm run portal:monitor` passes against the production base URL.
+- [ ] `npm run portal:qa:roles -- -BaseUrl "https://portal.kharon.co.za"` is executed with external QA credentials.
+- [ ] Manual `docs/qa/PORTAL_ROLE_QA_CHECKLIST.md` is completed.
+- [ ] Document download and document access logging are verified.
+
+Go/no-go:
+
+- [ ] Critical and high incidents are closed.
+- [ ] Backup location and restore owner are confirmed.
+- [ ] Operations owner accepts the onboarding, dispatch and incident procedures.
+- [ ] Rollback path is documented: re-point portal access to staging or disable production route while preserving D1/R2 evidence.
+
 ## Field Photo Evidence And Poor-Signal Expectations
 
 Technicians may attach up to 3 job evidence photos during jobcard closure. Evidence should be limited to relevant operational proof such as panel state, device condition, labels, defects, completed corrective work or protected-room context.

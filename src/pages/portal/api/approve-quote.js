@@ -1,5 +1,6 @@
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { auditEvent } from "../../../lib/server/audit.js";
+import { clientCanAccessSite } from "../../../lib/server/clientAccess.js";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
 
 export const prerender = false;
@@ -15,7 +16,6 @@ export async function POST({ request, locals }) {
     const user = locals.user;
     if (!user) return unauthorized();
     if (user.role !== "client") return forbidden("Only client accounts can approve quotes.");
-    if (!user.siteId) return forbidden("Client account is not mapped to a site.");
 
     const body = await request.json();
     const recordId = String(body.recordId || "").trim();
@@ -34,7 +34,7 @@ export async function POST({ request, locals }) {
       .bind(recordId)
       .first();
 
-    if (!record || record.site_id !== user.siteId) {
+    if (!record || !(await clientCanAccessSite(db, user, record.site_id))) {
       await auditEvent(db, request, {
         eventType: "quote.approve",
         entityType: "financial_record",
@@ -80,7 +80,7 @@ export async function POST({ request, locals }) {
       entityId: recordId,
       outcome: "success",
       user,
-      metadata: { siteId: user.siteId }
+      metadata: { siteId: record.site_id }
     });
 
     return json({ ok: true, recordId, itemType: "Invoice", paymentStatus: "Unpaid" });

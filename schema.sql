@@ -88,6 +88,15 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
+CREATE TABLE IF NOT EXISTS client_site_access (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  access_level TEXT NOT NULL DEFAULT 'records' CHECK (access_level IN ('records')),
+  granted_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  granted_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  PRIMARY KEY (user_id, site_id)
+);
+
 CREATE TABLE IF NOT EXISTS audit_events (
   id TEXT PRIMARY KEY,
   actor_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
@@ -160,6 +169,7 @@ CREATE INDEX IF NOT EXISTS idx_maintenance_requests_site_status ON maintenance_r
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_status_priority ON maintenance_requests(status, priority, created_at);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_system ON maintenance_requests(system_id);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_linked_job ON maintenance_requests(linked_job_id);
+CREATE INDEX IF NOT EXISTS idx_client_site_access_site ON client_site_access(site_id, user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_actor_created ON audit_events(actor_user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_events_type_created ON audit_events(event_type, created_at);
 CREATE INDEX IF NOT EXISTS idx_job_evidence_job ON job_evidence_files(job_id, created_at);

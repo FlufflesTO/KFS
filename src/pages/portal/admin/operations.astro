@@ -11,6 +11,8 @@ let sites = [];
 let systems = [];
 let jobs = [];
 let technicians = [];
+let clientUsers = [];
+let clientSiteAccess = [];
 let loadError = "";
 
 try {
@@ -46,6 +48,16 @@ try {
   ).all()).results || [];
 
   technicians = users.filter((item) => item.role === "tech" && item.is_active);
+  clientUsers = users.filter((item) => item.role === "client" && item.is_active);
+
+  clientSiteAccess = (await db.prepare(
+    `SELECT client_site_access.user_id, client_site_access.site_id, client_site_access.granted_at,
+            users.name AS user_name, users.email AS user_email, sites.owner_company_name
+     FROM client_site_access
+     INNER JOIN users ON users.id = client_site_access.user_id
+     INNER JOIN sites ON sites.id = client_site_access.site_id
+     ORDER BY users.name, sites.owner_company_name`
+  ).all()).results || [];
 } catch (error) {
   console.error("admin operations failed", error);
   loadError = "Administration data could not be loaded.";
@@ -53,21 +65,21 @@ try {
 ---
 
 <PortalLayout title="Admin Operations | Kharon Portal" active="operations" user={user}>
-  <section class="bg-kharon-black px-6 py-10 text-white">
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
     <div class="mx-auto max-w-7xl">
       <p class="text-xs font-bold uppercase text-kharon-cyan">Administration</p>
-      <h1 class="mt-3 text-3xl font-bold">Portal operations control</h1>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Portal operations control</h1>
       <p class="mt-4 max-w-3xl text-white/65">
         Manage users, client sites, protected systems and scheduled jobs without direct D1 editing.
       </p>
     </div>
   </section>
 
-  <section class="px-6 py-8">
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto grid max-w-7xl gap-8">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
 
-      <article class="border border-kharon-border bg-white p-5">
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p class="text-xs font-bold uppercase text-kharon-purple">Bulk administration</p>
@@ -87,16 +99,16 @@ try {
         <div class="mt-5 grid gap-5 lg:grid-cols-2">
           <form class="import-form grid gap-3" data-type="sites">
             <h3 class="font-bold">Import sites</h3>
-            <p class="rounded-md bg-kharon-light px-3 py-2 font-mono text-xs">id,owner_company_name,physical_address,site_contact_person,site_contact_email,site_contact_phone,billing_emails</p>
-            <textarea class="min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste sites CSV here"></textarea>
+            <p class="portal-scroll-x rounded-md bg-kharon-light px-3 py-2 font-mono text-xs whitespace-nowrap">id,owner_company_name,physical_address,site_contact_person,site_contact_email,site_contact_phone,billing_emails</p>
+            <textarea class="portal-field min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste sites CSV here"></textarea>
             <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Import sites</button>
             <p class="import-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
           </form>
 
           <form class="import-form grid gap-3" data-type="systems">
             <h3 class="font-bold">Import systems</h3>
-            <p class="rounded-md bg-kharon-light px-3 py-2 font-mono text-xs">id,site_id,system_type,coverage_area,manufacturer,model_reference,next_due_date</p>
-            <textarea class="min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste systems CSV here"></textarea>
+            <p class="portal-scroll-x rounded-md bg-kharon-light px-3 py-2 font-mono text-xs whitespace-nowrap">id,site_id,system_type,coverage_area,manufacturer,model_reference,next_due_date</p>
+            <textarea class="portal-field min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste systems CSV here"></textarea>
             <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Import systems</button>
             <p class="import-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
           </form>
@@ -104,7 +116,7 @@ try {
       </article>
 
       <div class="grid gap-6 xl:grid-cols-2">
-        <article class="border border-kharon-border bg-white p-5">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <h2 class="text-xl font-bold">Create user</h2>
           <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/users">
             <input type="hidden" name="action" value="create" />
@@ -128,7 +140,7 @@ try {
           </form>
         </article>
 
-        <article class="border border-kharon-border bg-white p-5">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <h2 class="text-xl font-bold">Create site</h2>
           <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/sites">
             <input type="hidden" name="action" value="create" />
@@ -143,7 +155,7 @@ try {
           </form>
         </article>
 
-        <article class="border border-kharon-border bg-white p-5">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <h2 class="text-xl font-bold">Create system</h2>
           <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/systems">
             <input type="hidden" name="action" value="create" />
@@ -164,7 +176,7 @@ try {
           </form>
         </article>
 
-        <article class="border border-kharon-border bg-white p-5">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <h2 class="text-xl font-bold">Create job</h2>
           <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/jobs">
             <input type="hidden" name="action" value="create" />
@@ -189,7 +201,53 @@ try {
         </article>
       </div>
 
-      <article class="border border-kharon-border bg-white p-5">
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-bold uppercase text-kharon-purple">Client account access</p>
+            <h2 class="mt-2 text-xl font-bold">Multi-site record mapping</h2>
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-kharon-muted">
+              Grant additional client site access without changing the user's primary `site_id`. Existing single-site client mapping remains supported.
+            </p>
+          </div>
+          <a class="rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" href="/portal/client/quotes">
+            Client quote view
+          </a>
+        </div>
+
+        <form class="client-site-access-form mt-5 grid gap-3 lg:grid-cols-3" data-endpoint="/portal/api/admin/client-site-access">
+          <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="userId" required>
+            <option value="">Select client user</option>
+            {clientUsers.map((client) => <option value={client.id}>{client.name} / {client.email}</option>)}
+          </select>
+          <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
+            <option value="">Select site</option>
+            {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
+          </select>
+          <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Grant access</button>
+          <input type="hidden" name="action" value="grant" />
+          <p class="client-site-access-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-3"></p>
+        </form>
+
+        <div class="mt-5 grid gap-3">
+          {clientSiteAccess.length === 0 && <p class="text-kharon-grey">No additional client site access mappings have been granted.</p>}
+          {clientSiteAccess.map((mapping) => (
+            <form class="client-site-access-form flex flex-wrap items-center justify-between gap-3 border border-kharon-border bg-kharon-light p-4" data-endpoint="/portal/api/admin/client-site-access">
+              <div>
+                <p class="font-semibold">{mapping.user_name} / {mapping.owner_company_name}</p>
+                <p class="text-sm text-kharon-grey">{mapping.user_email} / granted {mapping.granted_at}</p>
+              </div>
+              <input type="hidden" name="action" value="revoke" />
+              <input type="hidden" name="userId" value={mapping.user_id} />
+              <input type="hidden" name="siteId" value={mapping.site_id} />
+              <button class="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900">Revoke</button>
+              <p class="client-site-access-result hidden w-full rounded-md border px-4 py-3 text-sm font-semibold"></p>
+            </form>
+          ))}
+        </div>
+      </article>
+
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
         <h2 class="text-xl font-bold">Users</h2>
         <div class="mt-5 grid gap-4">
           {users.map((record) => (
@@ -231,7 +289,7 @@ try {
         </div>
       </article>
 
-      <article class="border border-kharon-border bg-white p-5">
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
         <h2 class="text-xl font-bold">Sites</h2>
         <div class="mt-5 grid gap-4">
           {sites.map((record) => (
@@ -251,7 +309,7 @@ try {
         </div>
       </article>
 
-      <article class="border border-kharon-border bg-white p-5">
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
         <h2 class="text-xl font-bold">Systems</h2>
         <div class="mt-5 grid gap-4">
           {systems.map((record) => (
@@ -275,7 +333,7 @@ try {
         </div>
       </article>
 
-      <article class="border border-kharon-border bg-white p-5">
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
         <h2 class="text-xl font-bold">Jobs</h2>
         <div class="mt-5 grid gap-4">
           {jobs.map((record) => (
@@ -304,7 +362,7 @@ try {
     </div>
   </section>
 
-  <script>
+  <script is:inline>
     function formPayload(form) {
       const data = {};
       for (const element of form.elements) {
@@ -338,6 +396,29 @@ try {
 
         result.textContent = `Saved ${body.id || ""}`.trim();
         result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+      });
+    }
+
+    for (const form of document.querySelectorAll(".client-site-access-form")) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const result = form.querySelector(".client-site-access-result");
+        result.classList.add("hidden");
+
+        const response = await window.kharonPortalFetch(form.dataset.endpoint, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(formPayload(form))
+        });
+        const body = await response.json().catch(() => ({ ok: false, message: "Client site access update failed." }));
+        if (!response.ok || !body.ok) {
+          result.textContent = body.message || "Client site access update failed.";
+          result.className = "client-site-access-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+          return;
+        }
+
+        result.textContent = body.action === "grant" ? "Client site access granted." : "Client site access revoked.";
+        result.className = "client-site-access-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
       });
     }
 

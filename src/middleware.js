@@ -78,6 +78,7 @@ function rateLimitConfig(pathname) {
     "/portal/api/admin/sites": { scope: "portal.admin.sites", maxAttempts: 60, windowSeconds: 15 * 60 },
     "/portal/api/admin/systems": { scope: "portal.admin.systems", maxAttempts: 60, windowSeconds: 15 * 60 },
     "/portal/api/admin/jobs": { scope: "portal.admin.jobs", maxAttempts: 60, windowSeconds: 15 * 60 },
+    "/portal/api/admin/client-site-access": { scope: "portal.admin.client_site_access", maxAttempts: 60, windowSeconds: 15 * 60 },
     "/portal/api/admin/import": { scope: "portal.admin.import", maxAttempts: 20, windowSeconds: 15 * 60 },
     "/portal/api/admin/maintenance-requests": { scope: "portal.admin.maintenance_requests", maxAttempts: 60, windowSeconds: 15 * 60 }
   };

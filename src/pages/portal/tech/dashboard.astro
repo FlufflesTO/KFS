@@ -37,24 +37,24 @@ try {
 ---
 
 <PortalLayout title="Technician Dispatches | Kharon Portal" active="tech" user={user}>
-  <section class="bg-kharon-black px-6 py-10 text-white">
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
     <div class="mx-auto max-w-7xl">
       <p class="text-xs font-bold uppercase text-kharon-cyan">Technician workspace</p>
-      <h1 class="mt-3 text-3xl font-bold">Assigned dispatch closure</h1>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Assigned dispatch closure</h1>
       <p class="mt-4 max-w-3xl text-white/65">
         Close scheduled field work with comments and captured client signature. Completed jobcards update lifecycle dates and finance automatically.
       </p>
     </div>
   </section>
 
-  <section class="px-6 py-8">
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto grid max-w-7xl gap-5">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
       {jobs.length === 0 && !loadError && <p class="border border-kharon-border bg-white p-4 text-kharon-grey">No scheduled dispatches are currently assigned.</p>}
 
       {jobs.map((job) => (
-        <article class="grid gap-5 border border-kharon-border bg-white p-5 lg:grid-cols-[1fr_0.9fr]">
-          <div>
+        <article class="grid gap-5 border border-kharon-border bg-white p-4 sm:p-5 lg:grid-cols-[1fr_0.9fr]">
+          <div class="min-w-0">
             <p class="text-xs font-bold uppercase text-kharon-purple">{job.status}</p>
             <h2 class="mt-2 text-xl font-bold text-kharon-black">{job.owner_company_name}</h2>
             <p class="mt-2 text-sm text-kharon-grey">{job.physical_address}</p>
@@ -73,12 +73,12 @@ try {
             )}
           </div>
 
-          <form class="jobcard-form grid gap-4 border border-kharon-border bg-kharon-light p-4" data-job-id={job.id} data-system-id={job.system_id}>
+          <form class="jobcard-form grid min-w-0 gap-4 border border-kharon-border bg-kharon-light p-4" data-job-id={job.id} data-system-id={job.system_id}>
             <input type="hidden" name="jobId" value={job.id} />
             <input type="hidden" name="systemId" value={job.system_id} />
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
               Fault / work category
-              <select name="faultCategory" class="rounded-md border border-kharon-border px-4 py-3">
+              <select name="faultCategory" class="portal-field rounded-md border border-kharon-border px-4 py-3">
                 <option value="Routine service">Routine service</option>
                 <option value="Fault response">Fault response</option>
                 <option value="Compliance inspection">Compliance inspection</option>
@@ -90,25 +90,25 @@ try {
             </label>
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
               Technician comments
-              <textarea name="techComments" class="min-h-28 rounded-md border border-kharon-border px-4 py-3" maxlength="3000" required></textarea>
+              <textarea name="techComments" class="portal-field min-h-28 rounded-md border border-kharon-border px-4 py-3" maxlength="3000" required></textarea>
             </label>
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
               Parts used
-              <input name="partsUsed" class="rounded-md border border-kharon-border px-4 py-3" maxlength="500" placeholder="None / detector head / battery / cylinder label / other" />
+              <input name="partsUsed" class="portal-field rounded-md border border-kharon-border px-4 py-3" maxlength="500" placeholder="None / detector head / battery / cylinder label / other" />
             </label>
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
               Follow-up actions
-              <textarea name="followUpActions" class="min-h-20 rounded-md border border-kharon-border px-4 py-3" maxlength="1000" placeholder="No follow-up required, or describe required action."></textarea>
+              <textarea name="followUpActions" class="portal-field min-h-20 rounded-md border border-kharon-border px-4 py-3" maxlength="1000" placeholder="No follow-up required, or describe required action."></textarea>
             </label>
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
               Photo evidence
               <span class="text-xs font-normal text-kharon-grey">Optional. Up to 3 JPEG, PNG or WebP images, maximum 1.5 MB each. Capture only relevant system, panel, label, defect or completion evidence.</span>
-              <input name="evidencePhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple class="rounded-md border border-kharon-border bg-white px-4 py-3" />
+              <input name="evidencePhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple class="portal-field rounded-md border border-kharon-border bg-white px-4 py-3" />
             </label>
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
               Client / responsible person signature
               <span class="text-xs font-normal text-kharon-grey">Sign inside the box. Clear and re-sign if the capture is not legible.</span>
-              <canvas class="signature-pad h-40 w-full touch-none rounded-md border border-kharon-border bg-white" width="720" height="220" aria-label="Signature capture area"></canvas>
+              <canvas class="signature-pad h-36 w-full touch-none rounded-md border border-kharon-border bg-white sm:h-40" width="720" height="220" aria-label="Signature capture area"></canvas>
               <input type="hidden" name="signatureBase64" required />
               <input type="hidden" name="signatureStrokes" />
             </label>
