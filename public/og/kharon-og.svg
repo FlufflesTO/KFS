@@ -1,36 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
-  <title id="title">Kharon Fire and Security Systems</title>
-  <desc id="desc">Commercial fire detection and gas suppression specialists.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="og-title og-desc">
+  <title id="og-title">Kharon Fire and Security Solutions</title>
+  <desc id="og-desc">Commercial fire detection and gas suppression specialists.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0B0D0F" />
-      <stop offset="100%" stop-color="#15191D" />
+    <linearGradient id="og-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B0D0F"/>
+      <stop offset="100%" stop-color="#15191D"/>
     </linearGradient>
-    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#1F4E79" stop-opacity="0.2" />
-      <stop offset="50%" stop-color="#00C2FF" stop-opacity="0.9" />
-      <stop offset="100%" stop-color="#4B2E83" stop-opacity="0.2" />
-    </linearGradient>
+    <radialGradient id="og-blue" cx="38%" cy="33%" r="65%" fx="33%" fy="28%">
+      <stop offset="0%" stop-color="#5E93D4"/>
+      <stop offset="42%" stop-color="#3B72BC"/>
+      <stop offset="100%" stop-color="#1C4D8C"/>
+    </radialGradient>
+    <radialGradient id="og-purple" cx="38%" cy="33%" r="68%" fx="33%" fy="28%">
+      <stop offset="0%" stop-color="#6E35AE"/>
+      <stop offset="55%" stop-color="#4B1A7E"/>
+      <stop offset="100%" stop-color="#2B0E50"/>
+    </radialGradient>
   </defs>
-  <rect width="1200" height="630" fill="url(#bg)" />
-  <g opacity="0.2" stroke="#FFFFFF" stroke-width="1">
-    <path d="M0 110h1200M0 220h1200M0 330h1200M0 440h1200M0 550h1200" />
-    <path d="M120 0v630M240 0v630M360 0v630M480 0v630M600 0v630M720 0v630M840 0v630M960 0v630M1080 0v630" />
+
+  <rect width="1200" height="630" fill="url(#og-bg)"/>
+
+  <!-- Subtle grid -->
+  <g opacity="0.08" stroke="#FFFFFF" stroke-width="1">
+    <path d="M0 105h1200M0 210h1200M0 315h1200M0 420h1200M0 525h1200"/>
+    <path d="M120 0v630M240 0v630M360 0v630M480 0v630M600 0v630M720 0v630M840 0v630M960 0v630M1080 0v630"/>
   </g>
-  <path d="M230 360h730" stroke="url(#line)" stroke-width="4" />
-  <g fill="#1F4E79" stroke="#D6D9DD" stroke-opacity="0.2">
-    <rect x="200" y="330" width="64" height="64" rx="6" />
-    <rect x="430" y="300" width="64" height="64" rx="6" />
-    <rect x="630" y="340" width="64" height="64" rx="6" />
-    <rect x="860" y="305" width="64" height="64" rx="6" />
-  </g>
-  <g fill="#FFFFFF">
-    <text x="120" y="170" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="28" letter-spacing="3" opacity="0.7">KHARON</text>
-    <text x="120" y="250" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="62" font-weight="700">
-      Fire and Security Systems
-    </text>
-    <text x="120" y="302" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="30" opacity="0.85">
-      Commercial Fire Detection and Gas Suppression Specialists
-    </text>
-  </g>
+
+  <!-- Brand mark (right side) -->
+  <circle cx="1010" cy="290" r="210" fill="url(#og-blue)" opacity="0.18"/>
+  <circle cx="1010" cy="290" r="148" fill="#FFFFFF" opacity="0.10"/>
+  <circle cx="1010" cy="290" r="95" fill="url(#og-purple)" opacity="0.22"/>
+
+  <!-- Crisp foreground mark -->
+  <circle cx="1010" cy="290" r="140" fill="url(#og-blue)"/>
+  <circle cx="1010" cy="290" r="98" fill="#FFFFFF"/>
+  <circle cx="1010" cy="290" r="62" fill="url(#og-purple)"/>
+
+  <!-- Text -->
+  <text x="80" y="200" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="22" font-weight="700" letter-spacing="6" fill="#3B72BC" opacity="0.9">KHARON</text>
+  <text x="80" y="320" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="72" font-weight="700" fill="#FFFFFF">Fire &amp; Security</text>
+  <text x="80" y="408" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="72" font-weight="700" fill="#FFFFFF">Solutions</text>
+  <text x="80" y="480" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="26" fill="#FFFFFF" opacity="0.60">Commercial Fire Detection and Gas Suppression Specialists</text>
 </svg>

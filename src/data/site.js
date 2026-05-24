@@ -13,6 +13,9 @@ export const site = {
   portalStatus: "Open the secure Kharon operations portal for lifecycle records, dispatches, client systems and finance workspaces.",
   portalLoginPath: `${portalUrl}/portal/login`,
   email: contactEmail,
+  phone: "061 545 8830",
+  address: "Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd, Ndabeni, Maitland, 7405",
+  registration: "2016/313076/07",
   ogImage: "/og/kharon-og.svg"
 };
 

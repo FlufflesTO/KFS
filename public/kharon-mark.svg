@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Kharon mark">
+  <defs>
+    <radialGradient id="kh-blue" cx="38%" cy="33%" r="65%" fx="33%" fy="28%">
+      <stop offset="0%" stop-color="#5E93D4"/>
+      <stop offset="42%" stop-color="#3B72BC"/>
+      <stop offset="100%" stop-color="#1C4D8C"/>
+    </radialGradient>
+    <radialGradient id="kh-purple" cx="38%" cy="33%" r="68%" fx="33%" fy="28%">
+      <stop offset="0%" stop-color="#6E35AE"/>
+      <stop offset="55%" stop-color="#4B1A7E"/>
+      <stop offset="100%" stop-color="#2B0E50"/>
+    </radialGradient>
+  </defs>
+  <circle cx="40" cy="40" r="38" fill="url(#kh-blue)"/>
+  <circle cx="40" cy="40" r="27" fill="#FFFFFF"/>
+  <circle cx="40" cy="40" r="17" fill="url(#kh-purple)"/>
+</svg>
