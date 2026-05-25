@@ -70,6 +70,16 @@ CREATE TABLE IF NOT EXISTS financial_records (
   payment_status TEXT NOT NULL CHECK (payment_status IN ('Pending Approval', 'Unpaid', 'Settled')),
   distribution_date TEXT NOT NULL,
   reference TEXT,
+  sage_quote_number TEXT,
+  sage_invoice_number TEXT,
+  sage_customer_code TEXT,
+  sage_amount_ex_vat REAL,
+  sage_vat_amount REAL,
+  sage_payment_reference TEXT,
+  finance_task_status TEXT CHECK (finance_task_status IN (
+    'Invoice Required', 'Quote Required', 'Sage Reference Missing',
+    'Awaiting Payment', 'Complete'
+  )),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
@@ -166,6 +176,8 @@ CREATE INDEX IF NOT EXISTS idx_jobs_technician_status ON jobs(assigned_technicia
 CREATE INDEX IF NOT EXISTS idx_jobs_system_status ON jobs(system_id, status);
 CREATE INDEX IF NOT EXISTS idx_financial_site_status ON financial_records(site_id, payment_status, distribution_date);
 CREATE INDEX IF NOT EXISTS idx_financial_job ON financial_records(job_id);
+CREATE INDEX IF NOT EXISTS idx_finance_task_status ON financial_records(finance_task_status);
+CREATE INDEX IF NOT EXISTS idx_finance_sage_invoice ON financial_records(sage_invoice_number);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_site_status ON maintenance_requests(site_id, status, created_at);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_status_priority ON maintenance_requests(status, priority, created_at);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_system ON maintenance_requests(system_id);
