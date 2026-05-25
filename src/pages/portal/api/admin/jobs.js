@@ -1,11 +1,12 @@
 import { getDatabase } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
-import { cleanChoice, cleanDate, cleanId, cleanText, readJson, requireAdmin } from "../../../../lib/server/admin.js";
+import { cleanBoolean, cleanChoice, cleanDate, cleanId, cleanInt, cleanText, readJson, requireAdmin } from "../../../../lib/server/admin.js";
 
 export const prerender = false;
 
-const statuses = ["Scheduled", "In Progress", "Completed", "Invoiced"];
+const statuses   = ["Scheduled", "In Progress", "Completed", "Invoiced"];
+const priorities = ["Critical", "High", "Normal", "Low"];
 
 export async function POST({ request, locals }) {
   const adminError = requireAdmin(locals.user);
@@ -83,16 +84,27 @@ export async function POST({ request, locals }) {
     const status = cleanChoice(body.status || "Scheduled", "status", statuses);
     const jobType = cleanText(body.jobType || "Maintenance", "jobType", { min: 2, max: 80 });
     const siteNotes = cleanText(body.siteNotes, "siteNotes", { required: false, max: 1000 });
+    const priority = cleanChoice(body.priority || "Normal", "priority", priorities);
+    const isEmergency = cleanBoolean(body.isEmergency);
+    const rawDate = String(body.requiredByDate || "").trim();
+    const requiredByDate = rawDate && /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : null;
+    const rawDuration = body.estimatedDurationMinutes;
+    const estimatedDurationMinutes =
+      rawDuration !== null && rawDuration !== undefined && rawDuration !== ""
+        ? cleanInt(rawDuration, "estimatedDurationMinutes", { min: 1, max: 480 })
+        : null;
 
     if (action === "create") {
       await db
         .prepare(
           `INSERT INTO jobs
-             (id, system_id, assigned_technician_id, scheduled_date, status, job_type, site_notes)
+             (id, system_id, assigned_technician_id, scheduled_date, status, job_type, site_notes,
+              priority, is_emergency, required_by_date, estimated_duration_minutes)
            VALUES
-             (?1, ?2, ?3, ?4, ?5, ?6, ?7)`
+             (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)`
         )
-        .bind(id, systemId, assignedTechnicianId, scheduledDate, status, jobType, siteNotes)
+        .bind(id, systemId, assignedTechnicianId, scheduledDate, status, jobType, siteNotes,
+              priority, isEmergency, requiredByDate, estimatedDurationMinutes)
         .run();
     } else if (action === "update") {
       await db
@@ -103,10 +115,15 @@ export async function POST({ request, locals }) {
                scheduled_date = ?3,
                status = ?4,
                job_type = ?5,
-               site_notes = ?6
-           WHERE id = ?7`
+               site_notes = ?6,
+               priority = ?7,
+               is_emergency = ?8,
+               required_by_date = ?9,
+               estimated_duration_minutes = ?10
+           WHERE id = ?11`
         )
-        .bind(systemId, assignedTechnicianId, scheduledDate, status, jobType, siteNotes, id)
+        .bind(systemId, assignedTechnicianId, scheduledDate, status, jobType, siteNotes,
+              priority, isEmergency, requiredByDate, estimatedDurationMinutes, id)
         .run();
     } else {
       return badRequest("action is invalid.");

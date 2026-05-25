@@ -1,0 +1,492 @@
+---
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+
+// ── Helpers (frontmatter only — no < comparisons in JSX templates) ──────────
+function slaInfo(requiredByDate: string | null): { text: string; cls: string } {
+  if (!requiredByDate) return { text: "—", cls: "text-kharon-grey" };
+  const ms = new Date(requiredByDate + "T00:00:00Z").getTime() - Date.now();
+  const days = Math.ceil(ms / 86400000);
+  if (days < 0) return { text: `${-days}d overdue`, cls: "text-kharon-red font-bold" };
+  if (days <= 3) return { text: `${days}d`, cls: "text-amber-700 font-semibold" };
+  return { text: `${days}d`, cls: "text-emerald-700" };
+}
+
+function priorityBadgeCls(p: string): string {
+  if (p === "Critical") return "bg-kharon-red text-white";
+  if (p === "High") return "border border-amber-400 bg-amber-50 text-amber-800";
+  if (p === "Low") return "border border-kharon-border bg-white text-kharon-grey";
+  return "bg-kharon-light text-kharon-grey"; // Normal
+}
+
+interface DispatchJob {
+  id: string;
+  job_type: string;
+  scheduled_date: string;
+  priority: string;
+  required_by_date: string | null;
+  is_emergency: number;
+  estimated_duration_minutes: number | null;
+  status: string;
+  system_type: string;
+  coverage_area: string;
+  owner_company_name: string;
+  physical_address?: string;
+  site_contact_person?: string;
+  site_contact_phone?: string;
+  technician_name?: string;
+  technician_id?: string;
+  // computed
+  sla: { text: string; cls: string };
+  priorityCls: string;
+  isEmergency: boolean;
+  searchText: string;
+}
+
+let unassigned: DispatchJob[] = [];
+let dispatched: DispatchJob[] = [];
+let techs: { id: string; name: string }[] = [];
+let stats = { unassigned: 0, inProgress: 0, emergency: 0, slaWarning: 0 };
+let loadError = "";
+
+try {
+  const db = getDatabase();
+
+  const [statsResult, unassignedResult, dispatchedResult, techsResult] = await db.batch([
+    db.prepare(`
+      SELECT
+        SUM(CASE WHEN assigned_technician_id IS NULL AND status = 'Scheduled' THEN 1 ELSE 0 END) AS unassigned_count,
+        SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress_count,
+        SUM(CASE WHEN is_emergency = 1 AND status IN ('Scheduled','In Progress') THEN 1 ELSE 0 END) AS emergency_count,
+        SUM(CASE WHEN required_by_date IS NOT NULL
+              AND date(required_by_date) <= date('now','+3 days')
+              AND status IN ('Scheduled','In Progress') THEN 1 ELSE 0 END) AS sla_warning_count
+      FROM jobs
+    `),
+    db.prepare(`
+      SELECT jobs.id, jobs.job_type, jobs.scheduled_date, jobs.priority, jobs.required_by_date,
+             jobs.is_emergency, jobs.estimated_duration_minutes, jobs.status,
+             systems.system_type, systems.coverage_area,
+             sites.owner_company_name, sites.physical_address,
+             sites.site_contact_person, sites.site_contact_phone
+      FROM jobs
+      INNER JOIN systems ON systems.id = jobs.system_id
+      INNER JOIN sites   ON sites.id   = systems.site_id
+      WHERE jobs.assigned_technician_id IS NULL AND jobs.status = 'Scheduled'
+      ORDER BY
+        CASE jobs.priority WHEN 'Critical' THEN 1 WHEN 'High' THEN 2 WHEN 'Normal' THEN 3 ELSE 4 END,
+        jobs.scheduled_date ASC
+      LIMIT 80
+    `),
+    db.prepare(`
+      SELECT jobs.id, jobs.job_type, jobs.scheduled_date, jobs.priority, jobs.required_by_date,
+             jobs.is_emergency, jobs.estimated_duration_minutes, jobs.status,
+             systems.system_type, systems.coverage_area,
+             sites.owner_company_name,
+             users.name AS technician_name, users.id AS technician_id
+      FROM jobs
+      INNER JOIN systems ON systems.id = jobs.system_id
+      INNER JOIN sites   ON sites.id   = systems.site_id
+      LEFT JOIN  users   ON users.id   = jobs.assigned_technician_id
+      WHERE jobs.assigned_technician_id IS NOT NULL AND jobs.status IN ('Scheduled','In Progress')
+      ORDER BY
+        CASE jobs.priority WHEN 'Critical' THEN 1 WHEN 'High' THEN 2 WHEN 'Normal' THEN 3 ELSE 4 END,
+        jobs.scheduled_date ASC
+      LIMIT 100
+    `),
+    db.prepare(`SELECT id, name FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name ASC`)
+  ]);
+
+  const s = (statsResult.results[0] as any) || {};
+  stats = {
+    unassigned: Number(s.unassigned_count ?? 0),
+    inProgress: Number(s.in_progress_count ?? 0),
+    emergency:  Number(s.emergency_count ?? 0),
+    slaWarning: Number(s.sla_warning_count ?? 0)
+  };
+
+  const mapJob = (raw: any): DispatchJob => ({
+    ...raw,
+    sla: slaInfo(raw.required_by_date ?? null),
+    priorityCls: priorityBadgeCls(raw.priority || "Normal"),
+    isEmergency: raw.is_emergency === 1,
+    searchText: `${raw.owner_company_name} ${raw.coverage_area} ${raw.system_type} ${raw.id}`.toLowerCase()
+  });
+
+  unassigned = (unassignedResult.results || []).map(mapJob);
+  dispatched  = (dispatchedResult.results || []).map(mapJob);
+  techs = (techsResult.results || []) as { id: string; name: string }[];
+} catch (error) {
+  console.error("dispatch board failed", error);
+  loadError = "Dispatch data could not be loaded.";
+}
+
+const unassignedAlert = stats.unassigned > 0;
+const emergencyAlert  = stats.emergency > 0;
+const slaAlert        = stats.slaWarning > 0;
+---
+
+<PortalLayout title="Dispatch Board | Kharon Portal" active="dispatch" user={user}>
+  <!-- Header -->
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase text-kharon-cyan">Operations</p>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Dispatch board</h1>
+      <p class="mt-4 max-w-3xl text-white/65">
+        Assign technicians, set priorities, track SLA deadlines and manage the active job queue.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
+    <div class="mx-auto max-w-7xl grid gap-6">
+      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+
+      <!-- Stat cards -->
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article class={`border p-4 ${unassignedAlert ? "border-amber-300 bg-amber-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${unassignedAlert ? "text-amber-700" : "text-kharon-grey"}`}>Unassigned</p>
+          <p class="mt-2 text-2xl font-bold">{stats.unassigned}</p>
+          <p class="mt-1 text-xs text-kharon-grey">jobs needing a technician</p>
+        </article>
+        <article class="border border-kharon-border bg-white p-4">
+          <p class="text-xs font-bold uppercase text-kharon-grey">In progress</p>
+          <p class="mt-2 text-2xl font-bold">{stats.inProgress}</p>
+          <p class="mt-1 text-xs text-kharon-grey">active dispatches</p>
+        </article>
+        <article class={`border p-4 ${emergencyAlert ? "border-kharon-red bg-red-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${emergencyAlert ? "text-kharon-red" : "text-kharon-grey"}`}>Emergency</p>
+          <p class="mt-2 text-2xl font-bold">{stats.emergency}</p>
+          <p class="mt-1 text-xs text-kharon-grey">flagged jobs</p>
+        </article>
+        <article class={`border p-4 ${slaAlert ? "border-amber-300 bg-amber-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${slaAlert ? "text-amber-700" : "text-kharon-grey"}`}>SLA warning</p>
+          <p class="mt-2 text-2xl font-bold">{stats.slaWarning}</p>
+          <p class="mt-1 text-xs text-kharon-grey">due within 3 days</p>
+        </article>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="flex flex-wrap gap-3">
+        <input
+          id="dispatch-search"
+          type="search"
+          placeholder="Search client, system or area…"
+          class="flex-1 min-w-[200px] border border-kharon-border px-3 py-2 text-sm focus:border-kharon-purple focus:outline-none"
+        />
+        <select id="dispatch-priority" class="border border-kharon-border px-3 py-2 text-sm focus:border-kharon-purple focus:outline-none">
+          <option value="">All priorities</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Normal">Normal</option>
+          <option value="Low">Low</option>
+        </select>
+        <select id="dispatch-status" class="border border-kharon-border px-3 py-2 text-sm focus:border-kharon-purple focus:outline-none">
+          <option value="">All statuses</option>
+          <option value="Scheduled">Scheduled</option>
+          <option value="In Progress">In Progress</option>
+        </select>
+      </div>
+
+      <!-- Unassigned queue -->
+      <article class="border border-kharon-border bg-white">
+        <header class="flex items-center justify-between border-b border-kharon-border px-4 py-3 sm:px-5">
+          <h2 class="text-lg font-bold">Unassigned queue</h2>
+          <span class={`rounded px-2 py-0.5 text-xs font-bold ${unassignedAlert ? "bg-amber-100 text-amber-800" : "bg-kharon-light text-kharon-grey"}`}>
+            {unassigned.length}
+          </span>
+        </header>
+        <div class="divide-y divide-kharon-border">
+          {unassigned.length === 0 && (
+            <p class="px-4 py-6 text-sm text-kharon-grey">No unassigned jobs.</p>
+          )}
+          {unassigned.map((job) => (
+            <div
+              class="px-4 py-4 sm:px-5"
+              data-dispatch-card
+              data-search={job.searchText}
+              data-priority={job.priority}
+              data-status={job.status}
+            >
+              <div class="flex flex-wrap items-start gap-2">
+                <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.priorityCls}`}>{job.priority}</span>
+                {job.isEmergency && (
+                  <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Emergency</span>
+                )}
+                <span class="font-semibold">{job.owner_company_name}</span>
+                <span class="text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</span>
+              </div>
+              <div class="mt-1 flex flex-wrap gap-4 text-xs text-kharon-grey">
+                <span>Scheduled: <strong class="text-kharon-black">{job.scheduled_date}</strong></span>
+                <span>Type: {job.job_type}</span>
+                {job.required_by_date && (
+                  <span>Required by: <strong class={job.sla.cls}>{job.sla.text}</strong></span>
+                )}
+                {job.estimated_duration_minutes && (
+                  <span>Est: {job.estimated_duration_minutes} min</span>
+                )}
+              </div>
+              {job.site_contact_person && (
+                <p class="mt-1 text-xs text-kharon-grey">
+                  Contact: {job.site_contact_person}{job.site_contact_phone ? ` · ${job.site_contact_phone}` : ""}
+                </p>
+              )}
+              <!-- Assign form -->
+              <form class="dispatch-form mt-3 flex flex-wrap gap-2" data-action="assign">
+                <input type="hidden" name="jobId" value={job.id} />
+                <select
+                  name="technicianId"
+                  class="border border-kharon-border px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
+                >
+                  <option value="">— select technician —</option>
+                  {techs.map((t) => (
+                    <option value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                <button
+                  type="submit"
+                  class="bg-kharon-purple px-4 py-1.5 text-xs font-bold text-white hover:opacity-90 disabled:opacity-50"
+                >Assign</button>
+                <span class="form-msg self-center text-xs text-kharon-grey"></span>
+              </form>
+              <!-- Dispatch settings -->
+              <details class="mt-3">
+                <summary class="cursor-pointer text-xs font-semibold text-kharon-purple hover:underline">
+                  Edit dispatch settings
+                </summary>
+                <form class="dispatch-form mt-2 grid gap-2 sm:grid-cols-4 sm:items-end" data-action="setDispatch">
+                  <input type="hidden" name="jobId" value={job.id} />
+                  <div>
+                    <label class="mb-1 block text-xs text-kharon-grey">Priority</label>
+                    <select
+                      name="priority"
+                      class="w-full border border-kharon-border px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
+                    >
+                      {["Critical","High","Normal","Low"].map((p) => (
+                        <option value={p} selected={job.priority === p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-xs text-kharon-grey">Required by</label>
+                    <input
+                      type="date"
+                      name="requiredByDate"
+                      value={job.required_by_date || ""}
+                      class="w-full border border-kharon-border px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-xs text-kharon-grey">Est. duration (min)</label>
+                    <input
+                      type="number"
+                      name="estimatedDurationMinutes"
+                      value={job.estimated_duration_minutes || ""}
+                      min="1"
+                      max="480"
+                      class="w-full border border-kharon-border px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="flex items-center gap-1.5 text-xs text-kharon-grey">
+                      <input type="checkbox" name="isEmergency" checked={job.isEmergency} class="accent-kharon-red" />
+                      Emergency
+                    </label>
+                    <button
+                      type="submit"
+                      class="bg-kharon-black px-4 py-1.5 text-xs font-bold text-white hover:opacity-80 disabled:opacity-50"
+                    >Save</button>
+                    <span class="form-msg text-xs text-kharon-grey"></span>
+                  </div>
+                </form>
+              </details>
+            </div>
+          ))}
+        </div>
+      </article>
+
+      <!-- Dispatched jobs -->
+      <article class="border border-kharon-border bg-white">
+        <header class="flex items-center justify-between border-b border-kharon-border px-4 py-3 sm:px-5">
+          <h2 class="text-lg font-bold">Dispatched jobs</h2>
+          <span class="rounded bg-kharon-light px-2 py-0.5 text-xs font-bold text-kharon-grey">
+            {dispatched.length}
+          </span>
+        </header>
+        <div class="divide-y divide-kharon-border">
+          {dispatched.length === 0 && (
+            <p class="px-4 py-6 text-sm text-kharon-grey">No active dispatches.</p>
+          )}
+          {dispatched.map((job) => (
+            <div
+              class="px-4 py-4 sm:px-5"
+              data-dispatch-card
+              data-search={job.searchText}
+              data-priority={job.priority}
+              data-status={job.status}
+            >
+              <div class="flex flex-wrap items-start gap-2">
+                <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.priorityCls}`}>{job.priority}</span>
+                {job.isEmergency && (
+                  <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Emergency</span>
+                )}
+                <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.status === "In Progress" ? "bg-kharon-blue text-white" : "bg-kharon-light text-kharon-grey"}`}>
+                  {job.status}
+                </span>
+                <span class="font-semibold">{job.owner_company_name}</span>
+                <span class="text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</span>
+              </div>
+              <div class="mt-1 flex flex-wrap gap-4 text-xs text-kharon-grey">
+                <span>Technician: <strong class="text-kharon-black">{job.technician_name || "—"}</strong></span>
+                <span>Scheduled: <strong class="text-kharon-black">{job.scheduled_date}</strong></span>
+                <span>Type: {job.job_type}</span>
+                {job.required_by_date && (
+                  <span>Required by: <strong class={job.sla.cls}>{job.sla.text}</strong></span>
+                )}
+              </div>
+              <!-- Reassign form -->
+              <details class="mt-3">
+                <summary class="cursor-pointer text-xs font-semibold text-kharon-purple hover:underline">
+                  Reassign technician
+                </summary>
+                <form class="dispatch-form mt-2 flex flex-wrap gap-2" data-action="assign">
+                  <input type="hidden" name="jobId" value={job.id} />
+                  <select
+                    name="technicianId"
+                    class="border border-kharon-border px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
+                  >
+                    <option value="">— unassign —</option>
+                    {techs.map((t) => (
+                      <option value={t.id} selected={job.technician_id === t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="submit"
+                    class="bg-kharon-purple px-4 py-1.5 text-xs font-bold text-white hover:opacity-90 disabled:opacity-50"
+                  >Update</button>
+                  <span class="form-msg self-center text-xs text-kharon-grey"></span>
+                </form>
+              </details>
+              <!-- Dispatch settings -->
+              <details class="mt-2">
+                <summary class="cursor-pointer text-xs font-semibold text-kharon-purple hover:underline">
+                  Edit dispatch settings
+                </summary>
+                <form class="dispatch-form mt-2 grid gap-2 sm:grid-cols-4 sm:items-end" data-action="setDispatch">
+                  <input type="hidden" name="jobId" value={job.id} />
+                  <div>
+                    <label class="mb-1 block text-xs text-kharon-grey">Priority</label>
+                    <select
+                      name="priority"
+                      class="w-full border border-kharon-border px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
+                    >
+                      {["Critical","High","Normal","Low"].map((p) => (
+                        <option value={p} selected={job.priority === p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-xs text-kharon-grey">Required by</label>
+                    <input
+                      type="date"
+                      name="requiredByDate"
+                      value={job.required_by_date || ""}
+                      class="w-full border border-kharon-border px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-xs text-kharon-grey">Est. duration (min)</label>
+                    <input
+                      type="number"
+                      name="estimatedDurationMinutes"
+                      value={job.estimated_duration_minutes || ""}
+                      min="1"
+                      max="480"
+                      class="w-full border border-kharon-border px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="flex items-center gap-1.5 text-xs text-kharon-grey">
+                      <input type="checkbox" name="isEmergency" checked={job.isEmergency} class="accent-kharon-red" />
+                      Emergency
+                    </label>
+                    <button
+                      type="submit"
+                      class="bg-kharon-black px-4 py-1.5 text-xs font-bold text-white hover:opacity-80 disabled:opacity-50"
+                    >Save</button>
+                    <span class="form-msg text-xs text-kharon-grey"></span>
+                  </div>
+                </form>
+              </details>
+            </div>
+          ))}
+        </div>
+      </article>
+
+    </div>
+  </section>
+</PortalLayout>
+
+<script is:inline>
+  (function () {
+    var search = document.getElementById("dispatch-search");
+    var priorityFilter = document.getElementById("dispatch-priority");
+    var statusFilter = document.getElementById("dispatch-status");
+
+    function applyFilter() {
+      var q = search ? search.value.toLowerCase().trim() : "";
+      var p = priorityFilter ? priorityFilter.value : "";
+      var st = statusFilter ? statusFilter.value : "";
+      document.querySelectorAll("[data-dispatch-card]").forEach(function (card) {
+        var searchText = (card.getAttribute("data-search") || "").toLowerCase();
+        var priority = card.getAttribute("data-priority") || "";
+        var status = card.getAttribute("data-status") || "";
+        var ok = (!q || searchText.includes(q)) && (!p || priority === p) && (!st || status === st);
+        card.style.display = ok ? "" : "none";
+      });
+    }
+
+    if (search) search.addEventListener("input", applyFilter);
+    if (priorityFilter) priorityFilter.addEventListener("change", applyFilter);
+    if (statusFilter) statusFilter.addEventListener("change", applyFilter);
+
+    document.querySelectorAll(".dispatch-form").forEach(function (form) {
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var data = {};
+        new FormData(form).forEach(function (v, k) { data[k] = v; });
+        data.action = form.dataset.action;
+        // Checkbox override — FormData omits unchecked checkboxes
+        var emergency = form.querySelector("[name=isEmergency]");
+        if (emergency) data.isEmergency = emergency.checked;
+
+        var btn = form.querySelector("button[type=submit]");
+        var msg = form.querySelector(".form-msg");
+        if (btn) btn.disabled = true;
+        if (msg) msg.textContent = "Saving…";
+
+        try {
+          var res = await window.kharonPortalFetch("/portal/api/admin/dispatch", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(data)
+          });
+          var result = await res.json();
+          if (result.ok) {
+            location.reload();
+          } else {
+            if (msg) msg.textContent = result.error || "Failed.";
+            if (btn) btn.disabled = false;
+          }
+        } catch (_) {
+          if (msg) msg.textContent = "Network error.";
+          if (btn) btn.disabled = false;
+        }
+      });
+    });
+  })();
+</script>
