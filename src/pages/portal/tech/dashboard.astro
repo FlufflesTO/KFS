@@ -12,14 +12,16 @@ try {
   const db = getDatabase();
   const query = user.role === "admin"
     ? `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-              jobs.job_type, systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address
+              jobs.job_type, jobs.customer_site_contact, jobs.customer_site_phone,
+              systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address, sites.site_contact_phone
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
        WHERE jobs.status IN ('Scheduled', 'In Progress')
        ORDER BY jobs.scheduled_date ASC`
     : `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-              jobs.job_type, systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address
+              jobs.job_type, jobs.customer_site_contact, jobs.customer_site_phone,
+              systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address, sites.site_contact_phone
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
@@ -66,6 +68,12 @@ try {
               <div><dt class="font-bold uppercase text-kharon-grey/70">Job Type</dt><dd>{job.job_type}</dd></div>
               <div><dt class="font-bold uppercase text-kharon-grey/70">Scheduled</dt><dd>{job.scheduled_date}</dd></div>
               <div><dt class="font-bold uppercase text-kharon-grey/70">Job ID</dt><dd>{job.id}</dd></div>
+              {job.customer_site_contact && (
+                <div><dt class="font-bold uppercase text-kharon-grey/70">Site Contact</dt><dd>{job.customer_site_contact}</dd></div>
+              )}
+              {(job.customer_site_phone || job.site_contact_phone) && (
+                <div><dt class="font-bold uppercase text-kharon-grey/70">Contact Phone</dt><dd>{job.customer_site_phone || job.site_contact_phone}</dd></div>
+              )}
             </dl>
             {job.site_notes && <p class="mt-5 border-l-4 border-kharon-blue bg-kharon-light p-4 text-sm text-kharon-grey">{job.site_notes}</p>}
             {user.role === "tech" && job.status === "Scheduled" && (

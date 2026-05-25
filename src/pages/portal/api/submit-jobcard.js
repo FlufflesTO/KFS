@@ -227,11 +227,12 @@ export async function POST({ request, locals }) {
         db
           .prepare(
             `INSERT INTO financial_records
-               (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference)
+               (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference,
+                sage_reference, requires_sage_sync, sage_sync_status)
              VALUES
-               (?1, ?2, ?3, ?4, 'Invoice', 'Unpaid', ?5, ?6)`
+               (?1, ?2, ?3, ?4, 'Invoice', 'Unpaid', ?5, ?6, ?7, 0, 'Pending')`
           )
-          .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, `Standard service invoice for job ${jobId}`)
+          .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, `Standard service invoice for job ${jobId}`, null)
       );
     }
 

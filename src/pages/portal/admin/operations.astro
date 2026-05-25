@@ -41,11 +41,20 @@ try {
 
   jobs = (await db.prepare(
     `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
-            jobs.job_type, jobs.site_notes, systems.coverage_area, sites.owner_company_name
+            jobs.job_type, jobs.site_notes, jobs.sla_priority, jobs.sla_due_date,
+            systems.coverage_area, sites.owner_company_name
      FROM jobs
      INNER JOIN systems ON systems.id = jobs.system_id
      INNER JOIN sites ON sites.id = systems.site_id
-     ORDER BY jobs.scheduled_date DESC
+     ORDER BY 
+       CASE jobs.sla_priority
+         WHEN 'Critical' THEN 1
+         WHEN 'High' THEN 2
+         WHEN 'Normal' THEN 3
+         WHEN 'Low' THEN 4
+         ELSE 5
+       END,
+       jobs.scheduled_date DESC
      LIMIT 80`
   ).all()).results || [];
 
@@ -157,7 +166,7 @@ try {
         <div id="jobs-list" class="grid gap-4">
           {jobs.map((record) => (
             <form
-              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
+              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-9"
               data-endpoint="/portal/api/admin/jobs"
               data-search={`${record.owner_company_name} ${record.coverage_area || ""} ${record.job_type || ""} ${record.site_notes || ""}`}
               data-status={record.status}
@@ -175,10 +184,13 @@ try {
               <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
                 {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
               </select>
+              <select class="rounded-md border border-kharon-border px-3 py-2" name="slaPriority">
+                {["Critical", "High", "Normal", "Low"].map((priority) => <option value={priority} selected={record.sla_priority === priority}>{priority}</option>)}
+              </select>
               <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
               <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
               <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-9"></p>
             </form>
           ))}
         </div>

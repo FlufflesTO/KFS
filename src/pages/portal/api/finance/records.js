@@ -33,6 +33,12 @@ function cleanRef(value) {
   return String(value).trim().slice(0, 120) || null;
 }
 
+function cleanOptionalText(value, maxLength = 120) {
+  if (!value) return null;
+  const str = String(value).trim();
+  return str.length > 0 ? str.slice(0, maxLength) : null;
+}
+
 export async function POST({ request, locals }) {
   try {
     const user = locals.user;
@@ -68,6 +74,17 @@ export async function POST({ request, locals }) {
       reference = cleanRef(body.reference);
     } catch (error) {
       return badRequest(error.message);
+    }
+
+    // Sage integration fields (Phase 21)
+    const sageReference = cleanOptionalText(body.sageReference, 120);
+    const sageInvoiceNumber = cleanOptionalText(body.sageInvoiceNumber, 80);
+    const sageQuoteNumber = cleanOptionalText(body.sageQuoteNumber, 80);
+    const financeNotes = cleanOptionalText(body.financeNotes, 500);
+    const requiresSageSync = body.requiresSageSync === true ? 1 : 0;
+    const sageSyncStatus = body.sageSyncStatus || "Pending";
+    if (!["Pending", "Synced", "Error", "Manual Override"].includes(sageSyncStatus)) {
+      return badRequest("sageSyncStatus must be one of: Pending, Synced, Error, Manual Override");
     }
 
     const db = getDatabase();
@@ -109,10 +126,12 @@ export async function POST({ request, locals }) {
     await db
       .prepare(
         `INSERT INTO financial_records
-           (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`
+           (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference,
+            sage_reference, sage_invoice_number, sage_quote_number, requires_sage_sync, sage_sync_status, finance_notes)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)`
       )
-      .bind(recordId, siteId, jobId, amount, itemType, paymentStatus, distributionDate, reference)
+      .bind(recordId, siteId, jobId, amount, itemType, paymentStatus, distributionDate, reference,
+            sageReference, sageInvoiceNumber, sageQuoteNumber, requiresSageSync, sageSyncStatus, financeNotes)
       .run();
 
     await auditEvent(db, request, {
@@ -121,10 +140,10 @@ export async function POST({ request, locals }) {
       entityId: recordId,
       outcome: "success",
       user,
-      metadata: { itemType, siteId, jobId, amount, paymentStatus, reference }
+      metadata: { itemType, siteId, jobId, amount, paymentStatus, reference, sageReference, sageInvoiceNumber, requiresSageSync }
     });
 
-    return json({ ok: true, recordId, itemType, paymentStatus, amount, distributionDate });
+    return json({ ok: true, recordId, itemType, paymentStatus, amount, distributionDate, sageReference, sageInvoiceNumber, requiresSageSync });
   } catch (error) {
     console.error("finance record creation failed", error);
     return serverError("The financial record could not be created.");

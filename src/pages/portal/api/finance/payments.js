@@ -62,22 +62,26 @@ export async function POST({ request, locals }) {
     const paymentId = crypto.randomUUID();
     const paymentRef = paymentNote || paymentReference(recordId);
 
+    // Update invoice with Sage sync info and insert payment record
     await db.batch([
       db
         .prepare(
           `UPDATE financial_records
-           SET payment_status = 'Settled'
+           SET payment_status = 'Settled',
+               sage_sync_status = 'Synced',
+               sage_synced_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
            WHERE id = ?1`
         )
         .bind(recordId),
       db
         .prepare(
           `INSERT INTO financial_records
-             (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference)
+             (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference,
+              sage_reference, sage_sync_status, sage_synced_at)
            VALUES
-             (?1, ?2, ?3, ?4, 'Payment', 'Settled', date('now'), ?5)`
+             (?1, ?2, ?3, ?4, 'Payment', 'Settled', date('now'), ?5, ?6, 'Synced', strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`
         )
-        .bind(paymentId, invoice.site_id, invoice.job_id, invoice.amount, paymentRef)
+        .bind(paymentId, invoice.site_id, invoice.job_id, invoice.amount, paymentRef, invoice.sage_reference)
     ]);
 
     await auditEvent(db, request, {

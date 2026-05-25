@@ -139,6 +139,18 @@ try {
               Reference <span class="font-normal text-kharon-grey">(optional)</span>
               <input type="text" name="reference" class="rounded-md border border-kharon-border px-3 py-2 font-normal" maxlength="120" placeholder="PO number, quote ref…" />
             </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Sage Reference <span class="font-normal text-kharon-grey">(optional)</span>
+              <input type="text" name="sageReference" class="rounded-md border border-kharon-border px-3 py-2 font-normal" maxlength="120" placeholder="Sage reference number" />
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Sage Invoice Number <span class="font-normal text-kharon-grey">(optional)</span>
+              <input type="text" name="sageInvoiceNumber" class="rounded-md border border-kharon-border px-3 py-2 font-normal" maxlength="80" placeholder="Sage invoice #" />
+            </label>
+            <label class="flex items-center gap-2 text-sm font-semibold text-kharon-black lg:col-span-3">
+              <input type="checkbox" name="requiresSageSync" class="h-4 w-4 rounded border-kharon-border" value="true" />
+              Requires Sage Sync
+            </label>
             <div class="flex flex-wrap items-center gap-3 lg:col-span-3">
               <button id="finance-create-submit" class="rounded-md bg-kharon-purple px-5 py-3 text-sm font-semibold text-white hover:bg-kharon-blue">
                 Create record
@@ -328,13 +340,19 @@ try {
       const data = new FormData(financeCreateForm);
       const jobId = data.get("jobId");
       const reference = data.get("reference");
+      const sageReference = data.get("sageReference");
+      const sageInvoiceNumber = data.get("sageInvoiceNumber");
+      const requiresSageSync = data.get("requiresSageSync") === "true";
       const payload = {
         itemType: data.get("itemType"),
         siteId: data.get("siteId"),
         amount: data.get("amount"),
         distributionDate: data.get("distributionDate"),
         ...(jobId && { jobId }),
-        ...(reference && { reference })
+        ...(reference && { reference }),
+        ...(sageReference && { sageReference }),
+        ...(sageInvoiceNumber && { sageInvoiceNumber }),
+        requiresSageSync
       };
 
       const response = await window.kharonPortalFetch("/portal/api/finance/records", {

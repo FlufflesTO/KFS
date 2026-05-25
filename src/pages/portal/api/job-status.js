@@ -51,17 +51,39 @@ export async function POST({ request, locals }) {
       return forbidden("This job is not assigned to the authenticated technician.");
     }
 
-    await db.prepare(`UPDATE jobs SET status = 'In Progress' WHERE id = ?1`).bind(jobId).run();
+    // Phase 22: Capture GPS location when starting job (if provided)
+    const gpsLatitude = typeof body.gpsLatitude === "number" ? body.gpsLatitude : null;
+    const gpsLongitude = typeof body.gpsLongitude === "number" ? body.gpsLongitude : null;
+    const gpsCapturedAt = (gpsLatitude !== null && gpsLongitude !== null) 
+      ? new Date().toISOString() 
+      : null;
+
+    if (gpsLatitude !== null && gpsLongitude !== null) {
+      await db
+        .prepare(
+          `UPDATE jobs 
+           SET status = 'In Progress',
+               gps_latitude = ?1,
+               gps_longitude = ?2,
+               gps_captured_at = ?3
+           WHERE id = ?4`
+        )
+        .bind(gpsLatitude, gpsLongitude, gpsCapturedAt, jobId)
+        .run();
+    } else {
+      await db.prepare(`UPDATE jobs SET status = 'In Progress' WHERE id = ?1`).bind(jobId).run();
+    }
+    
     await auditEvent(db, request, {
       eventType: "job.status",
       entityType: "job",
       entityId: jobId,
       outcome: "success",
       user,
-      metadata: { status }
+      metadata: { status, gpsCaptured: gpsLatitude !== null }
     });
 
-    return json({ ok: true, jobId, status });
+    return json({ ok: true, jobId, status, gpsCaptured: gpsLatitude !== null });
   } catch (error) {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     if (error.message) return badRequest(error.message);
