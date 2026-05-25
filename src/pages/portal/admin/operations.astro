@@ -22,6 +22,9 @@ let technicians = [];
 let clientUsers = [];
 let clientSiteAccess = [];
 let contactEnquiries = [];
+let defects = [];
+let certificates = [];
+let systemsForForms = [];
 let jobsTotal = 0;
 let contactsTotal = 0;
 let loadError = "";
@@ -79,6 +82,49 @@ try {
      ORDER BY submitted_at DESC
      LIMIT ? OFFSET ?`
   ).bind(perPage, offset).all()).results || [];
+
+  defects = (await db.prepare(
+    `SELECT defects.id, defects.severity, defects.sans_clause_ref, defects.description,
+            defects.certificate_blocking, defects.status, defects.created_at,
+            systems.id AS system_id, systems.system_type, systems.coverage_area,
+            sites.id AS site_id, sites.owner_company_name,
+            jobs.id AS job_id
+     FROM defects
+     INNER JOIN systems ON systems.id = defects.system_id
+     INNER JOIN sites ON sites.id = systems.site_id
+     LEFT JOIN jobs ON jobs.id = defects.job_id
+     ORDER BY
+       CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 WHEN 'Minor' THEN 3 ELSE 4 END,
+       defects.created_at DESC
+     LIMIT 200`
+  ).all()).results || [];
+
+  certificates = (await db.prepare(
+    `SELECT certificates.id, certificates.certificate_type, certificates.issued_date,
+            certificates.expiry_date, certificates.status, certificates.created_at,
+            systems.id AS system_id, systems.system_type, systems.coverage_area,
+            sites.id AS site_id, sites.owner_company_name,
+            jobs.id AS job_id,
+            blocking_defect.severity AS blocking_severity,
+            blocking_defect.description AS blocking_description
+     FROM certificates
+     INNER JOIN systems ON systems.id = certificates.system_id
+     INNER JOIN sites ON sites.id = systems.site_id
+     LEFT JOIN jobs ON jobs.id = certificates.job_id
+     LEFT JOIN defects AS blocking_defect ON blocking_defect.id = certificates.blocked_by_defect_id
+     ORDER BY
+       CASE certificates.status WHEN 'Blocked' THEN 1 WHEN 'Expired' THEN 2 WHEN 'Revoked' THEN 3 ELSE 4 END,
+       certificates.expiry_date ASC
+     LIMIT 200`
+  ).all()).results || [];
+
+  systemsForForms = (await db.prepare(
+    `SELECT systems.id, systems.system_type, systems.coverage_area,
+            sites.owner_company_name
+     FROM systems
+     INNER JOIN sites ON sites.id = systems.site_id
+     ORDER BY sites.owner_company_name, systems.coverage_area`
+  ).all()).results || [];
 } catch (error) {
   console.error("admin operations failed", error);
   loadError = "Administration data could not be loaded.";
@@ -107,6 +153,8 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
       <button data-tab="users" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Users</button>
       <button data-tab="sites" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Sites & Systems</button>
       <button data-tab="data" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Data</button>
+      <button data-tab="defects" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Defects</button>
+      <button data-tab="certificates" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Certificates</button>
     </div>
   </div>
 
@@ -569,11 +617,221 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
         </div>
       </article>
     </div>
+
+    <!-- ─── Defects panel ──────────────────────────────────────────── -->
+    <div id="ops-panel-defects" class="ops-panel mx-auto grid max-w-7xl gap-8">
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <div class="sticky top-0 z-10 mb-4 bg-white flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-xl font-bold">Defects <span class="ml-2 text-sm font-normal text-kharon-grey">({defects.length})</span></h2>
+          <div class="flex flex-wrap gap-3">
+            <input
+              id="defects-search"
+              type="search"
+              class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+              placeholder="Search site, area, clause…"
+              size="24"
+            />
+            <select id="defects-severity-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+              <option value="">All severities</option>
+              <option value="Critical">Critical</option>
+              <option value="Major">Major</option>
+              <option value="Minor">Minor</option>
+              <option value="Observation">Observation</option>
+            </select>
+            <select id="defects-status-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+              <option value="">All statuses</option>
+              <option value="Open">Open</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+        </div>
+        <div id="defects-list" class="grid gap-4">
+          {defects.map((item) => (
+            <form
+              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
+              data-endpoint="/portal/api/admin/defects"
+              data-search={`${item.owner_company_name} ${item.coverage_area || ""} ${item.sans_clause_ref || ""} ${item.description || ""}`}
+              data-severity={item.severity}
+              data-status={item.status}
+            >
+              <input type="hidden" name="action" value="update" />
+              <input type="hidden" name="id" value={item.id} />
+              <select class="rounded-md border border-kharon-border px-3 py-2" name="severity">
+                {["Critical", "Major", "Minor", "Observation"].map((s) => <option value={s} selected={item.severity === s}>{s}</option>)}
+              </select>
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="sansClauseRef" value={item.sans_clause_ref || ""} placeholder="SANS clause" />
+              <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
+                {["Open", "In Progress", "Resolved", "Closed"].map((s) => <option value={s} selected={item.status === s}>{s}</option>)}
+              </select>
+              <label class="grid gap-1 text-sm">
+                <span class="text-xs text-kharon-grey">Blocking</span>
+                <select name="certificateBlocking">
+                  <option value="1" selected={Boolean(item.certificate_blocking)}>Yes</option>
+                  <option value="0" selected={!Boolean(item.certificate_blocking)}>No</option>
+                </select>
+              </label>
+              <div class="lg:col-span-2">
+                <textarea class="min-h-16 w-full rounded-md border border-kharon-border px-3 py-2 text-sm" name="description">{item.description}</textarea>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <span class={`rounded px-2 py-1 font-bold ${
+                  item.severity === "Critical" ? "bg-kharon-red text-white" :
+                  item.severity === "Major" ? "bg-amber-200 text-amber-800" :
+                  item.severity === "Minor" ? "bg-blue-100 text-blue-800" :
+                  "bg-kharon-grey/10 text-kharon-grey"
+                }`}>{item.severity}</span>
+                {item.certificate_blocking && <span class="rounded border border-amber-300 bg-amber-50 px-2 py-1 font-bold text-amber-700">Blocks cert</span>}
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                {item.status !== "Resolved" && <button type="button" class="resolve-defect rounded-md border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-700" data-id={item.id}>Resolve</button>}
+                {item.status !== "Closed" && <button type="button" class="close-defect rounded-md border border-kharon-grey px-4 py-2 text-sm font-semibold text-kharon-grey" data-id={item.id}>Close</button>}
+                {["Open", "In Progress"].includes(item.status) && <button type="button" class="quote-defect rounded-md border border-amber-500 px-4 py-2 text-sm font-semibold text-amber-700" data-id={item.id}>Quote Required</button>}
+              </div>
+              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+            </form>
+          ))}
+        </div>
+        <p id="defects-no-results" class="hidden py-4 text-sm text-kharon-grey">No defects match your filter.</p>
+      </article>
+
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <h2 class="text-xl font-bold">Create defect</h2>
+        <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/defects">
+          <input type="hidden" name="action" value="create" />
+          <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId" required>
+            <option value="">Select system</option>
+            {systemsForForms.map((s) => <option value={s.id}>{s.owner_company_name} / {s.coverage_area}</option>)}
+          </select>
+          <input class="rounded-md border border-kharon-border px-4 py-3" name="jobId" placeholder="Job ID (optional)" />
+          <div class="grid gap-3 sm:grid-cols-3">
+            <select class="rounded-md border border-kharon-border px-4 py-3" name="severity" required>
+              <option value="Critical">Critical</option>
+              <option value="Major">Major</option>
+              <option value="Minor" selected>Minor</option>
+              <option value="Observation">Observation</option>
+            </select>
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="sansClauseRef" placeholder="SANS clause (e.g. SANS 10139-8.3)" />
+            <label class="flex items-center gap-3 rounded-md border border-kharon-border px-4 py-3">
+              <input type="checkbox" name="certificateBlocking" value="1" />
+              <span class="text-sm font-semibold">Certificate blocking</span>
+            </label>
+          </div>
+          <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="description" placeholder="Defect description (5–2000 characters)" required></textarea>
+          <button class="rounded-md bg-kharon-red px-5 py-3 font-semibold text-white">Create defect</button>
+          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+        </form>
+      </article>
+    </div>
+
+    <!-- ─── Certificates panel ─────────────────────────────────────── -->
+    <div id="ops-panel-certificates" class="ops-panel mx-auto grid max-w-7xl gap-8">
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <div class="sticky top-0 z-10 mb-4 bg-white flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-xl font-bold">Certificates <span class="ml-2 text-sm font-normal text-kharon-grey">({certificates.length})</span></h2>
+          <div class="flex flex-wrap gap-3">
+            <input
+              id="certificates-search"
+              type="search"
+              class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+              placeholder="Search site, area, type…"
+              size="24"
+            />
+            <select id="certificates-status-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+              <option value="">All statuses</option>
+              <option value="Valid">Valid</option>
+              <option value="Expired">Expired</option>
+              <option value="Revoked">Revoked</option>
+              <option value="Blocked">Blocked</option>
+            </select>
+          </div>
+        </div>
+        <div id="certificates-list" class="grid gap-4">
+          {certificates.map((item) => (
+            <article
+              class="grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6"
+              data-search={`${item.owner_company_name} ${item.coverage_area || ""} ${item.certificate_type || ""}`}
+              data-status={item.status}
+            >
+              <div>
+                <p class="font-semibold">{item.owner_company_name}</p>
+                <p class="text-sm text-kharon-grey">{item.system_type} / {item.coverage_area}</p>
+              </div>
+              <div>
+                <p class="text-sm font-semibold">{item.certificate_type}</p>
+                <p class="text-xs text-kharon-grey">Issued {item.issued_date}</p>
+              </div>
+              <div>
+                {item.expiry_date ? (
+                  <>
+                    <p class="text-sm font-semibold">Expires {item.expiry_date}</p>
+                    {item.expiry_date < today && <p class="text-xs font-bold text-kharon-red">Expired</p>}
+                  </>
+                ) : (
+                  <p class="text-sm text-kharon-grey">No expiry date</p>
+                )}
+              </div>
+              <div class="flex items-center gap-2">
+                <span class={`rounded px-2 py-1 text-xs font-bold ${
+                  item.status === "Valid" ? "bg-emerald-100 text-emerald-800" :
+                  item.status === "Blocked" ? "bg-amber-100 text-amber-800" :
+                  item.status === "Revoked" ? "bg-red-100 text-red-800" :
+                  "bg-kharon-grey/20 text-kharon-grey"
+                }`}>{item.status}</span>
+                {item.blocking_severity && (
+                  <span class="rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">
+                    Blocked: {item.blocking_severity}
+                  </span>
+                )}
+              </div>
+              <div class="flex flex-wrap gap-2">
+                {item.status === "Valid" && <button type="button" class="revoke-cert rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-900" data-id={item.id}>Revoke</button>}
+                {item.status === "Valid" && <button type="button" class="expire-cert rounded-md border border-kharon-grey px-3 py-2 text-xs font-semibold text-kharon-grey" data-id={item.id}>Expire</button>}
+              </div>
+              <p class="text-xs text-kharon-grey lg:col-span-6">{item.id}</p>
+            </article>
+          ))}
+        </div>
+        <p id="certificates-no-results" class="hidden py-4 text-sm text-kharon-grey">No certificates match your filter.</p>
+      </article>
+
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <h2 class="text-xl font-bold">Create certificate</h2>
+        <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/certificates">
+          <input type="hidden" name="action" value="create" />
+          <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId" required>
+            <option value="">Select system</option>
+            {systemsForForms.map((s) => <option value={s.id}>{s.owner_company_name} / {s.coverage_area}</option>)}
+          </select>
+          <input class="rounded-md border border-kharon-border px-4 py-3" name="jobId" placeholder="Job ID (optional)" />
+          <div class="grid gap-3 sm:grid-cols-3">
+            <select class="rounded-md border border-kharon-border px-4 py-3" name="certificateType" required>
+              <option value="Fire Detection">Fire Detection</option>
+              <option value="Gas Suppression">Gas Suppression</option>
+              <option value="Emergency Lighting">Emergency Lighting</option>
+              <option value="Evacuation">Evacuation</option>
+              <option value="Combined">Combined</option>
+            </select>
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="issuedDate" type="date" value={today} required />
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="expiryDate" type="date" placeholder="Expiry date (optional)" />
+          </div>
+          <select class="rounded-md border border-kharon-border px-4 py-3" name="status">
+            <option value="Valid">Valid</option>
+            <option value="Blocked">Blocked</option>
+          </select>
+          <p class="text-xs text-kharon-grey">Creating a Valid certificate will be blocked if there are open certificate-blocking defects on the selected system.</p>
+          <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Create certificate</button>
+          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+        </form>
+      </article>
+    </div>
   </section>
 
   <script>
     // ─── Tab switching ────────────────────────────────────────────────
-    const VALID_TABS = ["enquiries", "jobs", "users", "sites", "data"];
+    const VALID_TABS = ["enquiries", "jobs", "users", "sites", "data", "defects", "certificates"];
     const CLS_ACTIVE = "ops-tab rounded-md px-4 py-2 text-sm font-semibold bg-kharon-purple text-white";
     const CLS_INACTIVE = "ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey";
 
@@ -674,6 +932,104 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
       noResultsId: "systems-no-results",
       filterSelects: [{ id: "systems-type-filter", attr: "systype" }],
     });
+
+    initFilter({
+      listId: "defects-list",
+      searchId: "defects-search",
+      noResultsId: "defects-no-results",
+      filterSelects: [
+        { id: "defects-severity-filter", attr: "severity" },
+        { id: "defects-status-filter", attr: "status" },
+      ],
+    });
+
+    initFilter({
+      listId: "certificates-list",
+      searchId: "certificates-search",
+      noResultsId: "certificates-no-results",
+      filterSelects: [{ id: "certificates-status-filter", attr: "status" }],
+    });
+
+    // ─── Defect quick actions ────────────────────────────────────────
+    async function defectAction(action, id) {
+      const response = await window.kharonPortalFetch("/portal/api/admin/defects", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action, id })
+      });
+      const body = await response.json();
+      if (!response.ok || !body.ok) throw new Error(body.message || "Action failed.");
+      return body;
+    }
+
+    for (const btn of document.querySelectorAll(".resolve-defect")) {
+      btn.addEventListener("click", async () => {
+        try {
+          await defectAction("resolve", btn.dataset.id);
+          window.location.reload();
+        } catch (error) {
+          alert(error.message || "Could not resolve defect.");
+        }
+      });
+    }
+
+    for (const btn of document.querySelectorAll(".close-defect")) {
+      btn.addEventListener("click", async () => {
+        try {
+          await defectAction("close", btn.dataset.id);
+          window.location.reload();
+        } catch (error) {
+          alert(error.message || "Could not close defect.");
+        }
+      });
+    }
+
+    for (const btn of document.querySelectorAll(".quote-defect")) {
+      btn.addEventListener("click", async () => {
+        try {
+          await defectAction("quoteRequired", btn.dataset.id);
+          window.location.reload();
+        } catch (error) {
+          alert(error.message || "Could not set quote required.");
+        }
+      });
+    }
+
+    // ─── Certificate quick actions ──────────────────────────────────
+    async function certAction(action, id) {
+      const response = await window.kharonPortalFetch("/portal/api/admin/certificates", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action, id })
+      });
+      const body = await response.json();
+      if (!response.ok || !body.ok) throw new Error(body.message || "Action failed.");
+      return body;
+    }
+
+    for (const btn of document.querySelectorAll(".revoke-cert")) {
+      btn.addEventListener("click", async () => {
+        if (!window.confirm("Confirm revoking this certificate.")) return;
+        try {
+          await certAction("revoke", btn.dataset.id);
+          window.location.reload();
+        } catch (error) {
+          alert(error.message || "Could not revoke certificate.");
+        }
+      });
+    }
+
+    for (const btn of document.querySelectorAll(".expire-cert")) {
+      btn.addEventListener("click", async () => {
+        if (!window.confirm("Confirm expiring this certificate.")) return;
+        try {
+          await certAction("expire", btn.dataset.id);
+          window.location.reload();
+        } catch (error) {
+          alert(error.message || "Could not expire certificate.");
+        }
+      });
+    }
 
     // ─── Record relationship navigation ──────────────────────────────
     // link-to-section: pre-fill a search input within the same panel and scroll to it

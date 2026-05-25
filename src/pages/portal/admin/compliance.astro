@@ -1,0 +1,237 @@
+---
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+const today = new Date().toISOString().slice(0, 10);
+const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+let stats = {
+  openCriticalDefects: 0,
+  openDefects: 0,
+  blockedCertificates: 0,
+  overdueRemediation: 0,
+  dueSoonCertificates: 0,
+  systemsAtRisk: 0
+};
+let criticalDefects = [];
+let blockedCertificates = [];
+let dueSoonCertificates = [];
+let systemsAtRisk = [];
+let loadError = "";
+
+try {
+  const db = getDatabase();
+
+  const [cntCritical, cntOpen, cntBlocked, cntOverdue, cntDueSoon, cntAtRisk] = await db.batch([
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status = 'Open' AND severity = 'Critical'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status IN ('Open', 'In Progress')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Blocked'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days')`),
+    db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE status IN ('Open', 'In Progress') AND severity = 'Critical'`)
+  ]);
+
+  stats = {
+    openCriticalDefects: (cntCritical.results[0] as any)?.n ?? 0,
+    openDefects: (cntOpen.results[0] as any)?.n ?? 0,
+    blockedCertificates: (cntBlocked.results[0] as any)?.n ?? 0,
+    overdueRemediation: (cntOverdue.results[0] as any)?.n ?? 0,
+    dueSoonCertificates: (cntDueSoon.results[0] as any)?.n ?? 0,
+    systemsAtRisk: (cntAtRisk.results[0] as any)?.n ?? 0
+  };
+
+  criticalDefects = (await db.prepare(
+    `SELECT defects.id, defects.severity, defects.sans_clause_ref, defects.description,
+            defects.status, defects.created_at,
+            systems.id AS system_id, systems.system_type, systems.coverage_area,
+            sites.owner_company_name
+     FROM defects
+     INNER JOIN systems ON systems.id = defects.system_id
+     INNER JOIN sites ON sites.id = systems.site_id
+     WHERE defects.status IN ('Open', 'In Progress') AND defects.severity = 'Critical'
+     ORDER BY defects.created_at ASC
+     LIMIT 20`
+  ).all()).results || [];
+
+  blockedCertificates = (await db.prepare(
+    `SELECT certificates.id, certificates.certificate_type, certificates.issued_date,
+            certificates.expiry_date,
+            systems.id AS system_id, systems.system_type, systems.coverage_area,
+            sites.owner_company_name,
+            blocking_defect.id AS blocking_defect_id,
+            blocking_defect.severity AS blocking_severity,
+            blocking_defect.description AS blocking_description
+     FROM certificates
+     INNER JOIN systems ON systems.id = certificates.system_id
+     INNER JOIN sites ON sites.id = systems.site_id
+     LEFT JOIN defects AS blocking_defect ON blocking_defect.id = certificates.blocked_by_defect_id
+     WHERE certificates.status = 'Blocked'
+     ORDER BY certificates.created_at DESC
+     LIMIT 20`
+  ).all()).results || [];
+
+  dueSoonCertificates = (await db.prepare(
+    `SELECT certificates.id, certificates.certificate_type, certificates.issued_date,
+            certificates.expiry_date,
+            systems.id AS system_id, systems.system_type, systems.coverage_area,
+            sites.owner_company_name
+     FROM certificates
+     INNER JOIN systems ON systems.id = certificates.system_id
+     INNER JOIN sites ON sites.id = systems.site_id
+     WHERE certificates.status = 'Valid' AND certificates.expiry_date IS NOT NULL
+       AND certificates.expiry_date <= date('now', '+30 days')
+     ORDER BY certificates.expiry_date ASC
+     LIMIT 20`
+  ).all()).results || [];
+
+  systemsAtRisk = (await db.prepare(
+    `SELECT systems.id, systems.system_type, systems.coverage_area,
+            sites.owner_company_name,
+            COUNT(defects.id) AS critical_count
+     FROM defects
+     INNER JOIN systems ON systems.id = defects.system_id
+     INNER JOIN sites ON sites.id = systems.site_id
+     WHERE defects.status IN ('Open', 'In Progress') AND defects.severity = 'Critical'
+     GROUP BY systems.id
+     ORDER BY critical_count DESC
+     LIMIT 20`
+  ).all()).results || [];
+} catch (error) {
+  console.error("compliance dashboard failed", error);
+  loadError = "Compliance data could not be loaded.";
+}
+---
+
+<PortalLayout title="Compliance Control | Kharon Portal" active="compliance" user={user}>
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase text-kharon-cyan">Compliance chain</p>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Defects, certificates and remediation</h1>
+      <p class="mt-4 max-w-3xl text-white/65">
+        Open findings that block certification, expired or soon-expiring certificates and systems with unresolved critical defects.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
+    <div class="mx-auto grid max-w-7xl gap-6">
+      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+
+      <!-- Stat cards -->
+      <div class="grid gap-4 sm:grid-cols-3 xl:grid-cols-6">
+        <article class={`border p-4 ${stats.openCriticalDefects > 0 ? "border-kharon-red bg-red-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.openCriticalDefects > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Critical defects</p>
+          <p class="mt-2 text-2xl font-bold">{stats.openCriticalDefects}</p>
+          <a href="#critical-defects" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">View -></a>
+        </article>
+        <article class={`border p-4 ${stats.openDefects > 0 ? "border-amber-300 bg-amber-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.openDefects > 0 ? "text-amber-700" : "text-kharon-grey"}`}>Open defects</p>
+          <p class="mt-2 text-2xl font-bold">{stats.openDefects}</p>
+          <a href="/portal/admin/operations?tab=defects" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Manage -></a>
+        </article>
+        <article class={`border p-4 ${stats.blockedCertificates > 0 ? "border-amber-300 bg-amber-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.blockedCertificates > 0 ? "text-amber-700" : "text-kharon-grey"}`}>Blocked certs</p>
+          <p class="mt-2 text-2xl font-bold">{stats.blockedCertificates}</p>
+          <a href="#blocked-certs" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">View -></a>
+        </article>
+        <article class={`border p-4 ${stats.overdueRemediation > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.overdueRemediation > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue remediation</p>
+          <p class="mt-2 text-2xl font-bold">{stats.overdueRemediation}</p>
+          <p class="mt-1 text-xs text-kharon-grey">>30 days open</p>
+        </article>
+        <article class={`border p-4 ${stats.dueSoonCertificates > 0 ? "border-blue-300 bg-blue-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.dueSoonCertificates > 0 ? "text-blue-700" : "text-kharon-grey"}`}>Certs expiring</p>
+          <p class="mt-2 text-2xl font-bold">{stats.dueSoonCertificates}</p>
+          <p class="mt-1 text-xs text-kharon-grey">within 30 days</p>
+        </article>
+        <article class={`border p-4 ${stats.systemsAtRisk > 0 ? "border-kharon-red bg-red-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.systemsAtRisk > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Systems at risk</p>
+          <p class="mt-2 text-2xl font-bold">{stats.systemsAtRisk}</p>
+          <a href="#systems-risk" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">View -></a>
+        </article>
+      </div>
+
+      <!-- Critical defects -->
+      <article id="critical-defects" class="border border-kharon-border bg-white p-4 sm:p-5">
+        <h2 class="text-xl font-bold">Critical defects</h2>
+        <div class="mt-4 grid gap-3">
+          {criticalDefects.length === 0 && <p class="text-sm text-kharon-grey">No critical defects require attention.</p>}
+          {criticalDefects.map((item) => (
+            <a href={`/portal/admin/operations?tab=defects`} class="block border-l-4 border-kharon-red bg-kharon-light p-4 hover:bg-white">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Critical</span>
+                <span class="font-semibold">{item.owner_company_name}</span>
+                <span class="text-sm text-kharon-grey">{item.system_type} / {item.coverage_area}</span>
+              </div>
+              <p class="mt-2 text-sm">{item.description}</p>
+              {item.sans_clause_ref && <p class="mt-1 text-xs text-kharon-grey">SANS clause: {item.sans_clause_ref}</p>}
+              <p class="mt-1 text-xs text-kharon-grey">Reported {item.created_at?.slice(0, 10)}</p>
+            </a>
+          ))}
+        </div>
+      </article>
+
+      <!-- Blocked certificates -->
+      <article id="blocked-certs" class="border border-kharon-border bg-white p-4 sm:p-5">
+        <h2 class="text-xl font-bold">Blocked certificates</h2>
+        <div class="mt-4 grid gap-3">
+          {blockedCertificates.length === 0 && <p class="text-sm text-kharon-grey">No certificates are blocked by open defects.</p>}
+          {blockedCertificates.map((item) => (
+            <article class="border-l-4 border-amber-400 bg-kharon-light p-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">Blocked</span>
+                <span class="font-semibold">{item.owner_company_name}</span>
+                <span class="text-sm text-kharon-grey">{item.certificate_type}</span>
+                <span class="text-sm text-kharon-grey">{item.system_type} / {item.coverage_area}</span>
+              </div>
+              {item.blocking_severity && (
+                <p class="mt-2 text-sm text-amber-800">
+                  Blocked by <span class="font-bold">{item.blocking_severity}</span> defect: {item.blocking_description}
+                </p>
+              )}
+            </article>
+          ))}
+        </div>
+      </article>
+
+      <!-- Due soon certificates -->
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <h2 class="text-xl font-bold">Certificates expiring within 30 days</h2>
+        <div class="mt-4 grid gap-3">
+          {dueSoonCertificates.length === 0 && <p class="text-sm text-kharon-grey">No certificates are expiring soon.</p>}
+          {dueSoonCertificates.map((item) => (
+            <article class="border-l-4 border-blue-400 bg-kharon-light p-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800">Expiring</span>
+                <span class="font-semibold">{item.owner_company_name}</span>
+                <span class="text-sm text-kharon-grey">{item.certificate_type}</span>
+                <span class="text-sm text-kharon-grey">{item.system_type} / {item.coverage_area}</span>
+              </div>
+              <p class="mt-1 text-xs text-kharon-grey">Expires {item.expiry_date}</p>
+            </article>
+          ))}
+        </div>
+      </article>
+
+      <!-- Systems at risk -->
+      <article id="systems-risk" class="border border-kharon-border bg-white p-4 sm:p-5">
+        <h2 class="text-xl font-bold">Systems with open critical defects</h2>
+        <div class="mt-4 grid gap-3">
+          {systemsAtRisk.length === 0 && <p class="text-sm text-kharon-grey">No systems have unresolved critical defects.</p>}
+          {systemsAtRisk.map((item) => (
+            <article class="border-l-4 border-kharon-red bg-kharon-light p-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">{item.critical_count} critical</span>
+                <span class="font-semibold">{item.owner_company_name}</span>
+                <span class="text-sm text-kharon-grey">{item.system_type} / {item.coverage_area}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </article>
+    </div>
+  </section>
+</PortalLayout>

@@ -255,15 +255,21 @@ export async function POST({ request, locals }) {
     ];
 
     if (!job.existing_financial_record_id) {
+      const hasBlockingDefects = defects.some((d) => d.certificateBlocking === 1);
+      const financeTaskStatus = hasBlockingDefects ? "Quote Required" : "Invoice Required";
+      const reference = hasBlockingDefects
+        ? `Sage quote required for defect remediation on job ${jobId}`
+        : `Sage invoice required for completed job ${jobId}`;
+
       batchStatements.push(
         db
           .prepare(
           `INSERT INTO financial_records
                (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference, finance_task_status)
              VALUES
-               (?1, ?2, ?3, ?4, 'Invoice', 'Unpaid', ?5, ?6, 'Invoice Required')`
+               (?1, ?2, ?3, ?4, 'Invoice', 'Unpaid', ?5, ?6, ?7)`
           )
-          .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, `Sage invoice required for completed job ${jobId}`)
+          .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, reference, financeTaskStatus)
       );
     }
 

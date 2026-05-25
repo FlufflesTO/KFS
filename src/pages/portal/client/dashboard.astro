@@ -310,6 +310,15 @@ const compliantCount = systems.filter((s: any) => !s.next_due_date || s.next_due
         <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <h2 class="text-xl font-bold">Open defects</h2>
           <p class="mt-2 text-sm text-kharon-grey">Recorded defects tied to your systems that require remediation.</p>
+          <details class="mt-3 text-xs text-kharon-grey">
+            <summary class="cursor-pointer font-semibold text-kharon-purple">What do defect statuses mean?</summary>
+            <ul class="mt-2 grid gap-1 pl-4">
+              <li><strong>Open</strong> — defect recorded; remediation or quote pending.</li>
+              <li><strong>In Progress</strong> — remediation work has started.</li>
+              <li><strong>Resolved</strong> — defect has been remediated; awaiting verification.</li>
+              <li><strong>Closed</strong> — defect confirmed resolved or no longer applicable.</li>
+            </ul>
+          </details>
           <div class="mt-5 grid gap-3">
             {openDefects.length === 0 && <p class="text-kharon-grey">No open defects are recorded for your systems.</p>}
             {openDefects.map((item) => (
@@ -336,6 +345,15 @@ const compliantCount = systems.filter((s: any) => !s.next_due_date || s.next_due
         <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <h2 class="text-xl font-bold">Certificate register</h2>
           <p class="mt-2 text-sm text-kharon-grey">Compliance certificates linked to your protected systems.</p>
+          <details class="mt-3 text-xs text-kharon-grey">
+            <summary class="cursor-pointer font-semibold text-kharon-purple">What do certificate statuses mean?</summary>
+            <ul class="mt-2 grid gap-1 pl-4">
+              <li><strong>Valid</strong> — current and active; expires on the listed date.</li>
+              <li><strong>Expired</strong> — past expiry date; re-inspection required.</li>
+              <li><strong>Revoked</strong> — withdrawn by Kharon; contact your administrator.</li>
+              <li><strong>Blocked</strong> — cannot be issued while open certificate-blocking defects remain.</li>
+            </ul>
+          </details>
           <div class="mt-5 grid gap-3">
             {certificates.length === 0 && <p class="text-kharon-grey">No certificates have been issued yet.</p>}
             {certificates.map((item) => (
