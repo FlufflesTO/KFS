@@ -1,0 +1,232 @@
+---
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+
+// ─── URL filter parameters ─────────────────────────────────────────────────
+const url = new URL(Astro.request.url);
+const filterCategory = url.searchParams.get("category") || "";
+const filterOutcome  = url.searchParams.get("outcome")  || "";
+const filterFrom     = url.searchParams.get("from")     || "";
+const filterTo       = url.searchParams.get("to")       || "";
+
+const CATEGORY_PATTERNS: Record<string, string> = {
+  auth:     "auth.%",
+  admin:    "admin.%",
+  finance:  "finance.%",
+  job:      "job%",
+  security: "security.%",
+  document: "document.%",
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+function formatEventType(et: string): string {
+  return et
+    .split(".")
+    .map((s) => s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()))
+    .join(" · ");
+}
+
+function outcomeClasses(outcome: string): string {
+  if (outcome === "success")
+    return "rounded border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-900";
+  if (outcome === "failure")
+    return "rounded border border-red-300 bg-red-50 px-2 py-1 text-xs font-bold text-red-900";
+  return "rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-900";
+}
+
+// ─── Database query ────────────────────────────────────────────────────────
+let events: Array<Record<string, unknown>> = [];
+let loadError = "";
+const isFiltered = !!(filterCategory || filterOutcome || filterFrom || filterTo);
+
+try {
+  const db = getDatabase();
+
+  const conditions: string[] = [];
+  const params: string[] = [];
+
+  if (filterCategory && CATEGORY_PATTERNS[filterCategory]) {
+    conditions.push("ae.event_type LIKE ?");
+    params.push(CATEGORY_PATTERNS[filterCategory]);
+  }
+  if (filterOutcome && ["success", "failure", "blocked"].includes(filterOutcome)) {
+    conditions.push("ae.outcome = ?");
+    params.push(filterOutcome);
+  }
+  if (filterFrom) {
+    conditions.push("date(ae.created_at) >= ?");
+    params.push(filterFrom);
+  }
+  if (filterTo) {
+    conditions.push("date(ae.created_at) <= ?");
+    params.push(filterTo);
+  }
+
+  const whereClause = conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+
+  const sql = `
+    SELECT ae.id, ae.actor_role, ae.event_type, ae.entity_type, ae.entity_id,
+           ae.outcome, ae.metadata_json, ae.created_at,
+           u.name AS actor_name, u.email AS actor_email
+    FROM audit_events ae
+    LEFT JOIN users u ON u.id = ae.actor_user_id
+    ${whereClause}
+    ORDER BY ae.created_at DESC
+    LIMIT 100`;
+
+  const stmt = db.prepare(sql);
+  events = ((await (params.length > 0 ? stmt.bind(...params) : stmt).all()).results || []) as Array<Record<string, unknown>>;
+} catch (error) {
+  console.error("audit console load failed", error);
+  loadError = "Audit data could not be loaded.";
+}
+---
+
+<PortalLayout title="Audit Console | Kharon Portal" active="audit" user={user}>
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase text-kharon-cyan">Administration</p>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Audit console</h1>
+      <p class="mt-4 max-w-3xl text-white/65">
+        Read-only view of portal security and operational audit events. Shows the 100 most recent matching events.
+        Query D1 directly or export for long-term retention.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
+    <div class="mx-auto max-w-7xl">
+      {loadError && (
+        <p class="mb-6 border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>
+      )}
+
+      <!-- ─── Filter form ─────────────────────────────────────────────── -->
+      <form method="GET" action="/portal/admin/audit" class="mb-6 border border-kharon-border bg-white p-4 sm:p-5">
+        <p class="mb-4 text-xs font-bold uppercase text-kharon-purple">Filter events</p>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+            Category
+            <select name="category" class="rounded-md border border-kharon-border px-3 py-2 font-normal">
+              <option value="">All categories</option>
+              <option value="auth"     selected={filterCategory === "auth"}>Auth</option>
+              <option value="admin"    selected={filterCategory === "admin"}>Admin</option>
+              <option value="finance"  selected={filterCategory === "finance"}>Finance</option>
+              <option value="job"      selected={filterCategory === "job"}>Jobs</option>
+              <option value="security" selected={filterCategory === "security"}>Security</option>
+              <option value="document" selected={filterCategory === "document"}>Documents</option>
+            </select>
+          </label>
+
+          <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+            Outcome
+            <select name="outcome" class="rounded-md border border-kharon-border px-3 py-2 font-normal">
+              <option value="">All outcomes</option>
+              <option value="success" selected={filterOutcome === "success"}>Success</option>
+              <option value="failure" selected={filterOutcome === "failure"}>Failure</option>
+              <option value="blocked" selected={filterOutcome === "blocked"}>Blocked</option>
+            </select>
+          </label>
+
+          <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+            From date
+            <input
+              type="date"
+              name="from"
+              value={filterFrom}
+              class="rounded-md border border-kharon-border px-3 py-2 font-normal"
+            />
+          </label>
+
+          <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+            To date
+            <input
+              type="date"
+              name="to"
+              value={filterTo}
+              class="rounded-md border border-kharon-border px-3 py-2 font-normal"
+            />
+          </label>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-3">
+          <button type="submit" class="rounded-md bg-kharon-purple px-5 py-3 text-sm font-semibold text-white">
+            Apply filter
+          </button>
+          <a href="/portal/admin/audit" class="rounded-md border border-kharon-border px-5 py-3 text-sm font-semibold text-kharon-black">
+            Clear
+          </a>
+        </div>
+      </form>
+
+      <!-- ─── Result summary ─────────────────────────────────────────── -->
+      <p class="mb-4 text-sm text-kharon-grey">
+        {events.length} event{events.length === 1 ? "" : "s"}
+        {isFiltered ? " matching filter" : ""}
+        {events.length === 100 ? " — showing 100 most recent" : ""}
+      </p>
+
+      <!-- ─── Event list ─────────────────────────────────────────────── -->
+      <div class="grid gap-3">
+        {events.length === 0 && !loadError && (
+          <p class="border border-kharon-border bg-white p-6 text-center text-kharon-grey">
+            No events match the current filter.
+          </p>
+        )}
+        {events.map((ev) => (
+          <article class="border border-kharon-border bg-white p-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <!-- Left: event detail -->
+              <div class="min-w-0">
+                <p class="text-xs text-kharon-grey">
+                  {String(ev.created_at ?? "").slice(0, 19).replace("T", " ")} UTC
+                </p>
+                <p class="mt-1 font-semibold text-kharon-black">
+                  {formatEventType(String(ev.event_type ?? ""))}
+                </p>
+                <p class="mt-1 text-sm text-kharon-grey">
+                  {String(ev.entity_type ?? "")}
+                  {ev.entity_id && (
+                    <span class="font-mono">
+                      {" · "}
+                      {String(ev.entity_id).length > 26
+                        ? String(ev.entity_id).slice(0, 26) + "…"
+                        : String(ev.entity_id)}
+                    </span>
+                  )}
+                </p>
+              </div>
+              <!-- Right: actor + outcome -->
+              <div class="flex flex-col items-end gap-2 text-right">
+                <span class={outcomeClasses(String(ev.outcome ?? ""))}>{String(ev.outcome ?? "")}</span>
+                <p class="text-xs font-semibold text-kharon-black">
+                  {ev.actor_name ? String(ev.actor_name) : "System / Unauthenticated"}
+                </p>
+                {ev.actor_email && (
+                  <p class="text-xs text-kharon-grey">{String(ev.actor_email)}</p>
+                )}
+                {ev.actor_role && (
+                  <p class="text-xs font-bold uppercase text-kharon-purple">{String(ev.actor_role)}</p>
+                )}
+              </div>
+            </div>
+            <!-- Metadata preview -->
+            {ev.metadata_json && String(ev.metadata_json) !== "null" && (
+              <p
+                class="mt-3 overflow-hidden rounded bg-kharon-light px-3 py-2 font-mono text-xs text-kharon-grey"
+                title={String(ev.metadata_json)}
+              >
+                {String(ev.metadata_json).length > 200
+                  ? String(ev.metadata_json).slice(0, 200) + "…"
+                  : String(ev.metadata_json)}
+              </p>
+            )}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</PortalLayout>
