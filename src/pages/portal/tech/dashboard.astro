@@ -60,6 +60,16 @@ try {
             <p class="text-xs font-bold uppercase text-kharon-purple">{job.status}</p>
             <h2 class="mt-2 text-xl font-bold text-kharon-black">{job.owner_company_name}</h2>
             <p class="mt-2 text-sm text-kharon-grey">{job.physical_address}</p>
+            {job.physical_address && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-1 inline-block text-xs font-semibold text-kharon-blue hover:underline"
+              >
+                ↗ Navigate
+              </a>
+            )}
             <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
               <div><dt class="font-bold uppercase text-kharon-grey/70">System</dt><dd>{job.system_type}</dd></div>
               <div><dt class="font-bold uppercase text-kharon-grey/70">Coverage</dt><dd>{job.coverage_area}</dd></div>

@@ -1813,9 +1813,19 @@ Deployable gate:
 - `npm run build` passes.
 - `npm run audit:site` passes.
 
+Partial implementation on 2026-05-25:
+
+- [x] Add customer/responsible-person name and role/title fields beside signature. Name is required, title is optional. Both captured in the jobcard form and normalized in the API. PDF renders name and title in a right-side column box next to the signature box. Signatory is audit logged by name.
+- [x] Add navigation/map link from site address where safe. "↗ Navigate" link on each dispatch card opens Google Maps with the address as the query parameter. Renders only when physical_address is present. Opens in new tab with noopener/noreferrer.
+- [x] Technician history has search and status filter. Already implemented in prior session.
+
+Remaining Phase 22 tasks pending schema or major complexity:
+
+- GPS check-in/check-out, visit timestamps, offline draft, SANS checklists, defect capture, unable-to-complete workflow, structured parts/labour model, certificate-blocking, photo evidence categories, day summary view — all pending schema expansion or major refactor.
+
 Status:
 
-Pending.
+Partially deployed on 2026-05-25.
 
 ### Phase 23 - Admin Dispatch Board And SLA Operations
 
@@ -2163,7 +2173,12 @@ Deployed on 2026-05-25. Further improvements 2026-05-25:
 - CSV export added: `/portal/api/admin/audit-export` accepts the same four filter params (category, outcome, from, to) and returns up to 2 000 rows as a dated CSV. Admin-only; export itself is audit logged. Formula-injection protection via shared csvEscape/rowsToCsv helpers.
 - "Export CSV" link added to audit console page alongside result count; href reflects current filter state.
 
-Remaining deferred: high-risk event highlighting, date-range defaults.
+Further improvements on 2026-05-25 (continued session):
+
+- High-risk event highlighting: security.* events, and auth.*/admin.* events with failure/blocked outcome get a red article border and a "HIGH RISK" chip above the outcome badge.
+- Date-range quick filters: "Last 7 days" and "Last 30 days" links appear next to Apply/Clear in the filter form; dates computed server-side from current UTC date.
+
+Status: Phase 26 fully deployed.
 
 
 ## Master Feature List

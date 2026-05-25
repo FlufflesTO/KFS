@@ -38,6 +38,21 @@ function outcomeClasses(outcome: string): string {
   return "rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-900";
 }
 
+function isHighRisk(et: string, outcome: string): boolean {
+  if (et.startsWith("security.")) return true;
+  if (et.startsWith("auth.") && (outcome === "failure" || outcome === "blocked")) return true;
+  if (et.startsWith("admin.") && (outcome === "failure" || outcome === "blocked")) return true;
+  return false;
+}
+
+function dateOffset(days: number): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+const last7  = dateOffset(7);
+const last30 = dateOffset(30);
+
 // ─── Database query ────────────────────────────────────────────────────────
 let events: Array<Record<string, unknown>> = [];
 let loadError = "";
@@ -159,6 +174,12 @@ try {
           <a href="/portal/admin/audit" class="rounded-md border border-kharon-border px-5 py-3 text-sm font-semibold text-kharon-black">
             Clear
           </a>
+          <a href={`/portal/admin/audit?from=${last7}`} class="rounded-md border border-kharon-border px-5 py-3 text-sm font-semibold text-kharon-black hover:bg-kharon-light">
+            Last 7 days
+          </a>
+          <a href={`/portal/admin/audit?from=${last30}`} class="rounded-md border border-kharon-border px-5 py-3 text-sm font-semibold text-kharon-black hover:bg-kharon-light">
+            Last 30 days
+          </a>
         </div>
       </form>
 
@@ -191,8 +212,12 @@ try {
             No events match the current filter.
           </p>
         )}
-        {events.map((ev) => (
-          <article class="border border-kharon-border bg-white p-4">
+        {events.map((ev) => {
+          const et = String(ev.event_type ?? "");
+          const oc = String(ev.outcome ?? "");
+          const highRisk = isHighRisk(et, oc);
+          return (
+          <article class={`border p-4 ${highRisk ? "border-red-300 bg-white" : "border-kharon-border bg-white"}`}>
             <div class="flex flex-wrap items-start justify-between gap-3">
               <!-- Left: event detail -->
               <div class="min-w-0">
@@ -200,7 +225,7 @@ try {
                   {String(ev.created_at ?? "").slice(0, 19).replace("T", " ")} UTC
                 </p>
                 <p class="mt-1 font-semibold text-kharon-black">
-                  {formatEventType(String(ev.event_type ?? ""))}
+                  {formatEventType(et)}
                 </p>
                 <p class="mt-1 text-sm text-kharon-grey">
                   {String(ev.entity_type ?? "")}
@@ -216,7 +241,12 @@ try {
               </div>
               <!-- Right: actor + outcome -->
               <div class="flex flex-col items-end gap-2 text-right">
-                <span class={outcomeClasses(String(ev.outcome ?? ""))}>{String(ev.outcome ?? "")}</span>
+                {highRisk && (
+                  <span class="rounded border border-red-300 bg-red-50 px-2 py-1 text-xs font-bold uppercase text-red-900">
+                    High risk
+                  </span>
+                )}
+                <span class={outcomeClasses(oc)}>{oc}</span>
                 <p class="text-xs font-semibold text-kharon-black">
                   {ev.actor_name ? String(ev.actor_name) : "System / Unauthenticated"}
                 </p>
@@ -240,7 +270,8 @@ try {
               </p>
             )}
           </article>
-        ))}
+          );
+        })}
       </div>
     </div>
   </section>
