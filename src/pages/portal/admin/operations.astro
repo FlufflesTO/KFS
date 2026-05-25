@@ -332,6 +332,7 @@ try {
               <input class="rounded-md border border-kharon-border px-3 py-2" name="billingEmails" value={record.billing_emails} />
               <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
               <textarea class="min-h-20 rounded-md border border-kharon-border px-3 py-2 lg:col-span-6" name="physicalAddress">{record.physical_address}</textarea>
+              <button type="button" class="link-to-section text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-6" data-target-search="systems-search" data-target-value={record.owner_company_name}>→ Systems for {record.owner_company_name}</button>
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
             </form>
           ))}
@@ -382,6 +383,7 @@ try {
                 <input class="w-16 rounded-md border border-kharon-border px-2 py-2 text-sm" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} />
               </div>
               <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+              <button type="button" class="link-to-tab text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-7" data-target-tab="jobs" data-target-search="jobs-search" data-target-value={`${record.owner_company_name} ${record.coverage_area}`}>→ Jobs for {record.coverage_area}</button>
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
             </form>
           ))}
@@ -614,6 +616,36 @@ try {
       noResultsId: "systems-no-results",
       filterSelects: [{ id: "systems-type-filter", attr: "systype" }],
     });
+
+    // ─── Record relationship navigation ──────────────────────────────
+    // link-to-section: pre-fill a search input within the same panel and scroll to it
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".link-to-section")) {
+      btn.addEventListener("click", () => {
+        const searchEl = document.getElementById(btn.dataset.targetSearch ?? "") as HTMLInputElement | null;
+        if (!searchEl) return;
+        searchEl.value = btn.dataset.targetValue ?? "";
+        searchEl.dispatchEvent(new Event("input"));
+        searchEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        searchEl.focus();
+      });
+    }
+
+    // link-to-tab: switch to another tab, then pre-fill its search input
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".link-to-tab")) {
+      btn.addEventListener("click", () => {
+        const tab = btn.dataset.targetTab ?? "enquiries";
+        switchTab(tab);
+        const searchEl = document.getElementById(btn.dataset.targetSearch ?? "") as HTMLInputElement | null;
+        if (!searchEl) return;
+        searchEl.value = btn.dataset.targetValue ?? "";
+        searchEl.dispatchEvent(new Event("input"));
+        // Allow the tab panel to become visible before scrolling
+        requestAnimationFrame(() => {
+          searchEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          searchEl.focus();
+        });
+      });
+    }
   </script>
 
   <script is:inline>
