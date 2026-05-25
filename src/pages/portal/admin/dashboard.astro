@@ -1,6 +1,7 @@
 ---
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
+import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
 
 export const prerender = false;
 
@@ -57,16 +58,19 @@ try {
     db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Blocked'`),
     db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Valid'`)
   ]);
+  interface CountResult {
+    n: number;
+  }
   stats = {
-    activeJobs:        (cntActive.results[0] as any)?.n        ?? 0,
-    unassignedJobs:    (cntUnassigned.results[0] as any)?.n    ?? 0,
-    overdueSystems:    (cntOverdue.results[0] as any)?.n       ?? 0,
-    openRequests:      (cntRequests.results[0] as any)?.n      ?? 0,
-    missingDocuments:  (cntMissingDocs.results[0] as any)?.n   ?? 0,
-    openDefects:       (cntOpenDefects.results[0] as any)?.n   ?? 0,
-    criticalDefects:   (cntCriticalDefects.results[0] as any)?.n ?? 0,
-    blockedCertificates: (cntBlockedCerts.results[0] as any)?.n ?? 0,
-    validCertificates: (cntValidCerts.results[0] as any)?.n    ?? 0
+    activeJobs:        (cntActive.results[0] as CountResult | undefined)?.n        ?? 0,
+    unassignedJobs:    (cntUnassigned.results[0] as CountResult | undefined)?.n    ?? 0,
+    overdueSystems:    (cntOverdue.results[0] as CountResult | undefined)?.n       ?? 0,
+    openRequests:      (cntRequests.results[0] as CountResult | undefined)?.n      ?? 0,
+    missingDocuments:  (cntMissingDocs.results[0] as CountResult | undefined)?.n   ?? 0,
+    openDefects:       (cntOpenDefects.results[0] as CountResult | undefined)?.n   ?? 0,
+    criticalDefects:   (cntCriticalDefects.results[0] as CountResult | undefined)?.n ?? 0,
+    blockedCertificates: (cntBlockedCerts.results[0] as CountResult | undefined)?.n ?? 0,
+    validCertificates: (cntValidCerts.results[0] as CountResult | undefined)?.n    ?? 0
   };
 
   completed = (await db.prepare(
@@ -364,7 +368,7 @@ try {
                 {financeFollowup.length === 0 && <p class="text-sm text-kharon-grey">No pending finance follow-up.</p>}
                 {financeFollowup.map((item) => (
                   <p class="border-l-4 border-kharon-blue bg-kharon-light p-3 text-sm">
-                    <span class="font-semibold">{item.owner_company_name}</span> / {item.record_count} open records / R {Number(item.amount || 0).toFixed(2)}
+                    <span class="font-semibold">{item.owner_company_name}</span> / {item.record_count} open records / {formatCurrency(item.amount || 0)}
                   </p>
                 ))}
               </div>

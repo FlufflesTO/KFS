@@ -1,6 +1,15 @@
+/**
+ * Project Sentinel - global.css
+ * Purpose: Global stylesheet defining themes, base styles, and utility sources for Tailwind v4
+ * Dependencies: TailwindCSS
+ * Structural Role: Main styling entrypoint
+ */
+
 @import "tailwindcss";
 
-@source "../**/*.{astro,html,js,jsx,md,mdx,ts,tsx}";
+@source "!../**/*.js";
+@source "!../**/*.ts";
+@source "../**/*.astro";
 
 :root {
   --kharon-purple: #4B2E83;

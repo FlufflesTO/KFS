@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Forensic Audit Trail Services
+ * Purpose: Inserts administrative, security, and financial events into the auth_audit/ledger tables
+ * Dependencies: ./request.js
+ * Structural Role: Forensic audit log writer and security compliance tracker
+ */
+
 import { requestFingerprint } from "./request.js";
 
 export async function auditEvent(db, request, options = {}) {

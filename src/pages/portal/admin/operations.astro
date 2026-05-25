@@ -14,10 +14,26 @@ const page = Math.max(1, Math.min(999, parseInt(params.get('page') || '1', 10) |
 const perPage = 50;
 const offset = (page - 1) * perPage;
 
+interface OperationsJob {
+  id: string;
+  system_id: string;
+  assigned_technician_id: string | null;
+  scheduled_date: string;
+  status: string;
+  job_type: string;
+  site_notes: string | null;
+  priority: string;
+  is_emergency: number;
+  required_by_date: string | null;
+  estimated_duration_minutes: number | null;
+  coverage_area: string;
+  owner_company_name: string;
+}
+
 let users = [];
 let sites = [];
 let systems = [];
-let jobs = [];
+let jobs: OperationsJob[] = [];
 let technicians = [];
 let clientUsers = [];
 let clientSiteAccess = [];
@@ -54,7 +70,7 @@ try {
      ORDER BY sites.owner_company_name, systems.coverage_area`
   ).all()).results || [];
 
-  jobs = (await db.prepare(
+  jobs = ((await db.prepare(
     `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
             jobs.job_type, jobs.site_notes,
             jobs.priority, jobs.is_emergency, jobs.required_by_date, jobs.estimated_duration_minutes,
@@ -64,7 +80,7 @@ try {
      INNER JOIN sites ON sites.id = systems.site_id
      ORDER BY jobs.scheduled_date DESC
      LIMIT ? OFFSET ?`
-  ).bind(perPage, offset).all()).results || [];
+  ).bind(perPage, offset).all()).results || []) as OperationsJob[];
 
   technicians = users.filter((item) => item.role === "tech" && item.is_active);
   clientUsers = users.filter((item) => item.role === "client" && item.is_active);
@@ -256,10 +272,10 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
               <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
               <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
               <select class="rounded-md border border-kharon-border px-3 py-2" name="priority">
-                {["Critical","High","Normal","Low"].map((p) => <option value={p} selected={(record as any).priority === p}>{p}</option>)}
+                {["Critical","High","Normal","Low"].map((p) => <option value={p} selected={record.priority === p}>{p}</option>)}
               </select>
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="requiredByDate" type="date" value={(record as any).required_by_date || ""} placeholder="Required by date (optional)" />
-              <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="isEmergency" checked={(record as any).is_emergency === 1} /> Emergency</label>
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="requiredByDate" type="date" value={record.required_by_date || ""} placeholder="Required by date (optional)" />
+              <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="isEmergency" checked={record.is_emergency === 1} /> Emergency</label>
               <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
             </form>

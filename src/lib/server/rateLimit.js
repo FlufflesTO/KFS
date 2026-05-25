@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Rate Limiting Services
+ * Purpose: Provides a sliding window rate limiter backed by D1 for API and authentication endpoints
+ * Dependencies: ./request.js
+ * Structural Role: Request frequency throttling security layer
+ */
+
 import { requestFingerprint } from "./request.js";
 
 export async function consumeRateLimit(db, request, options = {}) {

@@ -2,12 +2,37 @@
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { clientSites, inClause } from "../../../lib/server/clientAccess.js";
+import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
-let systems = [];
-let quotes = [];
+interface ClientSystem {
+  id: string;
+  site_id: string;
+  system_type: string;
+  coverage_area: string;
+  last_service_date: string | null;
+  next_due_date: string;
+  owner_company_name: string;
+  latest_job_id: string | null;
+  documentation_path: string | null;
+  completed_at: string | null;
+}
+
+interface ClientQuote {
+  id: string;
+  site_id: string;
+  amount: number;
+  item_type: string;
+  payment_status: string;
+  distribution_date: string;
+  reference: string | null;
+  owner_company_name: string;
+}
+
+let systems: ClientSystem[] = [];
+let quotes: ClientQuote[] = [];
 let requests = [];
 let sites = [];
 let openDefects = [];
@@ -40,7 +65,7 @@ try {
          )
          WHERE systems.site_id IN (${sitePlaceholders})
          ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC`
-      ).bind(...siteIds).all()).results || [];
+      ).bind(...siteIds).all()).results as ClientSystem[] || [];
     } catch (error) {
       console.error("client systems load failed", error);
       sectionErrors.push("System records could not be loaded.");
@@ -58,7 +83,7 @@ try {
            AND financial_records.item_type = 'Quote'
            AND financial_records.payment_status = 'Pending Approval'
          ORDER BY financial_records.distribution_date ASC`
-      ).bind(...siteIds).all()).results || [];
+      ).bind(...siteIds).all()).results as ClientQuote[] || [];
     } catch (error) {
       console.error("client quotes load failed", error);
       sectionErrors.push("Quote approvals could not be loaded.");
@@ -124,9 +149,9 @@ try {
 }
 
 // Compliance summary counts — computed in frontmatter (< safe in TS, not JSX)
-const overdueCount  = systems.filter((s: any) => s.next_due_date && s.next_due_date < today).length;
-const dueSoonCount  = systems.filter((s: any) => s.next_due_date && s.next_due_date >= today && s.next_due_date <= soonDate).length;
-const compliantCount = systems.filter((s: any) => !s.next_due_date || s.next_due_date > soonDate).length;
+const overdueCount  = systems.filter((s) => s.next_due_date && s.next_due_date < today).length;
+const dueSoonCount  = systems.filter((s) => s.next_due_date && s.next_due_date >= today && s.next_due_date <= soonDate).length;
+const compliantCount = systems.filter((s) => !s.next_due_date || s.next_due_date > soonDate).length;
 ---
 
 <PortalLayout title="Client Gateway | Kharon Portal" active="client" user={user}>
@@ -244,7 +269,7 @@ const compliantCount = systems.filter((s: any) => !s.next_due_date || s.next_due
             <article class="flex flex-wrap items-center justify-between gap-4 border border-kharon-border bg-kharon-light p-4">
               <div>
                 <p class="font-semibold">{quote.reference || quote.id}</p>
-                <p class="text-sm text-kharon-grey">{quote.owner_company_name} / R {Number(quote.amount).toFixed(2)} / {quote.distribution_date}</p>
+                <p class="text-sm text-kharon-grey">{quote.owner_company_name} / {formatCurrency(quote.amount)} / {quote.distribution_date}</p>
               </div>
               <button class="rounded-md border border-kharon-purple px-5 py-3 font-semibold text-kharon-purple" data-quote-id={quote.id}>
                 Approve quote

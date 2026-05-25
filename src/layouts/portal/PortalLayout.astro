@@ -1,4 +1,10 @@
 ---
+/**
+ * Project Sentinel - Portal Layout Wrapper
+ * Purpose: Renders the standard header, navigation bar, and main container layout for the operations portal.
+ * Dependencies: global.css, session state, role links.
+ * Structural Role: Shell layout component for all portal pages.
+ */
 import "../../styles/global.css";
 
 const {
@@ -57,35 +63,35 @@ const links = [
     </script>
   </head>
   <body class="portal-shell bg-kharon-light">
-    <header class="border-b border-white/10 bg-kharon-black text-white">
-      <div class="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
-        <a href="/portal" class="flex shrink-0 items-center gap-2.5">
-          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="30" height="41" class="flex-none" />
+    <header class="border-b border-white/5 bg-[#0B0D0F] text-white shadow-md shadow-black/25">
+      <div class="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center justify-between gap-6 px-4 py-4 sm:px-6">
+        <a href="/portal" class="flex shrink-0 items-center gap-3">
+          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="28" height="38" class="flex-none" />
           <span>
             <span class="block whitespace-nowrap text-sm font-bold uppercase tracking-wide">Kharon Portal</span>
-            <span class="block whitespace-nowrap text-xs uppercase text-white/50">Lifecycle operations</span>
+            <span class="block whitespace-nowrap text-[10px] uppercase text-white/40 tracking-wider">Lifecycle operations</span>
           </span>
         </a>
 
-        <nav class="order-3 flex w-full items-center gap-2 overflow-x-auto pb-1 lg:order-none lg:w-auto lg:flex-wrap lg:overflow-visible lg:pb-0" aria-label="Portal navigation">
+        <nav class="order-3 flex w-full items-center gap-1.5 overflow-x-auto pb-2 lg:order-none lg:w-auto lg:flex-wrap lg:overflow-visible lg:pb-0" aria-label="Portal navigation">
           {links.map((link) => (
             <a
               href={link.href}
               aria-current={active === link.key ? "page" : undefined}
-              class={`shrink-0 rounded-md border px-4 py-2 text-sm font-semibold ${active === link.key ? "border-kharon-cyan bg-kharon-cyan/10 text-white" : "border-white/10 text-white/70 hover:border-white/30 hover:text-white"}`}
+              class={`shrink-0 rounded-lg px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${active === link.key ? "bg-kharon-purple text-white shadow-md shadow-kharon-purple/20" : "text-white/60 hover:bg-white/5 hover:text-white"}`}
             >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <div class="ml-auto flex min-w-0 items-center gap-3 text-right text-sm sm:gap-4">
-          <div class="min-w-0">
-            <p class="font-semibold">{user?.name}</p>
-            <p class="uppercase text-white/50">{user?.role}</p>
+        <div class="ml-auto flex min-w-0 items-center gap-4 text-right text-xs sm:gap-5">
+          <div class="min-w-0 leading-tight">
+            <p class="font-bold text-white/95">{user?.name}</p>
+            <p class="uppercase text-kharon-cyan font-semibold tracking-wider text-[9px] mt-0.5">{user?.role}</p>
           </div>
           <form id="portal-logout-form">
-            <button class="rounded-md border border-white/15 px-4 py-2 font-semibold text-white/70 hover:border-white/30 hover:text-white" type="submit">
+            <button class="rounded-lg border border-white/10 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white/70 hover:bg-white/5 hover:text-white transition-all duration-200" type="submit">
               Logout
             </button>
           </form>

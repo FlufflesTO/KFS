@@ -34,13 +34,16 @@ try {
     db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE status IN ('Open', 'In Progress') AND severity = 'Critical'`)
   ]);
 
+  interface CountResult {
+    n: number;
+  }
   stats = {
-    openCriticalDefects: (cntCritical.results[0] as any)?.n ?? 0,
-    openDefects: (cntOpen.results[0] as any)?.n ?? 0,
-    blockedCertificates: (cntBlocked.results[0] as any)?.n ?? 0,
-    overdueRemediation: (cntOverdue.results[0] as any)?.n ?? 0,
-    dueSoonCertificates: (cntDueSoon.results[0] as any)?.n ?? 0,
-    systemsAtRisk: (cntAtRisk.results[0] as any)?.n ?? 0
+    openCriticalDefects: (cntCritical.results[0] as CountResult | undefined)?.n ?? 0,
+    openDefects: (cntOpen.results[0] as CountResult | undefined)?.n ?? 0,
+    blockedCertificates: (cntBlocked.results[0] as CountResult | undefined)?.n ?? 0,
+    overdueRemediation: (cntOverdue.results[0] as CountResult | undefined)?.n ?? 0,
+    dueSoonCertificates: (cntDueSoon.results[0] as CountResult | undefined)?.n ?? 0,
+    systemsAtRisk: (cntAtRisk.results[0] as CountResult | undefined)?.n ?? 0
   };
 
   criticalDefects = (await db.prepare(

@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Cloudflare Workers Bindings
+ * Purpose: Provides access to database and storage bindings and standard fee config
+ * Dependencies: cloudflare:workers
+ * Structural Role: Server-side bindings and configuration accessor
+ */
+
 import { env } from "cloudflare:workers";
 
 export function getBindings() {
@@ -36,6 +43,13 @@ export function getStorage() {
 }
 
 export function getStandardServiceFee() {
-  const configured = Number(env.STANDARD_SERVICE_FEE || "1850.00");
-  return Number.isFinite(configured) && configured >= 0 ? configured.toFixed(2) : "1850.00";
+  const raw = env.STANDARD_SERVICE_FEE || "1850.00";
+  const configured = Number(raw);
+  if (Number.isFinite(configured) && configured >= 0) {
+    if (raw.includes(".") || configured < 100000) {
+      return Math.round(configured * 100);
+    }
+    return Math.round(configured);
+  }
+  return 185000;
 }

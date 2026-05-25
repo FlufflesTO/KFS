@@ -1,3 +1,9 @@
+/**
+ * Project Sentinel - Infrastructure Technical Blocks
+ * Purpose: Renders critical infrastructure uptime impact models, escalation dependency maps, and risk-tier matrices.
+ * Dependencies: Astro section layout, SVG.
+ * Structural Role: Presentation component for infrastructure page.
+ */
 <section class="section-padding bg-white">
   <div class="mx-auto max-w-7xl px-6">
 
@@ -114,69 +120,79 @@
           role="img"
           aria-label="Escalation and response dependency map"
           class="h-auto w-full max-w-4xl mx-auto"
+          font-family="system-ui, -apple-system, sans-serif"
         >
+          <defs>
+            <filter id="nodeShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.1" />
+            </filter>
+          </defs>
+
           {/* Connector lines */}
-          <line x1="100" y1="100" x2="220" y2="100" stroke="#00C2FF" stroke-width="2" />
-          <line x1="280" y1="100" x2="400" y2="100" stroke="#00C2FF" stroke-width="2" />
-          <line x1="460" y1="100" x2="580" y2="100" stroke="#00C2FF" stroke-width="2" />
-          <line x1="640" y1="100" x2="760" y2="100" stroke="#00C2FF" stroke-width="2" />
-          <line x1="820" y1="100" x2="940" y2="100" stroke="#C4332F" stroke-width="2" stroke-dasharray="6 4" />
-          <line x1="1000" y1="100" x2="1100" y2="100" stroke="#00C2FF" stroke-width="2" />
+          <line x1="140" y1="100" x2="220" y2="100" stroke="#00C2FF" stroke-width="2" />
+          <line x1="340" y1="100" x2="420" y2="100" stroke="#00C2FF" stroke-width="2" />
+          <line x1="540" y1="100" x2="620" y2="100" stroke="#00C2FF" stroke-width="2" />
+          <line x1="740" y1="100" x2="820" y2="100" stroke="#00C2FF" stroke-width="2" />
+          <line x1="940" y1="100" x2="1020" y2="100" stroke="#C4332F" stroke-width="2" stroke-dasharray="6 4" />
 
           {/* Node 1: Detection Event */}
-          <rect x="10" y="68" width="90" height="64" rx="8" fill="#4B2E83" />
-          <text x="55" y="100" text-anchor="middle" fill="#FFFFFF" font-size="11" font-family="Century Gothic, Arial">Detection</text>
-          <text x="55" y="118" text-anchor="middle" fill="#FFFFFF" font-size="11" font-family="Century Gothic, Arial">Event</text>
+          <rect x="20" y="68" width="120" height="64" rx="8" fill="#4B2E83" filter="url(#nodeShadow)" />
+          <text x="80" y="100" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">Detection</text>
+          <text x="80" y="116" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">Event</text>
 
           {/* Time: 2 min */}
-          <rect x="160" y="82" width="48" height="20" rx="4" fill="#F59E0B" />
-          <text x="184" y="96" text-anchor="middle" fill="#0B0D0F" font-size="10" font-weight="bold" font-family="Century Gothic, Arial">2 min</text>
+          <rect x="155" y="90" width="50" height="20" rx="4" fill="#F59E0B" />
+          <text x="180" y="104" text-anchor="middle" fill="#0B0D0F" font-size="10" font-weight="bold">2 min</text>
 
           {/* Node 2: Control Room Acknowledgement */}
-          <rect x="220" y="68" width="60" height="64" rx="8" fill="#4B2E83" />
-          <text x="250" y="94" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Control</text>
-          <text x="250" y="108" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Room</text>
-          <text x="250" y="122" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Ack</text>
+          <rect x="220" y="68" width="120" height="64" rx="8" fill="#4B2E83" filter="url(#nodeShadow)" />
+          <text x="280" y="92" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Control</text>
+          <text x="280" y="106" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Room</text>
+          <text x="280" y="120" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Ack</text>
 
-          {/* Time: Tier dispatch */}
-          <rect x="345" y="74" width="64" height="20" rx="4" fill="#F59E0B" />
-          <text x="377" y="88" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="bold" font-family="Century Gothic, Arial">T1: 30min</text>
-          <rect x="345" y="98" width="64" height="20" rx="4" fill="#F59E0B" />
-          <text x="377" y="112" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="bold" font-family="Century Gothic, Arial">T2: 2hr</text>
-          <rect x="345" y="122" width="64" height="20" rx="4" fill="#F59E0B" />
-          <text x="377" y="136" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="bold" font-family="Century Gothic, Arial">T3: 4hr</text>
+          {/* Time: Tier dispatches stacked vertically to fit within gap */}
+          <rect x="345" y="44" width="70" height="16" rx="3" fill="#F59E0B" />
+          <text x="380" y="56" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="bold">T1: 30min</text>
+          
+          <rect x="345" y="64" width="70" height="16" rx="3" fill="#F59E0B" />
+          <text x="380" y="76" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="bold">T2: 2hr</text>
+          
+          <rect x="345" y="84" width="70" height="16" rx="3" fill="#F59E0B" />
+          <text x="380" y="96" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="bold">T3: 4hr</text>
 
           {/* Node 3: Field Technician Dispatch */}
-          <rect x="400" y="68" width="60" height="64" rx="8" fill="#4B2E83" />
-          <text x="430" y="94" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Field</text>
-          <text x="430" y="108" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Tech</text>
-          <text x="430" y="122" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Dispatch</text>
+          <rect x="420" y="68" width="120" height="64" rx="8" fill="#4B2E83" filter="url(#nodeShadow)" />
+          <text x="480" y="92" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Field</text>
+          <text x="480" y="106" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Tech</text>
+          <text x="480" y="120" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Dispatch</text>
 
           {/* Time label */}
-          <text x="520" y="96" text-anchor="middle" fill="#F59E0B" font-size="10" font-weight="bold" font-family="Century Gothic, Arial">Varies</text>
+          <rect x="550" y="90" width="60" height="20" rx="4" fill="#F59E0B" />
+          <text x="580" y="104" text-anchor="middle" fill="#0B0D0F" font-size="10" font-weight="bold">Varies</text>
 
           {/* Node 4: On-Site Assessment */}
-          <rect x="580" y="68" width="60" height="64" rx="8" fill="#4B2E83" />
-          <text x="610" y="94" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">On-Site</text>
-          <text x="610" y="108" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Assessment</text>
+          <rect x="620" y="68" width="120" height="64" rx="8" fill="#4B2E83" filter="url(#nodeShadow)" />
+          <text x="680" y="99" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">On-Site</text>
+          <text x="680" y="115" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Assessment</text>
 
           {/* Time label */}
-          <text x="700" y="96" text-anchor="middle" fill="#F59E0B" font-size="10" font-weight="bold" font-family="Century Gothic, Arial">Immediate</text>
+          <rect x="745" y="90" width="70" height="20" rx="4" fill="#F59E0B" />
+          <text x="780" y="104" text-anchor="middle" fill="#0B0D0F" font-size="10" font-weight="bold">Immediate</text>
 
           {/* Node 5: Resolution or Escalation */}
-          <rect x="760" y="68" width="60" height="64" rx="8" fill="#C4332F" />
-          <text x="790" y="94" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Resolution</text>
-          <text x="790" y="108" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">or</text>
-          <text x="790" y="122" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Escalation</text>
+          <rect x="820" y="68" width="120" height="64" rx="8" fill="#C4332F" filter="url(#nodeShadow)" />
+          <text x="880" y="92" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Resolution</text>
+          <text x="880" y="106" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">or</text>
+          <text x="880" y="120" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Escalation</text>
 
           {/* Time: 24hr */}
-          <rect x="930" y="82" width="44" height="20" rx="4" fill="#F59E0B" />
-          <text x="952" y="96" text-anchor="middle" fill="#0B0D0F" font-size="10" font-weight="bold" font-family="Century Gothic, Arial">24hr</text>
+          <rect x="950" y="90" width="60" height="20" rx="4" fill="#F59E0B" />
+          <text x="980" y="104" text-anchor="middle" fill="#0B0D0F" font-size="10" font-weight="bold">24hr</text>
 
           {/* Node 6: Post-Incident Report */}
-          <rect x="1100" y="68" width="90" height="64" rx="8" fill="#4B2E83" />
-          <text x="1145" y="100" text-anchor="middle" fill="#FFFFFF" font-size="11" font-family="Century Gothic, Arial">Post-Incident</text>
-          <text x="1145" y="118" text-anchor="middle" fill="#FFFFFF" font-size="11" font-family="Century Gothic, Arial">Report</text>
+          <rect x="1020" y="68" width="120" height="64" rx="8" fill="#4B2E83" filter="url(#nodeShadow)" />
+          <text x="1080" y="99" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">Post-Incident</text>
+          <text x="1080" y="115" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">Report</text>
         </svg>
       </div>
     </div>

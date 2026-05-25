@@ -2,12 +2,27 @@
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { clientSites, inClause } from "../../../lib/server/clientAccess.js";
+import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
-let sites = [];
-let records = [];
+interface ClientQuoteRecord {
+  id: string;
+  site_id: string;
+  amount: number;
+  item_type: string;
+  payment_status: string;
+  finance_task_status: string | null;
+  distribution_date: string;
+  reference: string | null;
+  owner_company_name: string;
+  job_id: string | null;
+  job_status: string | null;
+}
+
+let sites: { id: string; owner_company_name: string }[] = [];
+let records: ClientQuoteRecord[] = [];
 let totals = { pending: 0, unpaid: 0, settled: 0 };
 let loadError = "";
 
@@ -44,13 +59,18 @@ try {
       ).bind(...siteIds)
     ]);
 
-    const agg = aggResult.results[0] || {};
+    interface ClientAgg {
+      pending?: number;
+      unpaid?: number;
+      settled?: number;
+    }
+    const agg = (aggResult.results[0] as ClientAgg | undefined) || {};
     totals = {
       pending: Number(agg.pending ?? 0),
       unpaid:  Number(agg.unpaid  ?? 0),
       settled: Number(agg.settled ?? 0)
     };
-    records = recordsResult.results || [];
+    records = (recordsResult.results || []) as ClientQuoteRecord[];
   }
 } catch (error) {
   console.error("client quote history failed", error);
@@ -76,15 +96,15 @@ try {
       <div class="grid gap-4 md:grid-cols-3">
         <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <p class="text-xs font-bold uppercase text-kharon-purple">Pending approval</p>
-          <p class="mt-2 text-2xl font-bold">R {totals.pending.toFixed(2)}</p>
+          <p class="mt-2 text-2xl font-bold">{formatCurrency(totals.pending)}</p>
         </article>
         <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <p class="text-xs font-bold uppercase text-kharon-red">Unpaid invoices</p>
-          <p class="mt-2 text-2xl font-bold">R {totals.unpaid.toFixed(2)}</p>
+          <p class="mt-2 text-2xl font-bold">{formatCurrency(totals.unpaid)}</p>
         </article>
         <article class="border border-kharon-border bg-white p-4 sm:p-5">
           <p class="text-xs font-bold uppercase text-kharon-blue">Paid in Sage</p>
-          <p class="mt-2 text-2xl font-bold">R {totals.settled.toFixed(2)}</p>
+          <p class="mt-2 text-2xl font-bold">{formatCurrency(totals.settled)}</p>
         </article>
       </div>
 
@@ -169,7 +189,7 @@ try {
                         ? "Paid in Sage"
                         : record.payment_status}
                   </td>
-                  <td class="p-4">R {Number(record.amount).toFixed(2)}</td>
+                  <td class="p-4">{formatCurrency(Number(record.amount))}</td>
                   <td class="p-4">{record.distribution_date}</td>
                   <td class="p-4">{record.job_id || "Not linked"}</td>
                   <td class="p-4">

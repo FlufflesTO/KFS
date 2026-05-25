@@ -1,4 +1,10 @@
 ---
+/**
+ * Project Sentinel - Detection Technical Blocks
+ * Purpose: Renders detection cause-and-effect matrix, false alarm diagnosis flowchart, service evidence steps, and zoning strategy.
+ * Dependencies: Astro section layout, SVG.
+ * Structural Role: Presentation component for detection page.
+ */
 const events = [
   "Smoke Detector (any zone)",
   "Heat Detector (any zone)",
@@ -133,24 +139,27 @@ const zoningStrategies = [
       </p>
 
       <div class="mt-10 w-full max-w-3xl mx-auto">
-        <svg viewBox="0 0 780 700" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto" role="img" aria-label="False alarm diagnosis decision tree flowchart">
+        <svg viewBox="0 0 780 720" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto" role="img" aria-label="False alarm diagnosis decision tree flowchart" font-family="system-ui, -apple-system, sans-serif">
           <defs>
             <marker id="flowArrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
               <path d="M0,0 L8,3 L0,6 Z" fill="#00C2FF" />
             </marker>
+            <filter id="nodeShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.1" />
+            </filter>
           </defs>
 
           <!-- Start node -->
-          <rect x="140" y="18" width="250" height="48" rx="10" fill="#4B2E83" />
-          <text x="265" y="47" text-anchor="middle" fill="#0B0D0F" font-size="13" font-weight="700">
-            <tspan fill="#FFFFFF">Recurring false alarms?</tspan>
+          <rect x="140" y="18" width="250" height="48" rx="10" fill="#4B2E83" filter="url(#nodeShadow)" />
+          <text x="265" y="47" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="700">
+            Recurring false alarms?
           </text>
 
           <!-- Connector: Start -> Diamond 1 -->
           <line x1="265" y2="100" y1="66" x2="265" stroke="#00C2FF" stroke-width="2" marker-end="url(#flowArrow)" />
 
           <!-- Diamond 1: Environmental factors? -->
-          <polygon points="265,100 370,155 265,210 160,155" fill="#4B2E83" />
+          <polygon points="265,100 370,155 265,210 160,155" fill="#4B2E83" filter="url(#nodeShadow)" />
           <text x="265" y="159" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
             Environmental factors?
           </text>
@@ -160,7 +169,7 @@ const zoningStrategies = [
           <text x="396" y="147" text-anchor="middle" fill="#00C2FF" font-size="11" font-weight="700">Yes</text>
 
           <!-- Action 1 rect -->
-          <rect x="430" y="131" width="290" height="48" rx="8" fill="#1F4E79" />
+          <rect x="430" y="131" width="290" height="48" rx="8" fill="#1F4E79" filter="url(#nodeShadow)" />
           <text x="575" y="160" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
             Relocate or change detector type
           </text>
@@ -170,7 +179,7 @@ const zoningStrategies = [
           <text x="278" y="224" fill="#00C2FF" font-size="11" font-weight="700">No</text>
 
           <!-- Diamond 2: Detector age >10 years? -->
-          <polygon points="265,245 370,300 265,355 160,300" fill="#4B2E83" />
+          <polygon points="265,245 370,300 265,355 160,300" fill="#4B2E83" filter="url(#nodeShadow)" />
           <text x="265" y="304" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
             Detector age >10 years?
           </text>
@@ -180,7 +189,7 @@ const zoningStrategies = [
           <text x="396" y="292" text-anchor="middle" fill="#00C2FF" font-size="11" font-weight="700">Yes</text>
 
           <!-- Action 2 rect -->
-          <rect x="430" y="276" width="290" height="48" rx="8" fill="#1F4E79" />
+          <rect x="430" y="276" width="290" height="48" rx="8" fill="#1F4E79" filter="url(#nodeShadow)" />
           <text x="575" y="305" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
             Replace head
           </text>
@@ -190,9 +199,9 @@ const zoningStrategies = [
           <text x="278" y="370" fill="#00C2FF" font-size="11" font-weight="700">No</text>
 
           <!-- Diamond 3: Placement within 500mm of air vent? -->
-          <polygon points="265,390 370,445 265,500 160,445" fill="#4B2E83" />
-          <text x="265" y="438" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="600">
-            <tspan x="265" dy="0">Placement within</tspan>
+          <polygon points="265,390 370,445 265,500 160,445" fill="#4B2E83" filter="url(#nodeShadow)" />
+          <text x="265" y="442" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="600">
+            <tspan x="265" dy="-6">Placement within</tspan>
             <tspan x="265" dy="15">500mm of air vent?</tspan>
           </text>
 
@@ -201,7 +210,7 @@ const zoningStrategies = [
           <text x="396" y="437" text-anchor="middle" fill="#00C2FF" font-size="11" font-weight="700">Yes</text>
 
           <!-- Action 3 rect -->
-          <rect x="430" y="421" width="290" height="48" rx="8" fill="#1F4E79" />
+          <rect x="430" y="421" width="290" height="48" rx="8" fill="#1F4E79" filter="url(#nodeShadow)" />
           <text x="575" y="450" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
             Relocate detector
           </text>
@@ -211,10 +220,10 @@ const zoningStrategies = [
           <text x="278" y="515" fill="#00C2FF" font-size="11" font-weight="700">No</text>
 
           <!-- Diamond 4: Service interval >12 months? -->
-          <polygon points="265,535 370,590 265,645 160,590" fill="#4B2E83" />
-          <text x="265" y="584" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="600">
-            <tspan x="265" dy="0">Service interval</tspan>
-            <tspan x="265" dy="14">>12 months?</tspan>
+          <polygon points="265,535 370,590 265,645 160,590" fill="#4B2E83" filter="url(#nodeShadow)" />
+          <text x="265" y="586" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="600">
+            <tspan x="265" dy="-6">Service interval</tspan>
+            <tspan x="265" dy="15">>12 months?</tspan>
           </text>
 
           <!-- Yes arrow -> Action 4 -->
@@ -222,7 +231,7 @@ const zoningStrategies = [
           <text x="396" y="582" text-anchor="middle" fill="#00C2FF" font-size="11" font-weight="700">Yes</text>
 
           <!-- Action 4 rect -->
-          <rect x="430" y="566" width="290" height="48" rx="8" fill="#1F4E79" />
+          <rect x="430" y="566" width="290" height="48" rx="8" fill="#1F4E79" filter="url(#nodeShadow)" />
           <text x="575" y="595" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
             Schedule service
           </text>
@@ -232,8 +241,8 @@ const zoningStrategies = [
           <text x="278" y="658" fill="#00C2FF" font-size="11" font-weight="700">No</text>
 
           <!-- Final action rect -->
-          <rect x="140" y="668" width="250" height="48" rx="10" fill="#1F4E79" />
-          <text x="265" y="694" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="700">
+          <rect x="140" y="668" width="250" height="48" rx="10" fill="#1F4E79" filter="url(#nodeShadow)" />
+          <text x="265" y="697" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="700">
             Investigate wiring/panel fault
           </text>
 

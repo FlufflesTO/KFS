@@ -101,7 +101,13 @@ try {
     db.prepare(`SELECT id, name FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name ASC`)
   ]);
 
-  const s = (statsResult.results[0] as any) || {};
+  interface DispatchStats {
+    unassigned_count?: number;
+    in_progress_count?: number;
+    emergency_count?: number;
+    sla_warning_count?: number;
+  }
+  const s = (statsResult.results[0] as DispatchStats | undefined) || {};
   stats = {
     unassigned: Number(s.unassigned_count ?? 0),
     inProgress: Number(s.in_progress_count ?? 0),
@@ -109,8 +115,42 @@ try {
     slaWarning: Number(s.sla_warning_count ?? 0)
   };
 
-  const mapJob = (raw: any): DispatchJob => ({
-    ...raw,
+  interface RawDispatchJob {
+    id: string;
+    job_type: string;
+    scheduled_date: string;
+    priority: string;
+    required_by_date: string | null;
+    is_emergency: number;
+    estimated_duration_minutes: number | null;
+    status: string;
+    system_type: string;
+    coverage_area: string;
+    owner_company_name: string;
+    physical_address?: string;
+    site_contact_person?: string;
+    site_contact_phone?: string;
+    technician_name?: string;
+    technician_id?: string;
+  }
+
+  const mapJob = (raw: RawDispatchJob): DispatchJob => ({
+    id: raw.id,
+    job_type: raw.job_type,
+    scheduled_date: raw.scheduled_date,
+    priority: raw.priority,
+    required_by_date: raw.required_by_date,
+    is_emergency: raw.is_emergency,
+    estimated_duration_minutes: raw.estimated_duration_minutes,
+    status: raw.status,
+    system_type: raw.system_type,
+    coverage_area: raw.coverage_area,
+    owner_company_name: raw.owner_company_name,
+    physical_address: raw.physical_address,
+    site_contact_person: raw.site_contact_person,
+    site_contact_phone: raw.site_contact_phone,
+    technician_name: raw.technician_name,
+    technician_id: raw.technician_id,
     sla: slaInfo(raw.required_by_date ?? null),
     priorityCls: priorityBadgeCls(raw.priority || "Normal"),
     isEmergency: raw.is_emergency === 1,

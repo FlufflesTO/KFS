@@ -15,10 +15,57 @@ const planningPageSize = 30;
 const scheduleOffset = (schedulePage - 1) * planningPageSize;
 const lifecycleOffset = (lifecyclePage - 1) * planningPageSize;
 
-let scheduled = [];
-let technicianLoad = [];
-let lifecycle = [];
-let openRequests = [];
+interface PlanningJob {
+  id: string;
+  status: string;
+  scheduled_date: string;
+  job_type: string;
+  assigned_technician_id: string | null;
+  priority: string;
+  is_emergency: number;
+  required_by_date: string | null;
+  technician_name: string | null;
+  system_type: string;
+  coverage_area: string;
+  owner_company_name: string;
+  physical_address: string;
+}
+
+interface TechLoad {
+  id: string;
+  name: string;
+  scheduled_count: number;
+  in_progress_count: number;
+  next_dispatch_date: string | null;
+}
+
+interface SystemLifecycle {
+  id: string;
+  system_type: string;
+  coverage_area: string;
+  manufacturer: string | null;
+  model_reference: string | null;
+  last_service_date: string | null;
+  next_due_date: string;
+  owner_company_name: string;
+  physical_address: string;
+}
+
+interface OpenRequest {
+  id: string;
+  request_type: string;
+  priority: string;
+  status: string;
+  subject: string;
+  created_at: string;
+  owner_company_name: string;
+  coverage_area: string | null;
+}
+
+let scheduled: PlanningJob[] = [];
+let technicianLoad: TechLoad[] = [];
+let lifecycle: SystemLifecycle[] = [];
+let openRequests: OpenRequest[] = [];
 let scheduledTotal = 0;
 let lifecycleTotal = 0;
 let management = {
@@ -150,9 +197,24 @@ try {
     )
   ]);
 
-  const jAgg = (jobAggResult.results[0] as any)     || {};
-  const sAgg = (systemAggResult.results[0] as any)  || {};
-  const rAgg = (requestAggResult.results[0] as any) || {};
+  interface JobAgg {
+    scheduled_count?: number;
+    in_progress_count?: number;
+    unassigned_count?: number;
+    sla_breach_count?: number;
+    sla_warning_count?: number;
+  }
+  interface SystemAgg {
+    overdue_count?: number;
+    due_soon_count?: number;
+  }
+  interface RequestAgg {
+    count?: number;
+  }
+
+  const jAgg = (jobAggResult.results[0] as JobAgg | undefined) || {};
+  const sAgg = (systemAggResult.results[0] as SystemAgg | undefined) || {};
+  const rAgg = (requestAggResult.results[0] as RequestAgg | undefined) || {};
 
   management = {
     scheduledJobs:        Number(jAgg.scheduled_count   ?? 0),
@@ -165,12 +227,12 @@ try {
     slaWarningJobs:       Number(jAgg.sla_warning_count ?? 0)
   };
 
-  scheduled     = scheduledResult.results     || [];
-  technicianLoad = technicianLoadResult.results || [];
-  lifecycle     = lifecycleResult.results     || [];
-  openRequests  = openRequestsResult.results  || [];
-  scheduledTotal = Number((scheduleCountResult.results[0] as any)?.total ?? 0);
-  lifecycleTotal = Number((lifecycleCountResult.results[0] as any)?.total ?? 0);
+  scheduled      = (scheduledResult.results      || []) as PlanningJob[];
+  technicianLoad = (technicianLoadResult.results || []) as TechLoad[];
+  lifecycle      = (lifecycleResult.results      || []) as SystemLifecycle[];
+  openRequests   = (openRequestsResult.results   || []) as OpenRequest[];
+  scheduledTotal = Number((scheduleCountResult.results[0] as { total: number } | undefined)?.total ?? 0);
+  lifecycleTotal = Number((lifecycleCountResult.results[0] as { total: number } | undefined)?.total ?? 0);
 } catch (error) {
   console.error("admin planning failed", error);
   loadError = "Planning data could not be loaded.";
@@ -262,9 +324,9 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
           <div id="schedule-list" class="grid gap-3">
             {scheduled.length === 0 && <p class="text-kharon-grey">No scheduled or in-progress dispatches.</p>}
             {scheduled.map((job) => {
-              const jPriority = (job as any).priority || "Normal";
-              const jEmergency = (job as any).is_emergency === 1;
-              const jSla = slaLabel((job as any).required_by_date ?? null);
+              const jPriority = job.priority || "Normal";
+              const jEmergency = job.is_emergency === 1;
+              const jSla = slaLabel(job.required_by_date ?? null);
               const jSlaBreached = jSla !== null && jSla.cls.includes("red");
               const jSlaWarning  = jSla !== null && jSla.cls.includes("amber");
               const jBorderCls   = jSlaBreached ? "border-l-4 border-kharon-red bg-red-50"

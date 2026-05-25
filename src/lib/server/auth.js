@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Session Authentication Services
+ * Purpose: Manages generation, verification, and revocation of HMAC signed session tokens
+ * Dependencies: cloudflare:workers
+ * Structural Role: Session cryptography and validation layer
+ */
+
 import { env } from "cloudflare:workers";
 
 const textEncoder = new TextEncoder();

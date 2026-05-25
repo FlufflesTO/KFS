@@ -56,7 +56,7 @@ try {
         db.prepare(countQuery).bind(user.id),
         db.prepare(query).bind(user.id, perPage, offset)
       ]);
-  totalJobs = Number((countResult.results[0] as any)?.total ?? 0);
+  totalJobs = Number((countResult.results[0] as { total: number })?.total ?? 0);
   jobs = result.results || [];
 } catch (error) {
   console.error("technician history failed", error);

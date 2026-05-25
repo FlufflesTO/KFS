@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS financial_records (
   id TEXT PRIMARY KEY,
   site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
   job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
-  amount NUMERIC NOT NULL CHECK (amount >= 0),
+  amount INTEGER NOT NULL CHECK (amount >= 0),
   item_type TEXT NOT NULL CHECK (item_type IN ('Quote', 'Invoice', 'Payment')),
   payment_status TEXT NOT NULL CHECK (payment_status IN ('Pending Approval', 'Unpaid', 'Settled')),
   distribution_date TEXT NOT NULL,
@@ -77,8 +77,8 @@ CREATE TABLE IF NOT EXISTS financial_records (
   sage_quote_number TEXT,
   sage_invoice_number TEXT,
   sage_customer_code TEXT,
-  sage_amount_ex_vat REAL,
-  sage_vat_amount REAL,
+  sage_amount_ex_vat INTEGER,
+  sage_vat_amount INTEGER,
   sage_payment_reference TEXT,
   finance_task_status TEXT CHECK (finance_task_status IN (
     'Finance Review Required',
@@ -101,6 +101,14 @@ CREATE TABLE IF NOT EXISTS financial_records (
     'No Charge',
     'Closed'
   )),
+  sage_amount_inc_vat INTEGER,
+  sage_document_date TEXT,
+  sage_due_date TEXT,
+  finance_notes TEXT CHECK (finance_notes IS NULL OR length(trim(finance_notes)) <= 3000),
+  no_charge_reason TEXT CHECK (no_charge_reason IS NULL OR length(trim(no_charge_reason)) <= 500),
+  on_hold_reason TEXT CHECK (on_hold_reason IS NULL OR length(trim(on_hold_reason)) <= 500),
+  credit_note_for_id TEXT REFERENCES financial_records(id) ON DELETE SET NULL,
+  item_subtype TEXT CHECK (item_subtype IS NULL OR item_subtype IN ('Credit Note')),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
@@ -214,6 +222,8 @@ CREATE INDEX IF NOT EXISTS idx_document_access_path_created ON document_access_l
 CREATE INDEX IF NOT EXISTS idx_rate_limits_scope_window ON portal_rate_limits(scope, window_start);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expiry ON password_reset_tokens(expires_at, used_at);
+CREATE INDEX IF NOT EXISTS idx_finance_credit_note_for ON financial_records(credit_note_for_id);
+CREATE INDEX IF NOT EXISTS idx_finance_due_date ON financial_records(sage_due_date);
 
 CREATE TABLE IF NOT EXISTS revoked_sessions (
   fingerprint TEXT PRIMARY KEY NOT NULL,

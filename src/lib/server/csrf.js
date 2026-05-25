@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - CSRF Protection Utilities
+ * Purpose: Generates, formats, and verifies client-side CSRF tokens and cookies
+ * Dependencies: cloudflare:workers
+ * Structural Role: Cross-Site Request Forgery mitigation layer
+ */
+
 import { env } from "cloudflare:workers";
 
 const textEncoder = new TextEncoder();
