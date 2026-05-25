@@ -7,6 +7,7 @@ export const prerender = false;
 const user = Astro.locals.user;
 let jobs = [];
 let loadError = "";
+const today = new Date().toISOString().slice(0, 10);
 
 try {
   const db = getDatabase();
@@ -34,6 +35,12 @@ try {
   console.error("technician dashboard failed", error);
   loadError = "Assigned dispatches could not be loaded.";
 }
+
+// Split dispatches: today-and-overdue need action; future-only are informational
+const actionJobs   = jobs.filter((j: any) => j.scheduled_date <= today);
+const upcomingJobs = jobs.filter((j: any) => j.scheduled_date > today);
+const todayCount   = jobs.filter((j: any) => j.scheduled_date === today).length;
+const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "Today and overdue — action required";
 ---
 
 <PortalLayout title="Technician Dispatches | Kharon Portal" active="tech" user={user}>
@@ -52,14 +59,42 @@ try {
   <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto grid max-w-7xl gap-5">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
-      {jobs.length === 0 && !loadError && <p class="border border-kharon-border bg-white p-4 text-kharon-grey">No scheduled dispatches are currently assigned.</p>}
+
+      {!loadError && jobs.length > 0 && (
+        <div class="grid grid-cols-3 gap-3 border border-kharon-border bg-white p-4 sm:grid-cols-3">
+          <div class="border-r border-kharon-border pr-4">
+            <p class="text-xs font-bold uppercase text-kharon-grey/60">Today</p>
+            <p class="mt-1 text-2xl font-bold text-kharon-black">{todayCount}</p>
+          </div>
+          <div class="border-r border-kharon-border px-4">
+            <p class="text-xs font-bold uppercase text-kharon-grey/60">Upcoming</p>
+            <p class="mt-1 text-2xl font-bold text-kharon-black">{upcomingJobs.length}</p>
+          </div>
+          <div class="pl-4">
+            <p class="text-xs font-bold uppercase text-kharon-grey/60">In progress</p>
+            <p class="mt-1 text-2xl font-bold text-kharon-purple">{jobs.filter((j: any) => j.status === "In Progress").length}</p>
+          </div>
+        </div>
+      )}
+
+      {jobs.length === 0 && !loadError && (
+        <div class="border border-kharon-border bg-white p-6">
+          <p class="font-semibold text-kharon-black">No dispatches assigned</p>
+          <p class="mt-2 text-sm text-kharon-grey">No scheduled dispatches are currently assigned to this account. Contact the admin team if you expect jobs to appear here.</p>
+        </div>
+      )}
       {user.role === "tech" && jobs.length > 0 && (
         <p class="border border-kharon-border bg-kharon-light px-4 py-3 text-sm text-kharon-grey">
-          <strong>Poor signal or offline?</strong> Complete the form and submit when you have a connection. Drafts are not automatically saved — do not close this page until the submission is confirmed.
+          <strong>Poor signal or offline?</strong> Complete the form and submit when you have a connection. Drafts are not automatically saved  -  do not close this page until the submission is confirmed.
         </p>
       )}
 
-      {jobs.map((job) => (
+      {actionJobs.length > 0 && (
+        <p class="border-l-4 border-kharon-cyan bg-kharon-light px-4 py-3 text-sm font-bold uppercase tracking-wide text-kharon-black">
+          {actionLabel}
+        </p>
+      )}
+      {actionJobs.map((job) => (
         <article class="grid gap-5 border border-kharon-border bg-white p-4 sm:p-5 lg:grid-cols-[1fr_0.9fr]">
           <div class="min-w-0">
             <p class="text-xs font-bold uppercase text-kharon-purple">{job.status}</p>
@@ -72,7 +107,7 @@ try {
                 rel="noopener noreferrer"
                 class="mt-1 inline-block text-xs font-semibold text-kharon-blue hover:underline"
               >
-                ↗ Navigate
+                Navigate Navigate
               </a>
             )}
             <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
@@ -155,6 +190,45 @@ try {
             <p class="jobcard-result hidden text-sm font-semibold"></p>
           </form>
           )}
+        </article>
+      ))}
+
+      {upcomingJobs.length > 0 && (
+        <p class="border-l-4 border-kharon-border bg-kharon-light px-4 py-3 text-sm font-bold uppercase tracking-wide text-kharon-grey">
+          Upcoming dispatches
+        </p>
+      )}
+      {upcomingJobs.map((job) => (
+        <article class="grid gap-5 border border-kharon-border bg-white p-4 sm:p-5 lg:grid-cols-[1fr_0.9fr]">
+          <div class="min-w-0">
+            <p class="text-xs font-bold uppercase text-kharon-purple">{job.status}</p>
+            <h2 class="mt-2 text-xl font-bold text-kharon-black">{job.owner_company_name}</h2>
+            <p class="mt-2 text-sm text-kharon-grey">{job.physical_address}</p>
+            {job.physical_address && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-1 inline-block text-xs font-semibold text-kharon-blue hover:underline"
+              >
+                Navigate Navigate
+              </a>
+            )}
+            <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+              <div><dt class="font-bold uppercase text-kharon-grey/70">System</dt><dd>{job.system_type}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Coverage</dt><dd>{job.coverage_area}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Job Type</dt><dd>{job.job_type}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Scheduled</dt><dd>{job.scheduled_date}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Job ID</dt><dd>{job.id}</dd></div>
+            </dl>
+            {job.site_notes && <p class="mt-5 border-l-4 border-kharon-blue bg-kharon-light p-4 text-sm text-kharon-grey">{job.site_notes}</p>}
+          </div>
+          <aside class="grid min-w-0 content-start gap-3 border border-kharon-border bg-kharon-light p-4">
+            <p class="text-xs font-bold uppercase text-kharon-purple">Upcoming  -  not yet due</p>
+            <p class="text-sm leading-6 text-kharon-grey">
+              This dispatch is scheduled for a future date. You can review site details here, but the start and closure form will appear when the job is due.
+            </p>
+          </aside>
         </article>
       ))}
     </div>
