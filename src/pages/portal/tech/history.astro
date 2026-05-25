@@ -64,50 +64,95 @@ try {
       )}
 
       {jobs.length > 0 && (
-        <div class="overflow-x-auto">
-          <table class="min-w-full border-collapse text-sm">
-            <thead>
-              <tr class="border-b border-kharon-border bg-kharon-light">
-                <th class="px-4 py-3 text-left font-semibold">Completed</th>
-                <th class="px-4 py-3 text-left font-semibold">Status</th>
-                <th class="px-4 py-3 text-left font-semibold">Site</th>
-                <th class="px-4 py-3 text-left font-semibold">System</th>
-                <th class="px-4 py-3 text-left font-semibold">Type</th>
-                <th class="px-4 py-3 text-left font-semibold">Comments</th>
-                <th class="px-4 py-3 text-left font-semibold">Jobcard</th>
-              </tr>
-            </thead>
-            <tbody>
-              {jobs.map((job) => (
-                <tr class="border-b border-kharon-border hover:bg-kharon-light">
-                  <td class="px-4 py-3 whitespace-nowrap">{job.completed_at ? job.completed_at.slice(0, 10) : "-"}</td>
-                  <td class="px-4 py-3">
-                    <span class={`inline-block rounded px-2 py-0.5 text-xs font-bold uppercase ${job.status === "Invoiced" ? "bg-emerald-100 text-emerald-800" : "bg-kharon-light text-kharon-grey"}`}>
-                      {job.status}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3">{job.owner_company_name}</td>
-                  <td class="px-4 py-3">{job.coverage_area}</td>
-                  <td class="px-4 py-3 whitespace-nowrap">{job.system_type}</td>
-                  <td class="px-4 py-3 max-w-xs truncate" title={job.tech_comments || ""}>{job.tech_comments || "-"}</td>
-                  <td class="px-4 py-3">
-                    {job.documentation_path ? (
-                      <a
-                        href={`/portal/api/file/${job.documentation_path}`}
-                        class="font-semibold text-kharon-purple hover:underline"
-                        target="_blank"
-                        rel="noopener"
-                      >
-                        PDF
-                      </a>
-                    ) : "-"}
-                  </td>
+        <>
+          <div class="sticky top-0 z-10 mb-4 bg-kharon-light flex flex-wrap items-center gap-3">
+            <input
+              id="history-search"
+              type="search"
+              class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
+              placeholder="Search site or system…"
+              size="26"
+            />
+            <select id="history-status-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
+              <option value="">All statuses</option>
+              <option value="Completed">Completed</option>
+              <option value="Invoiced">Invoiced</option>
+            </select>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse text-sm">
+              <thead>
+                <tr class="border-b border-kharon-border bg-kharon-light">
+                  <th class="px-4 py-3 text-left font-semibold">Completed</th>
+                  <th class="px-4 py-3 text-left font-semibold">Status</th>
+                  <th class="px-4 py-3 text-left font-semibold">Site</th>
+                  <th class="px-4 py-3 text-left font-semibold">System</th>
+                  <th class="px-4 py-3 text-left font-semibold">Type</th>
+                  <th class="px-4 py-3 text-left font-semibold">Comments</th>
+                  <th class="px-4 py-3 text-left font-semibold">Jobcard</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody id="history-rows">
+                {jobs.map((job) => (
+                  <tr
+                    class="border-b border-kharon-border hover:bg-kharon-light"
+                    data-search={`${job.owner_company_name} ${job.coverage_area} ${job.system_type} ${job.job_type || ""} ${job.tech_comments || ""}`}
+                    data-status={job.status}
+                  >
+                    <td class="px-4 py-3 whitespace-nowrap">{job.completed_at ? job.completed_at.slice(0, 10) : "-"}</td>
+                    <td class="px-4 py-3">
+                      <span class={`inline-block rounded px-2 py-0.5 text-xs font-bold uppercase ${job.status === "Invoiced" ? "bg-emerald-100 text-emerald-800" : "bg-kharon-light text-kharon-grey"}`}>
+                        {job.status}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3">{job.owner_company_name}</td>
+                    <td class="px-4 py-3">{job.coverage_area}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">{job.system_type}</td>
+                    <td class="px-4 py-3 max-w-xs truncate" title={job.tech_comments || ""}>{job.tech_comments || "-"}</td>
+                    <td class="px-4 py-3">
+                      {job.documentation_path ? (
+                        <a
+                          href={`/portal/api/file/${job.documentation_path}`}
+                          class="font-semibold text-kharon-purple hover:underline"
+                          target="_blank"
+                          rel="noopener"
+                        >
+                          PDF
+                        </a>
+                      ) : "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p id="history-no-results" class="hidden py-4 text-sm text-kharon-grey">No jobs match your filter.</p>
+        </>
       )}
     </div>
   </section>
+  <script>
+    const search = document.getElementById("history-search") as HTMLInputElement | null;
+    const statusFilter = document.getElementById("history-status-filter") as HTMLSelectElement | null;
+    const tbody = document.getElementById("history-rows");
+    const noResults = document.getElementById("history-no-results");
+
+    function applyFilter() {
+      if (!search || !tbody) return;
+      const q = search.value.toLowerCase().trim();
+      const sv = statusFilter?.value || "";
+      const rows = tbody.querySelectorAll<HTMLTableRowElement>("[data-search]");
+      let visible = 0;
+      for (const row of rows) {
+        const text = (row.dataset.search ?? "").toLowerCase();
+        const show = (!q || text.includes(q)) && (!sv || (row.dataset.status ?? "") === sv);
+        row.style.display = show ? "" : "none";
+        if (show) visible++;
+      }
+      if (noResults) noResults.style.display = visible === 0 ? "" : "none";
+    }
+
+    search?.addEventListener("input", applyFilter);
+    statusFilter?.addEventListener("change", applyFilter);
+  </script>
 </PortalLayout>
