@@ -136,65 +136,53 @@ try {
     <!-- ─── Jobs panel ─────────────────────────────────────────────── -->
     <div id="ops-panel-jobs" class="ops-panel mx-auto grid max-w-7xl gap-8">
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <details class="ops-section" open>
-          <summary class="flex cursor-pointer items-center justify-between">
-            <h2 class="text-xl font-bold">Jobs <span class="ml-2 text-sm font-normal text-kharon-grey">({jobs.length})</span></h2>
-            <span class="text-sm text-kharon-purple">Toggle</span>
-          </summary>
-          <div class="mt-5 grid gap-4">
-            {jobs.slice(0, 20).map((record) => (
-              <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/jobs">
-                <input type="hidden" name="action" value="update" />
-                <input type="hidden" name="id" value={record.id} />
-                <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
-                  {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
-                </select>
-                <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
-                  <option value="">Unassigned</option>
-                  {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
-                </select>
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
-                <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
-                  {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
-                </select>
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
-                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-              </form>
-            ))}
-            {jobs.length > 20 && (
-              <details class="ops-overflow mt-2">
-                <summary class="cursor-pointer rounded-md border border-kharon-border bg-kharon-light px-4 py-3 text-sm font-semibold text-kharon-purple">
-                  Show {jobs.length - 20} more jobs…
-                </summary>
-                <div class="mt-4 grid gap-4">
-                  {jobs.slice(20).map((record) => (
-                    <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/jobs">
-                      <input type="hidden" name="action" value="update" />
-                      <input type="hidden" name="id" value={record.id} />
-                      <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
-                        {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
-                      </select>
-                      <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
-                        <option value="">Unassigned</option>
-                        {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
-                      </select>
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
-                      <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
-                        {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
-                      </select>
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
-                      <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                      <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-                    </form>
-                  ))}
-                </div>
-              </details>
-            )}
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-xl font-bold">Jobs <span class="ml-2 text-sm font-normal text-kharon-grey">({jobs.length})</span></h2>
+          <div class="flex flex-wrap gap-3">
+            <input
+              id="jobs-search"
+              type="search"
+              class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+              placeholder="Search site or area…"
+              size="24"
+            />
+            <select id="jobs-status-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+              <option value="">All statuses</option>
+              {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
+                <option value={s}>{s}</option>
+              ))}
+            </select>
           </div>
-        </details>
+        </div>
+        <div id="jobs-list" class="grid gap-4">
+          {jobs.map((record) => (
+            <form
+              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
+              data-endpoint="/portal/api/admin/jobs"
+              data-search={`${record.owner_company_name} ${record.coverage_area || ""} ${record.job_type || ""} ${record.site_notes || ""}`}
+              data-status={record.status}
+            >
+              <input type="hidden" name="action" value="update" />
+              <input type="hidden" name="id" value={record.id} />
+              <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
+                {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
+              </select>
+              <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
+                <option value="">Unassigned</option>
+                {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
+              </select>
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
+              <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
+                {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
+              </select>
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
+              <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+            </form>
+          ))}
+        </div>
+        <p id="jobs-no-results" class="hidden py-4 text-sm text-kharon-grey">No jobs match your filter.</p>
       </article>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
@@ -225,14 +213,33 @@ try {
     <!-- ─── Users panel ────────────────────────────────────────────── -->
     <div id="ops-panel-users" class="ops-panel mx-auto grid max-w-7xl gap-8">
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <details class="ops-section" open>
-          <summary class="flex cursor-pointer items-center justify-between">
-            <h2 class="text-xl font-bold">Users <span class="ml-2 text-sm font-normal text-kharon-grey">({users.length})</span></h2>
-            <span class="text-sm text-kharon-purple">Toggle</span>
-          </summary>
-        <div class="mt-5 grid gap-4">
-          {users.slice(0, 15).map((record) => (
-            <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6" data-endpoint="/portal/api/admin/users">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-xl font-bold">Users <span class="ml-2 text-sm font-normal text-kharon-grey">({users.length})</span></h2>
+          <div class="flex flex-wrap gap-3">
+            <input
+              id="users-search"
+              type="search"
+              class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+              placeholder="Search name or email…"
+              size="24"
+            />
+            <select id="users-role-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+              <option value="">All roles</option>
+              <option value="tech">Technician</option>
+              <option value="admin">Admin</option>
+              <option value="client">Client</option>
+              <option value="finance">Finance</option>
+            </select>
+          </div>
+        </div>
+        <div id="users-list" class="grid gap-4">
+          {users.map((record) => (
+            <form
+              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6"
+              data-endpoint="/portal/api/admin/users"
+              data-search={`${record.name} ${record.email} ${record.role}`}
+              data-role={record.role}
+            >
               <input type="hidden" name="action" value="update" />
               <input type="hidden" name="id" value={record.id} />
               <input class="rounded-md border border-kharon-border px-3 py-2" name="name" value={record.name} />
@@ -267,53 +274,8 @@ try {
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
             </form>
           ))}
-          {users.length > 15 && (
-            <details class="ops-overflow mt-2">
-              <summary class="cursor-pointer rounded-md border border-kharon-border bg-kharon-light px-4 py-3 text-sm font-semibold text-kharon-purple">
-                Show {users.length - 15} more users…
-              </summary>
-              <div class="mt-4 grid gap-4">
-                {users.slice(15).map((record) => (
-                  <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6" data-endpoint="/portal/api/admin/users">
-                    <input type="hidden" name="action" value="update" />
-                    <input type="hidden" name="id" value={record.id} />
-                    <input class="rounded-md border border-kharon-border px-3 py-2" name="name" value={record.name} />
-                    <input class="rounded-md border border-kharon-border px-3 py-2" value={record.email} disabled />
-                    <select class="rounded-md border border-kharon-border px-3 py-2" name="role">
-                      {["tech", "admin", "client", "finance"].map((role) => <option value={role} selected={record.role === role}>{role}</option>)}
-                    </select>
-                    <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
-                      <option value="">No site</option>
-                      {sites.map((site) => <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>)}
-                    </select>
-                    <div class="grid gap-2 text-sm">
-                      <label><input type="checkbox" name="isActive" checked={Boolean(record.is_active)} /> Active</label>
-                      <label><input type="checkbox" name="forcePasswordChange" checked={Boolean(record.force_password_change)} /> Rotate password</label>
-                      {["admin", "finance"].includes(record.role) && (
-                        <label><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
-                      )}
-                      {record.mfa_enabled && <span class="text-xs font-bold uppercase text-emerald-700">MFA enabled</span>}
-                    </div>
-                    <div class="grid gap-2">
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="password" type="password" placeholder="Optional reset password" />
-                      <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                      <button class="generate-reset-link rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" type="button" data-user-id={record.id}>
-                        Issue reset link
-                      </button>
-                      {record.mfa_enabled && (
-                        <button class="reset-mfa rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900" type="button" data-user-id={record.id}>
-                          Reset MFA
-                        </button>
-                      )}
-                    </div>
-                    <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
-                  </form>
-                ))}
-              </div>
-            </details>
-          )}
         </div>
-        </details>
+        <p id="users-no-results" class="hidden py-4 text-sm text-kharon-grey">No users match your filter.</p>
       </article>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
@@ -344,115 +306,87 @@ try {
     <!-- ─── Sites & Systems panel ──────────────────────────────────── -->
     <div id="ops-panel-sites" class="ops-panel mx-auto grid max-w-7xl gap-8">
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <details class="ops-section" open>
-          <summary class="flex cursor-pointer items-center justify-between">
-            <h2 class="text-xl font-bold">Sites <span class="ml-2 text-sm font-normal text-kharon-grey">({sites.length})</span></h2>
-            <span class="text-sm text-kharon-purple">Toggle</span>
-          </summary>
-          <div class="mt-5 grid gap-4">
-            {sites.slice(0, 15).map((record) => (
-              <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6" data-endpoint="/portal/api/admin/sites">
-                <input type="hidden" name="action" value="update" />
-                <input type="hidden" name="id" value={record.id} />
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="ownerCompanyName" value={record.owner_company_name} />
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPerson" value={record.site_contact_person} />
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPhone" value={record.site_contact_phone || ""} />
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="billingEmails" value={record.billing_emails} />
-                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                <textarea class="min-h-20 rounded-md border border-kharon-border px-3 py-2 lg:col-span-6" name="physicalAddress">{record.physical_address}</textarea>
-                <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
-              </form>
-            ))}
-            {sites.length > 15 && (
-              <details class="ops-overflow mt-2">
-                <summary class="cursor-pointer rounded-md border border-kharon-border bg-kharon-light px-4 py-3 text-sm font-semibold text-kharon-purple">
-                  Show {sites.length - 15} more sites…
-                </summary>
-                <div class="mt-4 grid gap-4">
-                  {sites.slice(15).map((record) => (
-                    <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6" data-endpoint="/portal/api/admin/sites">
-                      <input type="hidden" name="action" value="update" />
-                      <input type="hidden" name="id" value={record.id} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="ownerCompanyName" value={record.owner_company_name} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPerson" value={record.site_contact_person} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPhone" value={record.site_contact_phone || ""} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="billingEmails" value={record.billing_emails} />
-                      <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                      <textarea class="min-h-20 rounded-md border border-kharon-border px-3 py-2 lg:col-span-6" name="physicalAddress">{record.physical_address}</textarea>
-                      <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
-                    </form>
-                  ))}
-                </div>
-              </details>
-            )}
-          </div>
-        </details>
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-xl font-bold">Sites <span class="ml-2 text-sm font-normal text-kharon-grey">({sites.length})</span></h2>
+          <input
+            id="sites-search"
+            type="search"
+            class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+            placeholder="Search company…"
+            size="24"
+          />
+        </div>
+        <div id="sites-list" class="grid gap-4">
+          {sites.map((record) => (
+            <form
+              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6"
+              data-endpoint="/portal/api/admin/sites"
+              data-search={`${record.owner_company_name} ${record.site_contact_person || ""} ${record.site_contact_email || ""}`}
+            >
+              <input type="hidden" name="action" value="update" />
+              <input type="hidden" name="id" value={record.id} />
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="ownerCompanyName" value={record.owner_company_name} />
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPerson" value={record.site_contact_person} />
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPhone" value={record.site_contact_phone || ""} />
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="billingEmails" value={record.billing_emails} />
+              <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+              <textarea class="min-h-20 rounded-md border border-kharon-border px-3 py-2 lg:col-span-6" name="physicalAddress">{record.physical_address}</textarea>
+              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
+            </form>
+          ))}
+        </div>
+        <p id="sites-no-results" class="hidden py-4 text-sm text-kharon-grey">No sites match your search.</p>
       </article>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <details class="ops-section">
-          <summary class="flex cursor-pointer items-center justify-between">
-            <h2 class="text-xl font-bold">Systems <span class="ml-2 text-sm font-normal text-kharon-grey">({systems.length})</span></h2>
-            <span class="text-sm text-kharon-purple">Toggle</span>
-          </summary>
-          <div class="mt-5 grid gap-4">
-            {systems.slice(0, 15).map((record) => (
-              <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/systems">
-                <input type="hidden" name="action" value="update" />
-                <input type="hidden" name="id" value={record.id} />
-                <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
-                  {sites.map((site) => <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>)}
-                </select>
-                <select class="rounded-md border border-kharon-border px-3 py-2" name="systemType">
-                  {["Gas Suppression", "Fire Detection"].map((type) => <option value={type} selected={record.system_type === type}>{type}</option>)}
-                </select>
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="coverageArea" value={record.coverage_area} />
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="manufacturer" value={record.manufacturer || ""} />
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="modelReference" value={record.model_reference || ""} />
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="nextDueDate" type="date" value={record.next_due_date} />
-                <div class="flex items-center gap-2">
-                  <label class="text-xs font-semibold whitespace-nowrap">Interval (mo.)</label>
-                  <input class="w-16 rounded-md border border-kharon-border px-2 py-2 text-sm" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} />
-                </div>
-                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-              </form>
-            ))}
-            {systems.length > 15 && (
-              <details class="ops-overflow mt-2">
-                <summary class="cursor-pointer rounded-md border border-kharon-border bg-kharon-light px-4 py-3 text-sm font-semibold text-kharon-purple">
-                  Show {systems.length - 15} more systems…
-                </summary>
-                <div class="mt-4 grid gap-4">
-                  {systems.slice(15).map((record) => (
-                    <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/systems">
-                      <input type="hidden" name="action" value="update" />
-                      <input type="hidden" name="id" value={record.id} />
-                      <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
-                        {sites.map((site) => <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>)}
-                      </select>
-                      <select class="rounded-md border border-kharon-border px-3 py-2" name="systemType">
-                        {["Gas Suppression", "Fire Detection"].map((type) => <option value={type} selected={record.system_type === type}>{type}</option>)}
-                      </select>
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="coverageArea" value={record.coverage_area} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="manufacturer" value={record.manufacturer || ""} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="modelReference" value={record.model_reference || ""} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="nextDueDate" type="date" value={record.next_due_date} />
-                      <div class="flex items-center gap-2">
-                        <label class="text-xs font-semibold whitespace-nowrap">Interval (mo.)</label>
-                        <input class="w-16 rounded-md border border-kharon-border px-2 py-2 text-sm" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} />
-                      </div>
-                      <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                      <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-                    </form>
-                  ))}
-                </div>
-              </details>
-            )}
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-xl font-bold">Systems <span class="ml-2 text-sm font-normal text-kharon-grey">({systems.length})</span></h2>
+          <div class="flex flex-wrap gap-3">
+            <input
+              id="systems-search"
+              type="search"
+              class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+              placeholder="Search site or area…"
+              size="24"
+            />
+            <select id="systems-type-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+              <option value="">All types</option>
+              <option value="Gas Suppression">Gas Suppression</option>
+              <option value="Fire Detection">Fire Detection</option>
+            </select>
           </div>
-        </details>
+        </div>
+        <div id="systems-list" class="grid gap-4">
+          {systems.map((record) => (
+            <form
+              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
+              data-endpoint="/portal/api/admin/systems"
+              data-search={`${record.owner_company_name} ${record.coverage_area} ${record.manufacturer || ""} ${record.model_reference || ""}`}
+              data-systype={record.system_type}
+            >
+              <input type="hidden" name="action" value="update" />
+              <input type="hidden" name="id" value={record.id} />
+              <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
+                {sites.map((site) => <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>)}
+              </select>
+              <select class="rounded-md border border-kharon-border px-3 py-2" name="systemType">
+                {["Gas Suppression", "Fire Detection"].map((type) => <option value={type} selected={record.system_type === type}>{type}</option>)}
+              </select>
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="coverageArea" value={record.coverage_area} />
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="manufacturer" value={record.manufacturer || ""} />
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="modelReference" value={record.model_reference || ""} />
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="nextDueDate" type="date" value={record.next_due_date} />
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-semibold whitespace-nowrap">Interval (mo.)</label>
+                <input class="w-16 rounded-md border border-kharon-border px-2 py-2 text-sm" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} />
+              </div>
+              <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+            </form>
+          ))}
+        </div>
+        <p id="systems-no-results" class="hidden py-4 text-sm text-kharon-grey">No systems match your filter.</p>
       </article>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
@@ -585,6 +519,7 @@ try {
   </section>
 
   <script>
+    // ─── Tab switching ────────────────────────────────────────────────
     const VALID_TABS = ["enquiries", "jobs", "users", "sites", "data"];
     const CLS_ACTIVE = "ops-tab rounded-md px-4 py-2 text-sm font-semibold bg-kharon-purple text-white";
     const CLS_INACTIVE = "ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey";
@@ -606,6 +541,79 @@ try {
     for (const btn of document.querySelectorAll<HTMLButtonElement>(".ops-tab")) {
       btn.addEventListener("click", () => switchTab(btn.dataset.tab ?? "enquiries"));
     }
+
+    // ─── Panel search / filter ────────────────────────────────────────
+    interface FilterSelect {
+      id: string;
+      attr: string;
+    }
+
+    function initFilter(opts: {
+      listId: string;
+      searchId: string;
+      noResultsId: string;
+      filterSelects?: FilterSelect[];
+    }) {
+      const list = document.getElementById(opts.listId);
+      const search = document.getElementById(opts.searchId) as HTMLInputElement | null;
+      const noResults = document.getElementById(opts.noResultsId);
+      if (!list || !search) return;
+
+      const selects = (opts.filterSelects ?? []).map((f) => ({
+        el: document.getElementById(f.id) as HTMLSelectElement | null,
+        attr: f.attr,
+      }));
+
+      function apply() {
+        const q = search.value.toLowerCase().trim();
+        const rows = list!.querySelectorAll<HTMLElement>("[data-search]");
+        let visible = 0;
+        for (const row of rows) {
+          const text = (row.dataset.search ?? "").toLowerCase();
+          const matchSearch = !q || text.includes(q);
+          const matchSelects = selects.every((f) => {
+            if (!f.el?.value) return true;
+            return (row.dataset[f.attr] ?? "") === f.el.value;
+          });
+          const show = matchSearch && matchSelects;
+          row.style.display = show ? "" : "none";
+          if (show) visible++;
+        }
+        if (noResults) noResults.style.display = visible === 0 ? "" : "none";
+      }
+
+      search.addEventListener("input", apply);
+      for (const f of selects) {
+        f.el?.addEventListener("change", apply);
+      }
+    }
+
+    initFilter({
+      listId: "jobs-list",
+      searchId: "jobs-search",
+      noResultsId: "jobs-no-results",
+      filterSelects: [{ id: "jobs-status-filter", attr: "status" }],
+    });
+
+    initFilter({
+      listId: "users-list",
+      searchId: "users-search",
+      noResultsId: "users-no-results",
+      filterSelects: [{ id: "users-role-filter", attr: "role" }],
+    });
+
+    initFilter({
+      listId: "sites-list",
+      searchId: "sites-search",
+      noResultsId: "sites-no-results",
+    });
+
+    initFilter({
+      listId: "systems-list",
+      searchId: "systems-search",
+      noResultsId: "systems-no-results",
+      filterSelects: [{ id: "systems-type-filter", attr: "systype" }],
+    });
   </script>
 
   <script is:inline>
