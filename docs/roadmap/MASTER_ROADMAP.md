@@ -131,7 +131,7 @@ Current project status:
 | Portal document access | Implemented for staging | R2 file route checks authorization and records document-access outcomes. |
 | Portal role dashboards | Implemented foundation | Admin, technician, client and finance dashboards exist; scale refinement and manual role QA remain open. |
 | Remote D1 migration ledger | Reconciled for staging | Remote migrations through `0018_finance_task_status_pipeline.sql` are applied and Wrangler reports no pending remote migrations as of 2026-05-25. |
-| Technician evidence | Partially implemented | Signature capture, jobcard PDF and limited photo evidence exist; visit logging with GPS and arrival capture added in Phase 16; offline drafts, structured inspection fields, defect capture within jobcard closure and richer SANS-aware telemetry remain open. |
+| Technician evidence | Substantially implemented | Signature capture, jobcard PDF, photo evidence with categories, visit arrival/outcome workflow, defect capture, unable-to-complete with structured reasons and SANS-aligned checklist foundations exist. GPS autofill, offline drafts, structured parts/labour and checklist persistence remain open. |
 | Finance workflow | Partially implemented | Ledger, export and payment capture foundations exist for staging, but Sage is now defined as the finance source of truth; Phase 21 must refactor portal finance into a Sage manual control register. |
 | Public authority proof | Partially implemented | Page copy and schematic proof exist; approved real imagery, case evidence, document examples and compliance hub depth remain open. |
 | Responsive QA | Partially implemented | Header/tablet issue is resolved; full desktop/tablet/mobile screenshot QA across public pages and portal roles remains open. |
@@ -185,15 +185,19 @@ Verified current state:
 - Phase 16 local schema/migrations and role dashboard integrations exist for `clients`, `job_visits`, `defects` and `certificates`.
 - Phase 21 local Sage reference fields, finance dashboard controls, missing Sage reference queue and finance CSV export fields exist.
 - Phase 24 admin operations and finance ledger now use query-parameter pagination; remaining capped views are admin planning and technician history.
-- Phase 25 admin compliance console, defect/certificate CRUD APIs, client defect/certificate display, technician defect capture and Sage jobcard finance handoff are implemented.
+- Phase 25 admin compliance console, defect/certificate CRUD APIs, client defect/certificate display, technician defect capture, Sage jobcard finance handoff, certificate eligibility auto-derivation and SANS clause datalist are implemented.
 - Phase 26 admin audit console and audit CSV export exist.
+- Phase 22 focused tech dispatch workflow: dedicated `/portal/tech/jobs/[id].astro` page, visit arrival/outcome logging, Unable To Complete with structured reasons, evidence categories and SANS checklist foundations exist.
+- Phase 23 dispatch board date filter (Today/Next 7 Days/All Dates), navigate links and planning page SLA breach/warning indicators implemented.
 
 Accuracy corrections made:
 
 - Remote D1 status corrected from fully reconciled to drift identified.
 - Phase 16 status corrected from live-ready complete to local implementation complete, then verified live-ready after remote D1 migrations were applied.
 - Phase 21 status corrected to show Sage reference implementation, quote-approval handoff and status pipeline work complete while no-charge/on-hold and Sage document upload/link workflows remain open.
-- Phase 25 status corrected from Pending to substantially implemented (compliance console, defect/certificate register, client visibility, technician capture, Sage finance handoff). Eligibility automation and production SOP remain open.
+- Phase 22 status updated from partially deployed to substantially deployed; focused job detail page and visit workflow complete.
+- Phase 23 status updated; date filter, navigate links and planning SLA indicators added.
+- Phase 25 status updated; certificate eligibility auto-derivation and SANS clause datalist complete; only finance handoff validation and SOP sign-off remain.
 - Master task list checkboxes corrected for completed public technical proof, compliance hub, CTA routing, bundle budget, Phase 16 local schema work, Phase 21 Sage reference foundations, Phase 24 foundation work, Phase 25 defect/certificate/compliance work and Phase 26 audit console.
 
 Current blockers verified:
@@ -1926,21 +1930,37 @@ Deployable gate:
 - `npm run build` passes.
 - `npm run audit:site` passes.
 
-Partial implementation on 2026-05-25:
+Implementation on 2026-05-25:
 
 - [x] Add customer/responsible-person name and role/title fields beside signature. Name is required, title is optional. Both captured in the jobcard form and normalized in the API. PDF renders name and title in a right-side column box next to the signature box. Signatory is audit logged by name.
 - [x] Add navigation/map link from site address where safe. "↗ Navigate" link on each dispatch card opens Google Maps with the address as the query parameter. Renders only when physical_address is present. Opens in new tab with noopener/noreferrer.
 - [x] Technician history has search and status filter. Already implemented in prior session.
-- [x] Add visit history panel per dispatch card. Tech dashboard queries `job_visits` for each assigned job and renders a collapsible visit history strip showing visit_date, arrival_at, departure_at, GPS coordinates (if captured), customer name/title and notes. Committed c4ab48c.
 - [x] Add defect capture panel in jobcard closure. A structured defect entry section was added to the technician jobcard closure flow; technician can capture severity (Critical/Major/Minor/Observation), SANS clause reference, description and certificate-blocking flag before submitting. Committed c4ab48c.
 
-Remaining Phase 22 tasks pending schema or major complexity:
+Implementation on 2026-05-25 (commit 534536c):
 
-- GPS check-in/check-out, visit timestamps, offline draft, SANS checklists, unable-to-complete workflow, structured parts/labour model, certificate-blocking from technician, photo evidence categories, day summary view — all pending schema expansion or major refactor.
+- [x] Replace full inline jobcard forms with a compact dispatch list linking to a dedicated focused workflow. Dashboard now lists dispatches with priority and emergency badges; each card links to `/portal/tech/jobs/[id]`. All inline form code extracted from dashboard. Uses `<script is:inline>` throughout to stay within JS asset allowlist.
+- [x] Add job detail page at `/portal/tech/jobs/[id].astro`. Full focused field workflow: site package panel, navigate link, start-job button, check-in/arrival form, visit outcome form, visit history, system-type-specific SANS checklist foundation, jobcard closure form with defect capture, photo evidence and signature canvas.
+- [x] Add structured visit status to job_visits. Migration 0020 adds `visit_status TEXT NOT NULL DEFAULT 'Arrived'` with values: Travelling, Arrived, In Progress, Completed, Unable To Complete, Follow-up Required, Quote Required. Also adds `unable_reason TEXT` with 8 controlled reasons.
+- [x] Add visit outcome form with Unable To Complete and structured reason selector. Conditional `unableReason` select appears only when "Unable To Complete" is chosen.
+- [x] Add arrival check-in form with GPS lat/lng, on-site contact name/title and arrival notes.
+- [x] Add photo evidence categories. Evidence category dropdown (General Evidence, Before, After, Defect, Panel, Label, Cylinder) applied to all photos in a submission.
+- [x] Add SANS-aligned checklist foundation per system type. Fire detection jobs show 6 checklist items (panel, loop faults, battery, detector/MCP, sounder/strobe, cause-and-effect). Gas suppression jobs show 6 items (cylinder, release panel, abort/manual, nozzle, signage, detection integration). Rendered as visible reference list inside jobcard closure.
+- [x] Rate-limit `/portal/api/job-visits` in middleware (40 attempts / 15 min window).
+
+Remaining Phase 22 tasks:
+
+- GPS check-in/check-out autofill (Geolocation API integration not yet wired; GPS fields are present but manual).
+- Offline draft save and sync queue for poor-signal environments.
+- Structured parts/materials capture with quantity and part number fields.
+- Structured labour time capture (start/end or duration).
+- Technician day summary view (all jobs for the day on one screen).
+- Jobcard PDF update to include structured checklist results, visit times and GPS if captured.
+- SANS checklist fields as captured checkboxes (currently reference list only; checked items not persisted).
 
 Status:
 
-Partially deployed on 2026-05-25.
+Substantially deployed on 2026-05-25. Focused job detail page, visit workflow (arrival/outcome/unable-to-complete), evidence categories, system-type checklist foundations, defect capture, signature and jobcard submission all implemented. GPS autofill, offline draft, structured parts/labour and checklist persistence remain open.
 
 ### Phase 23 - Admin Dispatch Board And SLA Operations
 
@@ -2034,18 +2054,21 @@ Implementation on 2026-05-25 (commit 91553ab):
 - [x] Admin jobs API updated to accept priority, is_emergency, required_by_date, estimated_duration_minutes in create and update actions. commit 91553ab.
 - [x] Dispatch board uses `<script is:inline>` — no additional bundled JS asset. CSS budget 55 618 bytes, JS budget 16 923 bytes. `npm run build` and `npm run audit:site` pass.
 
+Additional implementation on 2026-05-25 (commits 120b34e, 7fd06eb):
+
+- [x] Add date selector / daily or weekly view filter to dispatch board. Three filter buttons (Today, Next 7 Days, All Dates) plus a date picker added to the dispatch filter bar. Client-side filter reads `data-date` attributes on cards and applies the window without page reload. commit 120b34e.
+- [x] Add route/geography hint from site address on dispatch cards. Navigate links on both unassigned queue cards and dispatched job cards open Google Maps with the physical_address as query. Renders only when address is present. commit 120b34e.
+- [x] Add SLA breach/warning visual indicators to planning page. Two new stat cards (SLA Breached, SLA Warning) added to the management summary header. Schedule list job cards gain colour-coded left borders: red for passed required-by-date, amber for within 3 days, blue for on-track. Aggregate counts computed in the SQL query. commit 7fd06eb.
+
 Remaining Phase 23 work:
 
-- Dispatch board shows jobs grouped per technician (currently sorted, not grouped).
-- Date selector / daily or weekly view filter.
-- Convert client request directly to dispatch from the board.
-- Breach/warning visual indicators in the planning page.
-- Job status transitions (Scheduled → In Progress → Completed) from admin if needed.
-- Route / geography hint from site address on dispatch cards.
+- Dispatch board shows jobs grouped per technician column (currently sorted, not grouped into swimlane columns).
+- Convert client request directly to dispatch from the board (currently requires creating a job separately).
+- Job status transitions (Scheduled → In Progress → Completed) controlled by admin from the dispatch board.
 
 Status:
 
-Substantially implemented on 2026-05-25. Core unassigned queue, technician assignment, priority/SLA/emergency dispatch fields, dispatch API, client-side filters and Dispatch nav link deployed. Job grouping by technician, date selector and request-to-dispatch conversion remain open.
+Substantially implemented on 2026-05-25. Core unassigned queue, technician assignment, priority/SLA/emergency dispatch fields, dispatch API, date filter, navigate links, planning SLA indicators and client-side filters deployed. Technician swimlane grouping, direct request-to-dispatch conversion and admin-controlled status transitions remain open.
 
 ### Phase 24 - Admin Portal Information Architecture And Scale Retune
 
@@ -2245,17 +2268,20 @@ Partial implementation on 2026-05-25 (commit c4ab48c):
 - [x] Defects trigger Sage quote-required finance tasks. `submit-jobcard` sets `finance_task_status` to `'Quote Required'` when certificate-blocking defects are present on the job; otherwise `'Invoice Required'`. commit c4ab48c.
 - [x] Add audit logging for defect and certificate operations. All defect and certificate API actions are audit logged with entityType, entityId, eventType and outcome.
 
+Additional implementation on 2026-05-25 (commit e1d9018):
+
+- [x] Certificate eligibility auto-derivation. `/portal/api/admin/defects.js` now auto-blocks Valid certificates on a system when a certificate-blocking defect is created or updated to active status. When the last certificate-blocking defect on a system is resolved or closed (or its blocking flag is cleared), Blocked certificates for that system are automatically restored to Valid. Helper functions `autoBlockCertificates` and `maybeRestoreCertificates` implement the check. All cert changes are reflected in the API response (`certificatesBlocked`, `certificatesRestored`) and the UI surfaces a contextual confirmation message. commit e1d9018.
+- [x] SANS clause reference datalist. Both sansClauseRef inputs in the defects section of the operations page are wired to a `<datalist id="sans-clauses">` providing SANS 10139 and SANS 14520 clause options (main clause and numbered sub-clauses). commit e1d9018.
+
 Remaining Phase 25 work:
 
 - Defect-to-quote finance handoff integration (defect quoteRequired action partially wired; financial_records update query needs validation against real staging data).
-- Certificate eligibility logic (certificates can be marked Blocked but eligibility auto-derivation from open defects is not yet automated).
-- SANS clause reference controlled list UI (free-text input only; a validated SANS clause picker is deferred).
 - Audit logging for certificate issue events beyond create/update (specifically certificate-issued-to-client event type).
 - Full production compliance SOP sign-off.
 
 Status:
 
-Substantially implemented on 2026-05-25. Core defect register, certificate register, compliance console, client visibility, technician defect capture and Sage finance handoff integration complete. Eligibility automation, controlled SANS list and production SOP sign-off remain open.
+Substantially implemented on 2026-05-25. Core defect register, certificate register, compliance console, client visibility, technician defect capture, Sage finance handoff integration, certificate eligibility auto-derivation and SANS clause datalist complete. Finance handoff validation and production SOP sign-off remain open.
 
 ### Phase 26 - Admin Audit And Security Review Console
 
