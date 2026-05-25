@@ -1263,7 +1263,7 @@ Pending:
 - Contact form email notification delivery is deferred to Phase 9 (provider-backed email).
 - Page-view and CTA click tracking require provider selection.
 
-Status: contact form server-side handler implemented. Analytics provider integration pending director approval of a POPIA-compliant provider.
+Status: contact form server-side handler implemented. `ContextualInquiry` component converted from `mailto:` to `fetch`-based `/api/contact` submission on 2026-05-25; all 8 public service pages now submit server-side with honeypot, inline error/success states, and rate-limit protection. `ALLOWED_REQUEST_TYPES` expanded to cover all contextual inquiry types. Analytics provider integration pending director approval of a POPIA-compliant provider.
 
 
 ### Phase 13 - Security Headers And Browser Hardening
@@ -1655,9 +1655,22 @@ Future implementation notes:
 - Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only.
 - Finance export should include Sage reference fields and retain formula-injection protection.
 
+Partial implementation on 2026-05-25:
+
+- Finance dashboard "Mark settled" button renamed to "Record Paid in Sage".
+- Finance dashboard confirm dialog, progress text and result text updated to Sage framing.
+- Finance dashboard payment reference input placeholder changed to "Sage payment reference".
+- Finance dashboard total card label "Settled" changed to "Paid in Sage".
+- Finance dashboard subtitle updated to "payments recorded in Sage".
+- Finance table status display shows "Paid in Sage" instead of "Settled" for settled records.
+- Client quotes page total card label and table status display updated to match.
+- Client quotes page subtitle reworded to clarify Sage as the source of official documents.
+- `payments.js` internal error message updated to Sage-aligned language.
+- Underlying DB column values remain "Settled"; schema refactor deferred to full Phase 21.
+
 Status:
 
-Pending.
+Terminology pass complete. Full Phase 21 schema and workflow refactor (Sage reference fields, finance task model, status pipeline) pending.
 
 ### Phase 22 - Technician Field Workflow Maturity
 
