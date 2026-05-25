@@ -162,12 +162,27 @@ try {
         </div>
       </form>
 
-      <!-- ─── Result summary ─────────────────────────────────────────── -->
-      <p class="mb-4 text-sm text-kharon-grey">
-        {events.length} event{events.length === 1 ? "" : "s"}
-        {isFiltered ? " matching filter" : ""}
-        {events.length === 100 ? " — showing 100 most recent" : ""}
-      </p>
+      <!-- ─── Result summary + export ───────────────────────────────────── -->
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm text-kharon-grey">
+          {events.length} event{events.length === 1 ? "" : "s"}
+          {isFiltered ? " matching filter" : ""}
+          {events.length === 100 ? " — showing 100 most recent" : ""}
+        </p>
+        {(() => {
+          const exportParams = new URLSearchParams();
+          if (filterCategory) exportParams.set("category", filterCategory);
+          if (filterOutcome)  exportParams.set("outcome",  filterOutcome);
+          if (filterFrom)     exportParams.set("from",     filterFrom);
+          if (filterTo)       exportParams.set("to",       filterTo);
+          const exportHref = `/portal/api/admin/audit-export${exportParams.size ? "?" + exportParams.toString() : ""}`;
+          return (
+            <a href={exportHref} class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black hover:bg-kharon-light">
+              Export CSV
+            </a>
+          );
+        })()}
+      </div>
 
       <!-- ─── Event list ─────────────────────────────────────────────── -->
       <div class="grid gap-3">
