@@ -34,7 +34,7 @@ Implemented:
 - Astro 6 SSR site on the Cloudflare adapter, serving the public website and the portal from one codebase.
 - Public shell remains lightweight and mostly server-rendered with code-native SVG/HTML technical visuals.
 - Required pages: `/`, `/gas-suppression`, `/fire-detection`, `/compliance-maintenance`, `/critical-infrastructure`, `/emergency-support`, `/security-systems`, `/industries`, `/about`, `/contact`.
-- Portal routes: `/portal/login`, `/portal/reset`, `/portal/account/password`, `/portal/account/mfa`, `/portal/tech/dashboard`, `/portal/tech/history`, `/portal/admin/dashboard`, `/portal/admin/planning`, `/portal/admin/operations`, `/portal/client/dashboard`, `/portal/client/quotes`, `/portal/finance/dashboard`.
+- Portal routes: `/portal/login`, `/portal/reset`, `/portal/account/password`, `/portal/account/mfa`, `/portal/tech/dashboard`, `/portal/tech/history`, `/portal/admin/dashboard`, `/portal/admin/planning`, `/portal/admin/dispatch`, `/portal/admin/operations`, `/portal/admin/compliance`, `/portal/admin/audit`, `/portal/client/dashboard`, `/portal/client/quotes`, `/portal/finance/dashboard`.
 - Portal APIs: `/portal/api/auth`, `/portal/api/logout`, `/portal/api/reset-password`, `/portal/api/change-password`, `/portal/api/mfa`, `/portal/api/job-status`, `/portal/api/job-visits`, `/portal/api/submit-jobcard`, `/portal/api/maintenance-request`, `/portal/api/admin/users`, `/portal/api/admin/sites`, `/portal/api/admin/systems`, `/portal/api/admin/jobs`, `/portal/api/admin/import`, `/portal/api/admin/export`, `/portal/api/admin/client-site-access`, `/portal/api/admin/maintenance-requests`, `/portal/api/approve-quote`, `/portal/api/finance/payments`, `/portal/api/finance/export`, `/portal/api/finance/sage-reference`, `/portal/api/file/[...key]`, `/api/contact`.
 - D1 schema includes: `users`, `sites`, `systems`, `jobs`, `financial_records`, `maintenance_requests`, `client_site_access`, `audit_events`, `job_evidence_files`, `document_access_logs`, `portal_rate_limits`, `password_reset_tokens`, `revoked_sessions`, `contact_submissions`, `clients`, `job_visits`, `defects`, `certificates`.
 - Core components: `BaseLayout`, `Header`, `Footer`, `CinematicHero`, `RouteMatrix`, `Hero`, `ContextualInquiry`, `ComplianceStrip`, `SectorRiskGrid`, `EngineeringSystems`, `AuthorityEvidence`, `EmergencyResponse`, `SectionHeading`, `Button`.
@@ -2018,9 +2018,34 @@ Deployable gate:
 - `npm run build` passes.
 - `npm run audit:site` passes.
 
+Implementation on 2026-05-25 (commit 91553ab):
+
+- [x] Create dedicated Dispatch Board route at `/portal/admin/dispatch`. Unassigned queue + dispatched jobs view, stat cards, client-side search/priority/status filter. commit 91553ab.
+- [x] Add unassigned job queue. Jobs with no assigned technician and status Scheduled are shown in priority order in the Unassigned Queue panel. commit 91553ab.
+- [x] Add assign/reassign technician action. Inline assign form with technician dropdown on each unassigned card; reassign via collapsible form on dispatched cards. commit 91553ab.
+- [x] Add priority field to jobs. `priority TEXT CHECK (priority IN ('Critical','High','Normal','Low'))` with default 'Normal'. Migration 0019. commit 91553ab.
+- [x] Add required-by date field to jobs. `required_by_date TEXT` for SLA deadline tracking. Migration 0019. commit 91553ab.
+- [x] Add SLA status calculation. Days-until-required computed in frontmatter; Breached / Warning (<=3d) / On Track labels rendered per job card. commit 91553ab.
+- [x] Add SLA warning stat card. Count of active jobs with required_by_date within 3 days shown in dispatch stats. commit 91553ab.
+- [x] Add after-hours/emergency flag. `is_emergency INTEGER` added to jobs with prominent red "Emergency" badge on dispatch cards. Migration 0019. commit 91553ab.
+- [x] Add estimated duration field. `estimated_duration_minutes INTEGER` nullable field on jobs; exposed in dispatch settings. Migration 0019. commit 91553ab.
+- [x] Add dispatch API. `/portal/api/admin/dispatch` handles `assign`, `unassign` and `setDispatch` actions; all audit logged. commit 91553ab.
+- [x] Add dispatch nav link. "Dispatch" nav item added to admin portal navigation between Planning and Operations. commit 91553ab.
+- [x] Admin jobs API updated to accept priority, is_emergency, required_by_date, estimated_duration_minutes in create and update actions. commit 91553ab.
+- [x] Dispatch board uses `<script is:inline>` — no additional bundled JS asset. CSS budget 55 618 bytes, JS budget 16 923 bytes. `npm run build` and `npm run audit:site` pass.
+
+Remaining Phase 23 work:
+
+- Dispatch board shows jobs grouped per technician (currently sorted, not grouped).
+- Date selector / daily or weekly view filter.
+- Convert client request directly to dispatch from the board.
+- Breach/warning visual indicators in the planning page.
+- Job status transitions (Scheduled → In Progress → Completed) from admin if needed.
+- Route / geography hint from site address on dispatch cards.
+
 Status:
 
-Pending.
+Substantially implemented on 2026-05-25. Core unassigned queue, technician assignment, priority/SLA/emergency dispatch fields, dispatch API, client-side filters and Dispatch nav link deployed. Job grouping by technician, date selector and request-to-dispatch conversion remain open.
 
 ### Phase 24 - Admin Portal Information Architecture And Scale Retune
 
@@ -2898,12 +2923,12 @@ Quote request to Sage quote:
 - [ ] Add structured parts/labour tracking (Phase 22).
 - [ ] Add evidence categories (Phase 22).
 - [ ] Add technician day summary (Phase 22).
-- [ ] Add Dispatch Board (Phase 23).
-- [ ] Add unassigned job queue (Phase 23).
+- [x] Add Dispatch Board (Phase 23).
+- [x] Add unassigned job queue (Phase 23).
 - [ ] Add technician workload board (Phase 23).
-- [ ] Add SLA level and required-by fields (Phase 23).
-- [ ] Add SLA status calculation (Phase 23).
-- [ ] Add job priority and emergency flag (Phase 23).
+- [x] Add SLA level and required-by fields (Phase 23).
+- [x] Add SLA status calculation (Phase 23).
+- [x] Add job priority and emergency flag (Phase 23).
 - [x] Add search/filter/pagination to admin pages (Phase 24 foundation).
 - [x] Split admin operations into focused workspaces (Phase 24 foundation).
 - [x] Add defect register (Phase 25).
