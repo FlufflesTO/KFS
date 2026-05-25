@@ -28,6 +28,12 @@ function wrapText(value, width = 86) {
   return lines.length ? lines : ["Not recorded"];
 }
 
+function compactReference(value, head = 10, tail = 8) {
+  const text = String(value || "").trim();
+  if (text.length <= head + tail + 3) return text || "Not recorded";
+  return `${text.slice(0, head)}...${text.slice(-tail)}`;
+}
+
 function dataUriToBytes(dataUri) {
   if (typeof dataUri !== "string") {
     throw new Error("signatureBase64 must be a string.");
@@ -93,8 +99,9 @@ function signatureCommands(strokes, box) {
   return commands;
 }
 
-function textLine(value, x, y, size = 10) {
+function textLine(value, x, y, size = 10, color = "0.04 0.05 0.06 rg") {
   return [
+    color,
     "BT",
     `/F1 ${size} Tf`,
     `${x} ${y} Td`,
@@ -130,6 +137,9 @@ export async function buildJobcardPdf({
 }) {
   const signatureBytes = dataUriToBytes(signatureBase64);
   const signatureHash = await sha256Hex(signatureBytes);
+  const jobReference = compactReference(jobId, 8, 6);
+  const systemReference = compactReference(systemId, 8, 6);
+  const signatureReference = compactReference(signatureHash, 14, 14);
   const signatureBox = { x: 54, y: 112, width: 250, height: 86 };
   const comments = wrapText(techComments, 92).slice(0, 7);
   const followUp = wrapText(evidence.followUpActions, 82).slice(0, 4);
@@ -149,23 +159,20 @@ export async function buildJobcardPdf({
     "0.13 0.12 0.13 rg",
     "525 778 48 10 re f",
     // Header text
-    "1 1 1 rg",
-    ...textLine("KHARON", 44, 816, 16),
-    ...textLine("FIRE & SECURITY SOLUTIONS", 44, 797, 9),
-    ...textLine("Field Service Jobcard Closure", 44, 780, 10),
-    ...textLine(`Completed: ${completedAt}`, 300, 780, 9),
+    ...textLine("KHARON", 44, 816, 16, "1 1 1 rg"),
+    ...textLine("FIRE & SECURITY SOLUTIONS", 44, 797, 9, "1 1 1 rg"),
+    ...textLine("Field Service Jobcard Closure", 44, 780, 10, "1 1 1 rg"),
+    ...textLine(`Completed: ${completedAt}`, 300, 780, 9, "1 1 1 rg"),
     "0.30 0.18 0.51 rg",
     "44 724 507 20 re f",
-    "1 1 1 rg",
-    ...textLine("Operational Evidence", 54, 730, 10),
-    "0.04 0.05 0.06 rg",
-    ...textLine(`Job ID: ${jobId}`, 54, 700, 10),
+    ...textLine("Operational Evidence", 54, 730, 10, "1 1 1 rg"),
+    ...textLine(`Job reference: ${jobReference}`, 54, 700, 10),
     ...textLine(`Job Type: ${evidence.jobType || "Maintenance"}`, 54, 682, 10),
     ...textLine(`Technician: ${technician.name} (${technician.email})`, 54, 664, 10),
     ...textLine(`Client/Site: ${evidence.ownerCompanyName || "Not recorded"}`, 54, 636, 10),
     ...textLine(`Address: ${evidence.physicalAddress || "Not recorded"}`, 54, 618, 9),
     ...textLine(`System: ${evidence.systemType || "Not recorded"} / ${evidence.coverageArea || "Not recorded"}`, 54, 590, 10),
-    ...textLine(`System ID: ${systemId}`, 54, 572, 9),
+    ...textLine(`System reference: ${systemReference}`, 54, 572, 9),
     ...textLine(`Scheduled Date: ${evidence.scheduledDate || "Not recorded"}`, 54, 554, 9),
     ...textLine(`Fault Category: ${evidence.faultCategory || "Not recorded"}`, 54, 526, 10),
     ...textLine(`Parts Used: ${evidence.partsUsed || "None recorded"}`, 54, 508, 10),
@@ -178,7 +185,7 @@ export async function buildJobcardPdf({
     `${signatureBox.x} ${signatureBox.y} ${signatureBox.width} ${signatureBox.height} re S`,
     ...textLine("Client / responsible person signature", 54, 206, 9),
     ...signatureCommands(signatureStrokes, signatureBox),
-    ...textLine(`Signature SHA-256: ${signatureHash}`, 54, 76, 7),
+    ...textLine(`Signature digest: ${signatureReference}`, 54, 76, 7, "0.18 0.19 0.20 rg"),
     // Footer separator
     "0.75 0.76 0.78 RG",
     "0.5 w",
@@ -186,10 +193,9 @@ export async function buildJobcardPdf({
     // Footer banner
     "0.04 0.05 0.06 rg",
     "0 0 595 52 re f",
-    "1 1 1 rg",
-    ...textLine("Kharon Fire and Security Solutions (Pty) Ltd  |  Reg: 2016/313076/07", 44, 36, 8),
-    ...textLine("Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd, Ndabeni, Maitland, 7405", 44, 22, 7),
-    ...textLine("T: 061 545 8830   E: admin@kharon.co.za   W: www.kharon.co.za", 44, 10, 7)
+    ...textLine("Kharon Fire and Security Solutions (Pty) Ltd  |  Reg: 2016/313076/07", 44, 36, 8, "1 1 1 rg"),
+    ...textLine("Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd, Ndabeni, Maitland, 7405", 44, 22, 7, "1 1 1 rg"),
+    ...textLine("T: 061 545 8830   E: admin@kharon.co.za   W: www.kharon.co.za", 44, 10, 7, "1 1 1 rg")
   ].join("\n");
 
   const objects = [
