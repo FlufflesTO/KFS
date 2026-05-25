@@ -1668,9 +1668,14 @@ Partial implementation on 2026-05-25:
 - `payments.js` internal error message updated to Sage-aligned language.
 - Underlying DB column values remain "Settled"; schema refactor deferred to full Phase 21.
 
+Further implementation on 2026-05-25:
+
+- Finance dashboard totals (Unpaid, Pending Approval, Paid in Sage) and aging buckets (0-29d, 30-59d, 60+d) now use full-dataset SQL aggregates via a single `db.batch()` query rather than summing over the 80-record visible slice. Accuracy is now independent of the display cap. Uses `julianday('now') - julianday(distribution_date)` for aging and COALESCE(SUM(CASE WHEN … END), 0) for nullsafe sums.
+- Per-row `age_days` for the table display column is retained as a client-side Date calculation; only the aggregate cards use SQL.
+
 Status:
 
-Terminology pass complete. Full Phase 21 schema and workflow refactor (Sage reference fields, finance task model, status pipeline) pending.
+Terminology pass and full-dataset aggregate fix complete. Full Phase 21 schema and workflow refactor (Sage reference fields, finance task model, status pipeline) pending.
 
 ### Phase 22 - Technician Field Workflow Maturity
 

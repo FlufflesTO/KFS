@@ -14,46 +14,66 @@ let loadError = "";
 
 try {
   const db = getDatabase();
-  records = (await db.prepare(
-    `SELECT financial_records.id, financial_records.amount, financial_records.item_type,
-            financial_records.payment_status, financial_records.distribution_date, financial_records.reference,
-            sites.owner_company_name, jobs.status AS job_status
-     FROM financial_records
-     INNER JOIN sites ON sites.id = financial_records.site_id
-     LEFT JOIN jobs ON jobs.id = financial_records.job_id
-     ORDER BY financial_records.distribution_date DESC
-     LIMIT 80`
-  ).all()).results || [];
 
+  const [aggResult, recordsResult, sitesResult, jobsResult] = await db.batch([
+    db.prepare(`
+      SELECT
+        COALESCE(SUM(CASE WHEN payment_status = 'Unpaid' THEN amount ELSE 0 END), 0)             AS unpaid,
+        COALESCE(SUM(CASE WHEN payment_status = 'Pending Approval' THEN amount ELSE 0 END), 0)   AS pending,
+        COALESCE(SUM(CASE WHEN payment_status = 'Settled' THEN amount ELSE 0 END), 0)             AS settled,
+        COALESCE(SUM(CASE WHEN payment_status NOT IN ('Settled')
+          AND (julianday('now') - julianday(distribution_date)) < 30  THEN amount ELSE 0 END), 0) AS age_current,
+        COALESCE(SUM(CASE WHEN payment_status NOT IN ('Settled')
+          AND (julianday('now') - julianday(distribution_date)) >= 30
+          AND (julianday('now') - julianday(distribution_date)) < 60  THEN amount ELSE 0 END), 0) AS age_thirty,
+        COALESCE(SUM(CASE WHEN payment_status NOT IN ('Settled')
+          AND (julianday('now') - julianday(distribution_date)) >= 60 THEN amount ELSE 0 END), 0) AS age_sixty
+      FROM financial_records
+    `),
+    db.prepare(
+      `SELECT financial_records.id, financial_records.amount, financial_records.item_type,
+              financial_records.payment_status, financial_records.distribution_date, financial_records.reference,
+              sites.owner_company_name, jobs.status AS job_status
+       FROM financial_records
+       INNER JOIN sites ON sites.id = financial_records.site_id
+       LEFT JOIN jobs ON jobs.id = financial_records.job_id
+       ORDER BY financial_records.distribution_date DESC
+       LIMIT 80`
+    ),
+    db.prepare(
+      `SELECT id, owner_company_name FROM sites ORDER BY owner_company_name`
+    ),
+    db.prepare(
+      `SELECT jobs.id, jobs.scheduled_date, jobs.status, systems.coverage_area, systems.site_id
+       FROM jobs
+       INNER JOIN systems ON systems.id = jobs.system_id
+       WHERE jobs.status IN ('Scheduled', 'In Progress', 'Completed')
+       ORDER BY jobs.scheduled_date DESC
+       LIMIT 150`
+    )
+  ]);
+
+  const agg = (aggResult.results[0] as any) || {};
+  totals = {
+    unpaid:  Number(agg.unpaid  ?? 0),
+    pending: Number(agg.pending ?? 0),
+    settled: Number(agg.settled ?? 0)
+  };
+  aging = {
+    current: Number(agg.age_current ?? 0),
+    thirty:  Number(agg.age_thirty  ?? 0),
+    sixty:   Number(agg.age_sixty   ?? 0)
+  };
+  records      = recordsResult.results || [];
+  sites        = sitesResult.results   || [];
+  linkableJobs = jobsResult.results    || [];
+
+  // Per-row age (days) for table display only
   for (const record of records) {
-    const amount = Number(record.amount || 0);
-    if (record.payment_status === "Unpaid") totals.unpaid += amount;
-    if (record.payment_status === "Pending Approval") totals.pending += amount;
-    if (record.payment_status === "Settled") totals.settled += amount;
-
-    if (record.payment_status !== "Settled") {
-      const ageDays = Math.max(0, Math.floor((Date.now() - new Date(`${record.distribution_date}T00:00:00Z`).getTime()) / 86400000));
-      if (ageDays >= 60) aging.sixty += amount;
-      else if (ageDays >= 30) aging.thirty += amount;
-      else aging.current += amount;
-      record.age_days = ageDays;
-    } else {
-      record.age_days = 0;
-    }
+    record.age_days = record.payment_status !== "Settled"
+      ? Math.max(0, Math.floor((Date.now() - new Date(`${record.distribution_date}T00:00:00Z`).getTime()) / 86400000))
+      : 0;
   }
-
-  sites = (await db.prepare(
-    `SELECT id, owner_company_name FROM sites ORDER BY owner_company_name`
-  ).all()).results || [];
-
-  linkableJobs = (await db.prepare(
-    `SELECT jobs.id, jobs.scheduled_date, jobs.status, systems.coverage_area, systems.site_id
-     FROM jobs
-     INNER JOIN systems ON systems.id = jobs.system_id
-     WHERE jobs.status IN ('Scheduled', 'In Progress', 'Completed')
-     ORDER BY jobs.scheduled_date DESC
-     LIMIT 150`
-  ).all()).results || [];
 } catch (error) {
   console.error("finance dashboard failed", error);
   loadError = "Finance ledger could not be loaded.";
