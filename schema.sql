@@ -254,3 +254,97 @@ FOR EACH ROW
 BEGIN
   UPDATE maintenance_requests SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = OLD.id;
 END;
+
+CREATE TABLE IF NOT EXISTS clients (
+  id TEXT PRIMARY KEY,
+  company_name TEXT NOT NULL CHECK (length(trim(company_name)) BETWEEN 2 AND 200),
+  contact_person TEXT CHECK (contact_person IS NULL OR length(trim(contact_person)) BETWEEN 2 AND 160),
+  contact_email TEXT CHECK (contact_email IS NULL OR instr(contact_email, '@') > 1),
+  contact_phone TEXT,
+  billing_address TEXT CHECK (billing_address IS NULL OR length(trim(billing_address)) BETWEEN 5 AND 500),
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS job_visits (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+  technician_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  visit_date TEXT NOT NULL,
+  arrival_time TEXT,
+  departure_time TEXT,
+  gps_latitude REAL,
+  gps_longitude REAL,
+  customer_name TEXT CHECK (customer_name IS NULL OR length(trim(customer_name)) BETWEEN 2 AND 160),
+  customer_title TEXT CHECK (customer_title IS NULL OR length(trim(customer_title)) BETWEEN 2 AND 80),
+  notes TEXT CHECK (notes IS NULL OR length(trim(notes)) BETWEEN 5 AND 3000),
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS defects (
+  id TEXT PRIMARY KEY,
+  system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE CASCADE,
+  job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
+  severity TEXT NOT NULL CHECK (severity IN ('Critical', 'Major', 'Minor', 'Observation')),
+  sans_clause_ref TEXT CHECK (sans_clause_ref IS NULL OR length(trim(sans_clause_ref)) BETWEEN 3 AND 80),
+  description TEXT NOT NULL CHECK (length(trim(description)) BETWEEN 5 AND 2000),
+  certificate_blocking INTEGER NOT NULL DEFAULT 0 CHECK (certificate_blocking IN (0, 1)),
+  status TEXT NOT NULL DEFAULT 'Open' CHECK (status IN ('Open', 'In Progress', 'Resolved', 'Closed')),
+  remediation_notes TEXT CHECK (remediation_notes IS NULL OR length(trim(remediation_notes)) BETWEEN 5 AND 3000),
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS certificates (
+  id TEXT PRIMARY KEY,
+  system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE CASCADE,
+  job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
+  certificate_type TEXT NOT NULL CHECK (certificate_type IN ('Fire Detection', 'Gas Suppression', 'Emergency Lighting', 'Evacuation', 'Combined')),
+  issued_date TEXT NOT NULL,
+  expiry_date TEXT,
+  blocked_by_defect_id TEXT REFERENCES defects(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'Valid' CHECK (status IN ('Valid', 'Expired', 'Revoked', 'Blocked')),
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_clients_company ON clients(company_name);
+CREATE INDEX IF NOT EXISTS idx_clients_email ON clients(contact_email);
+CREATE INDEX IF NOT EXISTS idx_job_visits_job ON job_visits(job_id, visit_date);
+CREATE INDEX IF NOT EXISTS idx_job_visits_tech ON job_visits(technician_id, visit_date);
+CREATE INDEX IF NOT EXISTS idx_defects_system ON defects(system_id, status);
+CREATE INDEX IF NOT EXISTS idx_defects_job ON defects(job_id);
+CREATE INDEX IF NOT EXISTS idx_defects_blocking ON defects(certificate_blocking, status);
+CREATE INDEX IF NOT EXISTS idx_defects_severity ON defects(severity, status);
+CREATE INDEX IF NOT EXISTS idx_certificates_system ON certificates(system_id, status, expiry_date);
+CREATE INDEX IF NOT EXISTS idx_certificates_blocked ON certificates(blocked_by_defect_id);
+CREATE INDEX IF NOT EXISTS idx_certificates_expiry ON certificates(expiry_date);
+
+CREATE TRIGGER IF NOT EXISTS trg_clients_updated_at
+AFTER UPDATE ON clients
+FOR EACH ROW
+BEGIN
+  UPDATE clients SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = OLD.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_job_visits_updated_at
+AFTER UPDATE ON job_visits
+FOR EACH ROW
+BEGIN
+  UPDATE job_visits SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = OLD.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_defects_updated_at
+AFTER UPDATE ON defects
+FOR EACH ROW
+BEGIN
+  UPDATE defects SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = OLD.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_certificates_updated_at
+AFTER UPDATE ON certificates
+FOR EACH ROW
+BEGIN
+  UPDATE certificates SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = OLD.id;
+END;

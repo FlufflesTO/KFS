@@ -11,10 +11,20 @@ let due = [];
 let clientRequests = [];
 let overdue = [];
 let missingDocs = [];
-let financeFollowup = [];
+let openDefects = [];
 let technicians = [];
 let requestSystems = [];
-let stats = { activeJobs: 0, unassignedJobs: 0, overdueSystems: 0, openRequests: 0, missingDocuments: 0 };
+let stats = {
+  activeJobs: 0,
+  unassignedJobs: 0,
+  overdueSystems: 0,
+  openRequests: 0,
+  missingDocuments: 0,
+  openDefects: 0,
+  criticalDefects: 0,
+  blockedCertificates: 0,
+  validCertificates: 0
+};
 let loadError = "";
 const today    = new Date().toISOString().slice(0, 10);
 const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
@@ -34,19 +44,28 @@ function dueDateLabel(nd: string | null | undefined): string {
 try {
   const db = getDatabase();
 
-  const [cntActive, cntUnassigned, cntOverdue, cntRequests, cntMissingDocs] = await db.batch([
+  const [cntActive, cntUnassigned, cntOverdue, cntRequests, cntMissingDocs,
+         cntOpenDefects, cntCriticalDefects, cntBlockedCerts, cntValidCerts] = await db.batch([
     db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Scheduled', 'In Progress')`),
     db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
     db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE date(next_due_date) < date('now')`),
     db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`)
+    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status = 'Open'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status = 'Open' AND severity = 'Critical'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Blocked'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Valid'`)
   ]);
   stats = {
-    activeJobs:       (cntActive.results[0] as any)?.n    ?? 0,
-    unassignedJobs:   (cntUnassigned.results[0] as any)?.n ?? 0,
-    overdueSystems:   (cntOverdue.results[0] as any)?.n   ?? 0,
-    openRequests:     (cntRequests.results[0] as any)?.n  ?? 0,
-    missingDocuments: (cntMissingDocs.results[0] as any)?.n ?? 0
+    activeJobs:        (cntActive.results[0] as any)?.n        ?? 0,
+    unassignedJobs:    (cntUnassigned.results[0] as any)?.n    ?? 0,
+    overdueSystems:    (cntOverdue.results[0] as any)?.n       ?? 0,
+    openRequests:      (cntRequests.results[0] as any)?.n      ?? 0,
+    missingDocuments:  (cntMissingDocs.results[0] as any)?.n   ?? 0,
+    openDefects:       (cntOpenDefects.results[0] as any)?.n   ?? 0,
+    criticalDefects:   (cntCriticalDefects.results[0] as any)?.n ?? 0,
+    blockedCertificates: (cntBlockedCerts.results[0] as any)?.n ?? 0,
+    validCertificates: (cntValidCerts.results[0] as any)?.n    ?? 0
   };
 
   completed = (await db.prepare(
@@ -121,6 +140,19 @@ try {
      LIMIT 12`
   ).all()).results || [];
 
+  openDefects = (await db.prepare(
+    `SELECT defects.id, defects.severity, defects.sans_clause_ref, defects.status,
+            systems.id AS system_id, systems.system_type, systems.coverage_area,
+            sites.owner_company_name
+     FROM defects
+     INNER JOIN systems ON systems.id = defects.system_id
+     INNER JOIN sites ON sites.id = systems.site_id
+     WHERE defects.status = 'Open'
+     ORDER BY CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 ELSE 3 END,
+              defects.created_at ASC
+     LIMIT 12`
+  ).all()).results || [];
+
   financeFollowup = (await db.prepare(
     `SELECT sites.owner_company_name, COUNT(financial_records.id) AS record_count, SUM(financial_records.amount) AS amount
      FROM financial_records
@@ -151,7 +183,7 @@ try {
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
 
       <!-- ─── Quick-stats row ──────────────────────────────────────── -->
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div class="grid gap-4 sm:grid-cols-3 xl:grid-cols-7">
         <article class="border border-kharon-border bg-white p-4">
           <p class="text-xs font-bold uppercase text-kharon-purple">Active jobs</p>
           <p class="mt-2 text-2xl font-bold">{stats.activeJobs}</p>
@@ -166,6 +198,16 @@ try {
           <p class={`text-xs font-bold uppercase ${stats.overdueSystems > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue systems</p>
           <p class="mt-2 text-2xl font-bold">{stats.overdueSystems}</p>
           <a href="/portal/admin/planning" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">View lifecycle -></a>
+        </article>
+        <article class={`border p-4 ${stats.openDefects > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.openDefects > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Open defects</p>
+          <p class="mt-2 text-2xl font-bold">{stats.openDefects}</p>
+          {stats.criticalDefects > 0 && <p class="mt-1 text-xs font-bold text-kharon-red">{stats.criticalDefects} critical</p>}
+        </article>
+        <article class={`border p-4 ${stats.blockedCertificates > 0 ? "border-amber-300 bg-amber-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.blockedCertificates > 0 ? "text-amber-600" : "text-kharon-grey"}`}>Blocked certs</p>
+          <p class="mt-2 text-2xl font-bold">{stats.blockedCertificates}</p>
+          <p class="mt-1 text-xs text-kharon-grey">{stats.validCertificates} valid</p>
         </article>
         <article class="border border-kharon-border bg-white p-4">
           <p class="text-xs font-bold uppercase text-kharon-purple">Open requests</p>
@@ -323,6 +365,26 @@ try {
                   <p class="border-l-4 border-kharon-blue bg-kharon-light p-3 text-sm">
                     <span class="font-semibold">{item.owner_company_name}</span> / {item.record_count} open records / R {Number(item.amount || 0).toFixed(2)}
                   </p>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p class="text-sm font-bold uppercase text-kharon-red">Open defects</p>
+              <div class="mt-3 grid gap-2">
+                {openDefects.length === 0 && <p class="text-sm text-kharon-grey">No open defects require attention.</p>}
+                {openDefects.map((item) => (
+                  <a href={`/portal/admin/operations?system_id=${item.system_id}`} class="block border-l-4 bg-kharon-light p-3 text-sm hover:bg-white" class:list={[
+                    item.severity === "Critical" ? "border-kharon-red" : item.severity === "Major" ? "border-amber-500" : "border-kharon-grey"
+                  ]}>
+                    <span class="font-semibold">{item.owner_company_name}</span> / {item.system_type} / {item.coverage_area}
+                    <span class={`ml-2 rounded px-1.5 py-0.5 text-xs font-bold ${
+                      item.severity === "Critical" ? "bg-kharon-red text-white" :
+                      item.severity === "Major" ? "bg-amber-200 text-amber-800" :
+                      "bg-kharon-grey/20 text-kharon-grey"
+                    }`}>{item.severity}</span>
+                    {item.sans_clause_ref && <p class="mt-1 text-xs text-kharon-grey">Clause: {item.sans_clause_ref}</p>}
+                  </a>
                 ))}
               </div>
             </div>

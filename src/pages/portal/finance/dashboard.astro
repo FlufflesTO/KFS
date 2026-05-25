@@ -11,6 +11,7 @@ let linkableJobs = [];
 let invoiceRequired = [];
 let totals = { unpaid: 0, pending: 0, settled: 0 };
 let aging = { current: 0, thirty: 0, sixty: 0 };
+let missingSageCount = 0;
 let loadError = "";
 
 const params = Astro.url.searchParams;
@@ -22,7 +23,7 @@ let totalPages = 1;
 try {
   const db = getDatabase();
 
-  const [countResult, aggResult, recordsResult, sitesResult, jobsResult, invoiceRequiredResult] = await db.batch([
+  const [countResult, aggResult, recordsResult, sitesResult, jobsResult, invoiceRequiredResult, missingSageResult] = await db.batch([
     db.prepare(`SELECT COUNT(*) as total FROM financial_records`),
     db.prepare(`
       SELECT
@@ -40,7 +41,10 @@ try {
     `),
     db.prepare(
       `SELECT financial_records.id, financial_records.amount, financial_records.item_type,
-              financial_records.payment_status, financial_records.distribution_date, financial_records.reference,
+              financial_records.payment_status, financial_records.distribution_date,
+              financial_records.reference,
+              financial_records.sage_invoice_number, financial_records.sage_quote_number,
+              financial_records.sage_customer_code, financial_records.finance_task_status,
               sites.owner_company_name, jobs.status AS job_status
        FROM financial_records
        INNER JOIN sites ON sites.id = financial_records.site_id
@@ -75,11 +79,23 @@ try {
          )
        ORDER BY jobs.completed_at DESC
        LIMIT 20`
+    ),
+    // ── Missing Sage reference count ─────────────────────────────────────────
+    db.prepare(
+      `SELECT COUNT(*) as total FROM financial_records
+       WHERE payment_status != 'Settled'
+         AND item_type IN ('Invoice', 'Quote')
+         AND (
+           (item_type = 'Invoice' AND (sage_invoice_number IS NULL OR sage_invoice_number = ''))
+           OR
+           (item_type = 'Quote' AND (sage_quote_number IS NULL OR sage_quote_number = ''))
+         )`
     )
   ]);
 
   const ledgerTotal = Number((countResult.results[0] as any)?.total ?? 0);
   totalPages = Math.ceil(ledgerTotal / perPage) || 1;
+  missingSageCount = Number((missingSageResult.results[0] as any)?.total ?? 0);
 
   const agg = (aggResult.results[0] as any) || {};
   totals = {
@@ -217,6 +233,16 @@ try {
         </section>
       )}
 
+      {missingSageCount > 0 && (
+        <section class="border border-kharon-purple bg-purple-50 px-4 py-4 sm:px-5">
+          <p class="text-xs font-bold uppercase text-kharon-purple">Missing Sage references</p>
+          <p class="mt-1 text-sm text-kharon-grey">
+            {missingSageCount} open {missingSageCount === 1 ? "record lacks" : "records lack"} a Sage invoice or quote number.
+            Use the <span class="font-semibold">Save Sage ref</span> control in each row's action cell to add the reference.
+          </p>
+        </section>
+      )}
+
       <div class="sticky top-0 z-10 bg-kharon-light pb-2 flex flex-wrap items-center gap-3">
         <input
           id="finance-search"
@@ -240,7 +266,7 @@ try {
       <p id="finance-no-results" class="hidden py-3 text-sm text-kharon-grey">No records match your filter.</p>
 
       <div class="portal-scroll-x border border-kharon-border bg-white">
-        <table class="w-full min-w-[760px] border-collapse text-left text-sm">
+        <table class="w-full min-w-[900px] border-collapse text-left text-sm">
           <thead class="bg-kharon-charcoal text-white">
             <tr>
               <th class="p-4">Client</th>
@@ -249,7 +275,8 @@ try {
               <th class="p-4">Amount</th>
               <th class="p-4">Date</th>
               <th class="p-4">Age</th>
-              <th class="p-4">Reference</th>
+              <th class="p-4">Portal Ref</th>
+              <th class="p-4">Sage Ref</th>
               <th class="p-4">Action</th>
             </tr>
           </thead>
@@ -257,27 +284,78 @@ try {
             {records.map((record) => (
               <tr
                 class="border-t border-kharon-border"
-                data-search={`${record.owner_company_name} ${record.reference || ""} ${record.item_type}`}
+                data-search={`${record.owner_company_name} ${record.reference || ""} ${record.item_type} ${record.sage_invoice_number || ""} ${record.sage_quote_number || ""}`}
                 data-status={record.payment_status}
                 data-type={record.item_type}
               >
                 <td class="p-4 font-semibold">{record.owner_company_name}</td>
                 <td class="p-4">{record.item_type}</td>
-                <td class="p-4">{record.payment_status === "Settled" ? "Paid in Sage" : record.payment_status}</td>
-                <td class="p-4">R {Number(record.amount).toFixed(2)}</td>
-                <td class="p-4">{record.distribution_date}</td>
-                <td class="p-4">{record.payment_status === "Settled" ? "-" : `${record.age_days}d`}</td>
-                <td class="p-4">{record.reference || record.id}</td>
                 <td class="p-4">
-                  {record.item_type === "Invoice" && record.payment_status === "Unpaid" ? (
-                    <form class="payment-form flex min-w-56 flex-col gap-2" data-record-id={record.id}>
-                      <label class="sr-only" for={`payment-${record.id}`}>Payment reference</label>
-                      <input id={`payment-${record.id}`} class="rounded-md border border-kharon-border px-3 py-2 text-sm" name="paymentReference" maxlength="80" placeholder="Sage payment reference" />
-                      <button class="rounded-md bg-kharon-purple px-3 py-2 text-sm font-semibold text-white hover:bg-kharon-blue">Record Paid in Sage</button>
-                      <p class="payment-result text-xs text-kharon-grey" aria-live="polite"></p>
-                    </form>
+                  <div>{record.payment_status === "Settled" ? "Paid in Sage" : record.payment_status}</div>
+                  {record.finance_task_status && (
+                    <div class="mt-1 text-xs font-semibold text-kharon-purple">{record.finance_task_status}</div>
+                  )}
+                </td>
+                <td class="p-4">R {Number(record.amount).toFixed(2)}</td>
+                <td class="p-4 whitespace-nowrap">{record.distribution_date}</td>
+                <td class="p-4">{record.payment_status === "Settled" ? "—" : `${record.age_days}d`}</td>
+                <td class="p-4 text-xs text-kharon-grey">{record.reference || <span class="text-kharon-grey/40">—</span>}</td>
+                <td class="p-4">
+                  {record.payment_status === "Settled" ? (
+                    <span class="text-xs text-kharon-grey/60">
+                      {(record.item_type === "Invoice" ? record.sage_invoice_number : record.sage_quote_number) || "—"}
+                    </span>
+                  ) : (record.item_type === "Invoice" ? record.sage_invoice_number : record.item_type === "Quote" ? record.sage_quote_number : null) ? (
+                    <span class="font-mono text-xs text-kharon-grey">
+                      {record.item_type === "Invoice" ? record.sage_invoice_number : record.sage_quote_number}
+                    </span>
+                  ) : record.item_type !== "Payment" ? (
+                    <span class="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold uppercase text-amber-700">Missing</span>
                   ) : (
-                    <span class="text-xs uppercase text-kharon-grey/70">No action</span>
+                    <span class="text-xs text-kharon-grey/40">—</span>
+                  )}
+                </td>
+                <td class="p-4">
+                  {record.payment_status === "Settled" ? (
+                    <span class="text-xs uppercase text-kharon-grey/40">—</span>
+                  ) : (
+                    <div class="flex min-w-52 flex-col gap-2">
+                      {record.item_type !== "Payment" && (
+                        <form class="sage-ref-form grid gap-1.5" data-record-id={record.id} data-item-type={record.item_type}>
+                          <input
+                            class="rounded border border-kharon-border px-2 py-1.5 text-xs"
+                            name="sageNumber"
+                            maxlength="60"
+                            placeholder={record.item_type === "Quote" ? "Sage quote number" : "Sage invoice number"}
+                            value={record.item_type === "Invoice" ? (record.sage_invoice_number || "") : (record.sage_quote_number || "")}
+                          />
+                          <input
+                            class="rounded border border-kharon-border px-2 py-1.5 text-xs"
+                            name="sageCustomerCode"
+                            maxlength="40"
+                            placeholder="Sage customer code (optional)"
+                            value={record.sage_customer_code || ""}
+                          />
+                          <select class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="financeTaskStatus">
+                            <option value="">Task status…</option>
+                            {["Invoice Required", "Quote Required", "Sage Reference Missing", "Awaiting Payment", "Complete"].map((s) => (
+                              <option value={s} selected={record.finance_task_status === s}>{s}</option>
+                            ))}
+                          </select>
+                          <button class="rounded bg-kharon-grey px-2 py-1.5 text-xs font-semibold text-white hover:bg-kharon-black">
+                            {(record.item_type === "Invoice" ? record.sage_invoice_number : record.sage_quote_number) ? "Update Sage ref" : "Save Sage ref"}
+                          </button>
+                          <p class="sage-ref-result text-xs text-kharon-grey" aria-live="polite"></p>
+                        </form>
+                      )}
+                      {record.item_type === "Invoice" && record.payment_status === "Unpaid" && (
+                        <form class="payment-form grid gap-1.5" data-record-id={record.id}>
+                          <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="paymentReference" maxlength="80" placeholder="Sage payment reference" />
+                          <button class="rounded bg-kharon-purple px-2 py-1.5 text-xs font-semibold text-white hover:bg-kharon-blue">Record Paid in Sage</button>
+                          <p class="payment-result text-xs text-kharon-grey" aria-live="polite"></p>
+                        </form>
+                      )}
+                    </div>
                   )}
                 </td>
               </tr>
@@ -333,6 +411,35 @@ try {
     financeSearch?.addEventListener("input",  applyFinanceFilter);
     financeStatusFilter?.addEventListener("change", applyFinanceFilter);
     financeTypeFilter?.addEventListener("change",   applyFinanceFilter);
+
+    // ── Sage reference forms ────────────────────────────────────────────────
+    for (const form of document.querySelectorAll(".sage-ref-form")) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const result = form.querySelector(".sage-ref-result") as HTMLElement | null;
+        const recordId  = (form as HTMLElement).dataset.recordId;
+        const itemType  = (form as HTMLElement).dataset.itemType;
+        const sageNumber        = (form.querySelector("[name='sageNumber']")        as HTMLInputElement  | null)?.value?.trim() || undefined;
+        const sageCustomerCode  = (form.querySelector("[name='sageCustomerCode']")  as HTMLInputElement  | null)?.value?.trim() || undefined;
+        const financeTaskStatus = (form.querySelector("[name='financeTaskStatus']") as HTMLSelectElement | null)?.value?.trim() || undefined;
+
+        const payload: Record<string, string | undefined> = { recordId };
+        if (itemType === "Invoice") { payload.sageInvoiceNumber = sageNumber; }
+        else                        { payload.sageQuoteNumber   = sageNumber; }
+        if (sageCustomerCode)  payload.sageCustomerCode  = sageCustomerCode;
+        if (financeTaskStatus) payload.financeTaskStatus = financeTaskStatus;
+
+        if (result) result.textContent = "Saving…";
+        const response = await window.kharonPortalFetch("/portal/api/finance/sage-reference", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const body = await response.json().catch(() => ({ ok: false, message: "Save failed." }));
+        if (result) result.textContent = body.ok ? "Saved." : (body.message || "Save failed.");
+        if (body.ok) setTimeout(() => window.location.reload(), 700);
+      });
+    }
 
     // ── Payment forms ───────────────────────────────────────────────────────
     for (const form of document.querySelectorAll(".payment-form")) {

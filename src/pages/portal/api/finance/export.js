@@ -20,6 +20,8 @@ export async function GET({ request, locals }) {
       .prepare(
         `SELECT financial_records.id, financial_records.reference, financial_records.item_type,
                 financial_records.payment_status, financial_records.amount, financial_records.distribution_date,
+                financial_records.sage_invoice_number, financial_records.sage_quote_number,
+                financial_records.sage_customer_code, financial_records.finance_task_status,
                 financial_records.job_id, sites.owner_company_name, sites.billing_emails
          FROM financial_records
          INNER JOIN sites ON sites.id = financial_records.site_id
@@ -36,7 +38,11 @@ export async function GET({ request, locals }) {
       metadata: { rowCount: rows.length }
     });
 
-    const header = ["id", "reference", "type", "status", "amount", "distribution_date", "job_id", "client", "billing_emails"];
+    const header = [
+      "id", "reference", "type", "status", "amount", "distribution_date",
+      "sage_invoice_number", "sage_quote_number", "sage_customer_code", "finance_task_status",
+      "job_id", "client", "billing_emails"
+    ];
     const lines = [
       header.map(csvCell).join(","),
       ...rows.map((row) =>
@@ -47,6 +53,10 @@ export async function GET({ request, locals }) {
           row.payment_status,
           Number(row.amount || 0).toFixed(2),
           row.distribution_date,
+          row.sage_invoice_number,
+          row.sage_quote_number,
+          row.sage_customer_code,
+          row.finance_task_status,
           row.job_id,
           row.owner_company_name,
           row.billing_emails
