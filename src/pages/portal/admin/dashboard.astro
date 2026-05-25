@@ -14,10 +14,27 @@ let missingDocs = [];
 let financeFollowup = [];
 let technicians = [];
 let requestSystems = [];
+let stats = { activeJobs: 0, unassignedJobs: 0, overdueSystems: 0, openRequests: 0, missingDocuments: 0 };
 let loadError = "";
 
 try {
   const db = getDatabase();
+
+  const [cntActive, cntUnassigned, cntOverdue, cntRequests, cntMissingDocs] = await db.batch([
+    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Scheduled', 'In Progress')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
+    db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE date(next_due_date) < date('now')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`)
+  ]);
+  stats = {
+    activeJobs:       (cntActive.results[0] as any)?.n    ?? 0,
+    unassignedJobs:   (cntUnassigned.results[0] as any)?.n ?? 0,
+    overdueSystems:   (cntOverdue.results[0] as any)?.n   ?? 0,
+    openRequests:     (cntRequests.results[0] as any)?.n  ?? 0,
+    missingDocuments: (cntMissingDocs.results[0] as any)?.n ?? 0
+  };
+
   completed = (await db.prepare(
     `SELECT jobs.id, jobs.completed_at, jobs.status, systems.system_type, systems.coverage_area, sites.owner_company_name
      FROM jobs
@@ -117,6 +134,35 @@ try {
   <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto grid max-w-7xl gap-6">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+
+      <!-- ─── Quick-stats row ──────────────────────────────────────── -->
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <article class="border border-kharon-border bg-white p-4">
+          <p class="text-xs font-bold uppercase text-kharon-purple">Active jobs</p>
+          <p class="mt-2 text-2xl font-bold">{stats.activeJobs}</p>
+          <a href="/portal/admin/planning" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Planning →</a>
+        </article>
+        <article class="border border-kharon-border bg-white p-4">
+          <p class={`text-xs font-bold uppercase ${stats.unassignedJobs > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Unassigned</p>
+          <p class="mt-2 text-2xl font-bold">{stats.unassignedJobs}</p>
+          <a href="/portal/admin/operations#jobs" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Assign →</a>
+        </article>
+        <article class="border border-kharon-border bg-white p-4">
+          <p class={`text-xs font-bold uppercase ${stats.overdueSystems > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue systems</p>
+          <p class="mt-2 text-2xl font-bold">{stats.overdueSystems}</p>
+          <a href="/portal/admin/planning" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">View lifecycle →</a>
+        </article>
+        <article class="border border-kharon-border bg-white p-4">
+          <p class="text-xs font-bold uppercase text-kharon-purple">Open requests</p>
+          <p class="mt-2 text-2xl font-bold">{stats.openRequests}</p>
+          <a href="/portal/admin/dashboard#requests" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Review below →</a>
+        </article>
+        <article class="border border-kharon-border bg-white p-4">
+          <p class={`text-xs font-bold uppercase ${stats.missingDocuments > 0 ? "text-kharon-purple" : "text-kharon-grey"}`}>Missing docs</p>
+          <p class="mt-2 text-2xl font-bold">{stats.missingDocuments}</p>
+          <a href="/portal/tech/history" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">History →</a>
+        </article>
+      </div>
 
       <div class="grid gap-5 xl:grid-cols-3 xl:gap-6">
       <div class="border border-kharon-border bg-white p-4 sm:p-5">
