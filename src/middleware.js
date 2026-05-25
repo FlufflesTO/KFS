@@ -16,10 +16,31 @@ const mfaPath = "/portal/account/mfa";
 const mfaApiPath = "/portal/api/mfa";
 const portalRootPath = "/portal";
 
+const securityHeaders = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "SAMEORIGIN",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Content-Security-Policy":
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Cross-Origin-Opener-Policy": "same-origin",
+  "Cross-Origin-Resource-Policy": "same-origin",
+  "Cross-Origin-Embedder-Policy": "credentialless",
+  "X-Permitted-Cross-Domain-Policies": "none",
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload"
+};
+
+function withSecurityHeaders(response) {
+  for (const [name, value] of Object.entries(securityHeaders)) {
+    if (!response.headers.has(name)) response.headers.set(name, value);
+  }
+  return response;
+}
+
 function redirectToLogin(context) {
   const loginUrl = new URL(loginPath, context.url);
   loginUrl.searchParams.set("next", context.url.pathname);
-  return context.redirect(loginUrl.toString(), 302);
+  return withSecurityHeaders(context.redirect(loginUrl.toString(), 302));
 }
 
 function redirectToRoleDashboard(context, role) {
@@ -30,7 +51,7 @@ function redirectToRoleDashboard(context, role) {
     finance: "/portal/finance/dashboard"
   };
 
-  return context.redirect(destinations[role] || loginPath, 302);
+  return withSecurityHeaders(context.redirect(destinations[role] || loginPath, 302));
 }
 
 function allowedForPath(pathname, role) {
@@ -54,14 +75,14 @@ function isStateChangingPortalApi(request, pathname) {
 }
 
 function rateLimitResponse(retryAfter) {
-  return new Response(JSON.stringify({ ok: false, error: "rate_limited", message: "Too many portal write requests. Try again shortly.", retryAfter }), {
+  return withSecurityHeaders(new Response(JSON.stringify({ ok: false, error: "rate_limited", message: "Too many portal write requests. Try again shortly.", retryAfter }), {
     status: 429,
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
       "retry-after": String(retryAfter)
     }
-  });
+  }));
 }
 
 function rateLimitConfig(pathname) {
@@ -90,15 +111,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
   if (!pathname.startsWith("/portal")) {
-    return next();
+    return withSecurityHeaders(await next());
   }
 
   if (pathContainsTraversal(pathname)) {
-    return new Response("Invalid portal path.", { status: 400 });
+    return withSecurityHeaders(new Response("Invalid portal path.", { status: 400 }));
   }
 
   if (pathname === loginPath || pathname === authApiPath || pathname === resetPath || pathname === resetApiPath) {
-    return next();
+    return withSecurityHeaders(await next());
   }
 
   const db = getDatabase();
@@ -139,7 +160,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         outcome: "blocked",
         user
       });
-      return csrfErrorResponse();
+      return withSecurityHeaders(csrfErrorResponse());
     }
 
     const config = rateLimitConfig(pathname);
@@ -163,13 +184,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   if (user.forcePasswordChange && pathname !== passwordPath && pathname !== passwordApiPath && pathname !== logoutApiPath) {
-    const response = context.redirect(passwordPath, 302);
+    const response = withSecurityHeaders(context.redirect(passwordPath, 302));
     if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
     return response;
   }
 
   if (user.mfaRequired && !user.mfaEnabled && pathname !== mfaPath && pathname !== mfaApiPath && pathname !== logoutApiPath) {
-    const response = context.redirect(mfaPath, 302);
+    const response = withSecurityHeaders(context.redirect(mfaPath, 302));
     if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
     return response;
   }
@@ -186,7 +207,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return response;
   }
 
-  const response = await next();
+  const response = withSecurityHeaders(await next());
   if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
   return response;
 });

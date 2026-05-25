@@ -290,6 +290,10 @@ for (const term of ["verifyCsrfRequest", "portal.maintenance_request", "portal.a
   if (!middlewareText.includes(term)) fail(`middleware missing portal write hardening marker: ${term}`);
 }
 
+for (const term of ["withSecurityHeaders", "Content-Security-Policy", "Strict-Transport-Security", "X-Frame-Options", "Permissions-Policy"]) {
+  if (!middlewareText.includes(term)) fail(`middleware missing runtime security header marker: ${term}`);
+}
+
 const portalSourceText = sourceFiles.map((file) => read(file)).join("\n");
 if (!portalSourceText.includes("x-csrf-token") && !portalSourceText.includes("csrfToken")) {
   fail("portal source missing CSRF token submission marker.");

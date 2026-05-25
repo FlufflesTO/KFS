@@ -8,6 +8,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+Add-Type -AssemblyName System.Net.Http
 
 function New-Result($Name, $Ok, $Details) {
   [pscustomobject]@{
@@ -60,12 +61,58 @@ function Test-R2Availability($Bucket) {
   }
 }
 
+function Test-SecurityHeaders($Name, $Url, [string] $Method = "GET", [string] $Body = "", [int[]] $AllowedStatuses = @(200)) {
+  $client = $null
+  try {
+    $handler = [System.Net.Http.HttpClientHandler]::new()
+    $handler.AllowAutoRedirect = $false
+    $client = [System.Net.Http.HttpClient]::new($handler)
+    $client.Timeout = [TimeSpan]::FromSeconds(20)
+    $message = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::new($Method), $Url)
+    if ($Body) {
+      $message.Content = [System.Net.Http.StringContent]::new($Body, [System.Text.Encoding]::UTF8, "application/json")
+    }
+    $response = $client.SendAsync($message).GetAwaiter().GetResult()
+    $headers = @{}
+    foreach ($header in $response.Headers.GetEnumerator()) {
+      $headers[$header.Key.ToLowerInvariant()] = ($header.Value -join ", ")
+    }
+    if ($response.Content) {
+      foreach ($header in $response.Content.Headers.GetEnumerator()) {
+        $headers[$header.Key.ToLowerInvariant()] = ($header.Value -join ", ")
+      }
+    }
+
+    $required = @(
+      "content-security-policy",
+      "x-content-type-options",
+      "x-frame-options",
+      "referrer-policy",
+      "permissions-policy",
+      "cross-origin-opener-policy",
+      "strict-transport-security"
+    )
+    $missing = @($required | Where-Object { -not $headers.ContainsKey($_) })
+    $status = [int]$response.StatusCode
+    $ok = ($AllowedStatuses -contains $status) -and $missing.Count -eq 0
+    return New-Result $Name $ok @{ url = $Url; status = $status; missingHeaders = $missing }
+  } catch {
+    return New-Result $Name $false @{ url = $Url; error = $_.Exception.Message }
+  } finally {
+    if ($client) { $client.Dispose() }
+  }
+}
+
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $results = @(
   (Test-HttpStatus "public_home" $PublicUrl @(200)),
   (Test-HttpStatus "portal_login" $PortalLoginUrl @(200)),
   (Test-HttpRedirect "protected_dashboard_redirect" $ProtectedDashboardUrl "/portal/login"),
+  (Test-SecurityHeaders "headers_public_home" $PublicUrl "GET" "" @(200)),
+  (Test-SecurityHeaders "headers_portal_login" $PortalLoginUrl "GET" "" @(200)),
+  (Test-SecurityHeaders "headers_public_api_json" "https://www.tequit.co.za/api/contact" "POST" "{}" @(422)),
+  (Test-SecurityHeaders "headers_protected_file_redirect" "https://portal.tequit.co.za/portal/api/file/jobcards/nonexistent.pdf" "GET" "" @(302)),
   (Test-D1Availability $D1Database),
   (Test-R2Availability $R2Bucket)
 )

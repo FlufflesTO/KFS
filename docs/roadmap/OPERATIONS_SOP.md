@@ -15,6 +15,7 @@ The script checks:
 - Public website home route returns HTTP 200.
 - Portal login route returns HTTP 200.
 - Protected admin dashboard redirects unauthenticated users to login.
+- Runtime security headers are present on public, portal, API JSON and protected redirect responses.
 - D1 responds to a simple `users` table query.
 - R2 bucket metadata is reachable through Wrangler.
 
@@ -30,6 +31,7 @@ Failure response:
 - Public route failure: check Cloudflare Worker deployment, routes and DNS.
 - Portal login failure: check Worker deployment, `SESSION_SECRET`, adapter output and Cloudflare routes.
 - Protected redirect failure: treat as an auth middleware regression until proven otherwise.
+- Security header failure: treat as a middleware or deployment regression until public, portal, API and redirect responses are all covered.
 - D1 failure: check D1 binding `DB`, database availability and Wrangler authentication.
 - R2 failure: check R2 binding `STORAGE`, bucket availability and Wrangler authentication.
 
@@ -60,6 +62,11 @@ Restore drill:
 - Test restore into a non-production D1 database before trusting the process for production recovery.
 - Record the export timestamp, operator and restore-test outcome in the external operations log.
 
+Latest staging evidence:
+
+- 2026-05-25: `npm run portal:backup:d1` completed against remote `kharon-portal`; export and manifest were written under gitignored `backups/`.
+- 2026-05-25: Remote `d1_migrations` was reconciled for migrations `0001_kharon_portal.sql` through `0011_contact_submissions.sql`; `npx wrangler d1 migrations list kharon-portal --remote` returned `No migrations to apply`.
+
 ## R2 Evidence Backup
 
 Wrangler can verify bucket availability, but full object mirroring should use Cloudflare R2 S3-compatible credentials stored outside the repo.
@@ -71,6 +78,10 @@ Minimum process:
 3. Use an S3-compatible tool such as `rclone` or AWS CLI with the Cloudflare R2 endpoint.
 4. Mirror `kharon-portal-storage` to approved backup storage.
 5. Verify at least one recent jobcard PDF can be restored and opened.
+
+Latest staging evidence:
+
+- 2026-05-25: R2 restore drill created a temporary object under `restore-drills/`, downloaded it, verified matching SHA-256 hashes, and deleted the temporary object. Bucket availability remained healthy afterwards.
 
 Example shape only:
 
