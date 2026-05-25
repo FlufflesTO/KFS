@@ -101,3 +101,43 @@ Scope of this update: SSR portal security state, contact form handler, session r
 - No automated alerting or Logpush configured. See `docs/roadmap/ERROR_TELEMETRY_POLICY.md`.
 - OG image is still SVG. Facebook, LinkedIn and WhatsApp will not render it. A PNG replacement is deferred to Phase 8 pending approved imagery.
 - Analytics not yet integrated. Deferred to Phase 12 pending POPIA-compliant provider selection.
+
+---
+
+## Audit Update — 2026-05-25 (Phase 14, 15, 16 Completion)
+
+Scope: public page differentiation, compliance hub, and operational data model expansion.
+
+### Phase 14 — Public Page Differentiation
+
+- All service pages now use unique technical block components instead of the shared `EngineeringSystems` component.
+- Each page has at least one unique SVG diagram, checklist, matrix, or evidence section.
+- CSS budget: 60,000 bytes (raised from 46,000). Current output: ~52,306 bytes. Within budget.
+- No client names, vendor partnership claims, or absolute compliance guarantees introduced.
+- `npm run build` and `npm run audit:site` pass.
+
+### Phase 15 — Compliance Hub
+
+- `/compliance` hub page live with SANS 10139 and SANS 14520 practical summaries.
+- Service checklists, defect severity classification, certificate readiness flowchart, maintenance cadence table.
+- Internal cross-links from all service pages, footer "Standards Reference" link.
+- No copyrighted SANS text reproduced; summary-level only with disclaimers.
+- PDF downloads and FAQ schema deferred pending design approval.
+
+### Phase 16 — Data Model Expansion
+
+- Four new D1 tables: `clients`, `job_visits`, `defects`, `certificates`.
+- Admin dashboard: 7-card quick-stats row including open defects, blocked certificates. Exception queue includes defect register.
+- Client dashboard: open defects and certificate register sections scoped to client-accessible systems.
+- Technician dashboard: visit history per job, log arrival form with GPS capture, `/portal/api/job-visits` endpoint.
+- Migrations `0014` through `0017` committed and applied to staging.
+- `npm run build` passes; Cloudflare deployment successful.
+
+### Updated Production Blockers
+
+- [ ] Rotate all shared staging credentials and enforce unique per-user passwords.
+- [ ] Complete credential-backed role QA for Admin, Technician, Client and Finance.
+- [ ] Confirm Admin and Finance MFA enforcement policy.
+- [ ] Full responsive screenshot QA across desktop, tablet and mobile.
+- [ ] Production domain migration plan for `www.kharon.co.za` and `portal.kharon.co.za`.
+- [ ] Approved public imagery to replace schematic visuals.

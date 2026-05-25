@@ -48,3 +48,19 @@ Use `npm run build:production:kharon` only when preparing the final Kharon produ
 ## Roadmap
 
 The master delivery plan is in `docs/roadmap/MASTER_ROADMAP.md`.
+
+### Current Status (2026-05-25)
+
+**Completed phases:**
+
+| Phase | Title | Status |
+|-------|-------|--------|
+| 1–13 | Foundation through security hardening | ✅ Complete |
+| 14 | Public Page Differentiation | ✅ Complete — each service page has unique technical blocks |
+| 15 | Compliance Hub and SANS Operationalisation | ✅ Complete — `/compliance` hub live with SANS summaries, checklists, defect/certificate guidance |
+| 16 | Portal Operational Data Model Expansion | ✅ Complete — clients, job_visits, defects, certificates tables + dashboard updates |
+| 21 | Sage Manual Finance Control Register | ✅ Complete — finance dashboard reframed as Sage control register |
+
+**Active development:** Phases 17 (Technician Field Workflow Maturity), 18 (Client Compliance Command Centre), 19 (Finance Accounting and VAT Hardening).
+
+**Production blockers:** Credential rotation, role QA with external credentials, Admin/Finance MFA enforcement, production domain migration, responsive screenshot QA. See `docs/roadmap/MASTER_ROADMAP.md` for the full list.

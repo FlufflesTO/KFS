@@ -34,8 +34,8 @@ A live operational health probe was run against the Cloudflare staging databases
 
 | Resource | Binding Name | Status | Details / Current Inventory |
 |---|---|---|---|
-| **Cloudflare D1** | `DB` (kharon-portal) | **ONLINE** | 5 active users seeded; transaction tables and audit indexes populated. |
-| **Cloudflare R2** | `BUCKET` (kharon-portal-storage) | **ONLINE** | 1 active test object; read/write permissions validated. |
+| **Cloudflare D1** | `DB` (kharon-portal) | **ONLINE** | 17 migrations applied; tables for users, sites, systems, jobs, financial_records, maintenance_requests, clients, job_visits, defects, certificates, audit_events, document_access_logs, job_evidence_files, contact_submissions, revoked_sessions, portal_rate_limits, password_reset_tokens, client_site_access. Portal APIs include `/portal/api/job-visits` for technician arrival logging. |
+| **Cloudflare R2** | `BUCKET` (kharon-portal-storage) | **ONLINE** | Active bucket for jobcard PDFs and evidence photos; read/write permissions validated. |
 
 ---
 
@@ -157,7 +157,43 @@ The following manual QA checks should be run by the operations team using extern
 
 ---
 
-## 6. Production Cutover Checklist
+## 7. Phase 14–16 Completion Summary
+
+### Phase 14 — Public Page Differentiation
+
+All five major service pages now use unique technical block components:
+
+- **Gas Suppression**: room integrity checklist, agent selection matrix, discharge sequence SVG, pre-quote data capture.
+- **Fire Detection**: cause-and-effect matrix, false-alarm diagnosis flowchart, service evidence checklist, zoning guide.
+- **Compliance & Maintenance**: maintenance cadence table, defect severity classification, certificate readiness flowchart, service report structure.
+- **Critical Infrastructure**: uptime impact model, escalation/response dependency map, risk-tier matrix.
+- **Security Systems**: access control tiers, CCTV coverage planning, integration points diagram.
+
+Each page has at least one unique SVG diagram or structured checklist. No two pages share identical proof-card copy.
+
+### Phase 15 — Compliance Hub
+
+The `/compliance` hub provides practical SANS summaries, service checklists, defect/certificate guidance, and maintenance cadence information. All content is summary-level with disclaimers; no copyrighted SANS text is reproduced.
+
+### Phase 16 — Data Model Expansion
+
+Four new D1 tables extend the portal's operational capability:
+
+| Table | Purpose | Key Fields |
+|---|---|---|
+| `clients` | Customer entity management | company_name, contact fields, billing_address |
+| `job_visits` | Technician visit logging | job_id, technician_id, arrival/departure, GPS, contact, notes |
+| `defects` | Defect register with severity | system_id, severity, sans_clause_ref, certificate_blocking, status |
+| `certificates` | Compliance certificate tracking | system_id, certificate_type, issued/expiry, blocked_by_defect_id, status |
+
+Dashboard updates:
+- **Admin**: 7-card quick-stats, exception queue with defect register.
+- **Client**: open defects section, certificate register.
+- **Technician**: visit history display, log arrival form with GPS.
+
+---
+
+## 8. Current Production Blockers
 
 To execute the final cutover to `kharon.co.za`, complete the following steps:
 

@@ -69,7 +69,7 @@ Restore drill:
 Latest staging evidence:
 
 - 2026-05-25: `npm run portal:backup:d1` completed against remote `kharon-portal`; export and manifest were written under gitignored `backups/`.
-- 2026-05-25: Remote `d1_migrations` was reconciled for migrations `0001_kharon_portal.sql` through `0011_contact_submissions.sql`; `npx wrangler d1 migrations list kharon-portal --remote` returned `No migrations to apply`.
+- 2026-05-25: Remote `d1_migrations` was reconciled for migrations `0001_kharon_portal.sql` through `0017_certificates.sql`; `npx wrangler d1 migrations list kharon-portal --remote` returned `No migrations to apply`.
 - 2026-05-25: A fresh D1 export was created before applying migration `0012_client_site_access.sql`; Wrangler applied the migration remotely and then reported no pending migrations.
 
 ## R2 Evidence Backup
@@ -174,13 +174,14 @@ Admin scheduling:
 Technician closure:
 
 1. Technician signs in and opens `/portal/tech/dashboard`.
-2. Technician starts the job if it is still scheduled.
-3. Technician selects the fault or work category.
-4. Technician records work comments, parts used and follow-up actions.
-5. Technician attaches up to 3 relevant evidence photos where needed.
-6. Technician captures client or responsible-person signature.
-7. Technician submits the completed jobcard only after confirming the browser is online and stable.
-8. Technician waits for the completion confirmation and document path.
+2. Technician logs site arrival using the "Log site arrival" form (date/time, optional GPS, on-site contact, arrival notes).
+3. Technician starts the job if it is still scheduled.
+4. Technician selects the fault or work category.
+5. Technician records work comments, parts used and follow-up actions.
+6. Technician attaches up to 3 relevant evidence photos where needed.
+7. Technician captures client or responsible-person signature.
+8. Technician submits the completed jobcard only after confirming the browser is online and stable.
+9. Technician waits for the completion confirmation and document path.
 
 Admin exception handling:
 

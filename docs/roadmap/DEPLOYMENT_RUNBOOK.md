@@ -217,10 +217,16 @@ Current migrations and their scope:
 | `0009_revoked_sessions.sql` | Session token revocation |
 | `0010_system_service_interval.sql` | Configurable service intervals |
 | `0011_contact_submissions.sql` | Public contact form storage |
+| `0012_client_site_access.sql` | Client-to-site access mapping |
+| `0013_sage_finance_fields.sql` | Sage quote/invoice/reference fields on financial_records |
+| `0014_clients.sql` | Dedicated clients table for customer entities |
+| `0015_job_visits.sql` | Technician visit logging with GPS and arrival/departure |
+| `0016_defects.sql` | Defect register with severity, SANS clause, certificate blocking |
+| `0017_certificates.sql` | Certificate tracking with defect-based blocking |
 
 For a fresh database, apply `schema.sql` first (full schema including all migrations). For an existing database, identify the highest applied migration and apply only the subsequent files in order.
 
-Applied to staging D1 as of 2026-05-25: all migrations through `0011`.
+Applied to staging D1 as of 2026-05-25: all migrations through `0017`.
 
 Generate a PBKDF2 password hash before inserting users:
 

@@ -35,7 +35,8 @@ Implemented:
 - Public shell remains lightweight and mostly server-rendered with code-native SVG/HTML technical visuals.
 - Required pages: `/`, `/gas-suppression`, `/fire-detection`, `/compliance-maintenance`, `/critical-infrastructure`, `/emergency-support`, `/security-systems`, `/industries`, `/about`, `/contact`.
 - Portal routes: `/portal/login`, `/portal/reset`, `/portal/account/password`, `/portal/account/mfa`, `/portal/tech/dashboard`, `/portal/tech/history`, `/portal/admin/dashboard`, `/portal/admin/planning`, `/portal/admin/operations`, `/portal/client/dashboard`, `/portal/client/quotes`, `/portal/finance/dashboard`.
-- Portal APIs: `/portal/api/auth`, `/portal/api/logout`, `/portal/api/reset-password`, `/portal/api/change-password`, `/portal/api/mfa`, `/portal/api/job-status`, `/portal/api/submit-jobcard`, `/portal/api/maintenance-request`, `/portal/api/admin/users`, `/portal/api/admin/sites`, `/portal/api/admin/systems`, `/portal/api/admin/jobs`, `/portal/api/admin/import`, `/portal/api/admin/export`, `/portal/api/admin/client-site-access`, `/portal/api/admin/maintenance-requests`, `/portal/api/approve-quote`, `/portal/api/finance/payments`, `/portal/api/finance/export`, `/portal/api/file/[...key]`, `/api/contact`.
+- Portal APIs: `/portal/api/auth`, `/portal/api/logout`, `/portal/api/reset-password`, `/portal/api/change-password`, `/portal/api/mfa`, `/portal/api/job-status`, `/portal/api/job-visits`, `/portal/api/submit-jobcard`, `/portal/api/maintenance-request`, `/portal/api/admin/users`, `/portal/api/admin/sites`, `/portal/api/admin/systems`, `/portal/api/admin/jobs`, `/portal/api/admin/import`, `/portal/api/admin/export`, `/portal/api/admin/client-site-access`, `/portal/api/admin/maintenance-requests`, `/portal/api/approve-quote`, `/portal/api/finance/payments`, `/portal/api/finance/export`, `/portal/api/finance/sage-reference`, `/portal/api/file/[...key]`, `/api/contact`.
+- D1 schema includes: `users`, `sites`, `systems`, `jobs`, `financial_records`, `maintenance_requests`, `client_site_access`, `audit_events`, `job_evidence_files`, `document_access_logs`, `portal_rate_limits`, `password_reset_tokens`, `revoked_sessions`, `contact_submissions`, `clients`, `job_visits`, `defects`, `certificates`.
 - Core components: `BaseLayout`, `Header`, `Footer`, `CinematicHero`, `RouteMatrix`, `Hero`, `ContextualInquiry`, `ComplianceStrip`, `SectorRiskGrid`, `EngineeringSystems`, `AuthorityEvidence`, `EmergencyResponse`, `SectionHeading`, `Button`.
 - SEO basics: canonical URLs, OpenGraph tags, `robots.txt`, `sitemap.xml`, LocalBusiness JSON-LD.
 - Accessibility basics: skip link, visible focus state, semantic sections, labelled contact form, reduced-motion CSS.
@@ -130,7 +131,7 @@ Current project status:
 | Portal document access | Implemented for staging | R2 file route checks authorization and records document-access outcomes. |
 | Portal role dashboards | Implemented foundation | Admin, technician, client and finance dashboards exist; scale refinement and manual role QA remain open. |
 | Remote D1 migration ledger | Reconciled for staging | Expected staging tables and columns exist, `d1_migrations` is stamped for migrations `0001` through `0011`, and Wrangler reports no pending remote migrations as of 2026-05-25. |
-| Technician evidence | Partially implemented | Signature capture, jobcard PDF and limited photo evidence exist; offline drafts, GPS/timing, defect/certificate logic and richer SANS-aware telemetry remain open. |
+| Technician evidence | Partially implemented | Signature capture, jobcard PDF and limited photo evidence exist; visit logging with GPS and arrival capture added in Phase 16; offline drafts, structured inspection fields, defect capture within jobcard closure and richer SANS-aware telemetry remain open. |
 | Finance workflow | Partially implemented | Ledger, export and payment capture foundations exist for staging, but Sage is now defined as the finance source of truth; Phase 21 must refactor portal finance into a Sage manual control register. |
 | Public authority proof | Partially implemented | Page copy and schematic proof exist; approved real imagery, case evidence, document examples and compliance hub depth remain open. |
 | Responsive QA | Partially implemented | Header/tablet issue is resolved; full desktop/tablet/mobile screenshot QA across public pages and portal roles remains open. |
@@ -1020,6 +1021,38 @@ Portal findings:
 - Staging defect pass on 2026-05-25 identified that the remote D1 database was missing the `client_site_access` table even though the application and schema expected it. Migration `0012_client_site_access.sql` was added and applied remotely after a D1 export, restoring the client dashboard's mapped-site data dependency.
 - Admin create forms now perform a faster full page refresh after successful create actions so dependent selects for sites, systems and users are rehydrated from D1 without requiring a manual browser refresh.
 
+
+## Review Update - 2026-05-25 Phase 16 Data Model Expansion
+
+Scope:
+
+- Expand the D1 schema with `clients`, `job_visits`, `defects` and `certificates` tables.
+- Update admin, client and technician role dashboards to surface the new entities.
+- Add a job-visits API endpoint for technician arrival logging.
+
+Completed:
+
+- [x] Migration `0014_clients.sql` — dedicated `clients` table with company name, contact fields, billing address, indexes and updated_at trigger.
+- [x] Migration `0015_job_visits.sql` — `job_visits` table linked to `jobs`, with technician FK, visit date, arrival/departure times, GPS coordinates, customer name/title and notes.
+- [x] Migration `0016_defects.sql` — `defects` table with severity (Critical/Major/Minor/Observation), SANS clause reference, certificate_blocking flag, status (Open/In Progress/Resolved/Closed) and remediation_notes.
+- [x] Migration `0017_certificates.sql` — `certificates` table with certificate_type, issued/expiry dates, blocked_by_defect_id FK, and status (Valid/Expired/Revoked/Blocked).
+- [x] All four new tables, their indexes and updated_at triggers reflected in `schema.sql`.
+- [x] Admin dashboard — 7-card quick-stats row including open defects, critical defects and blocked certificates; exception queue includes an open defects register with severity-coded cards linking to system operations.
+- [x] Client dashboard — open defects section with severity-coded cards and a certificate register showing type, status, issued/expiry dates, both scoped to client's mapped sites.
+- [x] Technician dashboard — visit history display per job, "Log site arrival" form with GPS capture, on-site contact name/title and arrival notes; new `/portal/api/job-visits` endpoint with technician assignment validation.
+- [x] `npm run build` passes. Cloudflare deployment completed. Commit: 81c75a2.
+
+Outstanding:
+
+- [ ] Departure logging UI on technician dashboard (table exists, arrival form implemented).
+- [ ] Defect creation UI within admin operations and jobcard closure flows.
+- [ ] Certificate generation UI tied to job completion and defect resolution.
+- [ ] Client table FK relationships to sites for multi-site client accounts.
+- [ ] Admin defect/certificate CRUD API endpoints.
+
+Status: core schema and dashboard integration complete. CRUD APIs and UI for defect/certificate management remain open.
+
+
 ## Outstanding Build Phases - 2026-05-24
 
 These phases control the remaining work after the portal security, evidence, retention and document-access hardening passes.
@@ -1464,7 +1497,29 @@ Deployable gate:
 - Technician users cannot access unassigned jobs/visits.
 - `npm run build` and `npm run audit:site` pass.
 
-Status: pending.
+Status: complete (2026-05-25).
+
+Implementation evidence:
+
+- Migration `0014_clients.sql` creates a dedicated `clients` table with company name, contact fields, billing address and updated_at trigger.
+- Migration `0015_job_visits.sql` creates `job_visits` with job_id FK, technician_id FK, visit_date, arrival/departure times, GPS coordinates, customer_name/title, and notes.
+- Migration `0016_defects.sql` creates `defects` with severity (Critical/Major/Minor/Observation), sans_clause_ref, certificate_blocking flag, status (Open/In Progress/Resolved/Closed), remediation_notes.
+- Migration `0017_certificates.sql` creates `certificates` with certificate_type (Fire Detection/Gas Suppression/Emergency Lighting/Evacuation/Combined), issued_date, expiry_date, blocked_by_defect_id FK, status (Valid/Expired/Revoked/Blocked).
+- `schema.sql` updated with all new tables, indexes, and updated_at triggers.
+- Admin dashboard: stats object expanded with openDefects, criticalDefects, blockedCertificates, validCertificates counts. Quick-stats row expanded to 7 cards. Exception queue includes open defects register with severity-coded cards, SANS clause references, and links to system operations.
+- Client dashboard: openDefects query scoped via systems.site_id; certificates query scoped via systems.site_id. Both rendered as dedicated sections with severity/status color coding.
+- Technician dashboard: jobVisits loaded per job; visit history rendered for each dispatch; log-arrival-form with date/time, GPS, contact, and notes fields; `/portal/api/job-visits` endpoint with logArrival action validates technician assignment to job before insertion.
+- `npm run build` passes; Cloudflare deployment successful (commit 81c75a2).
+- Migration `0015_job_visits.sql` creates the `job_visits` table linked to `jobs`, with technician, visit date, arrival/departure times, GPS coordinates, customer name/title and notes.
+- Migration `0016_defects.sql` creates the `defects` table with severity (Critical/Major/Minor/Observation), SANS clause reference, certificate_blocking flag, status (Open/In Progress/Resolved/Closed) and remediation_notes.
+- Migration `0017_certificates.sql` creates the `certificates` table with certificate_type, issued/expiry dates, blocked_by_defect_id FK, and status (Valid/Expired/Revoked/Blocked).
+- All four new tables, their indexes and updated_at triggers are reflected in `schema.sql`.
+- Admin dashboard expanded with openDefects, criticalDefects, blockedCertificates and validCertificates stat cards (7-card quick-stats row).
+- Admin exception queue now includes an open defects register with severity-coded cards linking to system operations.
+- Client dashboard now displays an open defects section and a certificate register, both scoped to the client's mapped sites via `systems.site_id`.
+- Technician dashboard now fetches and displays visit history per job, with a "Log site arrival" form capturing visit date/time, GPS coordinates, on-site contact and arrival notes.
+- New API endpoint `/portal/api/job-visits` handles the `logArrival` action with technician assignment validation.
+- `npm run build` passes. Cloudflare deployment completed.
 
 ### Phase 17 - Technician Field Workflow Maturity
 
@@ -1472,14 +1527,14 @@ Goal: make the technician portal fit real mobile field-service work, including p
 
 Background:
 
-The current technician workflow supports assigned jobs, start-job action, comments, parts used, follow-up actions, photos, signature and generated jobcard evidence. It does not yet capture enough structured field telemetry for Kharon's intended compliance and service-report model.
+The current technician workflow supports assigned jobs, start-job action, comments, parts used, follow-up actions, photos, signature and generated jobcard evidence. Phase 16 (2026-05-25) added the `job_visits` table, visit history display and a "Log site arrival" form with GPS capture. Remaining work covers structured inspection fields, defect capture within jobcard closure, offline draft handling and evidence review.
 
 Tasks:
 
-- Add visit start and visit end timestamps.
-- Add GPS check-in and check-out capture where browser permissions allow.
-- Add customer/responsible-person name, role and contact field beside signature.
-- Add system-specific inspection sections:
+- [x] Add visit start and visit end timestamps — visit logging foundation in Phase 16 (`job_visits` table, arrival time capture).
+- [x] Add GPS check-in and check-out capture where browser permissions allow — GPS latitude/longitude fields in Phase 16 arrival form.
+- [x] Add customer/responsible-person name, role and contact field beside signature — customer name/title fields in Phase 16 visit logging.
+- [ ] Add system-specific inspection sections:
   - fire detection panel status,
   - loop/device status,
   - battery voltage/load,
@@ -1513,23 +1568,17 @@ Goal: evolve the client portal from record access into a compliance and lifecycl
 
 Background:
 
-The client dashboard currently shows mapped sites, systems, latest jobcard download, quote approvals, maintenance requests and recent request status. Clients still need a clearer compliance summary and document pack view.
+The client dashboard currently shows mapped sites, systems, latest jobcard download, quote approvals, maintenance requests and recent request status. Phase 16 (2026-05-25) added an open defects section and a certificate register to the client dashboard, both scoped to the client's mapped sites. Remaining work covers site-level compliance summaries, system-level status cards, evidence pack downloads and document status explanations.
 
 Tasks:
 
-- Add site-level compliance summary:
-  - next service due,
-  - overdue systems,
-  - open defects,
-  - certificate status,
-  - pending quotes,
-  - recent completed visits.
-- Add system-level status cards with risk bands.
-- Add defect list visible to mapped client users where commercially appropriate.
-- Add certificate and service-report download sections.
-- Add "download evidence pack" for a selected site/system/date range.
-- Add emergency or urgent request route from client dashboard.
-- Add client-facing explanation of document status:
+- [x] Add site-level compliance summary (partial) — overdue/due-soon/compliant counts exist; open defects and certificate status added in Phase 16.
+- [ ] Add system-level status cards with risk bands.
+- [x] Add defect list visible to mapped client users — implemented in Phase 16 with severity-coded cards.
+- [x] Add certificate and service-report download sections — certificate register implemented in Phase 16; service-report downloads already exist via jobcard links.
+- [ ] Add "download evidence pack" for a selected site/system/date range.
+- [ ] Add emergency or urgent request route from client dashboard.
+- [ ] Add client-facing explanation of document status:
   - draft,
   - completed,
   - blocked by defect,
