@@ -340,7 +340,7 @@ Future implementation notes:
 - Current `submit-jobcard` finance insert should later create `Invoice Required`.
 - Current `finance/payments` endpoint should later become `record-sage-payment` or similar.
 - UI labels should avoid `settled` unless referencing Sage-confirmed payment.
-- Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only.
+- Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only. ✓ Fixed 2026-05-25.
 - Finance export should include Sage reference fields and retain formula-injection protection.
 
 Status:
@@ -1676,7 +1676,7 @@ Future implementation notes:
 - Current `submit-jobcard` finance insert should later create `Invoice Required`.
 - Current `finance/payments` endpoint should later become `record-sage-payment` or similar.
 - UI labels should avoid `settled` unless referencing Sage-confirmed payment.
-- Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only.
+- Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only. ✓ Fixed 2026-05-25.
 - Finance export should include Sage reference fields and retain formula-injection protection.
 
 Partial implementation on 2026-05-25:
@@ -1697,9 +1697,16 @@ Further implementation on 2026-05-25:
 - Finance dashboard totals (Unpaid, Pending Approval, Paid in Sage) and aging buckets (0-29d, 30-59d, 60+d) now use full-dataset SQL aggregates via a single `db.batch()` query rather than summing over the 80-record visible slice. Accuracy is now independent of the display cap. Uses `julianday('now') - julianday(distribution_date)` for aging and COALESCE(SUM(CASE WHEN … END), 0) for nullsafe sums.
 - Per-row `age_days` for the table display column is retained as a client-side Date calculation; only the aggregate cards use SQL.
 
+Further implementation on 2026-05-25 (continued session):
+
+- Finance ledger table now has a sticky search input (client/reference text), status filter (Unpaid/Pending Approval/Paid in Sage) and type filter (Quote/Invoice). Rows filtered in-browser via data-search, data-status, data-type attributes. No new API calls required.
+- Client quotes page: same totals-from-loop bug fixed with full-dataset SQL aggregate query scoped to client's mapped site IDs via db.batch(). Search (site/reference), status filter and type filter added to commercial ledger table.
+- Admin planning page: all six management stat cards (Scheduled, In Progress, Overdue systems, Due within 30d, Critical requests, Unassigned jobs) now use full-dataset SQL aggregates via db.batch() instead of counting from capped display lists. Overdue systems, Critical requests and Unassigned jobs cards turn red when non-zero. Search and status filter added to Active schedule list; search added to Lifecycle due calendar.
+- CSS budget: 46 158 bytes.
+
 Status:
 
-Terminology pass and full-dataset aggregate fix complete. Full Phase 21 schema and workflow refactor (Sage reference fields, finance task model, status pipeline) pending.
+Terminology pass, full-dataset aggregate fixes and search/filter additions complete. Full Phase 21 schema and workflow refactor (Sage reference fields, finance task model, status pipeline) pending.
 
 ### Phase 22 - Technician Field Workflow Maturity
 
