@@ -1390,26 +1390,33 @@ The current site references SANS 10139 and SANS 14520, but it does not yet provi
 
 Tasks:
 
-- Create a `/compliance` or `/resources/compliance` hub.
-- Add practical SANS 10139 fire detection summary page.
-- Add practical SANS 14520 gaseous suppression summary page.
-- Add Fire Detection Service Report checklist.
-- Add Gas Suppression Service Report checklist.
-- Add defect severity and certificate-blocking explanation.
-- Add maintenance cadence guidance with legal caution that final requirements depend on system, site, insurer and applicable standard.
-- Add downloadable PDF versions after document design is approved.
-- Add internal links from Gas Suppression, Fire Detection, Compliance & Maintenance, Emergency Support and Client Records.
-- Add FAQ schema only after final content is approved.
+- [x] Create a `/compliance` route and page.
+- [x] SANS 10139 practical overview — inspection intervals, battery test, cause-and-effect, record obligations.
+- [x] SANS 14520 practical overview — cylinder checks, detection logic test, room integrity, agent verification.
+- [x] Fire Detection Service Report checklist (in DetectionTechnicalBlocks).
+- [x] Gas Suppression protected-room readiness checklist (in SuppressionTechnicalBlocks).
+- [x] Defect severity categories (Cat 1 / Cat 2 / Cat 3) with rectification timeframes.
+- [x] Certificate readiness flowchart (SVG decision tree).
+- [x] Maintenance cadence table with advisory scope note.
+- [x] Scope advisory notice clarifying this is a working summary, not the published standard.
+- [x] Evidence expectations paragraph (record obligations, CoC vs Advisory Notice logic).
+- [x] Related services panel linking compliance-maintenance, fire-detection, gas-suppression.
+- [x] ContextualInquiry CTA with compliance-specific fields.
+- [x] Footer "Standards Reference" link pointing to /compliance.
+- [x] sitemapPages updated; pageMeta.complianceHub title and description set.
+- [ ] Internal cross-links from Emergency Support and Client Records pages.
+- [ ] Downloadable PDF versions — deferred pending approved document design.
+- [ ] FAQ schema — deferred pending final content approval.
 
 Deployable gate:
 
-- Compliance hub is live and linked from public navigation or footer.
-- SANS summaries are practical, non-infringing and do not reproduce copyrighted standard text.
-- Checklists are advisory and do not claim to replace professional assessment.
-- PDF downloads use verified Kharon branding.
-- `npm run build` and `npm run audit:site` pass.
+- [x] Compliance hub live at /compliance and linked from footer.
+- [x] SANS summaries advisory, non-infringing — no copyrighted standard text reproduced.
+- [x] Checklists advisory with scope disclaimer.
+- [ ] PDF downloads — deferred.
+- [ ] `npm run build` and `npm run audit:site` — run to confirm before deployment.
 
-Status: pending.
+Status: partially complete — core hub shipped (commit 905ee07). PDF downloads and FAQ schema deferred. Cross-links to Emergency Support and Client Records remain open.
 
 ### Phase 16 - Portal Operational Data Model Expansion
 
