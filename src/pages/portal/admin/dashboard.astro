@@ -157,12 +157,12 @@ try {
           <p class="mt-2 text-2xl font-bold">{stats.activeJobs}</p>
           <a href="/portal/admin/planning" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Planning -></a>
         </article>
-        <article class="border border-kharon-border bg-white p-4">
+        <article class={`border p-4 ${stats.unassignedJobs > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
           <p class={`text-xs font-bold uppercase ${stats.unassignedJobs > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Unassigned</p>
           <p class="mt-2 text-2xl font-bold">{stats.unassignedJobs}</p>
           <a href="/portal/admin/operations#jobs" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Assign -></a>
         </article>
-        <article class="border border-kharon-border bg-white p-4">
+        <article class={`border p-4 ${stats.overdueSystems > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
           <p class={`text-xs font-bold uppercase ${stats.overdueSystems > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue systems</p>
           <p class="mt-2 text-2xl font-bold">{stats.overdueSystems}</p>
           <a href="/portal/admin/planning" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">View lifecycle -></a>
@@ -172,10 +172,10 @@ try {
           <p class="mt-2 text-2xl font-bold">{stats.openRequests}</p>
           <a href="/portal/admin/dashboard#requests" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Review below -></a>
         </article>
-        <article class="border border-kharon-border bg-white p-4">
+        <article class={`border p-4 ${stats.missingDocuments > 0 ? "border-kharon-purple bg-kharon-light" : "border-kharon-border bg-white"}`}>
           <p class={`text-xs font-bold uppercase ${stats.missingDocuments > 0 ? "text-kharon-purple" : "text-kharon-grey"}`}>Missing docs</p>
           <p class="mt-2 text-2xl font-bold">{stats.missingDocuments}</p>
-          <a href="/portal/tech/history" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">History -></a>
+          <a href="/portal/admin/operations#jobs" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Review jobs -></a>
         </article>
       </div>
 
