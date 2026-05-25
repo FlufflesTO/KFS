@@ -5,7 +5,8 @@ import { getDatabase } from "../../../lib/server/bindings.js";
 export const prerender = false;
 
 const user = Astro.locals.user;
-const today = new Date().toISOString().slice(0, 10);
+const today    = new Date().toISOString().slice(0, 10);
+const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 let users = [];
 let sites = [];
 let systems = [];
@@ -383,6 +384,16 @@ try {
                 <input class="w-16 rounded-md border border-kharon-border px-2 py-2 text-sm" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} />
               </div>
               <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+              {record.next_due_date && record.next_due_date < today && (
+                <p class="rounded border border-red-300 bg-red-50 px-3 py-2 text-xs font-bold uppercase text-red-900 lg:col-span-7">
+                  ⚠ Service overdue — due {record.next_due_date}. Update after the next completed visit.
+                </p>
+              )}
+              {record.next_due_date && record.next_due_date >= today && record.next_due_date <= soonDate && (
+                <p class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold uppercase text-amber-900 lg:col-span-7">
+                  Service due {record.next_due_date} — within 30 days.
+                </p>
+              )}
               <button type="button" class="link-to-tab text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-7" data-target-tab="jobs" data-target-search="jobs-search" data-target-value={`${record.owner_company_name} ${record.coverage_area}`}>→ Jobs for {record.coverage_area}</button>
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
             </form>

@@ -12,6 +12,8 @@ let requests = [];
 let sites = [];
 let loadError = "";
 const sectionErrors = [];
+const today    = new Date().toISOString().slice(0, 10);
+const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
 try {
   const db = getDatabase();
@@ -134,7 +136,15 @@ try {
                 <h2 class="mt-2 text-xl font-bold">{system.coverage_area}</h2>
                 <p class="mt-1 text-sm text-kharon-grey">{system.owner_company_name}</p>
               </div>
-              <span class="rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">Due {system.next_due_date}</span>
+              <span class={`rounded-md border px-3 py-2 text-xs font-bold uppercase ${
+                system.next_due_date && system.next_due_date < today
+                  ? "border-red-300 bg-red-50 text-red-900"
+                  : system.next_due_date && system.next_due_date <= soonDate
+                  ? "border-amber-300 bg-amber-50 text-amber-900"
+                  : "border-kharon-border text-kharon-grey"
+              }`}>
+                {system.next_due_date && system.next_due_date < today ? "⚠ Overdue — " : "Due "}{system.next_due_date || "Not scheduled"}
+              </span>
             </div>
             <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
               <div><dt class="font-bold uppercase text-kharon-grey/70">Last service</dt><dd>{system.last_service_date || "No service date recorded"}</dd></div>
