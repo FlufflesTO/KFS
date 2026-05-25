@@ -19,25 +19,37 @@ try {
     loadError = "This client account is not mapped to a site.";
   } else {
     const sitePlaceholders = inClause(siteIds);
-    records = (await db.prepare(
-      `SELECT financial_records.id, financial_records.site_id, financial_records.amount,
-              financial_records.item_type, financial_records.payment_status,
-              financial_records.distribution_date, financial_records.reference,
-              sites.owner_company_name, jobs.id AS job_id, jobs.status AS job_status
-       FROM financial_records
-       INNER JOIN sites ON sites.id = financial_records.site_id
-       LEFT JOIN jobs ON jobs.id = financial_records.job_id
-       WHERE financial_records.site_id IN (${sitePlaceholders})
-       ORDER BY financial_records.distribution_date DESC, financial_records.created_at DESC
-       LIMIT 120`
-    ).bind(...siteIds).all()).results || [];
 
-    for (const record of records) {
-      const amount = Number(record.amount || 0);
-      if (record.payment_status === "Pending Approval") totals.pending += amount;
-      if (record.payment_status === "Unpaid") totals.unpaid += amount;
-      if (record.payment_status === "Settled") totals.settled += amount;
-    }
+    const [aggResult, recordsResult] = await db.batch([
+      db.prepare(
+        `SELECT
+           COALESCE(SUM(CASE WHEN payment_status = 'Pending Approval' THEN amount ELSE 0 END), 0) AS pending,
+           COALESCE(SUM(CASE WHEN payment_status = 'Unpaid'           THEN amount ELSE 0 END), 0) AS unpaid,
+           COALESCE(SUM(CASE WHEN payment_status = 'Settled'          THEN amount ELSE 0 END), 0) AS settled
+         FROM financial_records
+         WHERE site_id IN (${sitePlaceholders})`
+      ).bind(...siteIds),
+      db.prepare(
+        `SELECT financial_records.id, financial_records.site_id, financial_records.amount,
+                financial_records.item_type, financial_records.payment_status,
+                financial_records.distribution_date, financial_records.reference,
+                sites.owner_company_name, jobs.id AS job_id, jobs.status AS job_status
+         FROM financial_records
+         INNER JOIN sites ON sites.id = financial_records.site_id
+         LEFT JOIN jobs ON jobs.id = financial_records.job_id
+         WHERE financial_records.site_id IN (${sitePlaceholders})
+         ORDER BY financial_records.distribution_date DESC, financial_records.created_at DESC
+         LIMIT 120`
+      ).bind(...siteIds)
+    ]);
+
+    const agg = aggResult.results[0] || {};
+    totals = {
+      pending: Number(agg.pending ?? 0),
+      unpaid:  Number(agg.unpaid  ?? 0),
+      settled: Number(agg.settled ?? 0)
+    };
+    records = recordsResult.results || [];
   }
 } catch (error) {
   console.error("client quote history failed", error);
@@ -100,6 +112,27 @@ try {
           <h2 class="text-xl font-bold">Commercial ledger</h2>
           <p class="mt-2 text-sm text-kharon-grey">Records reflect Sage document status. Official quotes and invoices are issued from Sage.</p>
         </div>
+        <div class="flex flex-wrap items-center gap-3 px-4 py-3 sm:px-5 border-b border-kharon-border bg-kharon-light">
+          <input
+            id="quotes-search"
+            type="search"
+            class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
+            placeholder="Search site or reference…"
+            size="26"
+          />
+          <select id="quotes-status-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
+            <option value="">All statuses</option>
+            <option value="Pending Approval">Pending approval</option>
+            <option value="Unpaid">Unpaid</option>
+            <option value="Settled">Paid in Sage</option>
+          </select>
+          <select id="quotes-type-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
+            <option value="">All types</option>
+            <option value="Quote">Quote</option>
+            <option value="Invoice">Invoice</option>
+          </select>
+        </div>
+        <p id="quotes-no-results" class="hidden px-4 py-3 text-sm text-kharon-grey sm:px-5">No records match your filter.</p>
         <div class="portal-scroll-x">
           <table class="w-full min-w-[760px] border-collapse text-left text-sm">
             <thead class="bg-kharon-charcoal text-white">
@@ -114,12 +147,17 @@ try {
                 <th class="p-4">Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="quotes-tbody">
               {records.length === 0 && (
                 <tr><td class="p-4 text-kharon-grey" colspan="8">No quote, invoice or payment records are available.</td></tr>
               )}
               {records.map((record) => (
-                <tr class="border-t border-kharon-border">
+                <tr
+                  class="border-t border-kharon-border"
+                  data-search={`${record.owner_company_name} ${record.reference || ""} ${record.item_type}`}
+                  data-status={record.payment_status}
+                  data-type={record.item_type}
+                >
                   <td class="p-4 font-semibold">{record.owner_company_name}</td>
                   <td class="p-4">{record.reference || record.id}</td>
                   <td class="p-4">{record.item_type}</td>
@@ -145,6 +183,36 @@ try {
     </div>
   </section>
 
+  <script>
+    const quotesSearch       = document.getElementById("quotes-search") as HTMLInputElement | null;
+    const quotesStatusFilter = document.getElementById("quotes-status-filter") as HTMLSelectElement | null;
+    const quotesTypeFilter   = document.getElementById("quotes-type-filter") as HTMLSelectElement | null;
+    const quotesTbody        = document.getElementById("quotes-tbody");
+    const quotesNoResults    = document.getElementById("quotes-no-results");
+
+    function applyQuotesFilter() {
+      if (!quotesTbody) return;
+      const q  = (quotesSearch?.value  || "").toLowerCase().trim();
+      const sv = quotesStatusFilter?.value || "";
+      const tv = quotesTypeFilter?.value   || "";
+      const rows = quotesTbody.querySelectorAll<HTMLTableRowElement>("tr[data-search]");
+      let visible = 0;
+      for (const row of rows) {
+        const text = (row.dataset.search ?? "").toLowerCase();
+        const show =
+          (!q  || text.includes(q)) &&
+          (!sv || (row.dataset.status ?? "") === sv) &&
+          (!tv || (row.dataset.type   ?? "") === tv);
+        row.style.display = show ? "" : "none";
+        if (show) visible++;
+      }
+      if (quotesNoResults) quotesNoResults.style.display = visible === 0 ? "" : "none";
+    }
+
+    quotesSearch?.addEventListener("input",  applyQuotesFilter);
+    quotesStatusFilter?.addEventListener("change", applyQuotesFilter);
+    quotesTypeFilter?.addEventListener("change",   applyQuotesFilter);
+  </script>
   <script is:inline>
     for (const button of document.querySelectorAll("[data-quote-id]")) {
       button.addEventListener("click", async () => {
