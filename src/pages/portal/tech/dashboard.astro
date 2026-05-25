@@ -113,6 +113,16 @@ try {
               Follow-up actions
               <textarea name="followUpActions" class="portal-field min-h-20 rounded-md border border-kharon-border px-4 py-3" maxlength="1000" placeholder="No follow-up required, or describe required action."></textarea>
             </label>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+                Customer / responsible person name
+                <input name="customerName" class="portal-field rounded-md border border-kharon-border px-4 py-3" maxlength="120" placeholder="Full name of client signatory" required />
+              </label>
+              <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+                Title / role
+                <input name="customerTitle" class="portal-field rounded-md border border-kharon-border px-4 py-3" maxlength="80" placeholder="e.g. Facilities Manager" />
+              </label>
+            </div>
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
               Photo evidence
               <span class="text-xs font-normal text-kharon-grey">Optional. Up to 3 JPEG, PNG or WebP images, maximum 1.5 MB each. Capture only relevant system, panel, label, defect or completion evidence.</span>
@@ -268,6 +278,8 @@ try {
             followUpActions: data.get("followUpActions"),
             signatureBase64: data.get("signatureBase64"),
             signatureStrokes: JSON.parse(data.get("signatureStrokes") || "[]"),
+            customerName: data.get("customerName"),
+            customerTitle: data.get("customerTitle"),
             evidencePhotos
           })
         });

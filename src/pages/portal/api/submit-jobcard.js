@@ -63,7 +63,13 @@ export async function POST({ request, locals }) {
     const faultCategory = String(payload.faultCategory || "Routine service").trim().slice(0, 120);
     const partsUsed = String(payload.partsUsed || "None recorded").trim().slice(0, 500);
     const followUpActions = String(payload.followUpActions || "No follow-up actions recorded").trim().slice(0, 1000);
+    const customerName  = String(payload.customerName  || "").trim().slice(0, 120);
+    const customerTitle = String(payload.customerTitle || "").trim().slice(0, 80);
     const evidencePhotos = normalizeEvidencePhotos(payload.evidencePhotos);
+
+    if (!customerName) {
+      return badRequest("Customer / responsible person name is required.");
+    }
 
     if (techComments.length < 3 || techComments.length > 3000) {
       return badRequest("Technician comments must be between 3 and 3000 characters.");
@@ -165,7 +171,9 @@ export async function POST({ request, locals }) {
         jobType: job.job_type,
         faultCategory,
         partsUsed,
-        followUpActions
+        followUpActions,
+        customerName,
+        customerTitle
       }
     });
 
@@ -264,6 +272,7 @@ export async function POST({ request, locals }) {
         faultCategory,
         partsUsed,
         followUpActions,
+        customerName,
         evidenceCount: evidenceRecords.length
       }
     });

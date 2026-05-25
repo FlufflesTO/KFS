@@ -143,6 +143,8 @@ export async function buildJobcardPdf({
   const signatureBox = { x: 54, y: 112, width: 250, height: 86 };
   const comments = wrapText(techComments, 92).slice(0, 7);
   const followUp = wrapText(evidence.followUpActions, 82).slice(0, 4);
+  const customerName  = String(evidence.customerName  || "Not recorded").trim().slice(0, 60);
+  const customerTitle = String(evidence.customerTitle || "—").trim().slice(0, 60);
 
   const content = [
     "0.95 0.96 0.97 rg",
@@ -183,7 +185,11 @@ export async function buildJobcardPdf({
     "0.82 0.84 0.86 RG",
     "0.5 w",
     `${signatureBox.x} ${signatureBox.y} ${signatureBox.width} ${signatureBox.height} re S`,
-    ...textLine("Client / responsible person signature", 54, 206, 9),
+    "320 112 225 86 re S",
+    ...textLine("Client signature", 54, 206, 9),
+    ...textLine("Responsible person", 330, 206, 9),
+    ...textLine(customerName, 330, 178, 10),
+    ...textLine(customerTitle, 330, 160, 9, "0.38 0.39 0.42 rg"),
     ...signatureCommands(signatureStrokes, signatureBox),
     ...textLine(`Signature digest: ${signatureReference}`, 54, 76, 7, "0.18 0.19 0.20 rg"),
     // Footer separator
