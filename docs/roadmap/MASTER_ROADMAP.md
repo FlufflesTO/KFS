@@ -1314,8 +1314,10 @@ Implementation evidence, 2026-05-25:
 - `scripts/audit-site.mjs` now fails if runtime security-header markers are removed from middleware.
 - Unapproved/generated case-study proof stubs were removed from active `src` scanning to keep the CSS budget intact and avoid unsupported project claims.
 - `npm run build`, `npm run audit:site`, `npm audit --omit=dev` and `npm run portal:qa:roles -- -SkipCredentialTests` passed locally after the hardening pass.
+- Cloudflare deployment `e9a1820c-fb1e-4264-b685-4753013fc157` completed for `tequit.co.za/*`, `www.tequit.co.za/*` and `portal.tequit.co.za/*`.
+- `npm run portal:monitor` passed against live staging after deployment, including public home, portal login, protected dashboard redirect, public/portal/API/redirect security-header checks, D1 availability and R2 availability.
 
-Status: implemented for staging. Live Cloudflare monitor must be run after deployment for final deployed-response evidence.
+Status: implemented and live-verified for staging.
 
 ### Phase 14 - Public Page Differentiation And Authority Proof
 

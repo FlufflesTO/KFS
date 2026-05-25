@@ -21,6 +21,10 @@ The script checks:
 
 Output is written to `monitor-results/`, which is gitignored.
 
+Latest staging evidence:
+
+- 2026-05-25: `npm run portal:monitor` passed after Cloudflare deployment `e9a1820c-fb1e-4264-b685-4753013fc157`. Public home, portal login, protected dashboard redirect, public/portal/API/redirect security-header checks, D1 availability and R2 availability all passed.
+
 Frequency:
 
 - Staging: run after each deployment and before user QA.
