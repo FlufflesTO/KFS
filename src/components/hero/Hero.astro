@@ -1,0 +1,49 @@
+---
+/**
+ * Hero Component
+ * Purpose: Displays prominent banner with headline and call-to-action
+ * Dependencies: None
+ * Structural Role: Primary landing zone
+ */
+import ImageWithFallback from "../ui/ImageWithFallback.astro";
+
+export interface Props {
+  title: string;
+  subtitle: string;
+  description: string;
+  ctaText: string;
+  ctaLink: string;
+  image: string;
+  alt: string;
+}
+
+const { title, subtitle, description, ctaText, ctaLink, image, alt } = Astro.props;
+---
+
+<section class="relative bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
+  <div class="absolute inset-0">
+    <ImageWithFallback 
+      src={image} 
+      alt={alt} 
+      width={1920} 
+      height={800} 
+      className="w-full h-full object-cover opacity-20"
+      loading="eager"
+      role="presentation"
+    />
+  </div>
+  
+  <div class="relative container mx-auto px-4 py-24 max-w-7xl">
+    <div class="max-w-3xl">
+      <p class="text-kharon-cyan text-lg font-semibold mb-2 animate-fade-in">{subtitle}</p>
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-slide-up">{title}</h1>
+      <p class="text-xl text-gray-300 mb-8 animate-slide-up delay-100">{description}</p>
+      <a 
+        href={ctaLink} 
+        class="inline-block bg-kharon-blue hover:bg-kharon-purple text-white font-bold py-3 px-8 rounded-lg transition duration-300 animate-slide-up delay-200"
+      >
+        {ctaText}
+      </a>
+    </div>
+  </div>
+</section>

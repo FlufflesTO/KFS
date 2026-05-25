@@ -57,10 +57,13 @@ const labelIcons = {
 };
 ---
 
-<section class="section-padding bg-kharon-light">
-  <div class={`mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 ${reverse ? "lg:[&>*:first-child]:order-2" : ""}`}>
-    <div>
-      <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">
+<section class="section-padding bg-kharon-light relative overflow-hidden">
+  <!-- Subtle background ambient light -->
+  <div class="absolute top-1/2 left-0 -translate-y-1/2 w-[800px] h-[800px] bg-kharon-cyan/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+  <div class={`relative z-10 mx-auto grid max-w-7xl items-center gap-16 px-6 lg:grid-cols-2 ${reverse ? "lg:[&>*:first-child]:order-2" : ""}`}>
+    <div class="flex flex-col justify-center" data-animate="slide-up">
+      <p class="mb-4 text-sm font-bold uppercase tracking-widest text-kharon-purple">
         {eyebrow}
       </p>
 
@@ -68,54 +71,61 @@ const labelIcons = {
         {title}
       </h2>
 
-      <p class="mt-5 text-lg leading-8 text-kharon-grey">
+      <p class="mt-6 text-lg leading-8 text-kharon-grey">
         {text}
       </p>
 
-      <ul class="mt-8 grid gap-4">
+      <ul class="mt-8 grid gap-5">
         {bullets.map((bullet) => (
-          <li class="flex gap-3 text-kharon-grey">
-            <span class="mt-2 h-2 w-2 shrink-0 bg-kharon-purple"></span>
-            <span>{bullet}</span>
+          <li class="flex items-start gap-4 text-kharon-grey group">
+            <div class="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-kharon-purple/10 text-kharon-purple transition-transform duration-300 group-hover:scale-110">
+              <span class="h-2 w-2 rounded-full bg-kharon-purple"></span>
+            </div>
+            <span class="leading-relaxed">{bullet}</span>
           </li>
         ))}
       </ul>
 
-      <div class="mt-9">
+      <div class="mt-10">
         <Button href={href} label={cta} variant="dark" />
       </div>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-kharon-border bg-white p-3 shadow-lg shadow-black/5">
-      <div
-        class="relative grid aspect-[4/3] overflow-hidden rounded-lg bg-gradient-to-br from-[#0B0D0F] via-[#12161A] to-[#0B0D0F] p-6 text-white"
-        role="img"
-        aria-label={imageAlt}
-      >
-        <!-- Atmospheric tech grid background -->
-        <div class="absolute inset-0 opacity-12 [background-image:linear-gradient(rgba(255,255,255,.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.1)_1px,transparent_1px)] [background-size:24px_24px]"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,194,255,0.06)_0%,transparent_70%)]"></div>
-
-        <!-- Animated pulse connection line -->
-        <div class="absolute inset-x-10 top-1/2 h-0.5 bg-gradient-to-r from-kharon-cyan/5 via-kharon-cyan/40 to-kharon-red/20">
-          <div class="h-full w-24 bg-gradient-to-r from-transparent via-white/80 to-transparent animate-pulse"></div>
-        </div>
-
-        <div class="relative z-10 grid h-full grid-cols-1 items-center gap-4 sm:grid-cols-3">
-          {labels.map((label, index) => {
-            const iconHtml = labelIcons[label] || `<svg class="h-6 w-6 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
-            const isLast = index === labels.length - 1;
-            return (
-              <div class="group relative flex flex-col items-center gap-3 rounded-lg border border-white/5 bg-white/[0.02] backdrop-blur-sm p-4 transition-all duration-300 hover:border-white/15 hover:bg-white/[0.04] hover:scale-[1.04]">
-                <div class={`flex h-12 w-12 items-center justify-center rounded-lg border transition-all duration-300 ${isLast ? "border-kharon-red/30 bg-kharon-red/10 shadow-lg shadow-kharon-red/10 group-hover:border-kharon-red/50" : "border-white/10 bg-white/[0.05] shadow-lg shadow-black/20 group-hover:border-kharon-cyan/40"}`}>
-                  <div set:html={iconHtml} class="flex items-center justify-center" />
+    <!-- Glassmorphic Bento Visualization -->
+    <div class="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square xl:aspect-[4/3] rounded-2xl" data-animate="fade-in">
+      <div class="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-4 p-4">
+        {labels.map((label, index) => {
+          const iconHtml = labelIcons[label] || `<svg class="h-8 w-8 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
+          const isFirst = index === 0;
+          const isLast = index === labels.length - 1;
+          
+          return (
+            <div class={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-500 hover:-translate-y-1 hover:shadow-xl ${isFirst ? 'col-span-2 row-span-1 border-kharon-blue/20 bg-gradient-to-br from-white to-slate-50 shadow-lg shadow-kharon-blue/5 hover:border-kharon-blue/40' : (isLast ? 'col-span-1 row-span-1 border-kharon-red/20 bg-gradient-to-br from-white to-rose-50 shadow-lg shadow-kharon-red/5 hover:border-kharon-red/40' : 'col-span-1 row-span-1 border-kharon-cyan/20 bg-gradient-to-br from-white to-cyan-50 shadow-lg shadow-kharon-cyan/5 hover:border-kharon-cyan/40')} p-6`}>
+              
+              <!-- Subtle inner ambient glow -->
+              <div class={`absolute -right-8 -top-8 h-32 w-32 rounded-full blur-[40px] transition-opacity duration-500 opacity-0 group-hover:opacity-100 ${isFirst ? 'bg-kharon-blue/20' : (isLast ? 'bg-kharon-red/20' : 'bg-kharon-cyan/20')}`}></div>
+              
+              <div class="relative z-10">
+                <div class={`mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-500 group-hover:scale-110 group-hover:shadow-md`}>
+                  <div set:html={iconHtml} />
                 </div>
-                <p class="text-center text-xs font-bold tracking-wide text-white/80 group-hover:text-white">{label}</p>
-                <span class="text-[10px] font-semibold text-white/30">0{index + 1}</span>
               </div>
-            );
-          })}
-        </div>
+              
+              <div class="relative z-10 mt-auto">
+                <span class="mb-1 block text-xs font-bold text-slate-400">0{index + 1}</span>
+                <p class="text-lg font-bold text-kharon-black tracking-tight">{label}</p>
+              </div>
+            </div>
+          );
+        })}
+        <!-- Empty decorative bento cell if we have only 3 items, making it 4 items total -->
+        {labels.length === 3 && (
+          <div class="col-span-1 row-span-1 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 p-6 flex flex-col justify-center items-center opacity-60">
+            <div class="grid grid-cols-3 gap-2 opacity-20">
+              {[...Array(9)].map(() => <div class="h-2 w-2 rounded-full bg-slate-400"></div>)}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   </div>

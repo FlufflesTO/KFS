@@ -23,6 +23,33 @@ export async function sha256Text(value) {
   return base64UrlEncode(new Uint8Array(digest));
 }
 
+/**
+ * Perform a fetch request with exponential backoff retry logic.
+ * Used for external API integrations to prevent silent failures.
+ */
+export async function fetchWithBackoff(url, options = {}, maxRetries = 3) {
+  let attempt = 0;
+  const baseDelay = 500;
+
+  while (attempt < maxRetries) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok || response.status < 500) {
+        return response;
+      }
+      throw new Error(`HTTP ${response.status} ${response.statusText}`);
+    } catch (error) {
+      attempt++;
+      console.error(`[Telemetry] External API fetch failed (attempt ${attempt}/${maxRetries}) - ${url}: ${error.message}`);
+      if (attempt >= maxRetries) {
+        throw new Error(`External API request failed after ${maxRetries} attempts: ${error.message}`);
+      }
+      // Exponential backoff
+      await new Promise(resolve => setTimeout(resolve, baseDelay * Math.pow(2, attempt - 1)));
+    }
+  }
+}
+
 export async function requestFingerprint(request, subject = "") {
   const ip = clientIp(request);
   const ipHash = await sha256Text(ip);

@@ -1,0 +1,62 @@
+---
+import type { DbContactEnquiry } from "../../../lib/types/sentinel.ts";
+
+interface Props {
+  contactEnquiries: DbContactEnquiry[];
+  page: number;
+  totalPages: number;
+}
+
+const { contactEnquiries, page, totalPages } = Astro.props;
+---
+
+<div id="ops-panel-enquiries" class="ops-panel mx-auto grid max-w-7xl gap-8">
+  <article class="border border-kharon-border bg-white p-4 sm:p-5">
+    <details class="ops-section" open>
+      <summary class="flex cursor-pointer items-center justify-between">
+        <div>
+          <p class="text-xs font-bold uppercase text-kharon-purple">Public contact form</p>
+          <h2 class="mt-1 text-xl font-bold">
+            Website enquiries
+            <span class="ml-2 text-sm font-normal text-kharon-grey">({contactEnquiries.length})</span>
+          </h2>
+        </div>
+        <span class="text-sm text-kharon-purple">Toggle</span>
+      </summary>
+      <div class="mt-5 grid gap-3">
+        {contactEnquiries.length === 0 && (
+          <p class="text-kharon-grey">No contact enquiries have been received yet.</p>
+        )}
+        {contactEnquiries.map((item) => (
+          <article class="grid gap-2 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2">
+            <div class="min-w-0">
+              <p class="font-semibold">{item.name}</p>
+              <p class="text-sm text-kharon-purple">
+                <a href={`mailto:${item.email}`} class="hover:underline">{item.email}</a>
+              </p>
+              <p class="mt-1 text-xs font-bold uppercase text-kharon-grey">{item.request_type}</p>
+              <p class="mt-2 text-sm leading-6 text-kharon-black">{item.message}</p>
+            </div>
+            <div class="text-xs text-kharon-grey">
+              <p>{item.submitted_at?.slice(0, 16).replace("T", " ")} UTC</p>
+            </div>
+          </article>
+        ))}
+      </div>
+    </details>
+  </article>
+
+  <nav class="mt-6 flex items-center justify-between border-t border-kharon-border pt-4">
+    {page > 1 ? (
+      <a href={`?tab=enquiries&page=${page - 1}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Previous</a>
+    ) : (
+      <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Previous</span>
+    )}
+    <span class="text-sm text-kharon-grey">Page {page} of {totalPages}</span>
+    {page < totalPages ? (
+      <a href={`?tab=enquiries&page=${page + 1}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Next</a>
+    ) : (
+      <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Next</span>
+    )}
+  </nav>
+</div>

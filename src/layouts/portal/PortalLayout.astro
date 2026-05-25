@@ -62,54 +62,70 @@ const links = [
       };
     </script>
   </head>
-  <body class="portal-shell bg-kharon-light">
-    <header class="border-b border-white/5 bg-[#0B0D0F] text-white shadow-md shadow-black/25">
-      <div class="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center justify-between gap-6 px-4 py-4 sm:px-6">
-        <a href="/portal" class="flex shrink-0 items-center gap-3">
-          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="28" height="38" class="flex-none" />
-          <span>
-            <span class="block whitespace-nowrap text-sm font-bold uppercase tracking-wide">Kharon Portal</span>
-            <span class="block whitespace-nowrap text-[10px] uppercase text-white/40 tracking-wider">Lifecycle operations</span>
-          </span>
-        </a>
-
-        <nav class="order-3 flex w-full items-center gap-1.5 overflow-x-auto pb-2 lg:order-none lg:w-auto lg:flex-wrap lg:overflow-visible lg:pb-0" aria-label="Portal navigation">
-          {links.map((link) => (
-            <a
-              href={link.href}
-              aria-current={active === link.key ? "page" : undefined}
-              class={`shrink-0 rounded-lg px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${active === link.key ? "bg-kharon-purple text-white shadow-md shadow-kharon-purple/20" : "text-white/60 hover:bg-white/5 hover:text-white"}`}
-            >
-              {link.label}
-            </a>
-          ))}
-        </nav>
-
-        <div class="ml-auto flex min-w-0 items-center gap-4 text-right text-xs sm:gap-5">
-          <div class="min-w-0 leading-tight">
-            <p class="font-bold text-white/95">{user?.name}</p>
-            <p class="uppercase text-kharon-cyan font-semibold tracking-wider text-[9px] mt-0.5">{user?.role}</p>
-          </div>
-          <form id="portal-logout-form">
-            <button class="rounded-lg border border-white/10 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white/70 hover:bg-white/5 hover:text-white transition-all duration-200" type="submit">
-              Logout
-            </button>
-          </form>
+  <body class="portal-shell bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen text-slate-900 selection:bg-kharon-purple/30 selection:text-kharon-purple">
+  <!-- Top Navigation Command Center -->
+  <header class="sticky top-0 z-50 w-full border-b border-white/20 bg-[#0B0D0F]/80 backdrop-blur-md text-white shadow-lg shadow-black/10">
+    <!-- Ambient top glow -->
+    <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-kharon-cyan/50 to-transparent"></div>
+    
+    <div class="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center justify-between gap-6 px-4 py-4 sm:px-6 relative">
+      <a href="/portal" class="group flex shrink-0 items-center gap-4 transition-transform duration-300 hover:scale-[1.02]">
+        <div class="relative flex h-10 w-8 items-center justify-center">
+          <div class="absolute inset-0 bg-kharon-cyan/20 blur-md group-hover:bg-kharon-cyan/40 transition-colors duration-500"></div>
+          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="28" height="38" class="relative z-10 flex-none" />
         </div>
-      </div>
-    </header>
+        <span>
+          <span class="block whitespace-nowrap text-sm font-bold uppercase tracking-widest text-white group-hover:text-kharon-cyan transition-colors duration-300">Kharon Portal</span>
+          <span class="block whitespace-nowrap text-[10px] uppercase text-white/40 tracking-wider">Lifecycle operations</span>
+        </span>
+      </a>
 
-    <main>
-      <slot />
-    </main>
-    <script>
-      const logoutForm = document.querySelector("#portal-logout-form");
-      logoutForm?.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const response = await window.kharonPortalFetch("/portal/api/logout", { method: "POST" });
-        const body = await response.json().catch(() => ({ redirectTo: "/portal/login" }));
-        window.location.href = body.redirectTo || "/portal/login";
-      });
-    </script>
-  </body>
+      <nav class="order-3 flex w-full items-center gap-2 overflow-x-auto pb-2 lg:order-none lg:w-auto lg:flex-wrap lg:overflow-visible lg:pb-0 scrollbar-hide" aria-label="Portal navigation">
+        {links.map((link) => (
+          <a
+            href={link.href}
+            aria-current={active === link.key ? "page" : undefined}
+            class={`relative shrink-0 rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 overflow-hidden ${active === link.key ? "text-white shadow-lg ring-1 ring-white/10" : "text-white/60 hover:text-white"}`}
+          >
+            {active === link.key && (
+              <span class="absolute inset-0 bg-gradient-to-r from-kharon-purple/80 to-kharon-blue/80 opacity-100"></span>
+            )}
+            {!active && (
+              <span class="absolute inset-0 bg-white/5 opacity-0 transition-opacity duration-300 hover:opacity-100"></span>
+            )}
+            <span class="relative z-10">{link.label}</span>
+          </a>
+        ))}
+      </nav>
+
+      <div class="ml-auto flex min-w-0 items-center gap-5 text-right text-xs">
+        <div class="min-w-0 leading-tight hidden sm:block">
+          <p class="font-bold text-white/95 truncate">{user?.name}</p>
+          <div class="mt-1 flex items-center justify-end gap-1.5">
+            <span class="h-1.5 w-1.5 rounded-full bg-kharon-green animate-pulse"></span>
+            <p class="uppercase text-kharon-cyan font-bold tracking-widest text-[9px]">{user?.role}</p>
+          </div>
+        </div>
+        <form id="portal-logout-form">
+          <button class="group relative flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white/80 transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white hover:shadow-md hover:shadow-white/5" type="submit">
+            Logout
+          </button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main class="min-h-[calc(100vh-5rem)] relative">
+    <slot />
+  </main>
+  <script>
+    const logoutForm = document.querySelector("#portal-logout-form");
+    logoutForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const response = await window.kharonPortalFetch("/portal/api/logout", { method: "POST" });
+      const body = await response.json().catch(() => ({ redirectTo: "/portal/login" }));
+      window.location.href = body.redirectTo || "/portal/login";
+    });
+  </script>
+</body>
 </html>

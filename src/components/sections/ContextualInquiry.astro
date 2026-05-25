@@ -32,7 +32,7 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
     <form id={formId} class="grid gap-5 rounded-lg border border-kharon-border bg-kharon-light p-6">
       <label class="sr-only" for={`${formId}-website`}>Website</label>
-      <input id={`${formId}-website`} class="hidden" name="website" tabindex="-1" autocomplete="off" />
+      <input id={`${formId}-website`} style="display: none !important; position: absolute !important; left: -9999px !important;" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
       <input type="hidden" name="request_type" value={requestType} />
 
       {[...baseFields, ...fields].map((field) => (
@@ -60,6 +60,17 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
         Operational Notes
         <textarea class="min-h-32 rounded-md border border-kharon-border px-4 py-3 font-normal" name="operational_notes" maxlength="3000" required></textarea>
       </label>
+
+      <div class="flex items-start mt-2">
+        <div class="flex items-center h-5">
+          <input id={`${formId}-popia`} name="popia_consent" type="checkbox" required class="focus:ring-kharon-blue h-4 w-4 text-kharon-blue border-gray-300 rounded" />
+        </div>
+        <div class="ml-3 text-sm">
+          <label for={`${formId}-popia`} class="font-medium text-kharon-black">
+            I consent to the collection and processing of my data in accordance with POPIA for the purpose of this inquiry. *
+          </label>
+        </div>
+      </div>
 
       <p class="hidden text-sm font-semibold" aria-live="polite"></p>
 
@@ -100,6 +111,7 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
         name: String(data.get("name") || ""),
         email: String(data.get("email") || ""),
         requestType: String(data.get("request_type") || ""),
+        popiaConsent: data.get("popia_consent") === "on",
         message: parts.join("\n")
       };
 

@@ -9,7 +9,7 @@ import { env } from "cloudflare:workers";
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
-const sessionDurationSeconds = 60 * 60 * 12;
+const sessionDurationSeconds = 60 * 60 * 8;
 export const sessionCookieName = "kharon_session_token";
 
 function base64UrlEncode(input) {
@@ -63,7 +63,7 @@ export async function createSessionToken(user) {
     role: user.role,
     siteId: user.site_id || null,
     forcePasswordChange: Boolean(user.force_password_change),
-    mfaRequired: Boolean(user.mfa_required),
+    mfaRequired: Boolean(user.mfa_required) || user.role === "tech" || user.role === "admin" || user.role === "finance",
     mfaEnabled: Boolean(user.mfa_enabled),
     iat: issuedAt,
     exp: issuedAt + sessionDurationSeconds
@@ -137,7 +137,8 @@ export async function isTokenRevoked(db, token) {
       "SELECT 1 FROM revoked_sessions WHERE fingerprint = ? AND expires_at > ?"
     ).bind(fp, now).first();
     return row !== null;
-  } catch {
+  } catch (error) {
+    console.error(`[Security Telemetry] Token revocation check failed: ${error.message}`, error);
     return false;
   }
 }
@@ -152,7 +153,9 @@ export async function revokeSessionToken(db, token) {
       try {
         const payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload)));
         if (payload.exp && Number.isInteger(payload.exp)) expiresAt = payload.exp;
-      } catch {}
+      } catch (error) {
+        console.error("Failed to decode token payload during revocation", error);
+      }
     }
     await db.batch([
       db.prepare("INSERT OR IGNORE INTO revoked_sessions (fingerprint, expires_at) VALUES (?, ?)").bind(fp, expiresAt),

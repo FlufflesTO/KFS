@@ -1,0 +1,121 @@
+---
+import type { DbUser, DbSite } from "../../../lib/types/sentinel.ts";
+
+interface Props {
+  users: DbUser[];
+  sites: DbSite[];
+}
+
+const { users, sites } = Astro.props;
+---
+
+<div id="ops-panel-users" class="ops-panel mx-auto grid max-w-7xl gap-8">
+  <article class="border border-kharon-border bg-white p-4 sm:p-5">
+    <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-white">
+      <h2 class="text-xl font-bold">
+        Users <span class="ml-2 text-sm font-normal text-kharon-grey">({users.length})</span>
+      </h2>
+      <div class="flex flex-wrap gap-3">
+        <input
+          id="users-search"
+          type="search"
+          class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+          placeholder="Search name or email…"
+          size="24"
+        />
+        <select id="users-role-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+          <option value="">All roles</option>
+          <option value="tech">Technician</option>
+          <option value="admin">Admin</option>
+          <option value="client">Client</option>
+          <option value="finance">Finance</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="users-list" class="grid gap-4">
+      {users.map((record) => (
+        <form
+          class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6"
+          data-endpoint="/portal/api/admin/users"
+          data-search={`${record.name} ${record.email} ${record.role}`}
+          data-role={record.role}
+        >
+          <input type="hidden" name="action" value="update" />
+          <input type="hidden" name="id" value={record.id} />
+          <input class="rounded-md border border-kharon-border px-3 py-2" name="name" value={record.name} />
+          <input class="rounded-md border border-kharon-border px-3 py-2" value={record.email} disabled />
+          <select class="rounded-md border border-kharon-border px-3 py-2" name="role">
+            {(["tech", "admin", "client", "finance"] as const).map((role) => (
+              <option value={role} selected={record.role === role}>{role}</option>
+            ))}
+          </select>
+          <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
+            <option value="">No site</option>
+            {sites.map((site) => (
+              <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>
+            ))}
+          </select>
+          <div class="grid gap-2 text-sm">
+            <label><input type="checkbox" name="isActive" checked={Boolean(record.is_active)} /> Active</label>
+            <label><input type="checkbox" name="forcePasswordChange" checked={Boolean(record.force_password_change)} /> Rotate password</label>
+            {(["admin", "finance"] as const).includes(record.role) && (
+              <label><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
+            )}
+            {record.mfa_enabled ? <span class="text-xs font-bold uppercase text-emerald-700">MFA enabled</span> : null}
+          </div>
+          <div class="grid gap-2">
+            <input class="rounded-md border border-kharon-border px-3 py-2" name="password" type="password" placeholder="Optional reset password" />
+            <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+            <button
+              class="generate-reset-link rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple"
+              type="button"
+              data-user-id={record.id}
+            >
+              Issue reset link
+            </button>
+            {record.mfa_enabled ? (
+              <button
+                class="reset-mfa rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900"
+                type="button"
+                data-user-id={record.id}
+              >
+                Reset MFA
+              </button>
+            ) : null}
+          </div>
+          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
+        </form>
+      ))}
+    </div>
+    <p id="users-no-results" class="hidden py-4 text-sm text-kharon-grey">No users match your filter.</p>
+  </article>
+
+  <article class="border border-kharon-border bg-white p-4 sm:p-5">
+    <h2 class="text-xl font-bold">Create user</h2>
+    <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/users">
+      <input type="hidden" name="action" value="create" />
+      <input class="rounded-md border border-kharon-border px-4 py-3" name="name" placeholder="Full name" required />
+      <input class="rounded-md border border-kharon-border px-4 py-3" name="email" type="email" placeholder="email@domain.co.za" required />
+      <select class="rounded-md border border-kharon-border px-4 py-3" name="role" required>
+        <option value="tech">Technician</option>
+        <option value="admin">Admin</option>
+        <option value="client">Client</option>
+        <option value="finance">Finance</option>
+      </select>
+      <select class="rounded-md border border-kharon-border px-4 py-3" name="siteId">
+        <option value="">No site mapping</option>
+        {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
+      </select>
+      <input class="rounded-md border border-kharon-border px-4 py-3" name="password" type="password" minlength="14" placeholder="Temporary password" required />
+      <label class="flex items-center gap-2 text-sm font-semibold">
+        <input type="checkbox" name="forcePasswordChange" checked /> Force password change
+      </label>
+      <label class="flex items-center gap-2 text-sm font-semibold">
+        <input type="checkbox" name="mfaRequired" /> Require MFA for admin/finance roles
+      </label>
+      <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create user</button>
+      <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+    </form>
+  </article>
+</div>

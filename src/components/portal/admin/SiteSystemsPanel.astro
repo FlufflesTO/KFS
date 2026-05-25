@@ -1,0 +1,235 @@
+---
+import type { DbSite, DbSystem, DbUser, DbClientSiteAccess } from "../../../lib/types/sentinel.ts";
+
+interface Props {
+  sites: DbSite[];
+  systems: DbSystem[];
+  clientUsers: DbUser[];
+  clientSiteAccess: DbClientSiteAccess[];
+  today: string;
+  soonDate: string;
+}
+
+const { sites, systems, clientUsers, clientSiteAccess, today, soonDate } = Astro.props;
+---
+
+<div id="ops-panel-sites" class="ops-panel mx-auto grid max-w-7xl gap-8">
+  <!-- Sites list -->
+  <article class="border border-kharon-border bg-white p-4 sm:p-5">
+    <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-white">
+      <h2 class="text-xl font-bold">
+        Sites <span class="ml-2 text-sm font-normal text-kharon-grey">({sites.length})</span>
+      </h2>
+      <input
+        id="sites-search"
+        type="search"
+        class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+        placeholder="Search company…"
+        size="24"
+      />
+    </div>
+    <div id="sites-list" class="grid gap-4">
+      {sites.map((record) => (
+        <form
+          class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6"
+          data-endpoint="/portal/api/admin/sites"
+          data-search={`${record.owner_company_name} ${record.site_contact_person || ""} ${record.site_contact_email || ""}`}
+        >
+          <input type="hidden" name="action" value="update" />
+          <input type="hidden" name="id" value={record.id} />
+          <input class="rounded-md border border-kharon-border px-3 py-2" name="ownerCompanyName" value={record.owner_company_name} />
+          <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPerson" value={record.site_contact_person ?? ""} />
+          <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
+          <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPhone" value={record.site_contact_phone || ""} />
+          <input class="rounded-md border border-kharon-border px-3 py-2" name="billingEmails" value={record.billing_emails} />
+          <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+          <textarea class="min-h-20 rounded-md border border-kharon-border px-3 py-2 lg:col-span-6" name="physicalAddress">{record.physical_address}</textarea>
+          <button
+            type="button"
+            class="link-to-section text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-6"
+            data-target-search="systems-search"
+            data-target-value={record.owner_company_name}
+          >
+            -&gt; Systems for {record.owner_company_name}
+          </button>
+          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
+        </form>
+      ))}
+    </div>
+    <p id="sites-no-results" class="hidden py-4 text-sm text-kharon-grey">No sites match your search.</p>
+  </article>
+
+  <!-- Systems list -->
+  <article class="border border-kharon-border bg-white p-4 sm:p-5">
+    <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-white">
+      <h2 class="text-xl font-bold">
+        Systems <span class="ml-2 text-sm font-normal text-kharon-grey">({systems.length})</span>
+      </h2>
+      <div class="flex flex-wrap gap-3">
+        <input
+          id="systems-search"
+          type="search"
+          class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+          placeholder="Search site or area…"
+          size="24"
+        />
+        <select id="systems-type-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+          <option value="">All types</option>
+          <option value="Gas Suppression">Gas Suppression</option>
+          <option value="Fire Detection">Fire Detection</option>
+        </select>
+      </div>
+    </div>
+    <div id="systems-list" class="grid gap-4">
+      {systems.map((record) => (
+        <form
+          class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
+          data-endpoint="/portal/api/admin/systems"
+          data-search={`${record.owner_company_name} ${record.coverage_area} ${record.manufacturer || ""} ${record.model_reference || ""}`}
+          data-systype={record.system_type}
+        >
+          <input type="hidden" name="action" value="update" />
+          <input type="hidden" name="id" value={record.id} />
+          <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
+            {sites.map((site) => (
+              <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>
+            ))}
+          </select>
+          <select class="rounded-md border border-kharon-border px-3 py-2" name="systemType">
+            {["Gas Suppression", "Fire Detection"].map((type) => (
+              <option value={type} selected={record.system_type === type}>{type}</option>
+            ))}
+          </select>
+          <input class="rounded-md border border-kharon-border px-3 py-2" name="coverageArea" value={record.coverage_area} />
+          <input class="rounded-md border border-kharon-border px-3 py-2" name="manufacturer" value={record.manufacturer || ""} />
+          <input class="rounded-md border border-kharon-border px-3 py-2" name="modelReference" value={record.model_reference || ""} />
+          <input class="rounded-md border border-kharon-border px-3 py-2" name="nextDueDate" type="date" value={record.next_due_date} />
+          <div class="flex items-center gap-2">
+            <label class="whitespace-nowrap text-xs font-semibold">Interval (mo.)</label>
+            <input class="w-16 rounded-md border border-kharon-border px-2 py-2 text-sm" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} />
+          </div>
+          <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+          {record.next_due_date && record.next_due_date < today && (
+            <p class="rounded border border-red-300 bg-red-50 px-3 py-2 text-xs font-bold uppercase text-red-900 lg:col-span-7">
+              Warning: Service overdue — due {record.next_due_date}. Update after the next completed visit.
+            </p>
+          )}
+          {record.next_due_date && record.next_due_date >= today && record.next_due_date <= soonDate && (
+            <p class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold uppercase text-amber-900 lg:col-span-7">
+              Service due {record.next_due_date} — within 30 days.
+            </p>
+          )}
+          <button
+            type="button"
+            class="link-to-tab text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-7"
+            data-target-tab="jobs"
+            data-target-search="jobs-search"
+            data-target-value={`${record.owner_company_name} ${record.coverage_area}`}
+          >
+            -&gt; Jobs for {record.coverage_area}
+          </button>
+          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+        </form>
+      ))}
+    </div>
+    <p id="systems-no-results" class="hidden py-4 text-sm text-kharon-grey">No systems match your filter.</p>
+  </article>
+
+  <!-- Client site access -->
+  <article class="border border-kharon-border bg-white p-4 sm:p-5">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <p class="text-xs font-bold uppercase text-kharon-purple">Client account access</p>
+        <h2 class="mt-2 text-xl font-bold">Multi-site record mapping</h2>
+        <p class="mt-2 max-w-3xl text-sm leading-6 text-kharon-muted">
+          Grant additional client site access without changing the user's primary site_id.
+          Existing single-site client mapping remains supported.
+        </p>
+      </div>
+      <a class="rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" href="/portal/client/quotes">
+        Client quote view
+      </a>
+    </div>
+
+    <form class="client-site-access-form mt-5 grid gap-3 lg:grid-cols-3" data-endpoint="/portal/api/admin/client-site-access">
+      <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="userId" required>
+        <option value="">Select client user</option>
+        {clientUsers.map((client) => (
+          <option value={client.id}>{client.name} / {client.email}</option>
+        ))}
+      </select>
+      <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
+        <option value="">Select site</option>
+        {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
+      </select>
+      <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Grant access</button>
+      <input type="hidden" name="action" value="grant" />
+      <p class="client-site-access-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-3"></p>
+    </form>
+
+    <div class="mt-5 grid gap-3">
+      {clientSiteAccess.length === 0 && (
+        <p class="text-kharon-grey">No additional client site access mappings have been granted.</p>
+      )}
+      {clientSiteAccess.map((mapping) => (
+        <form
+          class="client-site-access-form flex flex-wrap items-center justify-between gap-3 border border-kharon-border bg-kharon-light p-4"
+          data-endpoint="/portal/api/admin/client-site-access"
+        >
+          <div>
+            <p class="font-semibold">{mapping.user_name} / {mapping.owner_company_name}</p>
+            <p class="text-sm text-kharon-grey">{mapping.user_email} / granted {mapping.granted_at}</p>
+          </div>
+          <input type="hidden" name="action" value="revoke" />
+          <input type="hidden" name="userId" value={mapping.user_id} />
+          <input type="hidden" name="siteId" value={mapping.site_id} />
+          <button class="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900">Revoke</button>
+          <p class="client-site-access-result hidden w-full rounded-md border px-4 py-3 text-sm font-semibold"></p>
+        </form>
+      ))}
+    </div>
+  </article>
+
+  <!-- Create site / system forms -->
+  <div class="grid gap-6 xl:grid-cols-2">
+    <article class="border border-kharon-border bg-white p-4 sm:p-5">
+      <h2 class="text-xl font-bold">Create site</h2>
+      <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/sites">
+        <input type="hidden" name="action" value="create" />
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="ownerCompanyName" placeholder="Owner company" required />
+        <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="physicalAddress" placeholder="Physical address" required></textarea>
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactPerson" placeholder="Site contact person" required />
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactEmail" type="email" placeholder="site.contact@example.com" />
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactPhone" placeholder="Site phone" />
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="billingEmails" placeholder="billing@example.com" required />
+        <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create site</button>
+        <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+      </form>
+    </article>
+
+    <article class="border border-kharon-border bg-white p-4 sm:p-5">
+      <h2 class="text-xl font-bold">Create system</h2>
+      <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/systems">
+        <input type="hidden" name="action" value="create" />
+        <select class="rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
+          <option value="">Select site</option>
+          {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
+        </select>
+        <select class="rounded-md border border-kharon-border px-4 py-3" name="systemType" required>
+          <option value="Gas Suppression">Gas Suppression</option>
+          <option value="Fire Detection">Fire Detection</option>
+        </select>
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="coverageArea" placeholder="Server Room 01" required />
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="manufacturer" placeholder="Manufacturer" />
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="modelReference" placeholder="Model/reference" />
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="nextDueDate" type="date" value={today} required />
+        <div class="flex items-center gap-3">
+          <label class="whitespace-nowrap text-sm font-semibold">Service interval (months)</label>
+          <input class="w-24 rounded-md border border-kharon-border px-3 py-2" name="serviceIntervalMonths" type="number" min="1" max="36" value="6" required />
+        </div>
+        <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create system</button>
+        <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+      </form>
+    </article>
+  </div>
+</div>

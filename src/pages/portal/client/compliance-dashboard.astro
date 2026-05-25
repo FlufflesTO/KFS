@@ -1,0 +1,476 @@
+---
+/**
+ * Project Sentinel - Client Compliance Command Center
+ * Purpose: Provides comprehensive compliance dashboard for clients to track certificates, defects, and maintenance schedules
+ * Dependencies: PortalLayout, bindings, clientAccess
+ * Structural Role: Client compliance overview and management
+ */
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+import { clientSites, inClause } from "../../../lib/server/clientAccess.js";
+
+export const prerender = false;
+
+interface ClientSystem {
+  id: string;
+  site_id: string;
+  system_type: string;
+  coverage_area: string;
+  last_service_date: string | null;
+  next_due_date: string | null;
+  service_interval_months: number | null;
+  owner_company_name: string;
+  latest_job_id: string | null;
+  documentation_path: string | null;
+  completed_at: string | null;
+  open_defects_count: number;
+  valid_certificates_count: number;
+  blocked_certificates_count: number;
+}
+
+interface Defect {
+  id: string;
+  severity: string;
+  sans_clause_ref: string | null;
+  status: string;
+  description: string;
+  created_at: string;
+  remediation_notes: string | null;
+  system_id: string;
+  system_type: string;
+  coverage_area: string;
+  owner_company_name: string;
+}
+
+interface Certificate {
+  id: string;
+  certificate_type: string;
+  status: string;
+  issued_date: string;
+  expiry_date: string | null;
+  blocked_by_defect_id: string | null;
+  system_id: string;
+  system_type: string;
+  coverage_area: string;
+  owner_company_name: string;
+  blocking_defect_description: string | null;
+}
+
+const user = Astro.locals.user;
+let systems: ClientSystem[] = [];
+let openDefects: Defect[] = [];
+let certificates: Certificate[] = [];
+let complianceStats: Record<string, number> = {};
+let loadError = "";
+const sectionErrors: string[] = [];
+const today = new Date().toISOString().slice(0, 10);
+const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+function getStatusClass(nextDueDate: string | null): string {
+  if (!nextDueDate) return "text-kharon-blue";
+  const diff = nextDueDate.localeCompare(today);
+  if (diff < 0) return "text-kharon-red";
+  if (nextDueDate.localeCompare(soonDate) <= 0) return "text-kharon-amber";
+  return "text-kharon-blue";
+}
+
+function getStatusBgClass(nextDueDate: string | null): string {
+  if (!nextDueDate) return "bg-green-100 text-kharon-green border border-green-200";
+  const diff = nextDueDate.localeCompare(today);
+  if (diff < 0) return "bg-red-100 text-kharon-red border border-red-200";
+  if (nextDueDate.localeCompare(soonDate) <= 0) return "bg-amber-100 text-kharon-amber border border-amber-200";
+  return "bg-green-100 text-kharon-green border border-green-200";
+}
+
+function getStatusLabel(nextDueDate: string | null): string {
+  if (!nextDueDate) return "Compliant";
+  const diff = nextDueDate.localeCompare(today);
+  if (diff < 0) return "Overdue";
+  if (nextDueDate.localeCompare(soonDate) <= 0) return "Due Soon";
+  return "Compliant";
+}
+
+try {
+  const db = getDatabase();
+  const sites = await clientSites(db, user);
+  const siteIds = sites.map((site) => site.id);
+  
+  if (siteIds.length === 0) {
+    loadError = "This client account is not mapped to a site.";
+  } else {
+    const sitePlaceholders = inClause(siteIds);
+    
+    try {
+      // Get systems with compliance data
+      systems = (await db.prepare(
+        `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area, 
+                systems.last_service_date, systems.next_due_date, systems.service_interval_months,
+                sites.owner_company_name,
+                latest_jobs.id AS latest_job_id, latest_jobs.documentation_path, latest_jobs.completed_at,
+                (SELECT COUNT(*) FROM defects WHERE defects.system_id = systems.id AND defects.status IN ('Open', 'In Progress')) AS open_defects_count,
+                (SELECT COUNT(*) FROM certificates WHERE certificates.system_id = systems.id AND certificates.status = 'Valid') AS valid_certificates_count,
+                (SELECT COUNT(*) FROM certificates WHERE certificates.system_id = systems.id AND certificates.status = 'Blocked') AS blocked_certificates_count
+         FROM systems
+         INNER JOIN sites ON sites.id = systems.site_id
+         LEFT JOIN jobs AS latest_jobs ON latest_jobs.id = (
+           SELECT j.id FROM jobs j
+           WHERE j.system_id = systems.id AND j.documentation_path IS NOT NULL
+           ORDER BY COALESCE(j.completed_at, j.updated_at, j.created_at) DESC
+           LIMIT 1
+         )
+         WHERE systems.site_id IN (
+           SELECT site_id FROM client_site_access WHERE user_id = ?1
+           UNION
+           SELECT ?2 WHERE ?2 IS NOT NULL
+         )
+         ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC
+         LIMIT 200`
+      ).bind(user.id, user.siteId || null).all()).results as ClientSystem[] || [];
+    } catch (error) {
+      console.error("client systems load failed", error);
+      sectionErrors.push("System records could not be loaded.");
+    }
+
+    try {
+      // Get open defects for client systems
+      openDefects = (await db.prepare(
+        `SELECT defects.id, defects.severity, defects.sans_clause_ref, defects.status, defects.description,
+                defects.created_at, defects.remediation_notes,
+                systems.id AS system_id, systems.system_type, systems.coverage_area,
+                sites.owner_company_name
+         FROM defects
+         INNER JOIN systems ON systems.id = defects.system_id
+         INNER JOIN sites ON sites.id = systems.site_id
+         WHERE systems.site_id IN (
+           SELECT site_id FROM client_site_access WHERE user_id = ?1
+           UNION
+           SELECT ?2 WHERE ?2 IS NOT NULL
+         ) AND defects.status IN ('Open', 'In Progress')
+         ORDER BY CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 ELSE 3 END,
+                  defects.created_at DESC
+         LIMIT 200`
+      ).bind(user.id, user.siteId || null).all()).results as Defect[] || [];
+    } catch (error) {
+      console.error("client defects load failed", error);
+      sectionErrors.push("Defect register could not be loaded.");
+    }
+
+    try {
+      // Get certificates for client systems
+      certificates = (await db.prepare(
+        `SELECT certificates.id, certificates.certificate_type, certificates.status,
+                certificates.issued_date, certificates.expiry_date, certificates.blocked_by_defect_id,
+                systems.id AS system_id, systems.system_type, systems.coverage_area,
+                sites.owner_company_name,
+                (SELECT description FROM defects WHERE defects.id = certificates.blocked_by_defect_id) AS blocking_defect_description
+         FROM certificates
+         INNER JOIN systems ON systems.id = certificates.system_id
+         INNER JOIN sites ON sites.id = systems.site_id
+         WHERE systems.site_id IN (
+           SELECT site_id FROM client_site_access WHERE user_id = ?1
+           UNION
+           SELECT ?2 WHERE ?2 IS NOT NULL
+         )
+         ORDER BY certificates.status DESC, COALESCE(certificates.expiry_date, certificates.issued_date) DESC
+         LIMIT 200`
+      ).bind(user.id, user.siteId || null).all()).results as Certificate[] || [];
+    } catch (error) {
+      console.error("client certificates load failed", error);
+      sectionErrors.push("Certificate register could not be loaded.");
+    }
+
+    // Calculate compliance statistics
+    const overdueSystems = systems.filter(s => s.next_due_date !== null && s.next_due_date.localeCompare(today) < 0).length;
+    const dueSoonSystems = systems.filter(s => s.next_due_date !== null && s.next_due_date.localeCompare(today) >= 0 && s.next_due_date.localeCompare(soonDate) <= 0).length;
+    const compliantSystems = systems.filter(s => s.next_due_date === null || s.next_due_date.localeCompare(soonDate) > 0).length;
+    const criticalDefects = openDefects.filter(d => d.severity === 'Critical').length;
+    const blockedCertificates = certificates.filter(c => c.status === 'Blocked').length;
+    const validCertificates = certificates.filter(c => c.status === 'Valid').length;
+
+    complianceStats = {
+      totalSystems: systems.length,
+      overdueSystems,
+      dueSoonSystems,
+      compliantSystems,
+      totalDefects: openDefects.length,
+      criticalDefects,
+      majorDefects: openDefects.filter(d => d.severity === 'Major').length,
+      minorDefects: openDefects.filter(d => d.severity === 'Minor').length,
+      totalCertificates: certificates.length,
+      blockedCertificates,
+      validCertificates,
+      expiredCertificates: certificates.filter(c => c.status === 'Expired').length
+    };
+  }
+} catch (error) {
+  console.error("client compliance dashboard failed", error);
+  loadError = "Client compliance data could not be loaded.";
+}
+---
+
+<PortalLayout title="Compliance Command Center | Kharon Portal" active="client" user={user}>
+  <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Compliance Command Center</p>
+      <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">System Compliance Overview</h1>
+      <p class="mt-3 max-w-3xl text-sm text-white/60">Comprehensive view of system compliance status, certificates, and defect management.</p>
+    </div>
+  </section>
+
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
+    <div class="mx-auto max-w-7xl">
+      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800 mb-6">{loadError}</p>}
+      {!loadError && sectionErrors.length > 0 && (
+        <div class="grid gap-2 mb-6">
+          {sectionErrors.map((message) => <p class="border border-amber-300 bg-amber-50 p-4 text-amber-900">{message}</p>)}
+        </div>
+      )}
+
+      {/* Compliance Summary Cards */}
+      <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
+        <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
+          <div>
+            <p class="text-xs font-bold uppercase text-kharon-purple">Total Systems</p>
+            <p class="mt-2 text-2xl font-bold text-kharon-black">{complianceStats.totalSystems}</p>
+          </div>
+        </div>
+        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.overdueSystems > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-border bg-white"}`}>
+          <div>
+            <p class={`text-xs font-bold uppercase ${complianceStats.overdueSystems > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue</p>
+            <p class="mt-2 text-2xl font-bold text-kharon-black">{complianceStats.overdueSystems}</p>
+          </div>
+        </div>
+        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.dueSoonSystems > 0 ? "border-amber-200 bg-amber-50/50" : "border-kharon-border bg-white"}`}>
+          <div>
+            <p class={`text-xs font-bold uppercase ${complianceStats.dueSoonSystems > 0 ? "text-kharon-amber" : "text-kharon-grey"}`}>Due Soon</p>
+            <p class="mt-2 text-2xl font-bold text-kharon-black">{complianceStats.dueSoonSystems}</p>
+          </div>
+        </div>
+        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.blockedCertificates > 0 ? "border-amber-200 bg-amber-50/50" : "border-kharon-border bg-white"}`}>
+          <div>
+            <p class={`text-xs font-bold uppercase ${complianceStats.blockedCertificates > 0 ? "text-amber-600" : "text-kharon-grey"}`}>Blocked Certs</p>
+            <p class="mt-2 text-2xl font-bold text-kharon-black">{complianceStats.blockedCertificates}</p>
+          </div>
+        </div>
+        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.criticalDefects > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-border bg-white"}`}>
+          <div>
+            <p class={`text-xs font-bold uppercase ${complianceStats.criticalDefects > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Critical Issues</p>
+            <p class="mt-2 text-2xl font-bold text-kharon-black">{complianceStats.criticalDefects}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Dashboard Grid */}
+      <div class="grid gap-6 lg:grid-cols-[1.9fr_1.1fr]">
+        {/* Left Column - Systems and Defects */}
+        <div class="space-y-6">
+          {/* Systems Overview */}
+          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Asset Lifecycle</p>
+                <h2 class="text-lg font-bold text-kharon-black">Systems & Compliance Status</h2>
+              </div>
+              <a href="/compliance" class="text-xs font-bold text-kharon-purple hover:underline">Standards reference →</a>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-kharon-border text-left">
+                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">System</th>
+                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">Coverage</th>
+                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">Next Due</th>
+                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">Defects</th>
+                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">Certificates</th>
+                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {systems.map((system) => (
+                    <tr class="border-b border-kharon-border/30 hover:bg-kharon-light/30">
+                      <td class="py-3 pr-4">
+                        <div>
+                          <span class="font-semibold text-kharon-black">{system.system_type}</span>
+                          <p class="text-xs text-kharon-grey">{system.owner_company_name}</p>
+                        </div>
+                      </td>
+                      <td class="py-3 pr-4 text-kharon-black">{system.coverage_area}</td>
+                      <td class="py-3 pr-4">
+                        <span class={`text-xs font-medium ${getStatusClass(system.next_due_date)}`}>
+                          {system.next_due_date || "N/A"}
+                        </span>
+                      </td>
+                      <td class="py-3 pr-4">
+                        <span class={`text-xs font-bold ${
+                          system.open_defects_count > 0
+                            ? system.open_defects_count > 2
+                              ? "text-kharon-red"
+                              : "text-kharon-amber"
+                            : "text-kharon-green"
+                        }`}>
+                          {system.open_defects_count} open
+                        </span>
+                      </td>
+                      <td class="py-3 pr-4">
+                        <span class={`text-xs font-bold ${
+                          system.blocked_certificates_count > 0
+                            ? "text-kharon-red"
+                            : system.valid_certificates_count > 0
+                            ? "text-kharon-green"
+                            : "text-kharon-grey"
+                        }`}>
+                          {system.valid_certificates_count} valid, {system.blocked_certificates_count} blocked
+                        </span>
+                      </td>
+                      <td class="py-3 pr-4">
+                        <span class={`inline-flex rounded px-2 py-1 text-[10px] font-bold uppercase ${getStatusBgClass(system.next_due_date)}`}>
+                          {getStatusLabel(system.next_due_date)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Open Defects */}
+          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-kharon-red">Risk Management</p>
+                <h2 class="text-lg font-bold text-kharon-black">Open Defects Register</h2>
+              </div>
+              <details class="text-xs text-kharon-grey relative">
+                <summary class="cursor-pointer font-semibold text-kharon-purple hover:underline">Severity Guide</summary>
+                <div class="absolute right-0 mt-2 z-10 w-64 rounded-md border border-kharon-border bg-white p-3 shadow-md text-xs">
+                  <ul class="grid gap-1.5">
+                    <li><strong>Critical</strong> — Immediate attention required; affects safety or compliance.</li>
+                    <li><strong>Major</strong> — Important issue; requires attention within 30 days.</li>
+                    <li><strong>Minor</strong> — Less serious; should be addressed during next service.</li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+
+            <div class="space-y-3">
+              {openDefects.length === 0 && <p class="text-sm text-kharon-grey italic py-2">No open defects are recorded for your systems.</p>}
+              {openDefects.map((defect) => (
+                <article class="flex items-start justify-between gap-4 p-4 rounded-lg border bg-kharon-light/30" class:list={[
+                  defect.severity === "Critical" ? "border-l-4 border-l-kharon-red bg-red-50/20" : 
+                  defect.severity === "Major" ? "border-l-4 border-l-kharon-amber bg-amber-50/20" : 
+                  "border-l-4 border-l-kharon-grey bg-kharon-light/20"
+                ]}>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center justify-between">
+                      <span class="font-semibold text-kharon-black">{defect.owner_company_name}</span>
+                      <span class={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase border ${
+                        defect.severity === "Critical" ? "border-red-200 bg-red-50 text-kharon-red" :
+                        defect.severity === "Major" ? "border-amber-200 bg-amber-50 text-amber-700" :
+                        "border-kharon-border bg-white text-kharon-grey"
+                      }`}>{defect.severity}</span>
+                    </div>
+                    <p class="text-kharon-grey mt-1">{defect.system_type} / {defect.coverage_area}</p>
+                    <p class="mt-1 text-xs text-kharon-grey/70 font-mono">ID: {defect.id.slice(0, 8)}...</p>
+                    {defect.sans_clause_ref && <p class="mt-1 text-[10px] text-kharon-grey/70 font-mono">SANS Clause: {defect.sans_clause_ref}</p>}
+                    <p class="mt-2 text-sm text-kharon-black bg-white border border-kharon-border/60 p-2.5 rounded">{defect.description}</p>
+                    {defect.remediation_notes && (
+                      <div class="mt-2">
+                        <p class="text-[10px] font-bold uppercase text-kharon-purple">Remediation Notes</p>
+                        <p class="text-xs text-kharon-black bg-blue-50 border border-blue-200 p-2.5 rounded">{defect.remediation_notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Certificates and Actions */}
+        <div class="space-y-6">
+          {/* Certificate Summary */}
+          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+            <div class="border-b border-kharon-border pb-4 mb-4">
+              <p class="text-xs font-bold uppercase tracking-wider text-kharon-blue">Certification Status</p>
+              <h2 class="text-lg font-bold text-kharon-black">Certificate Register</h2>
+            </div>
+
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div class={`rounded-lg border p-3 text-center ${complianceStats.validCertificates > 0 ? "border-green-200 bg-green-50" : "border-kharon-border bg-white"}`}>
+                  <p class="text-2xl font-bold text-kharon-green">{complianceStats.validCertificates}</p>
+                  <p class="text-xs font-bold text-kharon-green">Valid</p>
+                </div>
+                <div class={`rounded-lg border p-3 text-center ${complianceStats.blockedCertificates > 0 ? "border-amber-200 bg-amber-50" : "border-kharon-border bg-white"}`}>
+                  <p class="text-2xl font-bold text-kharon-amber">{complianceStats.blockedCertificates}</p>
+                  <p class="text-xs font-bold text-kharon-amber">Blocked</p>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                {certificates.map((cert) => (
+                  <div class="p-3 rounded-lg border bg-white" class:list={[
+                    cert.status === "Valid" ? "border-l-4 border-l-kharon-green bg-green-50/30" :
+                    cert.status === "Blocked" ? "border-l-4 border-l-kharon-amber bg-amber-50/30" :
+                    cert.status === "Expired" ? "border-l-4 border-l-kharon-red bg-red-50/30" :
+                    "border-l-4 border-l-kharon-grey bg-kharon-light/30"
+                  ]}>
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <p class="font-semibold text-kharon-black">{cert.certificate_type}</p>
+                        <p class="text-xs text-kharon-grey">{cert.system_type}</p>
+                      </div>
+                      <span class={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                        cert.status === "Valid" ? "bg-green-100 text-kharon-green border border-green-200" :
+                        cert.status === "Blocked" ? "bg-amber-100 text-kharon-amber border border-amber-200" :
+                        cert.status === "Expired" ? "bg-red-100 text-kharon-red border border-red-200" :
+                        "bg-slate-100 text-slate-700 border border-slate-200"
+                      }`}>{cert.status}</span>
+                    </div>
+                    
+                    <div class="mt-2 text-xs">
+                      <p class="text-kharon-grey">Issued: {cert.issued_date}</p>
+                      {cert.expiry_date && <p class="text-kharon-grey">Expires: {cert.expiry_date}</p>}
+                    </div>
+                    
+                    {cert.status === "Blocked" && cert.blocking_defect_description && (
+                      <div class="mt-2 text-xs">
+                        <p class="font-semibold text-kharon-amber">Blocking Issue:</p>
+                        <p class="text-kharon-amber">{cert.blocking_defect_description}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+            <div class="border-b border-kharon-border pb-4 mb-4">
+              <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Quick Actions</p>
+              <h2 class="text-lg font-bold text-kharon-black">Support Options</h2>
+            </div>
+
+            <div class="space-y-3">
+              <a href="/portal/client/quotes" class="block w-full rounded border border-kharon-purple bg-white px-4 py-3 text-left text-sm font-bold text-kharon-purple hover:bg-kharon-purple hover:text-white transition-colors">
+                Request Quote
+              </a>
+              <a href="/portal/api/maintenance-request" class="block w-full rounded border border-kharon-blue bg-white px-4 py-3 text-left text-sm font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
+                Submit Service Request
+              </a>
+              <a href="/compliance" class="block w-full rounded border border-kharon-cyan bg-white px-4 py-3 text-left text-sm font-bold text-kharon-cyan hover:bg-kharon-cyan hover:text-white transition-colors">
+                Compliance Resources
+              </a>
+              <a href="/contact" class="block w-full rounded border border-kharon-grey bg-white px-4 py-3 text-left text-sm font-bold text-kharon-grey hover:bg-kharon-grey hover:text-white transition-colors">
+                Contact Support
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</PortalLayout>

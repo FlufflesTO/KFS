@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS jobs (
   required_by_date TEXT,
   is_emergency INTEGER NOT NULL DEFAULT 0 CHECK (is_emergency IN (0, 1)),
   estimated_duration_minutes INTEGER,
+  deleted_at TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
@@ -110,7 +111,13 @@ CREATE TABLE IF NOT EXISTS financial_records (
   credit_note_for_id TEXT REFERENCES financial_records(id) ON DELETE SET NULL,
   item_subtype TEXT CHECK (item_subtype IS NULL OR item_subtype IN ('Credit Note')),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  CHECK (
+    sage_amount_ex_vat IS NULL
+    OR sage_vat_amount IS NULL
+    OR sage_amount_inc_vat IS NULL
+    OR sage_amount_ex_vat + sage_vat_amount = sage_amount_inc_vat
+  )
 );
 
 CREATE TABLE IF NOT EXISTS maintenance_requests (
@@ -304,8 +311,8 @@ CREATE TABLE IF NOT EXISTS job_visits (
   visit_date TEXT NOT NULL,
   arrival_time TEXT,
   departure_time TEXT,
-  gps_latitude REAL,
-  gps_longitude REAL,
+  gps_latitude REAL CHECK (gps_latitude IS NULL OR gps_latitude BETWEEN -90 AND 90),
+  gps_longitude REAL CHECK (gps_longitude IS NULL OR gps_longitude BETWEEN -180 AND 180),
   customer_name TEXT CHECK (customer_name IS NULL OR length(trim(customer_name)) BETWEEN 2 AND 160),
   customer_title TEXT CHECK (customer_title IS NULL OR length(trim(customer_title)) BETWEEN 2 AND 80),
   notes TEXT CHECK (notes IS NULL OR length(trim(notes)) BETWEEN 5 AND 3000),
@@ -325,6 +332,7 @@ CREATE TABLE IF NOT EXISTS defects (
   certificate_blocking INTEGER NOT NULL DEFAULT 0 CHECK (certificate_blocking IN (0, 1)),
   status TEXT NOT NULL DEFAULT 'Open' CHECK (status IN ('Open', 'In Progress', 'Resolved', 'Closed')),
   remediation_notes TEXT CHECK (remediation_notes IS NULL OR length(trim(remediation_notes)) BETWEEN 5 AND 3000),
+  deleted_at TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
@@ -338,6 +346,7 @@ CREATE TABLE IF NOT EXISTS certificates (
   expiry_date TEXT,
   blocked_by_defect_id TEXT REFERENCES defects(id) ON DELETE SET NULL,
   status TEXT NOT NULL DEFAULT 'Valid' CHECK (status IN ('Valid', 'Expired', 'Revoked', 'Blocked')),
+  deleted_at TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
@@ -346,13 +355,16 @@ CREATE INDEX IF NOT EXISTS idx_clients_company ON clients(company_name);
 CREATE INDEX IF NOT EXISTS idx_clients_email ON clients(contact_email);
 CREATE INDEX IF NOT EXISTS idx_job_visits_job ON job_visits(job_id, visit_date);
 CREATE INDEX IF NOT EXISTS idx_job_visits_tech ON job_visits(technician_id, visit_date);
+CREATE INDEX IF NOT EXISTS idx_jobs_deleted_at ON jobs(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_defects_system ON defects(system_id, status);
 CREATE INDEX IF NOT EXISTS idx_defects_job ON defects(job_id);
 CREATE INDEX IF NOT EXISTS idx_defects_blocking ON defects(certificate_blocking, status);
 CREATE INDEX IF NOT EXISTS idx_defects_severity ON defects(severity, status);
+CREATE INDEX IF NOT EXISTS idx_defects_deleted_at ON defects(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_certificates_system ON certificates(system_id, status, expiry_date);
 CREATE INDEX IF NOT EXISTS idx_certificates_blocked ON certificates(blocked_by_defect_id);
 CREATE INDEX IF NOT EXISTS idx_certificates_expiry ON certificates(expiry_date);
+CREATE INDEX IF NOT EXISTS idx_certificates_deleted_at ON certificates(deleted_at);
 
 CREATE TRIGGER IF NOT EXISTS trg_clients_updated_at
 AFTER UPDATE ON clients

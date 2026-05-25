@@ -1,0 +1,59 @@
+---
+/**
+ * Project Sentinel - Kharon Card Component
+ * Purpose: Consistent card component for all dashboard views with enigmatic design
+ * Dependencies: None
+ * Structural Role: Reusable UI component
+ */
+
+export interface Props {
+  title?: string;
+  subtitle?: string;
+  variant?: 'default' | 'primary' | 'warning' | 'danger' | 'success';
+  border?: boolean;
+  padding?: 'sm' | 'md' | 'lg';
+  className?: string;
+}
+
+const { 
+  title, 
+  subtitle, 
+  variant = 'default', 
+  border = true, 
+  padding = 'md',
+  className = '' 
+} = Astro.props;
+
+const variantClasses = {
+  default: 'border-kharon-border bg-white',
+  primary: 'border-kharon-purple bg-white',
+  warning: 'border-amber-200 bg-amber-50/50',
+  danger: 'border-red-200 bg-red-50/50',
+  success: 'border-green-200 bg-green-50/50'
+};
+
+const paddingClasses = {
+  sm: 'p-3',
+  md: 'p-5',
+  lg: 'p-6'
+};
+
+const classes = [
+  'rounded-xl',
+  border ? 'border' : '',
+  variantClasses[variant],
+  paddingClasses[padding],
+  'shadow-sm',
+  className
+].filter(Boolean).join(' ');
+---
+
+<div class={classes}>
+  {title && (
+    <div class="border-b border-kharon-border pb-4 mb-4">
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">{subtitle}</p>
+      <h2 class="text-lg font-bold text-kharon-black">{title}</h2>
+    </div>
+  )}
+  <slot />
+</div>

@@ -23,34 +23,55 @@ const mfaPath = "/portal/account/mfa";
 const mfaApiPath = "/portal/api/mfa";
 const portalRootPath = "/portal";
 
-const securityHeaders = {
-  "X-Content-Type-Options": "nosniff",
-  "X-Frame-Options": "SAMEORIGIN",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Content-Security-Policy":
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests",
-  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Cross-Origin-Opener-Policy": "same-origin",
-  "Cross-Origin-Resource-Policy": "same-origin",
-  "Cross-Origin-Embedder-Policy": "credentialless",
-  "X-Permitted-Cross-Domain-Policies": "none",
-  "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload"
-};
+function createCspNonce() {
+  return crypto.randomUUID().replaceAll("-", "");
+}
 
-function withSecurityHeaders(response) {
-  for (const [name, value] of Object.entries(securityHeaders)) {
-    if (!response.headers.has(name)) response.headers.set(name, value);
+function securityHeaders(nonce) {
+  return {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Content-Security-Policy":
+      `default-src 'self'; script-src 'self' 'nonce-${nonce}' https://static.cloudflareinsights.com https://challenges.cloudflare.com https://cdn.skypack.dev; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; frame-src https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests`,
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Resource-Policy": "same-origin",
+    "Cross-Origin-Embedder-Policy": "credentialless",
+    "X-Permitted-Cross-Domain-Policies": "none",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload"
+  };
+}
+
+function withSecurityHeaders(response, nonce = createCspNonce()) {
+  for (const [name, value] of Object.entries(securityHeaders(nonce))) {
+    response.headers.set(name, value);
   }
   return response;
 }
 
-function redirectToLogin(context) {
-  const loginUrl = new URL(loginPath, context.url);
-  loginUrl.searchParams.set("next", context.url.pathname);
-  return withSecurityHeaders(context.redirect(loginUrl.toString(), 302));
+async function withHtmlSecurityHeaders(response, nonce) {
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("text/html")) return withSecurityHeaders(response, nonce);
+
+  const html = await response.text();
+  const headers = new Headers(response.headers);
+  headers.delete("content-length");
+  const rewritten = html.replace(/<script\b(?![^>]*\bnonce=)/gi, `<script nonce="${nonce}"`);
+  return withSecurityHeaders(new Response(rewritten, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  }), nonce);
 }
 
-function redirectToRoleDashboard(context, role) {
+function redirectToLogin(context, nonce) {
+  const loginUrl = new URL(loginPath, context.url);
+  loginUrl.searchParams.set("next", context.url.pathname);
+  return withSecurityHeaders(context.redirect(loginUrl.toString(), 302), nonce);
+}
+
+function redirectToRoleDashboard(context, role, nonce) {
   const destinations = {
     tech: "/portal/tech/dashboard",
     admin: "/portal/admin/dashboard",
@@ -58,7 +79,7 @@ function redirectToRoleDashboard(context, role) {
     finance: "/portal/finance/dashboard"
   };
 
-  return withSecurityHeaders(context.redirect(destinations[role] || loginPath, 302));
+  return withSecurityHeaders(context.redirect(destinations[role] || loginPath, 302), nonce);
 }
 
 function allowedForPath(pathname, role) {
@@ -81,7 +102,7 @@ function isStateChangingPortalApi(request, pathname) {
   return pathname.startsWith("/portal/api/") && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
 }
 
-function rateLimitResponse(retryAfter) {
+function rateLimitResponse(retryAfter, nonce) {
   return withSecurityHeaders(new Response(JSON.stringify({ ok: false, error: "rate_limited", message: "Too many portal write requests. Try again shortly.", retryAfter }), {
     status: 429,
     headers: {
@@ -89,7 +110,7 @@ function rateLimitResponse(retryAfter) {
       "cache-control": "no-store",
       "retry-after": String(retryAfter)
     }
-  }));
+  }), nonce);
 }
 
 function rateLimitConfig(pathname) {
@@ -117,34 +138,35 @@ function rateLimitConfig(pathname) {
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
+  const nonce = createCspNonce();
 
   if (!pathname.startsWith("/portal")) {
-    return withSecurityHeaders(await next());
+    return withHtmlSecurityHeaders(await next(), nonce);
   }
 
   if (pathContainsTraversal(pathname)) {
-    return withSecurityHeaders(new Response("Invalid portal path.", { status: 400 }));
+    return withSecurityHeaders(new Response("Invalid portal path.", { status: 400 }), nonce);
   }
 
   if (pathname === loginPath || pathname === authApiPath || pathname === resetPath || pathname === resetApiPath) {
-    return withSecurityHeaders(await next());
+    return withHtmlSecurityHeaders(await next(), nonce);
   }
 
   const db = getDatabase();
   const token = context.cookies.get(sessionCookieName)?.value;
   if (!token) {
-    return redirectToLogin(context);
+    return redirectToLogin(context, nonce);
   }
 
   const user = await verifySessionToken(token);
   if (!user) {
-    const response = redirectToLogin(context);
+    const response = redirectToLogin(context, nonce);
     response.headers.append("Set-Cookie", expiredSessionCookie());
     return response;
   }
 
   if (await isTokenRevoked(db, token)) {
-    const response = redirectToLogin(context);
+    const response = redirectToLogin(context, nonce);
     response.headers.append("Set-Cookie", expiredSessionCookie());
     return response;
   }
@@ -168,7 +190,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         outcome: "blocked",
         user
       });
-      return withSecurityHeaders(csrfErrorResponse());
+      return withSecurityHeaders(csrfErrorResponse(), nonce);
     }
 
     const config = rateLimitConfig(pathname);
@@ -187,35 +209,35 @@ export const onRequest = defineMiddleware(async (context, next) => {
         metadata: { scope: config.scope, retryAfter: limit.retryAfter },
         user
       });
-      return rateLimitResponse(limit.retryAfter);
+      return rateLimitResponse(limit.retryAfter, nonce);
     }
   }
 
   if (user.forcePasswordChange && pathname !== passwordPath && pathname !== passwordApiPath && pathname !== logoutApiPath) {
-    const response = withSecurityHeaders(context.redirect(passwordPath, 302));
+    const response = withSecurityHeaders(context.redirect(passwordPath, 302), nonce);
     if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
     return response;
   }
 
   if (user.mfaRequired && !user.mfaEnabled && pathname !== mfaPath && pathname !== mfaApiPath && pathname !== logoutApiPath) {
-    const response = withSecurityHeaders(context.redirect(mfaPath, 302));
+    const response = withSecurityHeaders(context.redirect(mfaPath, 302), nonce);
     if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
     return response;
   }
 
   if (pathname === portalRootPath || pathname === `${portalRootPath}/`) {
-    const response = redirectToRoleDashboard(context, user.role);
+    const response = redirectToRoleDashboard(context, user.role, nonce);
     if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
     return response;
   }
 
   if (!allowedForPath(pathname, user.role)) {
-    const response = redirectToRoleDashboard(context, user.role);
+    const response = redirectToRoleDashboard(context, user.role, nonce);
     if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
     return response;
   }
 
-  const response = withSecurityHeaders(await next());
+  const response = await withHtmlSecurityHeaders(await next(), nonce);
   if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
   return response;
 });

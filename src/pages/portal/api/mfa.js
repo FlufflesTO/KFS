@@ -1,6 +1,6 @@
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { auditEvent } from "../../../lib/server/audit.js";
-import { createSessionToken, sessionCookie } from "../../../lib/server/auth.js";
+import { createSessionToken, sessionCookie, revokeSessionToken, sessionCookieName } from "../../../lib/server/auth.js";
 import { decryptMfaSecret, encryptMfaSecret, generateTotpSecret, mfaProvisioningUri, verifyTotpCode } from "../../../lib/server/mfa.js";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
 
@@ -38,8 +38,8 @@ export async function POST({ request, locals }) {
     if (!record) return forbidden("This account is not available.");
 
     if (action === "setup") {
-      if (!["admin", "finance"].includes(record.role)) {
-        return forbidden("MFA setup is currently limited to admin and finance accounts.");
+      if (!["admin", "finance", "tech"].includes(record.role)) {
+        return forbidden("MFA setup is currently limited to admin, finance, and tech accounts.");
       }
       if (record.mfa_enabled) return badRequest("MFA is already enabled for this account.");
 
@@ -59,8 +59,8 @@ export async function POST({ request, locals }) {
     }
 
     if (action === "enable") {
-      if (!["admin", "finance"].includes(record.role)) {
-        return forbidden("MFA setup is currently limited to admin and finance accounts.");
+      if (!["admin", "finance", "tech"].includes(record.role)) {
+        return forbidden("MFA setup is currently limited to admin, finance, and tech accounts.");
       }
       if (record.mfa_enabled) return badRequest("MFA is already enabled for this account.");
 
@@ -83,7 +83,7 @@ export async function POST({ request, locals }) {
         .prepare(
           `UPDATE users
            SET mfa_enabled = 1,
-               mfa_required = CASE WHEN role IN ('admin', 'finance') THEN 1 ELSE mfa_required END,
+               mfa_required = CASE WHEN role IN ('admin', 'finance', 'tech') THEN 1 ELSE mfa_required END,
                mfa_secret_encrypted = ?1,
                mfa_enabled_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
            WHERE id = ?2`
@@ -100,6 +100,13 @@ export async function POST({ request, locals }) {
       });
 
       const refreshed = await currentUserRecord(db, user);
+      
+      // Revoke the old session token to prevent session fixation
+      const oldToken = request.headers.get("cookie")?.split("; ").find(c => c.startsWith(`${sessionCookieName}=`))?.split("=")[1];
+      if (oldToken) {
+        await revokeSessionToken(db, oldToken);
+      }
+
       const token = await createSessionToken(refreshed);
       return json(
         { ok: true, redirectTo: destinations[refreshed.role] || "/portal" },

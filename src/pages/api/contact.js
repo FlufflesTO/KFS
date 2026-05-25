@@ -39,10 +39,22 @@ function json(data, status = 200) {
 
 export async function POST({ request }) {
   let body = {};
-  try {
-    body = await request.json();
-  } catch {
-    return json({ ok: false, message: "Invalid request." }, 400);
+  const contentType = request.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    try {
+      body = await request.json();
+    } catch {
+      return json({ ok: false, message: "Invalid JSON request." }, 400);
+    }
+  } else if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
+    try {
+      const form = await request.formData();
+      body = Object.fromEntries(form.entries());
+    } catch {
+      return json({ ok: false, message: "Invalid form request." }, 400);
+    }
+  } else {
+    return json({ ok: false, message: "Unsupported content type." }, 400);
   }
 
   if (body.website) {
@@ -53,9 +65,13 @@ export async function POST({ request }) {
   try {
     name = cleanText(body.name, "Name", { min: 2, max: 80 });
     email = cleanEmail(body.email, "Email");
-    requestType = cleanText(body.requestType, "Request type", { min: 2, max: 120 });
+    requestType = cleanText(body.requestType || body.subject, "Request type", { min: 2, max: 120 });
     if (!ALLOWED_REQUEST_TYPES.has(requestType)) throw new Error("Invalid request type.");
     message = cleanText(body.message, "Message", { min: 10, max: 3000 });
+    
+    // POPIA Consent verification
+    const popiaConsent = body.popiaConsent || body.popia_consent || body.consent === "on" || body.consent === true || body.consent === "true";
+    if (!popiaConsent) throw new Error("POPIA consent is required.");
   } catch (error) {
     return json({ ok: false, message: error.message }, 422);
   }

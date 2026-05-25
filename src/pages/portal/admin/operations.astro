@@ -1,6 +1,23 @@
 ---
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
+import type {
+  DbUser,
+  DbSite,
+  DbSystem,
+  DbJob,
+  DbContactEnquiry,
+  DbDefect,
+  DbCertificate,
+  DbClientSiteAccess,
+} from "../../../lib/types/sentinel.ts";
+import EnquiriesPanel   from "../../../components/portal/admin/EnquiriesPanel.astro";
+import JobsPanel        from "../../../components/portal/admin/JobsPanel.astro";
+import UsersPanel       from "../../../components/portal/admin/UsersPanel.astro";
+import SiteSystemsPanel from "../../../components/portal/admin/SiteSystemsPanel.astro";
+import DataPanel        from "../../../components/portal/admin/DataPanel.astro";
+import DefectsPanel     from "../../../components/portal/admin/DefectsPanel.astro";
+import CertificatesPanel from "../../../components/portal/admin/CertificatesPanel.astro";
 
 export const prerender = false;
 
@@ -8,100 +25,92 @@ const user = Astro.locals.user;
 const today    = new Date().toISOString().slice(0, 10);
 const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
-const params = Astro.url.searchParams;
-const activeTab = params.get('tab') || 'enquiries';
-const page = Math.max(1, Math.min(999, parseInt(params.get('page') || '1', 10) || 1));
+const params  = Astro.url.searchParams;
+const activeTab = params.get("tab") || "enquiries";
+const page    = Math.max(1, Math.min(999, parseInt(params.get("page") || "1", 10) || 1));
 const perPage = 50;
-const offset = (page - 1) * perPage;
+const offset  = (page - 1) * perPage;
 
-interface OperationsJob {
-  id: string;
-  system_id: string;
-  assigned_technician_id: string | null;
-  scheduled_date: string;
-  status: string;
-  job_type: string;
-  site_notes: string | null;
-  priority: string;
-  is_emergency: number;
-  required_by_date: string | null;
-  estimated_duration_minutes: number | null;
-  coverage_area: string;
-  owner_company_name: string;
-}
-
-let users = [];
-let sites = [];
-let systems = [];
-let jobs: OperationsJob[] = [];
-let technicians = [];
-let clientUsers = [];
-let clientSiteAccess = [];
-let contactEnquiries = [];
-let defects = [];
-let certificates = [];
-let systemsForForms = [];
-let jobsTotal = 0;
+let users:           DbUser[]           = [];
+let sites:           DbSite[]           = [];
+let systems:         DbSystem[]         = [];
+let jobs:            DbJob[]            = [];
+let technicians:     DbUser[]           = [];
+let clientUsers:     DbUser[]           = [];
+let clientSiteAccess: DbClientSiteAccess[] = [];
+let contactEnquiries: DbContactEnquiry[] = [];
+let defects:         DbDefect[]         = [];
+let certificates:    DbCertificate[]    = [];
+let jobsTotal    = 0;
 let contactsTotal = 0;
-let loadError = "";
+let loadError    = "";
 
 try {
   const db = getDatabase();
-  jobsTotal = (await db.prepare(`SELECT COUNT(*) as total FROM jobs`).first()).total ?? 0;
-  contactsTotal = (await db.prepare(`SELECT COUNT(*) as total FROM contact_submissions`).first()).total ?? 0;
-  users = (await db.prepare(
-    `SELECT id, name, email, role, site_id, is_active, force_password_change, mfa_required, mfa_enabled, last_login_at
+
+  jobsTotal     = ((await db.prepare(`SELECT COUNT(*) as total FROM jobs`).first()) as { total: number } | null)?.total ?? 0;
+  contactsTotal = ((await db.prepare(`SELECT COUNT(*) as total FROM contact_submissions`).first()) as { total: number } | null)?.total ?? 0;
+
+  // LIMIT 1000 prevents unbounded edge-memory growth if datasets grow unexpectedly.
+  users = ((await db.prepare(
+    `SELECT id, name, email, role, site_id, is_active, force_password_change,
+            mfa_required, mfa_enabled, last_login_at
      FROM users
-     ORDER BY role, name`
-  ).all()).results || [];
+     ORDER BY role, name
+     LIMIT 1000`
+  ).all()).results ?? []) as DbUser[];
 
-  sites = (await db.prepare(
-    `SELECT id, owner_company_name, physical_address, site_contact_person, site_contact_email, site_contact_phone, billing_emails
+  sites = ((await db.prepare(
+    `SELECT id, owner_company_name, physical_address, site_contact_person,
+            site_contact_email, site_contact_phone, billing_emails
      FROM sites
-     ORDER BY owner_company_name`
-  ).all()).results || [];
+     ORDER BY owner_company_name
+     LIMIT 1000`
+  ).all()).results ?? []) as DbSite[];
 
-  systems = (await db.prepare(
-    `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area, systems.manufacturer,
-            systems.model_reference, systems.next_due_date, systems.service_interval_months,
-            sites.owner_company_name
+  systems = ((await db.prepare(
+    `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area,
+            systems.manufacturer, systems.model_reference, systems.next_due_date,
+            systems.service_interval_months, sites.owner_company_name
      FROM systems
      INNER JOIN sites ON sites.id = systems.site_id
-     ORDER BY sites.owner_company_name, systems.coverage_area`
-  ).all()).results || [];
+     ORDER BY sites.owner_company_name, systems.coverage_area
+     LIMIT 1000`
+  ).all()).results ?? []) as DbSystem[];
 
   jobs = ((await db.prepare(
-    `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
-            jobs.job_type, jobs.site_notes,
-            jobs.priority, jobs.is_emergency, jobs.required_by_date, jobs.estimated_duration_minutes,
+    `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date,
+            jobs.status, jobs.job_type, jobs.site_notes, jobs.priority, jobs.is_emergency,
+            jobs.required_by_date, jobs.estimated_duration_minutes,
             systems.coverage_area, sites.owner_company_name
      FROM jobs
      INNER JOIN systems ON systems.id = jobs.system_id
-     INNER JOIN sites ON sites.id = systems.site_id
+     INNER JOIN sites   ON sites.id   = systems.site_id
      ORDER BY jobs.scheduled_date DESC
      LIMIT ? OFFSET ?`
-  ).bind(perPage, offset).all()).results || []) as OperationsJob[];
+  ).bind(perPage, offset).all()).results ?? []) as DbJob[];
 
-  technicians = users.filter((item) => item.role === "tech" && item.is_active);
-  clientUsers = users.filter((item) => item.role === "client" && item.is_active);
+  technicians = users.filter((u) => u.role === "tech"   && u.is_active);
+  clientUsers = users.filter((u) => u.role === "client" && u.is_active);
 
-  clientSiteAccess = (await db.prepare(
+  clientSiteAccess = ((await db.prepare(
     `SELECT client_site_access.user_id, client_site_access.site_id, client_site_access.granted_at,
             users.name AS user_name, users.email AS user_email, sites.owner_company_name
      FROM client_site_access
      INNER JOIN users ON users.id = client_site_access.user_id
      INNER JOIN sites ON sites.id = client_site_access.site_id
-     ORDER BY users.name, sites.owner_company_name`
-  ).all()).results || [];
+     ORDER BY users.name, sites.owner_company_name
+     LIMIT 1000`
+  ).all()).results ?? []) as DbClientSiteAccess[];
 
-  contactEnquiries = (await db.prepare(
+  contactEnquiries = ((await db.prepare(
     `SELECT id, name, email, request_type, message, submitted_at
      FROM contact_submissions
      ORDER BY submitted_at DESC
      LIMIT ? OFFSET ?`
-  ).bind(perPage, offset).all()).results || [];
+  ).bind(perPage, offset).all()).results ?? []) as DbContactEnquiry[];
 
-  defects = (await db.prepare(
+  defects = ((await db.prepare(
     `SELECT defects.id, defects.severity, defects.sans_clause_ref, defects.description,
             defects.certificate_blocking, defects.status, defects.created_at,
             systems.id AS system_id, systems.system_type, systems.coverage_area,
@@ -109,15 +118,15 @@ try {
             jobs.id AS job_id
      FROM defects
      INNER JOIN systems ON systems.id = defects.system_id
-     INNER JOIN sites ON sites.id = systems.site_id
-     LEFT JOIN jobs ON jobs.id = defects.job_id
+     INNER JOIN sites   ON sites.id   = systems.site_id
+     LEFT  JOIN jobs    ON jobs.id    = defects.job_id
      ORDER BY
        CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 WHEN 'Minor' THEN 3 ELSE 4 END,
        defects.created_at DESC
      LIMIT 200`
-  ).all()).results || [];
+  ).all()).results ?? []) as DbDefect[];
 
-  certificates = (await db.prepare(
+  certificates = ((await db.prepare(
     `SELECT certificates.id, certificates.certificate_type, certificates.issued_date,
             certificates.expiry_date, certificates.status, certificates.created_at,
             systems.id AS system_id, systems.system_type, systems.coverage_area,
@@ -126,30 +135,23 @@ try {
             blocking_defect.severity AS blocking_severity,
             blocking_defect.description AS blocking_description
      FROM certificates
-     INNER JOIN systems ON systems.id = certificates.system_id
-     INNER JOIN sites ON sites.id = systems.site_id
-     LEFT JOIN jobs ON jobs.id = certificates.job_id
-     LEFT JOIN defects AS blocking_defect ON blocking_defect.id = certificates.blocked_by_defect_id
+     INNER JOIN systems  ON systems.id  = certificates.system_id
+     INNER JOIN sites    ON sites.id    = systems.site_id
+     LEFT  JOIN jobs     ON jobs.id     = certificates.job_id
+     LEFT  JOIN defects  AS blocking_defect ON blocking_defect.id = certificates.blocked_by_defect_id
      ORDER BY
        CASE certificates.status WHEN 'Blocked' THEN 1 WHEN 'Expired' THEN 2 WHEN 'Revoked' THEN 3 ELSE 4 END,
        certificates.expiry_date ASC
      LIMIT 200`
-  ).all()).results || [];
+  ).all()).results ?? []) as DbCertificate[];
 
-  systemsForForms = (await db.prepare(
-    `SELECT systems.id, systems.system_type, systems.coverage_area,
-            sites.owner_company_name
-     FROM systems
-     INNER JOIN sites ON sites.id = systems.site_id
-     ORDER BY sites.owner_company_name, systems.coverage_area`
-  ).all()).results || [];
 } catch (error) {
   console.error("admin operations failed", error);
   loadError = "Administration data could not be loaded.";
 }
 
-const jobsTotalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
-const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
+const jobsTotalPages      = Math.max(1, Math.ceil(jobsTotal / perPage));
+const contactsTotalPages  = Math.max(1, Math.ceil(contactsTotal / perPage));
 ---
 
 <PortalLayout title="Admin Operations | Kharon Portal" active="operations" user={user}>
@@ -163,739 +165,69 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
     </div>
   </section>
 
-  <!-- Tab navigation -->
   <div class="border-b border-kharon-border bg-white">
     <div class="mx-auto flex max-w-7xl flex-wrap gap-1 px-4 py-3 sm:px-6">
-      <button data-tab="enquiries" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold bg-kharon-purple text-white">Enquiries</button>
-      <button data-tab="jobs" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Jobs</button>
-      <button data-tab="users" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Users</button>
-      <button data-tab="sites" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Sites & Systems</button>
-      <button data-tab="data" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Data</button>
-      <button data-tab="defects" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Defects</button>
+      <button data-tab="enquiries"    class="ops-tab rounded-md px-4 py-2 text-sm font-semibold bg-kharon-purple text-white">Enquiries</button>
+      <button data-tab="jobs"         class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Jobs</button>
+      <button data-tab="users"        class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Users</button>
+      <button data-tab="sites"        class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Sites &amp; Systems</button>
+      <button data-tab="data"         class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Data</button>
+      <button data-tab="defects"      class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Defects</button>
       <button data-tab="certificates" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Certificates</button>
     </div>
   </div>
 
   <section class="px-4 py-6 sm:px-6 sm:py-8">
-    {loadError && <p class="mx-auto mb-6 max-w-7xl border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+    {loadError && (
+      <p class="mx-auto mb-6 max-w-7xl border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>
+    )}
 
-    <!-- ─── Enquiries panel ─────────────────────────────────────────── -->
-    <div id="ops-panel-enquiries" class="ops-panel mx-auto grid max-w-7xl gap-8">
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <details class="ops-section" open>
-          <summary class="flex cursor-pointer items-center justify-between">
-            <div>
-              <p class="text-xs font-bold uppercase text-kharon-purple">Public contact form</p>
-              <h2 class="mt-1 text-xl font-bold">Website enquiries <span class="ml-2 text-sm font-normal text-kharon-grey">({contactEnquiries.length})</span></h2>
-            </div>
-            <span class="text-sm text-kharon-purple">Toggle</span>
-          </summary>
-          <div class="mt-5 grid gap-3">
-            {contactEnquiries.length === 0 && (
-              <p class="text-kharon-grey">No contact enquiries have been received yet.</p>
-            )}
-            {contactEnquiries.map((item) => (
-              <article class="grid gap-2 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2">
-                <div class="min-w-0">
-                  <p class="font-semibold">{item.name}</p>
-                  <p class="text-sm text-kharon-purple">
-                    <a href={`mailto:${item.email}`} class="hover:underline">{item.email}</a>
-                  </p>
-                  <p class="mt-1 text-xs font-bold uppercase text-kharon-grey">{item.request_type}</p>
-                  <p class="mt-2 text-sm leading-6 text-kharon-black">{item.message}</p>
-                </div>
-                <div class="text-xs text-kharon-grey">
-                  <p>{item.submitted_at?.slice(0, 16).replace("T", " ")} UTC</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </details>
-      </article>
-      <nav class="flex items-center justify-between mt-6 pt-4 border-t border-kharon-border">
-        {page > 1 ? (
-          <a href={`?tab=enquiries&page=${page - 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Previous</a>
-        ) : (
-          <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Previous</span>
-        )}
-        <span class="text-sm text-kharon-grey">Page {page} of {contactsTotalPages}</span>
-        {page < contactsTotalPages ? (
-          <a href={`?tab=enquiries&page=${page + 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Next</a>
-        ) : (
-          <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Next</span>
-        )}
-      </nav>
-    </div>
-
-    <!-- ─── Jobs panel ─────────────────────────────────────────────── -->
-    <div id="ops-panel-jobs" class="ops-panel mx-auto grid max-w-7xl gap-8">
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <div class="sticky top-0 z-10 mb-4 bg-white flex flex-wrap items-center justify-between gap-3">
-          <h2 class="text-xl font-bold">Jobs <span class="ml-2 text-sm font-normal text-kharon-grey">({jobs.length})</span></h2>
-          <div class="flex flex-wrap gap-3">
-            <input
-              id="jobs-search"
-              type="search"
-              class="rounded-md border border-kharon-border px-3 py-2 text-sm"
-              placeholder="Search site or area…"
-              size="24"
-            />
-            <select id="jobs-status-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
-              <option value="">All statuses</option>
-              {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
-                <option value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div id="jobs-list" class="grid gap-4">
-          {jobs.map((record) => (
-            <form
-              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
-              data-endpoint="/portal/api/admin/jobs"
-              data-search={`${record.owner_company_name} ${record.coverage_area || ""} ${record.job_type || ""} ${record.site_notes || ""}`}
-              data-status={record.status}
-            >
-              <input type="hidden" name="action" value="update" />
-              <input type="hidden" name="id" value={record.id} />
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
-                {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
-              </select>
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
-                <option value="">Unassigned</option>
-                {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
-              </select>
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
-                {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
-              </select>
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="priority">
-                {["Critical","High","Normal","Low"].map((p) => <option value={p} selected={record.priority === p}>{p}</option>)}
-              </select>
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="requiredByDate" type="date" value={record.required_by_date || ""} placeholder="Required by date (optional)" />
-              <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="isEmergency" checked={record.is_emergency === 1} /> Emergency</label>
-              <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-            </form>
-          ))}
-        </div>
-        <p id="jobs-no-results" class="hidden py-4 text-sm text-kharon-grey">No jobs match your filter.</p>
-      </article>
-      <nav class="flex items-center justify-between mt-6 pt-4 border-t border-kharon-border">
-        {page > 1 ? (
-          <a href={`?tab=jobs&page=${page - 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Previous</a>
-        ) : (
-          <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Previous</span>
-        )}
-        <span class="text-sm text-kharon-grey">Page {page} of {jobsTotalPages}</span>
-        {page < jobsTotalPages ? (
-          <a href={`?tab=jobs&page=${page + 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Next</a>
-        ) : (
-          <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Next</span>
-        )}
-      </nav>
-
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Create job</h2>
-        <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/jobs">
-          <input type="hidden" name="action" value="create" />
-          <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId" required>
-            <option value="">Select system</option>
-            {systems.map((system) => <option value={system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
-          </select>
-          <select class="rounded-md border border-kharon-border px-4 py-3" name="assignedTechnicianId">
-            <option value="">Unassigned</option>
-            {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
-          </select>
-          <input class="rounded-md border border-kharon-border px-4 py-3" name="scheduledDate" type="date" value={today} required />
-          <select class="rounded-md border border-kharon-border px-4 py-3" name="status">
-            <option value="Scheduled">Scheduled</option>
-            <option value="In Progress">In Progress</option>
-          </select>
-          <input class="rounded-md border border-kharon-border px-4 py-3" name="jobType" value="Maintenance" required />
-          <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="siteNotes" placeholder="Site notes"></textarea>
-          <select class="rounded-md border border-kharon-border px-4 py-3" name="priority">
-            <option value="Normal" selected>Normal priority</option>
-            <option value="High">High priority</option>
-            <option value="Critical">Critical priority</option>
-            <option value="Low">Low priority</option>
-          </select>
-          <input class="rounded-md border border-kharon-border px-4 py-3" name="requiredByDate" type="date" placeholder="Required by date (optional)" />
-          <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="isEmergency" /> Emergency / after-hours</label>
-          <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create job</button>
-          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-        </form>
-      </article>
-    </div>
-
-    <!-- ─── Users panel ────────────────────────────────────────────── -->
-    <div id="ops-panel-users" class="ops-panel mx-auto grid max-w-7xl gap-8">
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <div class="sticky top-0 z-10 mb-4 bg-white flex flex-wrap items-center justify-between gap-3">
-          <h2 class="text-xl font-bold">Users <span class="ml-2 text-sm font-normal text-kharon-grey">({users.length})</span></h2>
-          <div class="flex flex-wrap gap-3">
-            <input
-              id="users-search"
-              type="search"
-              class="rounded-md border border-kharon-border px-3 py-2 text-sm"
-              placeholder="Search name or email…"
-              size="24"
-            />
-            <select id="users-role-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
-              <option value="">All roles</option>
-              <option value="tech">Technician</option>
-              <option value="admin">Admin</option>
-              <option value="client">Client</option>
-              <option value="finance">Finance</option>
-            </select>
-          </div>
-        </div>
-        <div id="users-list" class="grid gap-4">
-          {users.map((record) => (
-            <form
-              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6"
-              data-endpoint="/portal/api/admin/users"
-              data-search={`${record.name} ${record.email} ${record.role}`}
-              data-role={record.role}
-            >
-              <input type="hidden" name="action" value="update" />
-              <input type="hidden" name="id" value={record.id} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="name" value={record.name} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" value={record.email} disabled />
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="role">
-                {["tech", "admin", "client", "finance"].map((role) => <option value={role} selected={record.role === role}>{role}</option>)}
-              </select>
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
-                <option value="">No site</option>
-                {sites.map((site) => <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>)}
-              </select>
-              <div class="grid gap-2 text-sm">
-                <label><input type="checkbox" name="isActive" checked={Boolean(record.is_active)} /> Active</label>
-                <label><input type="checkbox" name="forcePasswordChange" checked={Boolean(record.force_password_change)} /> Rotate password</label>
-                {["admin", "finance"].includes(record.role) && (
-                  <label><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
-                )}
-                {record.mfa_enabled && <span class="text-xs font-bold uppercase text-emerald-700">MFA enabled</span>}
-              </div>
-              <div class="grid gap-2">
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="password" type="password" placeholder="Optional reset password" />
-                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                <button class="generate-reset-link rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" type="button" data-user-id={record.id}>
-                  Issue reset link
-                </button>
-                {record.mfa_enabled && (
-                  <button class="reset-mfa rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900" type="button" data-user-id={record.id}>
-                    Reset MFA
-                  </button>
-                )}
-              </div>
-              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
-            </form>
-          ))}
-        </div>
-        <p id="users-no-results" class="hidden py-4 text-sm text-kharon-grey">No users match your filter.</p>
-      </article>
-
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Create user</h2>
-        <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/users">
-          <input type="hidden" name="action" value="create" />
-          <input class="rounded-md border border-kharon-border px-4 py-3" name="name" placeholder="Full name" required />
-          <input class="rounded-md border border-kharon-border px-4 py-3" name="email" type="email" placeholder="email@domain.co.za" required />
-          <select class="rounded-md border border-kharon-border px-4 py-3" name="role" required>
-            <option value="tech">Technician</option>
-            <option value="admin">Admin</option>
-            <option value="client">Client</option>
-            <option value="finance">Finance</option>
-          </select>
-          <select class="rounded-md border border-kharon-border px-4 py-3" name="siteId">
-            <option value="">No site mapping</option>
-            {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
-          </select>
-          <input class="rounded-md border border-kharon-border px-4 py-3" name="password" type="password" minlength="14" placeholder="Temporary password" required />
-          <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="forcePasswordChange" checked /> Force password change</label>
-          <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="mfaRequired" /> Require MFA for admin/finance roles</label>
-          <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create user</button>
-          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-        </form>
-      </article>
-    </div>
-
-    <!-- ─── Sites & Systems panel ──────────────────────────────────── -->
-    <div id="ops-panel-sites" class="ops-panel mx-auto grid max-w-7xl gap-8">
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <div class="sticky top-0 z-10 mb-4 bg-white flex flex-wrap items-center justify-between gap-3">
-          <h2 class="text-xl font-bold">Sites <span class="ml-2 text-sm font-normal text-kharon-grey">({sites.length})</span></h2>
-          <input
-            id="sites-search"
-            type="search"
-            class="rounded-md border border-kharon-border px-3 py-2 text-sm"
-            placeholder="Search company…"
-            size="24"
-          />
-        </div>
-        <div id="sites-list" class="grid gap-4">
-          {sites.map((record) => (
-            <form
-              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6"
-              data-endpoint="/portal/api/admin/sites"
-              data-search={`${record.owner_company_name} ${record.site_contact_person || ""} ${record.site_contact_email || ""}`}
-            >
-              <input type="hidden" name="action" value="update" />
-              <input type="hidden" name="id" value={record.id} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="ownerCompanyName" value={record.owner_company_name} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPerson" value={record.site_contact_person} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="siteContactPhone" value={record.site_contact_phone || ""} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="billingEmails" value={record.billing_emails} />
-              <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-              <textarea class="min-h-20 rounded-md border border-kharon-border px-3 py-2 lg:col-span-6" name="physicalAddress">{record.physical_address}</textarea>
-              <button type="button" class="link-to-section text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-6" data-target-search="systems-search" data-target-value={record.owner_company_name}>-> Systems for {record.owner_company_name}</button>
-              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
-            </form>
-          ))}
-        </div>
-        <p id="sites-no-results" class="hidden py-4 text-sm text-kharon-grey">No sites match your search.</p>
-      </article>
-
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <div class="sticky top-0 z-10 mb-4 bg-white flex flex-wrap items-center justify-between gap-3">
-          <h2 class="text-xl font-bold">Systems <span class="ml-2 text-sm font-normal text-kharon-grey">({systems.length})</span></h2>
-          <div class="flex flex-wrap gap-3">
-            <input
-              id="systems-search"
-              type="search"
-              class="rounded-md border border-kharon-border px-3 py-2 text-sm"
-              placeholder="Search site or area…"
-              size="24"
-            />
-            <select id="systems-type-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
-              <option value="">All types</option>
-              <option value="Gas Suppression">Gas Suppression</option>
-              <option value="Fire Detection">Fire Detection</option>
-            </select>
-          </div>
-        </div>
-        <div id="systems-list" class="grid gap-4">
-          {systems.map((record) => (
-            <form
-              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
-              data-endpoint="/portal/api/admin/systems"
-              data-search={`${record.owner_company_name} ${record.coverage_area} ${record.manufacturer || ""} ${record.model_reference || ""}`}
-              data-systype={record.system_type}
-            >
-              <input type="hidden" name="action" value="update" />
-              <input type="hidden" name="id" value={record.id} />
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
-                {sites.map((site) => <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>)}
-              </select>
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="systemType">
-                {["Gas Suppression", "Fire Detection"].map((type) => <option value={type} selected={record.system_type === type}>{type}</option>)}
-              </select>
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="coverageArea" value={record.coverage_area} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="manufacturer" value={record.manufacturer || ""} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="modelReference" value={record.model_reference || ""} />
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="nextDueDate" type="date" value={record.next_due_date} />
-              <div class="flex items-center gap-2">
-                <label class="text-xs font-semibold whitespace-nowrap">Interval (mo.)</label>
-                <input class="w-16 rounded-md border border-kharon-border px-2 py-2 text-sm" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} />
-              </div>
-              <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-              {record.next_due_date && record.next_due_date < today && (
-                <p class="rounded border border-red-300 bg-red-50 px-3 py-2 text-xs font-bold uppercase text-red-900 lg:col-span-7">
-                  Warning: Service overdue  -  due {record.next_due_date}. Update after the next completed visit.
-                </p>
-              )}
-              {record.next_due_date && record.next_due_date >= today && record.next_due_date <= soonDate && (
-                <p class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold uppercase text-amber-900 lg:col-span-7">
-                  Service due {record.next_due_date}  -  within 30 days.
-                </p>
-              )}
-              <button type="button" class="link-to-tab text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-7" data-target-tab="jobs" data-target-search="jobs-search" data-target-value={`${record.owner_company_name} ${record.coverage_area}`}>-> Jobs for {record.coverage_area}</button>
-              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-            </form>
-          ))}
-        </div>
-        <p id="systems-no-results" class="hidden py-4 text-sm text-kharon-grey">No systems match your filter.</p>
-      </article>
-
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <div class="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p class="text-xs font-bold uppercase text-kharon-purple">Client account access</p>
-            <h2 class="mt-2 text-xl font-bold">Multi-site record mapping</h2>
-            <p class="mt-2 max-w-3xl text-sm leading-6 text-kharon-muted">
-              Grant additional client site access without changing the user's primary `site_id`. Existing single-site client mapping remains supported.
-            </p>
-          </div>
-          <a class="rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" href="/portal/client/quotes">
-            Client quote view
-          </a>
-        </div>
-
-        <form class="client-site-access-form mt-5 grid gap-3 lg:grid-cols-3" data-endpoint="/portal/api/admin/client-site-access">
-          <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="userId" required>
-            <option value="">Select client user</option>
-            {clientUsers.map((client) => <option value={client.id}>{client.name} / {client.email}</option>)}
-          </select>
-          <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
-            <option value="">Select site</option>
-            {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
-          </select>
-          <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Grant access</button>
-          <input type="hidden" name="action" value="grant" />
-          <p class="client-site-access-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-3"></p>
-        </form>
-
-        <div class="mt-5 grid gap-3">
-          {clientSiteAccess.length === 0 && <p class="text-kharon-grey">No additional client site access mappings have been granted.</p>}
-          {clientSiteAccess.map((mapping) => (
-            <form class="client-site-access-form flex flex-wrap items-center justify-between gap-3 border border-kharon-border bg-kharon-light p-4" data-endpoint="/portal/api/admin/client-site-access">
-              <div>
-                <p class="font-semibold">{mapping.user_name} / {mapping.owner_company_name}</p>
-                <p class="text-sm text-kharon-grey">{mapping.user_email} / granted {mapping.granted_at}</p>
-              </div>
-              <input type="hidden" name="action" value="revoke" />
-              <input type="hidden" name="userId" value={mapping.user_id} />
-              <input type="hidden" name="siteId" value={mapping.site_id} />
-              <button class="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900">Revoke</button>
-              <p class="client-site-access-result hidden w-full rounded-md border px-4 py-3 text-sm font-semibold"></p>
-            </form>
-          ))}
-        </div>
-      </article>
-
-      <div class="grid gap-6 xl:grid-cols-2">
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <h2 class="text-xl font-bold">Create site</h2>
-          <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/sites">
-            <input type="hidden" name="action" value="create" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="ownerCompanyName" placeholder="Owner company" required />
-            <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="physicalAddress" placeholder="Physical address" required></textarea>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactPerson" placeholder="Site contact person" required />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactEmail" type="email" placeholder="site.contact@example.com" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactPhone" placeholder="Site phone" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="billingEmails" placeholder="billing@example.com" required />
-            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create site</button>
-            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-          </form>
-        </article>
-
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <h2 class="text-xl font-bold">Create system</h2>
-          <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/systems">
-            <input type="hidden" name="action" value="create" />
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
-              <option value="">Select site</option>
-              {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
-            </select>
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="systemType" required>
-              <option value="Gas Suppression">Gas Suppression</option>
-              <option value="Fire Detection">Fire Detection</option>
-            </select>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="coverageArea" placeholder="Server Room 01" required />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="manufacturer" placeholder="Manufacturer" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="modelReference" placeholder="Model/reference" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="nextDueDate" type="date" value={today} required />
-            <div class="flex items-center gap-3">
-              <label class="whitespace-nowrap text-sm font-semibold">Service interval (months)</label>
-              <input class="w-24 rounded-md border border-kharon-border px-3 py-2" name="serviceIntervalMonths" type="number" min="1" max="36" value="6" required />
-            </div>
-            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create system</button>
-            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-          </form>
-        </article>
-      </div>
-    </div>
-
-    <!-- ─── Data panel ──────────────────────────────────────────────── -->
-    <div id="ops-panel-data" class="ops-panel mx-auto grid max-w-7xl gap-8">
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <div class="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p class="text-xs font-bold uppercase text-kharon-purple">Bulk administration</p>
-            <h2 class="mt-2 text-xl font-bold">CSV import and export</h2>
-            <p class="mt-2 max-w-3xl text-sm leading-6 text-kharon-muted">
-              Export operational records for review, then import controlled site or system updates using the exact CSV headers shown below.
-              User export is read-only; user bulk import remains blocked until password and reset-link delivery controls are approved.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=users">Export users</a>
-            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=sites">Export sites</a>
-            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=systems">Export systems</a>
-          </div>
-        </div>
-
-        <div class="mt-5 grid gap-5 lg:grid-cols-2">
-          <form class="import-form grid gap-3" data-type="sites">
-            <h3 class="font-bold">Import sites</h3>
-            <p class="portal-scroll-x rounded-md bg-kharon-light px-3 py-2 font-mono text-xs whitespace-nowrap">id,owner_company_name,physical_address,site_contact_person,site_contact_email,site_contact_phone,billing_emails</p>
-            <textarea class="portal-field min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste sites CSV here"></textarea>
-            <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Import sites</button>
-            <p class="import-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-          </form>
-
-          <form class="import-form grid gap-3" data-type="systems">
-            <h3 class="font-bold">Import systems</h3>
-            <p class="portal-scroll-x rounded-md bg-kharon-light px-3 py-2 font-mono text-xs whitespace-nowrap">id,site_id,system_type,coverage_area,manufacturer,model_reference,next_due_date</p>
-            <textarea class="portal-field min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste systems CSV here"></textarea>
-            <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Import systems</button>
-            <p class="import-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-          </form>
-        </div>
-      </article>
-    </div>
-
-    <!-- ─── Defects panel ──────────────────────────────────────────── -->
-    <div id="ops-panel-defects" class="ops-panel mx-auto grid max-w-7xl gap-8">
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <div class="sticky top-0 z-10 mb-4 bg-white flex flex-wrap items-center justify-between gap-3">
-          <h2 class="text-xl font-bold">Defects <span class="ml-2 text-sm font-normal text-kharon-grey">({defects.length})</span></h2>
-          <div class="flex flex-wrap gap-3">
-            <input
-              id="defects-search"
-              type="search"
-              class="rounded-md border border-kharon-border px-3 py-2 text-sm"
-              placeholder="Search site, area, clause…"
-              size="24"
-            />
-            <select id="defects-severity-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
-              <option value="">All severities</option>
-              <option value="Critical">Critical</option>
-              <option value="Major">Major</option>
-              <option value="Minor">Minor</option>
-              <option value="Observation">Observation</option>
-            </select>
-            <select id="defects-status-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
-              <option value="">All statuses</option>
-              <option value="Open">Open</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Resolved">Resolved</option>
-              <option value="Closed">Closed</option>
-            </select>
-          </div>
-        </div>
-        <div id="defects-list" class="grid gap-4">
-          {defects.map((item) => (
-            <form
-              class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
-              data-endpoint="/portal/api/admin/defects"
-              data-search={`${item.owner_company_name} ${item.coverage_area || ""} ${item.sans_clause_ref || ""} ${item.description || ""}`}
-              data-severity={item.severity}
-              data-status={item.status}
-            >
-              <input type="hidden" name="action" value="update" />
-              <input type="hidden" name="id" value={item.id} />
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="severity">
-                {["Critical", "Major", "Minor", "Observation"].map((s) => <option value={s} selected={item.severity === s}>{s}</option>)}
-              </select>
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="sansClauseRef" list="sans-clauses" value={item.sans_clause_ref || ""} placeholder="SANS clause" />
-              <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
-                {["Open", "In Progress", "Resolved", "Closed"].map((s) => <option value={s} selected={item.status === s}>{s}</option>)}
-              </select>
-              <label class="grid gap-1 text-sm">
-                <span class="text-xs text-kharon-grey">Blocking</span>
-                <select name="certificateBlocking">
-                  <option value="1" selected={Boolean(item.certificate_blocking)}>Yes</option>
-                  <option value="0" selected={!Boolean(item.certificate_blocking)}>No</option>
-                </select>
-              </label>
-              <div class="lg:col-span-2">
-                <textarea class="min-h-16 w-full rounded-md border border-kharon-border px-3 py-2 text-sm" name="description">{item.description}</textarea>
-              </div>
-              <div class="flex items-center gap-2 text-xs">
-                <span class={`rounded px-2 py-1 font-bold ${
-                  item.severity === "Critical" ? "bg-kharon-red text-white" :
-                  item.severity === "Major" ? "bg-amber-200 text-amber-800" :
-                  item.severity === "Minor" ? "bg-blue-100 text-blue-800" :
-                  "bg-kharon-grey/10 text-kharon-grey"
-                }`}>{item.severity}</span>
-                {item.certificate_blocking && <span class="rounded border border-amber-300 bg-amber-50 px-2 py-1 font-bold text-amber-700">Blocks cert</span>}
-              </div>
-              <div class="flex flex-wrap gap-2">
-                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                {item.status !== "Resolved" && <button type="button" class="resolve-defect rounded-md border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-700" data-id={item.id}>Resolve</button>}
-                {item.status !== "Closed" && <button type="button" class="close-defect rounded-md border border-kharon-grey px-4 py-2 text-sm font-semibold text-kharon-grey" data-id={item.id}>Close</button>}
-                {["Open", "In Progress"].includes(item.status) && <button type="button" class="quote-defect rounded-md border border-amber-500 px-4 py-2 text-sm font-semibold text-amber-700" data-id={item.id}>Quote Required</button>}
-              </div>
-              <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-            </form>
-          ))}
-        </div>
-        <p id="defects-no-results" class="hidden py-4 text-sm text-kharon-grey">No defects match your filter.</p>
-      </article>
-
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Create defect</h2>
-        <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/defects">
-          <input type="hidden" name="action" value="create" />
-          <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId" required>
-            <option value="">Select system</option>
-            {systemsForForms.map((s) => <option value={s.id}>{s.owner_company_name} / {s.coverage_area}</option>)}
-          </select>
-          <input class="rounded-md border border-kharon-border px-4 py-3" name="jobId" placeholder="Job ID (optional)" />
-          <div class="grid gap-3 sm:grid-cols-3">
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="severity" required>
-              <option value="Critical">Critical</option>
-              <option value="Major">Major</option>
-              <option value="Minor" selected>Minor</option>
-              <option value="Observation">Observation</option>
-            </select>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="sansClauseRef" list="sans-clauses" placeholder="SANS clause (e.g. SANS 10139-8.3)" />
-            <label class="flex items-center gap-3 rounded-md border border-kharon-border px-4 py-3">
-              <input type="checkbox" name="certificateBlocking" value="1" />
-              <span class="text-sm font-semibold">Certificate blocking</span>
-            </label>
-          </div>
-          <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="description" placeholder="Defect description (5–2000 characters)" required></textarea>
-          <button class="rounded-md bg-kharon-red px-5 py-3 font-semibold text-white">Create defect</button>
-          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-        </form>
-      </article>
-    </div>
-
-    <!-- ─── Certificates panel ─────────────────────────────────────── -->
-    <div id="ops-panel-certificates" class="ops-panel mx-auto grid max-w-7xl gap-8">
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <div class="sticky top-0 z-10 mb-4 bg-white flex flex-wrap items-center justify-between gap-3">
-          <h2 class="text-xl font-bold">Certificates <span class="ml-2 text-sm font-normal text-kharon-grey">({certificates.length})</span></h2>
-          <div class="flex flex-wrap gap-3">
-            <input
-              id="certificates-search"
-              type="search"
-              class="rounded-md border border-kharon-border px-3 py-2 text-sm"
-              placeholder="Search site, area, type…"
-              size="24"
-            />
-            <select id="certificates-status-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
-              <option value="">All statuses</option>
-              <option value="Valid">Valid</option>
-              <option value="Expired">Expired</option>
-              <option value="Revoked">Revoked</option>
-              <option value="Blocked">Blocked</option>
-            </select>
-          </div>
-        </div>
-        <div id="certificates-list" class="grid gap-4">
-          {certificates.map((item) => (
-            <article
-              class="grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6"
-              data-search={`${item.owner_company_name} ${item.coverage_area || ""} ${item.certificate_type || ""}`}
-              data-status={item.status}
-            >
-              <div>
-                <p class="font-semibold">{item.owner_company_name}</p>
-                <p class="text-sm text-kharon-grey">{item.system_type} / {item.coverage_area}</p>
-              </div>
-              <div>
-                <p class="text-sm font-semibold">{item.certificate_type}</p>
-                <p class="text-xs text-kharon-grey">Issued {item.issued_date}</p>
-              </div>
-              <div>
-                {item.expiry_date ? (
-                  <>
-                    <p class="text-sm font-semibold">Expires {item.expiry_date}</p>
-                    {item.expiry_date < today && <p class="text-xs font-bold text-kharon-red">Expired</p>}
-                  </>
-                ) : (
-                  <p class="text-sm text-kharon-grey">No expiry date</p>
-                )}
-              </div>
-              <div class="flex items-center gap-2">
-                <span class={`rounded px-2 py-1 text-xs font-bold ${
-                  item.status === "Valid" ? "bg-emerald-100 text-emerald-800" :
-                  item.status === "Blocked" ? "bg-amber-100 text-amber-800" :
-                  item.status === "Revoked" ? "bg-red-100 text-red-800" :
-                  "bg-kharon-grey/20 text-kharon-grey"
-                }`}>{item.status}</span>
-                {item.blocking_severity && (
-                  <span class="rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">
-                    Blocked: {item.blocking_severity}
-                  </span>
-                )}
-              </div>
-              <div class="flex flex-wrap gap-2">
-                {item.status === "Valid" && <button type="button" class="revoke-cert rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-900" data-id={item.id}>Revoke</button>}
-                {item.status === "Valid" && <button type="button" class="expire-cert rounded-md border border-kharon-grey px-3 py-2 text-xs font-semibold text-kharon-grey" data-id={item.id}>Expire</button>}
-              </div>
-              <p class="text-xs text-kharon-grey lg:col-span-6">{item.id}</p>
-            </article>
-          ))}
-        </div>
-        <p id="certificates-no-results" class="hidden py-4 text-sm text-kharon-grey">No certificates match your filter.</p>
-      </article>
-
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold">Create certificate</h2>
-        <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/certificates">
-          <input type="hidden" name="action" value="create" />
-          <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId" required>
-            <option value="">Select system</option>
-            {systemsForForms.map((s) => <option value={s.id}>{s.owner_company_name} / {s.coverage_area}</option>)}
-          </select>
-          <input class="rounded-md border border-kharon-border px-4 py-3" name="jobId" placeholder="Job ID (optional)" />
-          <div class="grid gap-3 sm:grid-cols-3">
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="certificateType" required>
-              <option value="Fire Detection">Fire Detection</option>
-              <option value="Gas Suppression">Gas Suppression</option>
-              <option value="Emergency Lighting">Emergency Lighting</option>
-              <option value="Evacuation">Evacuation</option>
-              <option value="Combined">Combined</option>
-            </select>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="issuedDate" type="date" value={today} required />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="expiryDate" type="date" placeholder="Expiry date (optional)" />
-          </div>
-          <select class="rounded-md border border-kharon-border px-4 py-3" name="status">
-            <option value="Valid">Valid</option>
-            <option value="Blocked">Blocked</option>
-          </select>
-          <p class="text-xs text-kharon-grey">Creating a Valid certificate will be blocked if there are open certificate-blocking defects on the selected system.</p>
-          <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Create certificate</button>
-          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-        </form>
-      </article>
-    </div>
+    <EnquiriesPanel   contactEnquiries={contactEnquiries} page={page} totalPages={contactsTotalPages} />
+    <JobsPanel        jobs={jobs} systems={systems} technicians={technicians} page={page} totalPages={jobsTotalPages} today={today} />
+    <UsersPanel       users={users} sites={sites} />
+    <SiteSystemsPanel sites={sites} systems={systems} clientUsers={clientUsers} clientSiteAccess={clientSiteAccess} today={today} soonDate={soonDate} />
+    <DataPanel />
+    <DefectsPanel     defects={defects} systems={systems} />
+    <CertificatesPanel certificates={certificates} systems={systems} today={today} />
   </section>
 
+  <!-- Consolidated typed script: tab switching, filters, form handlers, quick actions -->
   <script>
-    // ─── Tab switching ────────────────────────────────────────────────
-    const VALID_TABS = ["enquiries", "jobs", "users", "sites", "data", "defects", "certificates"];
-    const CLS_ACTIVE = "ops-tab rounded-md px-4 py-2 text-sm font-semibold bg-kharon-purple text-white";
+    import { portalPost, extractFormPayload, setResult, bindAdminForms } from "../../../lib/client/portalApi.ts";
+
+    // ── Tab switching ─────────────────────────────────────────────────────────
+    const VALID_TABS = ["enquiries", "jobs", "users", "sites", "data", "defects", "certificates"] as const;
+    type TabId = typeof VALID_TABS[number];
+    const CLS_ACTIVE   = "ops-tab rounded-md px-4 py-2 text-sm font-semibold bg-kharon-purple text-white";
     const CLS_INACTIVE = "ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey";
 
     function switchTab(tabId: string) {
-      const id = VALID_TABS.includes(tabId) ? tabId : "enquiries";
+      const id: TabId = (VALID_TABS as readonly string[]).includes(tabId) ? (tabId as TabId) : "enquiries";
       for (const panel of document.querySelectorAll<HTMLElement>(".ops-panel")) {
         panel.style.display = panel.id === `ops-panel-${id}` ? "grid" : "none";
       }
-      for (const btn of document.querySelectorAll<HTMLElement>(".ops-tab")) {
-        btn.className = (btn as HTMLButtonElement).dataset.tab === id ? CLS_ACTIVE : CLS_INACTIVE;
+      for (const btn of document.querySelectorAll<HTMLButtonElement>(".ops-tab")) {
+        btn.className = btn.dataset.tab === id ? CLS_ACTIVE : CLS_INACTIVE;
       }
       const url = new URL(location.href);
-      url.searchParams.set('tab', id);
-      url.searchParams.delete('page');
+      url.searchParams.set("tab", id);
+      url.searchParams.delete("page");
       url.hash = id;
       history.replaceState(null, "", url.pathname + url.search + url.hash);
     }
 
-    const urlTab = new URLSearchParams(location.search).get('tab');
+    const urlTab  = new URLSearchParams(location.search).get("tab");
     const hashTab = location.hash.slice(1);
-    const initialTab = (urlTab && VALID_TABS.includes(urlTab)) ? urlTab :
-                       (hashTab && VALID_TABS.includes(hashTab)) ? hashTab : "enquiries";
+    const initialTab = urlTab && (VALID_TABS as readonly string[]).includes(urlTab) ? urlTab :
+                       hashTab && (VALID_TABS as readonly string[]).includes(hashTab) ? hashTab : "enquiries";
     switchTab(initialTab);
 
     for (const btn of document.querySelectorAll<HTMLButtonElement>(".ops-tab")) {
       btn.addEventListener("click", () => switchTab(btn.dataset.tab ?? "enquiries"));
     }
 
-    // ─── Panel search / filter ────────────────────────────────────────
-    interface FilterSelect {
-      id: string;
-      attr: string;
-    }
+    // ── Panel search / filter ─────────────────────────────────────────────────
+    interface FilterSelect { id: string; attr: string; }
 
     function initFilter(opts: {
       listId: string;
@@ -903,167 +235,179 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
       noResultsId: string;
       filterSelects?: FilterSelect[];
     }) {
-      const list = document.getElementById(opts.listId);
-      const search = document.getElementById(opts.searchId) as HTMLInputElement | null;
+      const list      = document.getElementById(opts.listId);
+      const search    = document.getElementById(opts.searchId) as HTMLInputElement | null;
       const noResults = document.getElementById(opts.noResultsId);
       if (!list || !search) return;
-
       const selects = (opts.filterSelects ?? []).map((f) => ({
         el: document.getElementById(f.id) as HTMLSelectElement | null,
         attr: f.attr,
       }));
-
       function apply() {
-        const q = search.value.toLowerCase().trim();
+        const q    = search!.value.toLowerCase().trim();
         const rows = list!.querySelectorAll<HTMLElement>("[data-search]");
         let visible = 0;
         for (const row of rows) {
           const text = (row.dataset.search ?? "").toLowerCase();
-          const matchSearch = !q || text.includes(q);
-          const matchSelects = selects.every((f) => {
-            if (!f.el?.value) return true;
-            return (row.dataset[f.attr] ?? "") === f.el.value;
-          });
+          const matchSearch   = !q || text.includes(q);
+          const matchSelects  = selects.every((f) => !f.el?.value || (row.dataset[f.attr] ?? "") === f.el.value);
           const show = matchSearch && matchSelects;
           row.style.display = show ? "" : "none";
           if (show) visible++;
         }
         if (noResults) noResults.style.display = visible === 0 ? "" : "none";
       }
-
       search.addEventListener("input", apply);
-      for (const f of selects) {
-        f.el?.addEventListener("change", apply);
-      }
+      for (const f of selects) f.el?.addEventListener("change", apply);
     }
 
-    initFilter({
-      listId: "jobs-list",
-      searchId: "jobs-search",
-      noResultsId: "jobs-no-results",
-      filterSelects: [{ id: "jobs-status-filter", attr: "status" }],
-    });
+    initFilter({ listId: "jobs-list",         searchId: "jobs-search",         noResultsId: "jobs-no-results",         filterSelects: [{ id: "jobs-status-filter",         attr: "status"   }] });
+    initFilter({ listId: "users-list",        searchId: "users-search",        noResultsId: "users-no-results",        filterSelects: [{ id: "users-role-filter",          attr: "role"     }] });
+    initFilter({ listId: "sites-list",        searchId: "sites-search",        noResultsId: "sites-no-results"                                                                                  });
+    initFilter({ listId: "systems-list",      searchId: "systems-search",      noResultsId: "systems-no-results",      filterSelects: [{ id: "systems-type-filter",        attr: "systype"  }] });
+    initFilter({ listId: "defects-list",      searchId: "defects-search",      noResultsId: "defects-no-results",      filterSelects: [{ id: "defects-severity-filter",    attr: "severity" }, { id: "defects-status-filter", attr: "status" }] });
+    initFilter({ listId: "certificates-list", searchId: "certificates-search", noResultsId: "certificates-no-results", filterSelects: [{ id: "certificates-status-filter", attr: "status"   }] });
 
-    initFilter({
-      listId: "users-list",
-      searchId: "users-search",
-      noResultsId: "users-no-results",
-      filterSelects: [{ id: "users-role-filter", attr: "role" }],
-    });
+    // ── Admin CRUD forms (generic) ────────────────────────────────────────────
+    bindAdminForms();
 
-    initFilter({
-      listId: "sites-list",
-      searchId: "sites-search",
-      noResultsId: "sites-no-results",
-    });
-
-    initFilter({
-      listId: "systems-list",
-      searchId: "systems-search",
-      noResultsId: "systems-no-results",
-      filterSelects: [{ id: "systems-type-filter", attr: "systype" }],
-    });
-
-    initFilter({
-      listId: "defects-list",
-      searchId: "defects-search",
-      noResultsId: "defects-no-results",
-      filterSelects: [
-        { id: "defects-severity-filter", attr: "severity" },
-        { id: "defects-status-filter", attr: "status" },
-      ],
-    });
-
-    initFilter({
-      listId: "certificates-list",
-      searchId: "certificates-search",
-      noResultsId: "certificates-no-results",
-      filterSelects: [{ id: "certificates-status-filter", attr: "status" }],
-    });
-
-    // ─── Defect quick actions ────────────────────────────────────────
-    async function defectAction(action, id) {
-      const response = await window.kharonPortalFetch("/portal/api/admin/defects", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action, id })
+    // ── Client site access forms ──────────────────────────────────────────────
+    for (const form of document.querySelectorAll<HTMLFormElement>(".client-site-access-form")) {
+      form.addEventListener("submit", async (event: Event) => {
+        event.preventDefault();
+        const result = form.querySelector<HTMLElement>(".client-site-access-result");
+        if (result) result.classList.add("hidden");
+        const { response, body } = await portalPost(form.dataset.endpoint ?? "", extractFormPayload(form));
+        if (!response.ok || !body.ok) {
+          setResult(result, body.message ?? "Client site access update failed.", "error");
+          return;
+        }
+        setResult(result, body.action === "grant" ? "Client site access granted." : "Client site access revoked.", "success");
+        setTimeout(() => window.location.reload(), 700);
       });
-      const body = await response.json();
-      if (!response.ok || !body.ok) throw new Error(body.message || "Action failed.");
+    }
+
+    // ── CSV import forms ──────────────────────────────────────────────────────
+    for (const form of document.querySelectorAll<HTMLFormElement>(".import-form")) {
+      form.addEventListener("submit", async (event: Event) => {
+        event.preventDefault();
+        const result = form.querySelector<HTMLElement>(".import-result");
+        if (result) result.classList.add("hidden");
+        const csv = (form.querySelector<HTMLTextAreaElement>("[name='csv']")?.value ?? "").trim();
+        const { response, body } = await portalPost("/portal/api/admin/import", { type: form.dataset.type ?? "", csv });
+        if (!response.ok) {
+          setResult(result, body.message ?? "Import failed.", "error");
+          if (result) result.classList.remove("hidden");
+          return;
+        }
+        const failures = (body.failures as unknown[])?.length ?? 0;
+        if (failures) {
+          const list = document.createElement("ul");
+          list.className = "mt-2 list-disc pl-5 text-xs font-normal";
+          for (const f of (body.failures as { rowNumber?: number; message?: string }[])) {
+            const li = document.createElement("li");
+            li.textContent = `Row ${f.rowNumber ?? "?"}: ${f.message ?? "Unknown error"}`;
+            list.append(li);
+          }
+          setResult(result, `Import completed with ${failures} failed row(s):`, "warning");
+          result?.append(list);
+        } else {
+          setResult(result, `Imported ${(body.results as unknown[])?.length ?? 0} row(s) successfully.`, "success");
+        }
+        if (result) result.classList.remove("hidden");
+      });
+    }
+
+    // ── Issue reset link ──────────────────────────────────────────────────────
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".generate-reset-link")) {
+      btn.addEventListener("click", async () => {
+        const form   = btn.closest<HTMLFormElement>("form");
+        const result = form?.querySelector<HTMLElement>(".admin-result");
+        if (result) result.classList.add("hidden");
+        const { response, body } = await portalPost("/portal/api/admin/users", { action: "reset-link", id: btn.dataset.userId });
+        if (!response.ok || !body.ok) {
+          setResult(result, body.message ?? "Reset link could not be issued.", "error", "lg:col-span-6");
+          return;
+        }
+        const resetUrl = String(body.resetUrl ?? "");
+        setResult(result, `Reset link issued — valid until ${body.expiresAt}. `, "success", "lg:col-span-6");
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.textContent = "Copy link";
+        copyBtn.className = "ml-1 inline-flex items-center rounded-md border border-emerald-600 px-2 py-0.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100";
+        copyBtn.addEventListener("click", async () => {
+          await navigator.clipboard.writeText(resetUrl).catch(() => null);
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => { copyBtn.textContent = "Copy link"; }, 2500);
+        });
+        result?.append(copyBtn);
+      });
+    }
+
+    // ── Reset MFA ─────────────────────────────────────────────────────────────
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".reset-mfa")) {
+      btn.addEventListener("click", async () => {
+        const form   = btn.closest<HTMLFormElement>("form");
+        const result = form?.querySelector<HTMLElement>(".admin-result");
+        if (result) result.classList.add("hidden");
+        const { response, body } = await portalPost("/portal/api/admin/users", { action: "reset-mfa", id: btn.dataset.userId });
+        if (!response.ok || !body.ok) {
+          setResult(result, body.message ?? "MFA could not be reset.", "error", "lg:col-span-6");
+          return;
+        }
+        setResult(result, "MFA reset. The user must enrol again if MFA is required.", "success", "lg:col-span-6");
+      });
+    }
+
+    // ── Defect quick actions ──────────────────────────────────────────────────
+    async function defectAction(action: string, id: string) {
+      const { response, body } = await portalPost("/portal/api/admin/defects", { action, id });
+      if (!response.ok || !body.ok) throw new Error((body.message as string) ?? "Action failed.");
       return body;
     }
 
-    for (const btn of document.querySelectorAll(".resolve-defect")) {
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".resolve-defect")) {
       btn.addEventListener("click", async () => {
-        try {
-          await defectAction("resolve", btn.dataset.id);
-          window.location.reload();
-        } catch (error) {
-          alert(error.message || "Could not resolve defect.");
-        }
+        try { await defectAction("resolve", btn.dataset.id ?? ""); window.location.reload(); }
+        catch (err) { alert((err as Error).message ?? "Could not resolve defect."); }
+      });
+    }
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".close-defect")) {
+      btn.addEventListener("click", async () => {
+        try { await defectAction("close", btn.dataset.id ?? ""); window.location.reload(); }
+        catch (err) { alert((err as Error).message ?? "Could not close defect."); }
+      });
+    }
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".quote-defect")) {
+      btn.addEventListener("click", async () => {
+        try { await defectAction("quoteRequired", btn.dataset.id ?? ""); window.location.reload(); }
+        catch (err) { alert((err as Error).message ?? "Could not set quote required."); }
       });
     }
 
-    for (const btn of document.querySelectorAll(".close-defect")) {
-      btn.addEventListener("click", async () => {
-        try {
-          await defectAction("close", btn.dataset.id);
-          window.location.reload();
-        } catch (error) {
-          alert(error.message || "Could not close defect.");
-        }
-      });
-    }
-
-    for (const btn of document.querySelectorAll(".quote-defect")) {
-      btn.addEventListener("click", async () => {
-        try {
-          await defectAction("quoteRequired", btn.dataset.id);
-          window.location.reload();
-        } catch (error) {
-          alert(error.message || "Could not set quote required.");
-        }
-      });
-    }
-
-    // ─── Certificate quick actions ──────────────────────────────────
-    async function certAction(action, id) {
-      const response = await window.kharonPortalFetch("/portal/api/admin/certificates", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action, id })
-      });
-      const body = await response.json();
-      if (!response.ok || !body.ok) throw new Error(body.message || "Action failed.");
+    // ── Certificate quick actions ─────────────────────────────────────────────
+    async function certAction(action: string, id: string) {
+      const { response, body } = await portalPost("/portal/api/admin/certificates", { action, id });
+      if (!response.ok || !body.ok) throw new Error((body.message as string) ?? "Action failed.");
       return body;
     }
 
-    for (const btn of document.querySelectorAll(".revoke-cert")) {
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".revoke-cert")) {
       btn.addEventListener("click", async () => {
         if (!window.confirm("Confirm revoking this certificate.")) return;
-        try {
-          await certAction("revoke", btn.dataset.id);
-          window.location.reload();
-        } catch (error) {
-          alert(error.message || "Could not revoke certificate.");
-        }
+        try { await certAction("revoke", btn.dataset.id ?? ""); window.location.reload(); }
+        catch (err) { alert((err as Error).message ?? "Could not revoke certificate."); }
       });
     }
-
-    for (const btn of document.querySelectorAll(".expire-cert")) {
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".expire-cert")) {
       btn.addEventListener("click", async () => {
         if (!window.confirm("Confirm expiring this certificate.")) return;
-        try {
-          await certAction("expire", btn.dataset.id);
-          window.location.reload();
-        } catch (error) {
-          alert(error.message || "Could not expire certificate.");
-        }
+        try { await certAction("expire", btn.dataset.id ?? ""); window.location.reload(); }
+        catch (err) { alert((err as Error).message ?? "Could not expire certificate."); }
       });
     }
 
-    // ─── Record relationship navigation ──────────────────────────────
-    // link-to-section: pre-fill a search input within the same panel and scroll to it
+    // ── Record relationship navigation ────────────────────────────────────────
     for (const btn of document.querySelectorAll<HTMLButtonElement>(".link-to-section")) {
       btn.addEventListener("click", () => {
         const searchEl = document.getElementById(btn.dataset.targetSearch ?? "") as HTMLInputElement | null;
@@ -1075,16 +419,13 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
       });
     }
 
-    // link-to-tab: switch to another tab, then pre-fill its search input
     for (const btn of document.querySelectorAll<HTMLButtonElement>(".link-to-tab")) {
       btn.addEventListener("click", () => {
-        const tab = btn.dataset.targetTab ?? "enquiries";
-        switchTab(tab);
+        switchTab(btn.dataset.targetTab ?? "enquiries");
         const searchEl = document.getElementById(btn.dataset.targetSearch ?? "") as HTMLInputElement | null;
         if (!searchEl) return;
         searchEl.value = btn.dataset.targetValue ?? "";
         searchEl.dispatchEvent(new Event("input"));
-        // Allow the tab panel to become visible before scrolling
         requestAnimationFrame(() => {
           searchEl.scrollIntoView({ behavior: "smooth", block: "center" });
           searchEl.focus();
@@ -1093,197 +434,16 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
     }
   </script>
 
-  <script is:inline>
-    function formPayload(form) {
-      const data = {};
-      for (const element of form.elements) {
-        if (!element.name || element.disabled) continue;
-        if (element.type === "checkbox") {
-          data[element.name] = element.checked ? "1" : "0";
-        } else {
-          data[element.name] = element.value;
-        }
-      }
-      return data;
-    }
-
-    for (const form of document.querySelectorAll(".admin-form")) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const result = form.querySelector(".admin-result");
-        result.classList.add("hidden");
-
-        const response = await window.kharonPortalFetch(form.dataset.endpoint, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(formPayload(form))
-        });
-        const body = await response.json();
-        if (!response.ok || !body.ok) {
-          result.textContent = body.message || "Operation failed.";
-          result.className = "admin-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
-          return;
-        }
-
-        // Build contextual success message
-        let successMsg = `Saved ${body.id || ""}`.trim();
-        if (body.certificatesBlocked > 0) {
-          successMsg = `Saved. ${body.certificatesBlocked} certificate(s) automatically blocked due to this defect.`;
-        } else if (body.certificatesRestored) {
-          successMsg = `Saved. Blocked certificates for this system have been restored to Valid (no remaining blocking defects).`;
-        } else if (body.status === "Resolved" || body.status === "Closed") {
-          successMsg = `Defect marked ${body.status}.`;
-        }
-        result.textContent = successMsg;
-        result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
-        const action = form.querySelector('[name="action"]')?.value || "";
-        if (action === "create") {
-          result.textContent = body.certificatesBlocked > 0
-            ? `Created. ${body.certificatesBlocked} certificate(s) automatically blocked. Refreshing...`
-            : "Saved. Refreshing related lists...";
-          setTimeout(() => window.location.reload(), 500);
-        }
-      });
-    }
-
-    for (const form of document.querySelectorAll(".client-site-access-form")) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const result = form.querySelector(".client-site-access-result");
-        result.classList.add("hidden");
-
-        const response = await window.kharonPortalFetch(form.dataset.endpoint, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(formPayload(form))
-        });
-        const body = await response.json().catch(() => ({ ok: false, message: "Client site access update failed." }));
-        if (!response.ok || !body.ok) {
-          result.textContent = body.message || "Client site access update failed.";
-          result.className = "client-site-access-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
-          return;
-        }
-
-        result.textContent = body.action === "grant" ? "Client site access granted." : "Client site access revoked.";
-        result.className = "client-site-access-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
-        setTimeout(() => window.location.reload(), 700);
-      });
-    }
-
-    for (const form of document.querySelectorAll(".import-form")) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const result = form.querySelector(".import-result");
-        result.classList.add("hidden");
-        const formData = new FormData(form);
-        const response = await window.kharonPortalFetch("/portal/api/admin/import", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ type: form.dataset.type, csv: formData.get("csv") })
-        });
-        const body = await response.json().catch(() => ({ ok: false, message: "Import failed." }));
-        if (!response.ok) {
-          result.textContent = body.message || "Import failed.";
-          result.className = "import-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
-          result.classList.remove("hidden");
-          return;
-        }
-        const failures = body.failures?.length || 0;
-        if (failures) {
-          const list = document.createElement("ul");
-          list.className = "mt-2 list-disc pl-5 text-xs font-normal";
-          for (const f of body.failures) {
-            const li = document.createElement("li");
-            li.textContent = `Row ${f.rowNumber ?? "?"}: ${f.message || "Unknown error"}`;
-            list.append(li);
-          }
-          result.textContent = `Import completed with ${failures} failed row(s):`;
-          result.className = "import-result rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900";
-          result.append(list);
-        } else {
-          result.textContent = `Imported ${body.results?.length || 0} row(s) successfully.`;
-          result.className = "import-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
-        }
-      });
-    }
-
-    for (const button of document.querySelectorAll(".generate-reset-link")) {
-      button.addEventListener("click", async () => {
-        const form = button.closest("form");
-        const result = form.querySelector(".admin-result");
-        result.classList.add("hidden");
-        const response = await window.kharonPortalFetch("/portal/api/admin/users", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ action: "reset-link", id: button.dataset.userId })
-        });
-        const body = await response.json().catch(() => ({ ok: false, message: "Reset link could not be issued." }));
-        if (!response.ok || !body.ok) {
-          result.textContent = body.message || "Reset link could not be issued.";
-          result.className = "admin-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900 lg:col-span-6";
-          return;
-        }
-        const resetUrl = String(body.resetUrl || "");
-        result.textContent = `Reset link issued  -  valid until ${body.expiresAt}. `;
-        result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 lg:col-span-6";
-        const copyBtn = document.createElement("button");
-        copyBtn.type = "button";
-        copyBtn.textContent = "Copy link";
-        copyBtn.className = "ml-1 inline-flex items-center rounded-md border border-emerald-600 px-2 py-0.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100";
-        copyBtn.addEventListener("click", async () => {
-          await navigator.clipboard.writeText(resetUrl).catch(() => null);
-          copyBtn.textContent = "Copied!";
-          setTimeout(() => { copyBtn.textContent = "Copy link"; }, 2500);
-        });
-        result.append(copyBtn);
-      });
-    }
-
-    for (const button of document.querySelectorAll(".reset-mfa")) {
-      button.addEventListener("click", async () => {
-        const form = button.closest("form");
-        const result = form.querySelector(".admin-result");
-        result.classList.add("hidden");
-        const response = await window.kharonPortalFetch("/portal/api/admin/users", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ action: "reset-mfa", id: button.dataset.userId })
-        });
-        const body = await response.json().catch(() => ({ ok: false, message: "MFA could not be reset." }));
-        if (!response.ok || !body.ok) {
-          result.textContent = body.message || "MFA could not be reset.";
-          result.className = "admin-result rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900 lg:col-span-6";
-          return;
-        }
-        result.textContent = "MFA reset. The user must enrol again if MFA is required.";
-        result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 lg:col-span-6";
-      });
-    }
-  </script>
-<datalist id="sans-clauses">
-  <!-- SANS 10139: Fire detection and alarm systems -->
-  <option value="SANS 10139" />
-  <option value="SANS 10139-4.1" />
-  <option value="SANS 10139-4.2" />
-  <option value="SANS 10139-4.3" />
-  <option value="SANS 10139-5.1" />
-  <option value="SANS 10139-5.2" />
-  <option value="SANS 10139-6.1" />
-  <option value="SANS 10139-6.2" />
-  <option value="SANS 10139-7.1" />
-  <option value="SANS 10139-7.2" />
-  <option value="SANS 10139-8.1" />
-  <option value="SANS 10139-8.3" />
-  <option value="SANS 10139-9.1" />
-  <option value="SANS 10139-10.1" />
-  <option value="SANS 10139-11.1" />
-  <option value="SANS 10139-11.2" />
-  <!-- SANS 14520: Gaseous fire-extinguishing systems -->
-  <option value="SANS 14520" />
-  <option value="SANS 14520-1" />
-  <option value="SANS 14520-5" />
-  <option value="SANS 14520-6" />
-  <option value="SANS 14520-7" />
-  <option value="SANS 14520-9" />
-</datalist>
+  <datalist id="sans-clauses">
+    <!-- SANS 10139: Fire detection and alarm systems -->
+    <option value="SANS 10139" /><option value="SANS 10139-4.1" /><option value="SANS 10139-4.2" />
+    <option value="SANS 10139-4.3" /><option value="SANS 10139-5.1" /><option value="SANS 10139-5.2" />
+    <option value="SANS 10139-6.1" /><option value="SANS 10139-6.2" /><option value="SANS 10139-7.1" />
+    <option value="SANS 10139-7.2" /><option value="SANS 10139-8.1" /><option value="SANS 10139-8.3" />
+    <option value="SANS 10139-9.1" /><option value="SANS 10139-10.1" /><option value="SANS 10139-11.1" />
+    <option value="SANS 10139-11.2" />
+    <!-- SANS 14520: Gaseous fire-extinguishing systems -->
+    <option value="SANS 14520" /><option value="SANS 14520-1" /><option value="SANS 14520-5" />
+    <option value="SANS 14520-6" /><option value="SANS 14520-7" /><option value="SANS 14520-9" />
+  </datalist>
 </PortalLayout>

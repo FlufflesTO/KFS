@@ -1,0 +1,62 @@
+---
+/**
+ * Project Sentinel - Kharon Button Component
+ * Purpose: Consistent button component for all dashboard views with enigmatic design
+ * Dependencies: None
+ * Structural Role: Reusable UI component
+ */
+
+export interface Props {
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  href?: string;
+  className?: string;
+}
+
+const { 
+  variant = 'primary', 
+  size = 'md',
+  disabled = false,
+  type = 'button',
+  href,
+  className = '' 
+} = Astro.props;
+
+const variantClasses = {
+  primary: 'bg-kharon-purple text-white border-transparent hover:bg-kharon-blue',
+  secondary: 'bg-white text-kharon-purple border-kharon-purple hover:bg-kharon-purple hover:text-white',
+  danger: 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200',
+  success: 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200',
+  warning: 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200',
+  ghost: 'bg-transparent text-kharon-purple border-transparent hover:bg-kharon-light'
+};
+
+const sizeClasses = {
+  sm: 'px-3 py-1.5 text-xs',
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-5 py-3 text-base'
+};
+
+const baseClasses = [
+  'rounded',
+  'border',
+  'font-bold',
+  'uppercase',
+  'tracking-wider',
+  'transition-colors',
+  'duration-200',
+  disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90',
+  sizeClasses[size],
+  variantClasses[variant],
+  className
+].filter(Boolean).join(' ');
+
+const Tag = href ? 'a' : 'button';
+const props = href ? { href } : { type, disabled };
+---
+
+<Tag {...props} class={baseClasses}>
+  <slot />
+</Tag>
