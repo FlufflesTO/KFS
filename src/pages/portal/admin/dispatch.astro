@@ -114,7 +114,7 @@ try {
     sla: slaInfo(raw.required_by_date ?? null),
     priorityCls: priorityBadgeCls(raw.priority || "Normal"),
     isEmergency: raw.is_emergency === 1,
-    searchText: `${raw.owner_company_name} ${raw.coverage_area} ${raw.system_type} ${raw.id}`.toLowerCase()
+    searchText: `${raw.owner_company_name} ${raw.coverage_area} ${raw.system_type} ${raw.technician_name || ""} ${raw.id}`.toLowerCase()
   });
 
   unassigned = (unassignedResult.results || []).map(mapJob);
@@ -122,8 +122,21 @@ try {
   techs = (techsResult.results || []) as { id: string; name: string }[];
 } catch (error) {
   console.error("dispatch board failed", error);
+
   loadError = "Dispatch data could not be loaded.";
 }
+
+// Group dispatched jobs by technician for workload view
+interface TechGroup { techId: string; techName: string; jobs: DispatchJob[] }
+const techGroupMap = new Map<string, TechGroup>();
+for (const job of dispatched) {
+  const key = job.technician_id || "__unknown";
+  if (!techGroupMap.has(key)) {
+    techGroupMap.set(key, { techId: job.technician_id || "", techName: job.technician_name || "Unknown", jobs: [] });
+  }
+  techGroupMap.get(key)!.jobs.push(job);
+}
+const techGroups: TechGroup[] = Array.from(techGroupMap.values()).sort((a, b) => a.techName.localeCompare(b.techName));
 
 const unassignedAlert = stats.unassigned > 0;
 const emergencyAlert  = stats.emergency > 0;
@@ -309,45 +322,58 @@ const slaAlert        = stats.slaWarning > 0;
         </div>
       </article>
 
-      <!-- Dispatched jobs -->
+      <!-- Technician workload board -->
       <article class="border border-kharon-border bg-white">
         <header class="flex items-center justify-between border-b border-kharon-border px-4 py-3 sm:px-5">
-          <h2 class="text-lg font-bold">Dispatched jobs</h2>
+          <h2 class="text-lg font-bold">Technician workload</h2>
           <span class="rounded bg-kharon-light px-2 py-0.5 text-xs font-bold text-kharon-grey">
-            {dispatched.length}
+            {dispatched.length} job{dispatched.length !== 1 ? "s" : ""}
           </span>
         </header>
-        <div class="divide-y divide-kharon-border">
+        <div>
           {dispatched.length === 0 && (
             <p class="px-4 py-6 text-sm text-kharon-grey">No active dispatches.</p>
           )}
-          {dispatched.map((job) => (
-            <div
-              class="px-4 py-4 sm:px-5"
-              data-dispatch-card
-              data-search={job.searchText}
-              data-priority={job.priority}
-              data-status={job.status}
-            >
-              <div class="flex flex-wrap items-start gap-2">
-                <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.priorityCls}`}>{job.priority}</span>
-                {job.isEmergency && (
-                  <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Emergency</span>
-                )}
-                <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.status === "In Progress" ? "bg-kharon-blue text-white" : "bg-kharon-light text-kharon-grey"}`}>
-                  {job.status}
+          {techGroups.map((group) => (
+            <div class="border-b border-kharon-border last:border-b-0">
+              <!-- Technician header row -->
+              <div class="flex flex-wrap items-center gap-3 bg-kharon-light px-4 py-2.5 sm:px-5">
+                <span class="font-bold text-kharon-black">{group.techName}</span>
+                <span class="rounded border border-kharon-border bg-white px-2 py-0.5 text-xs font-semibold text-kharon-grey">
+                  {group.jobs.length} job{group.jobs.length !== 1 ? "s" : ""}
                 </span>
-                <span class="font-semibold">{job.owner_company_name}</span>
-                <span class="text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</span>
+                <span class="text-xs text-kharon-grey">
+                  {group.jobs.filter(j => j.status === "In Progress").length} in progress
+                </span>
               </div>
-              <div class="mt-1 flex flex-wrap gap-4 text-xs text-kharon-grey">
-                <span>Technician: <strong class="text-kharon-black">{job.technician_name || "—"}</strong></span>
-                <span>Scheduled: <strong class="text-kharon-black">{job.scheduled_date}</strong></span>
-                <span>Type: {job.job_type}</span>
-                {job.required_by_date && (
-                  <span>Required by: <strong class={job.sla.cls}>{job.sla.text}</strong></span>
-                )}
-              </div>
+              <!-- Jobs for this technician -->
+              <div class="divide-y divide-kharon-border">
+                {group.jobs.map((job) => (
+                  <div
+                    class="px-4 py-4 sm:px-5"
+                    data-dispatch-card
+                    data-search={job.searchText}
+                    data-priority={job.priority}
+                    data-status={job.status}
+                  >
+                    <div class="flex flex-wrap items-start gap-2">
+                      <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.priorityCls}`}>{job.priority}</span>
+                      {job.isEmergency && (
+                        <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Emergency</span>
+                      )}
+                      <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.status === "In Progress" ? "bg-kharon-blue text-white" : "bg-kharon-light text-kharon-grey"}`}>
+                        {job.status}
+                      </span>
+                      <span class="font-semibold">{job.owner_company_name}</span>
+                      <span class="text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</span>
+                    </div>
+                    <div class="mt-1 flex flex-wrap gap-4 text-xs text-kharon-grey">
+                      <span>Scheduled: <strong class="text-kharon-black">{job.scheduled_date}</strong></span>
+                      <span>Type: {job.job_type}</span>
+                      {job.required_by_date && (
+                        <span>Required by: <strong class={job.sla.cls}>{job.sla.text}</strong></span>
+                      )}
+                    </div>
               <!-- Reassign form -->
               <details class="mt-3">
                 <summary class="cursor-pointer text-xs font-semibold text-kharon-purple hover:underline">
@@ -422,6 +448,9 @@ const slaAlert        = stats.slaWarning > 0;
                   </div>
                 </form>
               </details>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
