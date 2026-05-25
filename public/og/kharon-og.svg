@@ -1,44 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="og-title og-desc">
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="og-title og-desc">
   <title id="og-title">Kharon Fire and Security Solutions</title>
-  <desc id="og-desc">Commercial fire detection and gas suppression specialists.</desc>
+  <desc id="og-desc">Engineering-led commercial fire detection and gaseous suppression specialists.</desc>
   <defs>
-    <linearGradient id="og-bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0B0D0F"/>
-      <stop offset="100%" stop-color="#15191D"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B0D0F"/>
+      <stop offset="0.55" stop-color="#15191D"/>
+      <stop offset="1" stop-color="#0B0D0F"/>
     </linearGradient>
-    <radialGradient id="og-blue" cx="38%" cy="33%" r="65%" fx="33%" fy="28%">
-      <stop offset="0%" stop-color="#5E93D4"/>
-      <stop offset="42%" stop-color="#3B72BC"/>
-      <stop offset="100%" stop-color="#1C4D8C"/>
+    <radialGradient id="blue" cx="78%" cy="36%" r="46%">
+      <stop offset="0" stop-color="#1F4E79" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#1F4E79" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="og-purple" cx="38%" cy="33%" r="68%" fx="33%" fy="28%">
-      <stop offset="0%" stop-color="#6E35AE"/>
-      <stop offset="55%" stop-color="#4B1A7E"/>
-      <stop offset="100%" stop-color="#2B0E50"/>
-    </radialGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#00C2FF" stop-opacity="0"/>
+      <stop offset="0.62" stop-color="#00C2FF" stop-opacity="0.46"/>
+      <stop offset="1" stop-color="#C4332F" stop-opacity="0.34"/>
+    </linearGradient>
   </defs>
-
-  <rect width="1200" height="630" fill="url(#og-bg)"/>
-
-  <!-- Subtle grid -->
-  <g opacity="0.08" stroke="#FFFFFF" stroke-width="1">
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#blue)"/>
+  <g opacity="0.09" stroke="#FFFFFF" stroke-width="1">
     <path d="M0 105h1200M0 210h1200M0 315h1200M0 420h1200M0 525h1200"/>
     <path d="M120 0v630M240 0v630M360 0v630M480 0v630M600 0v630M720 0v630M840 0v630M960 0v630M1080 0v630"/>
   </g>
-
-  <!-- Brand mark (right side) -->
-  <circle cx="1010" cy="290" r="210" fill="url(#og-blue)" opacity="0.18"/>
-  <circle cx="1010" cy="290" r="148" fill="#FFFFFF" opacity="0.10"/>
-  <circle cx="1010" cy="290" r="95" fill="url(#og-purple)" opacity="0.22"/>
-
-  <!-- Crisp foreground mark -->
-  <circle cx="1010" cy="290" r="140" fill="url(#og-blue)"/>
-  <circle cx="1010" cy="290" r="98" fill="#FFFFFF"/>
-  <circle cx="1010" cy="290" r="62" fill="url(#og-purple)"/>
-
-  <!-- Text -->
-  <text x="80" y="200" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="22" font-weight="700" letter-spacing="6" fill="#3B72BC" opacity="0.9">KHARON</text>
-  <text x="80" y="320" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="72" font-weight="700" fill="#FFFFFF">Fire &amp; Security</text>
-  <text x="80" y="408" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="72" font-weight="700" fill="#FFFFFF">Solutions</text>
-  <text x="80" y="480" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="26" fill="#FFFFFF" opacity="0.60">Commercial Fire Detection and Gas Suppression Specialists</text>
+  <g opacity="0.45" fill="none" stroke="url(#line)" stroke-width="3" stroke-linecap="round">
+    <path d="M630 432H810L902 348H1015L1116 260"/>
+    <path d="M708 236H850L930 318H1056" opacity="0.7"/>
+    <path d="M790 506L918 462L1042 510L1156 402" opacity="0.5"/>
+  </g>
+  <g opacity="0.58">
+    <circle cx="810" cy="432" r="6" fill="#00C2FF"/>
+    <circle cx="902" cy="348" r="6" fill="#00C2FF"/>
+    <circle cx="1015" cy="348" r="6" fill="#00C2FF"/>
+    <circle cx="1116" cy="260" r="8" fill="#C4332F"/>
+  </g>
+  <image href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1NTQgNzU0Ij4KICA8ZyBpZD0ia2hhcm9uLWxvZ28tbWFyayI+CiAgICA8IS0tIEJsdWUgcmluZzogc29saWQgdmVjdG9yIGxheWVycyBmb3IgYmV2ZWwvZGVwdGgsIHRyYW5zcGFyZW50IGNlbnRlciAtLT4KICAgIDxwYXRoIGlkPSJibHVlLXJpbmctYmFzZSIgZmlsbD0iIzFGNjY5OCIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMjc3IDBBMjc3IDI3NyAwIDEgMSAyNzcgNTU0QTI3NyAyNzcgMCAxIDEgMjc3IDBaTTI3NyAxMjNBMTU0IDE1NCAwIDEgMCAyNzcgNDMxQTE1NCAxNTQgMCAxIDAgMjc3IDEyM1oiLz4KICAgIDxwYXRoIGlkPSJibHVlLXJpbmctb3V0ZXItZGFyay1iZXZlbCIgZmlsbD0iIzE1NTc4NCIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMjc3IDBBMjc3IDI3NyAwIDEgMSAyNzcgNTU0QTI3NyAyNzcgMCAxIDEgMjc3IDBaTTI3NyAxMUEyNjYgMjY2IDAgMSAwIDI3NyA1NDNBMjY2IDI2NiAwIDEgMCAyNzcgMTFaIi8+CiAgICA8cGF0aCBpZD0iYmx1ZS1yaW5nLW91dGVyLWxpZ2h0LWJldmVsIiBmaWxsPSIjMkI3OEFEIiBkPSJNMzQ3LjY2IDEzLjMwQTI3MyAyNzMgMCAxIDAgNTAwLjYzIDQzMy41OUw0OTQuODkgNDI5LjU3QTI2NiAyNjYgMCAxIDEgMzQ1Ljg1IDIwLjA2WiIvPgogICAgPHBhdGggaWQ9ImJsdWUtcmluZy1sb3dlci1zaGFkb3ciIGZpbGw9IiMwRjUyN0UiIGQ9Ik0xODIuMjYgNTM3LjI5QTI3NyAyNzcgMCAwIDEgMTgyLjI2IDE2LjcxTDE4Ny4wNSAyOS44NkEyNjMgMjYzIDAgMCAwIDE4Ny4wNSA1MjQuMTRaIi8+CiAgICA8cGF0aCBpZD0iYmx1ZS1yaW5nLWlubmVyLXNoYWRvdyIgZmlsbD0iIzEyNUI4OCIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMjc3IDEwN0ExNzAgMTcwIDAgMSAxIDI3NyA0NDdBMTcwIDE3MCAwIDEgMSAyNzcgMTA3Wk0yNzcgMTIzQTE1NCAxNTQgMCAxIDAgMjc3IDQzMUExNTQgMTU0IDAgMSAwIDI3NyAxMjNaIi8+CiAgICA8cGF0aCBpZD0iYmx1ZS1yaW5nLWlubmVyLWhpZ2hsaWdodCIgZmlsbD0iIzZBQTJEMiIgZD0iTTIzNC4wNCA0MzcuMzRBMTY2IDE2NiAwIDAgMSAxMTMuNTIgMjQ4LjE3TDEyNS4zNCAyNTAuMjZBMTU0IDE1NCAwIDAgMCAyMzcuMTQgNDI1Ljc1WiIvPgogICAgPHBhdGggaWQ9ImJsdWUtcmluZy1pbm5lci1kYXJrIiBmaWxsPSIjMEI0RjdDIiBkPSJNMzYxLjAwIDEzMS41MUExNjggMTY4IDAgMSAwIDQyOS4yNiAzNDguMDBMNDE2LjU3IDM0Mi4wOEExNTQgMTU0IDAgMSAxIDM1NC4wMCAxNDMuNjNaIi8+CgogICAgPCEtLSBQdXJwbGUgY2VudGVyIGRpc2sgd2l0aCBzb2xpZCBiZXZlbCBsYXllcnMgLS0+CiAgICA8Y2lyY2xlIGlkPSJwdXJwbGUtY2VudGVyLW91dGVyLXJpbSIgY3g9IjI3NyIgY3k9IjI3NyIgcj0iODIiIGZpbGw9IiMzNzE0NUEiLz4KICAgIDxjaXJjbGUgaWQ9InB1cnBsZS1jZW50ZXItbWFpbiIgY3g9IjI3NyIgY3k9IjI3NyIgcj0iNzMiIGZpbGw9IiM0QTFGNkYiLz4KICAgIDxwYXRoIGlkPSJwdXJwbGUtY2VudGVyLWhpZ2hsaWdodCIgZmlsbD0iIzZCM0I4RCIgZD0iTTMwOS41NCAyMDcuMjFBNzcgNzcgMCAxIDAgMzQwLjA3IDMyMS4xN0wzMzEuODggMzE1LjQzQTY3IDY3IDAgMSAxIDMwNS4zMiAyMTYuMjhaIi8+CiAgICA8cGF0aCBpZD0icHVycGxlLWNlbnRlci1sb3dlci1zaGFkb3ciIGZpbGw9IiMyQTBENDgiIGQ9Ik0yOTEuMjQgMzU3Ljc1QTgyIDgyIDAgMCAxIDIyOS45NyAyMDkuODNMMjM1LjcwIDIxOC4wMkE3MiA3MiAwIDAgMCAyODkuNTAgMzQ3LjkxWiIvPgogIDwvZz4KCiAgPGcgaWQ9ImJhc2UtYmFyIj4KICAgIDwhLS0gTWFpbiBkYXJrIGJhc2Ugd2l0aCB2ZWN0b3IgYmV2ZWwvZGVwdGggZmFjZXRzIC0tPgogICAgPHJlY3QgaWQ9ImJhc2UtbWFpbiIgeD0iMzIiIHk9IjYzMCIgd2lkdGg9IjQ5MCIgaGVpZ2h0PSIxMjQiIGZpbGw9IiMyMjFFMjAiLz4KICAgIDxwb2x5Z29uIGlkPSJiYXNlLXRvcC1iZXZlbCIgcG9pbnRzPSIzMiw2MzAgNTIyLDYzMCA1MTQsNjM5IDQwLDYzOSIgZmlsbD0iIzNDM0EzRiIvPgogICAgPHBvbHlnb24gaWQ9ImJhc2UtdG9wLWlubmVyLXNoYWRvdyIgcG9pbnRzPSI0MCw2MzkgNTE0LDYzOSA1MTAsNjQ2IDQ0LDY0NiIgZmlsbD0iIzE3MTUxOCIvPgogICAgPHBvbHlnb24gaWQ9ImJhc2UtbGVmdC1iZXZlbCIgcG9pbnRzPSIzMiw2MzAgNDAsNjM5IDQwLDc0NiAzMiw3NTQiIGZpbGw9IiMxNTE0MTYiLz4KICAgIDxwb2x5Z29uIGlkPSJiYXNlLXJpZ2h0LWJldmVsIiBwb2ludHM9IjUyMiw2MzAgNTIyLDc1NCA1MTQsNzQ1IDUxNCw2MzkiIGZpbGw9IiMzNDMyMzgiLz4KICAgIDxwb2x5Z29uIGlkPSJiYXNlLWJvdHRvbS1yaWdodC1mYWNldCIgcG9pbnRzPSI1MTQsNzQ1IDUyMiw3NTQgNTE0LDc1NCIgZmlsbD0iIzExMTAxMiIvPgogIDwvZz4KPC9zdmc+Cg==" x="812" y="82" width="255" height="347" opacity="0.96"/>
+  <rect x="72" y="88" width="520" height="6" fill="#4B2E83"/>
+  <text x="72" y="170" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="24" font-weight="700" letter-spacing="6" fill="#00C2FF">KHARON</text>
+  <text x="72" y="285" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="66" font-weight="700" fill="#FFFFFF">Fire Detection &amp;</text>
+  <text x="72" y="366" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="66" font-weight="700" fill="#FFFFFF">Gas Suppression</text>
+  <text x="72" y="442" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="26" fill="#D6D9DD">Commercial and industrial infrastructure protection</text>
+  <text x="72" y="510" font-family="Century Gothic, Avenir Next, Segoe UI, sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="#FFFFFF" opacity="0.76">SAQCC  |  SANS 10139  |  SANS 14520  |  LIFECYCLE SUPPORT</text>
 </svg>

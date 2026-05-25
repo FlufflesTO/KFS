@@ -20,7 +20,7 @@ const structuredData = [
     "name": site.name,
     "url": site.url,
     "email": site.email,
-    "logo": ogImageUrl,
+    "logo": new URL("/brand/kharon-full-logo.svg", site.url).toString(),
     "areaServed": "South Africa",
     "knowsAbout": [
       "Gas suppression systems",
@@ -80,8 +80,8 @@ const structuredData = [
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content={site.name} />
     <meta property="og:image" content={ogImageUrl} />
-    <meta property="og:image:type" content="image/svg+xml" />
-    <meta property="og:image:alt" content="Kharon Fire and Security Solutions technical network visual" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="Kharon Fire and Security Solutions commercial fire detection and gas suppression branding" />
     <meta property="og:locale" content="en_ZA" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />

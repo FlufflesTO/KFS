@@ -16,7 +16,7 @@ export const site = {
   phone: "061 545 8830",
   address: "Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd, Ndabeni, Maitland, 7405",
   registration: "2016/313076/07",
-  ogImage: "/og/kharon-og.svg"
+  ogImage: "/og/kharon-og.png"
 };
 
 export const pageMeta = {

@@ -24,6 +24,9 @@ yarn-error.log*
 backups/
 monitor-results/
 retention-reports/
+memory/
+portal_test.html
+.claude/
 
 # OS / editor noise
 .DS_Store

@@ -126,7 +126,7 @@ if (cssBytes > 46_000) {
   fail(`CSS asset budget exceeded: ${cssBytes} bytes`);
 }
 
-for (const asset of ["favicon.svg", "og/kharon-og.svg", "_headers", "_redirects"]) {
+for (const asset of ["favicon.svg", "brand/kharon-mark.svg", "brand/kharon-full-logo.svg", "og/kharon-og.png", "_headers", "_redirects"]) {
   if (!fs.existsSync(path.join(assetRoot, asset))) {
     fail(`missing client asset: ${asset}`);
   }

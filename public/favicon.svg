@@ -1,18 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Kharon">
-  <rect width="64" height="64" rx="10" fill="#0B0D0F"/>
-  <defs>
-    <radialGradient id="kf-blue" cx="38%" cy="33%" r="65%" fx="33%" fy="28%">
-      <stop offset="0%" stop-color="#5E93D4"/>
-      <stop offset="42%" stop-color="#3B72BC"/>
-      <stop offset="100%" stop-color="#1C4D8C"/>
-    </radialGradient>
-    <radialGradient id="kf-purple" cx="38%" cy="33%" r="68%" fx="33%" fy="28%">
-      <stop offset="0%" stop-color="#6E35AE"/>
-      <stop offset="55%" stop-color="#4B1A7E"/>
-      <stop offset="100%" stop-color="#2B0E50"/>
-    </radialGradient>
-  </defs>
-  <circle cx="32" cy="32" r="26" fill="url(#kf-blue)"/>
-  <circle cx="32" cy="32" r="18" fill="#FFFFFF"/>
-  <circle cx="32" cy="32" r="11" fill="url(#kf-purple)"/>
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 554 554" role="img" aria-label="Kharon mark">
+  <g id="kharon-logo-mark">
+    <!-- Blue ring: solid vector layers for bevel/depth, transparent center -->
+    <path id="blue-ring-base" fill="#1F6698" fill-rule="evenodd" d="M277 0A277 277 0 1 1 277 554A277 277 0 1 1 277 0ZM277 123A154 154 0 1 0 277 431A154 154 0 1 0 277 123Z"/>
+    <path id="blue-ring-outer-dark-bevel" fill="#155784" fill-rule="evenodd" d="M277 0A277 277 0 1 1 277 554A277 277 0 1 1 277 0ZM277 11A266 266 0 1 0 277 543A266 266 0 1 0 277 11Z"/>
+    <path id="blue-ring-outer-light-bevel" fill="#2B78AD" d="M347.66 13.30A273 273 0 1 0 500.63 433.59L494.89 429.57A266 266 0 1 1 345.85 20.06Z"/>
+    <path id="blue-ring-lower-shadow" fill="#0F527E" d="M182.26 537.29A277 277 0 0 1 182.26 16.71L187.05 29.86A263 263 0 0 0 187.05 524.14Z"/>
+    <path id="blue-ring-inner-shadow" fill="#125B88" fill-rule="evenodd" d="M277 107A170 170 0 1 1 277 447A170 170 0 1 1 277 107ZM277 123A154 154 0 1 0 277 431A154 154 0 1 0 277 123Z"/>
+    <path id="blue-ring-inner-highlight" fill="#6AA2D2" d="M234.04 437.34A166 166 0 0 1 113.52 248.17L125.34 250.26A154 154 0 0 0 237.14 425.75Z"/>
+    <path id="blue-ring-inner-dark" fill="#0B4F7C" d="M361.00 131.51A168 168 0 1 0 429.26 348.00L416.57 342.08A154 154 0 1 1 354.00 143.63Z"/>
+
+    <!-- Purple center disk with solid bevel layers -->
+    <circle id="purple-center-outer-rim" cx="277" cy="277" r="82" fill="#37145A"/>
+    <circle id="purple-center-main" cx="277" cy="277" r="73" fill="#4A1F6F"/>
+    <path id="purple-center-highlight" fill="#6B3B8D" d="M309.54 207.21A77 77 0 1 0 340.07 321.17L331.88 315.43A67 67 0 1 1 305.32 216.28Z"/>
+    <path id="purple-center-lower-shadow" fill="#2A0D48" d="M291.24 357.75A82 82 0 0 1 229.97 209.83L235.70 218.02A72 72 0 0 0 289.50 347.91Z"/>
+  </g>
+
+  <g id="base-bar">
+    <!-- Main dark base with vector bevel/depth facets -->
+    <rect id="base-main" x="32" y="630" width="490" height="124" fill="#221E20"/>
+    <polygon id="base-top-bevel" points="32,630 522,630 514,639 40,639" fill="#3C3A3F"/>
+    <polygon id="base-top-inner-shadow" points="40,639 514,639 510,646 44,646" fill="#171518"/>
+    <polygon id="base-left-bevel" points="32,630 40,639 40,746 32,754" fill="#151416"/>
+    <polygon id="base-right-bevel" points="522,630 522,754 514,745 514,639" fill="#343238"/>
+    <polygon id="base-bottom-right-facet" points="514,745 522,754 514,754" fill="#111012"/>
+  </g>
 </svg>
+

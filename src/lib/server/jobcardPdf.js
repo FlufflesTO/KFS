@@ -137,13 +137,17 @@ export async function buildJobcardPdf({
   const content = [
     "0.95 0.96 0.97 rg",
     "0 0 595 842 re f",
-    // Header banner
+    // Letterhead-style header
     "0.04 0.05 0.06 rg",
     "0 768 595 74 re f",
-    // Logo mark (right side of header): blue outer, white ring, purple center
+    "0.12 0.31 0.47 rg",
+    "0 762 595 6 re f",
+    // Verified mark approximation: blue ring, transparent center, purple disk and dark base.
     pdfCircle(549, 805, 27, "0.23 0.45 0.74 rg"),
-    pdfCircle(549, 805, 19, "1 1 1 rg"),
+    pdfCircle(549, 805, 19, "0.04 0.05 0.06 rg"),
     pdfCircle(549, 805, 12, "0.29 0.10 0.49 rg"),
+    "0.13 0.12 0.13 rg",
+    "525 778 48 10 re f",
     // Header text
     "1 1 1 rg",
     ...textLine("KHARON", 44, 816, 16),

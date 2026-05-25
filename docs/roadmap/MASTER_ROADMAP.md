@@ -34,8 +34,8 @@ Implemented:
 - Astro 6 SSR site on the Cloudflare adapter, serving the public website and the portal from one codebase.
 - Public shell remains lightweight and mostly server-rendered with code-native SVG/HTML technical visuals.
 - Required pages: `/`, `/gas-suppression`, `/fire-detection`, `/compliance-maintenance`, `/critical-infrastructure`, `/emergency-support`, `/security-systems`, `/industries`, `/about`, `/contact`.
-- Portal routes: `/portal/login`, `/portal/tech/dashboard`, `/portal/admin/dashboard`, `/portal/client/dashboard`, `/portal/finance/dashboard`.
-- Portal APIs: `/portal/api/auth`, `/portal/api/job-status`, `/portal/api/submit-jobcard`, `/portal/api/maintenance-request`, `/portal/api/admin/maintenance-requests`, `/portal/api/approve-quote`, `/portal/api/file/[...key]`.
+- Portal routes: `/portal/login`, `/portal/reset`, `/portal/account/password`, `/portal/account/mfa`, `/portal/tech/dashboard`, `/portal/tech/history`, `/portal/admin/dashboard`, `/portal/admin/planning`, `/portal/admin/operations`, `/portal/client/dashboard`, `/portal/client/quotes`, `/portal/finance/dashboard`.
+- Portal APIs: `/portal/api/auth`, `/portal/api/logout`, `/portal/api/reset-password`, `/portal/api/change-password`, `/portal/api/mfa`, `/portal/api/job-status`, `/portal/api/submit-jobcard`, `/portal/api/maintenance-request`, `/portal/api/admin/users`, `/portal/api/admin/sites`, `/portal/api/admin/systems`, `/portal/api/admin/jobs`, `/portal/api/admin/import`, `/portal/api/admin/export`, `/portal/api/admin/client-site-access`, `/portal/api/admin/maintenance-requests`, `/portal/api/approve-quote`, `/portal/api/finance/payments`, `/portal/api/finance/export`, `/portal/api/file/[...key]`, `/api/contact`.
 - Core components: `BaseLayout`, `Header`, `Footer`, `CinematicHero`, `RouteMatrix`, `Hero`, `ContextualInquiry`, `ComplianceStrip`, `SectorRiskGrid`, `EngineeringSystems`, `AuthorityEvidence`, `EmergencyResponse`, `SectionHeading`, `Button`.
 - SEO basics: canonical URLs, OpenGraph tags, `robots.txt`, `sitemap.xml`, LocalBusiness JSON-LD.
 - Accessibility basics: skip link, visible focus state, semantic sections, labelled contact form, reduced-motion CSS.
@@ -50,7 +50,7 @@ Open constraints:
 - Original roadmap specified Astro 4. Current dependency audit required a secure upgrade path beyond Astro 4. Treat exact Astro version as a compatibility constraint to revisit only if the deployment target strictly requires Astro 4.
 - The previous React/Three.js hero chunk has been removed to preserve static-first performance. The homepage now uses a CSS/SVG fake-3D cinematic Kharon mark instead of live WebGL.
 - Industrial imagery is currently represented by code-native schematic visuals, not final photographic or optimized image assets.
-- Portal data is seeded only for staging. Production user onboarding, password reset, audit logging and operational data management still require dedicated workflows.
+- Portal data is seeded only for staging. Production credential rotation, representative role QA data, final onboarding approval, manual QA evidence and operational cutover sign-off still require dedicated workflows.
 
 ## Current Review And Recommendations
 
@@ -79,6 +79,173 @@ Immediate refinements recommended:
 - Authenticated portal write APIs now require a signed CSRF token and inherit central write-rate limiting from middleware.
 - Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
 - Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
+
+## Review Update - 2026-05-25 Verified Kharon Branding Integration
+
+Verified brand source assets are available in `docs/roadmap/KHARON_BRANDING`:
+
+- `kharon_full_logo_verified.svg` for the formal full brand lockup.
+- `Kharon_Logo_transparent_bevel_fixed.svg` for the standalone Kharon mark.
+- `kharon_letterhead_verified.svg` for formal report, jobcard and document styling.
+- `kharon_qr_letterhead_verified.svg` for QR-enabled client-facing document templates.
+
+Branding pass scope:
+
+- [x] Publish canonical copies under `public/brand`.
+- [x] Replace ad hoc public header, footer and portal marks with the verified standalone mark.
+- [x] Rebuild the cinematic hero Titan mark around the verified standalone logo asset instead of text-only `K`.
+- [x] Align login and reset screens with the verified portal brand mark.
+- [x] Replace the SVG-only OpenGraph image with a PNG/JPEG preview generated from the verified brand system.
+- [x] Update OpenGraph metadata type after the raster preview is generated.
+- [x] Align generated jobcard PDF branding with the verified letterhead direction where feasible inside the lightweight PDF generator.
+- [x] Run `npm run build`, `npm run audit:site` and `npm audit --omit=dev`.
+
+Production branding constraints:
+
+- Do not use the dark full logo directly on black navigation unless it sits on a light panel; maintain accessible contrast.
+- Preserve Century Gothic brand continuity.
+- Keep the public shell performance-first: no live 3D branding payload, no heavy client-side logo rendering.
+- Keep QR-enabled letterhead for document templates only unless a public QR destination is approved.
+
+
+## Review Update - 2026-05-25 Full Website And Portal Audit Integration
+
+Scope:
+
+Granular public website and portal review covering live staging behaviour, repository implementation, role-specific portal architecture, public content quality, UI/UX, security posture, SEO, data model maturity, operational readiness and production cutover risks.
+
+Audit sources:
+
+- Public website staging domain: `https://www.tequit.co.za/`.
+- Portal staging domain: `https://portal.tequit.co.za/portal/login`.
+- Repository implementation: `FlufflesTO/KFS`.
+- Role set reviewed: Admin, Finance, Technician and Client.
+- Review limitation: unauthenticated live fetch and repository-level implementation review were completed. Full browser credential-backed role QA still requires manual execution with externally supplied staging credentials and must not rely on shared passwords after this review.
+
+Executive assessment:
+
+| Area | Status | Notes |
+|---|---|---|
+| Brand positioning | Strong | Public site clearly frames Kharon as commercial and industrial fire detection and gas suppression specialists, with security as secondary support. |
+| Public UX | Good but repetitive | Structure is clean and disciplined, but several pages reuse the same section rhythm and proof-card style. |
+| Conversion reliability | Partially hardened | Main contact form is server-side and D1-backed; contextual inquiry forms still need to be converted away from `mailto:` patterns where they remain. |
+| Portal architecture | Strong staging foundation | D1, R2, signed sessions, CSRF, rate limits, RBAC, audit logging and document access logging are in place. |
+| Portal UX | Functional but not yet production-scale | Role dashboards work conceptually, but admin density, technician field workflow and client compliance visibility require deeper workflow maturity. |
+| Security posture | Good pre-production baseline | Core protections exist, but credential rotation, MFA enforcement, security headers, manual role QA and production monitoring remain critical. |
+| Compliance depth | Insufficient for final authority positioning | SANS references exist, but practical checklists, service evidence examples, defect/certificate logic and compliance hub content need expansion. |
+| Production readiness | Not yet authoritative | Suitable for staging and internal review; not ready for live client records until hardening gates and manual QA are completed. |
+
+Public website strengths confirmed:
+
+- Gas suppression and fire detection are correctly primary, with security positioned as an integrated secondary capability.
+- Commercial and industrial-only positioning is visible and strategically aligned.
+- Navigation routes users into solution, sector, compliance, emergency, contact and records paths.
+- SEO metadata, canonical URLs, OpenGraph tags and JSON-LD foundations are present.
+- Accessibility basics exist: skip link, semantic navigation, visible focus styles and reduced-motion CSS.
+- The fake-3D CSS/SVG cinematic system preserves the desired Kharon titan impression without reintroducing heavy WebGL payload.
+
+Public website weaknesses requiring roadmap action:
+
+- Page structures are too similar across Gas Suppression, Fire Detection, Compliance, Critical Infrastructure and Industries.
+- Several proof sections remain conceptually strong but too abstract; they need real evidence, examples, diagrams, documents or approved project proof.
+- Contextual inquiry forms must be standardised on server-side submission rather than any remaining email-client-dependent `mailto:` flow.
+- Emergency support needs more explicit operational triage, existing-client routing, call/phone route and after-hours/SLA framing.
+- Contact and emergency pages need a visible phone route once the approved number and response rules are confirmed.
+- Supported ecosystem references need careful wording so they imply service familiarity, not unapproved vendor partnership.
+- Public site lacks analytics and CTA conversion tracking.
+- Real industrial photography and document evidence examples remain outstanding.
+
+Public website recommendations added to build phases:
+
+- Add unique proof sections per major service page.
+- Build a compliance hub with SANS 10139 and SANS 14520 practical summaries, service-report checklists, defect examples and certificate-readiness guidance.
+- Add technical diagrams for protected-room gas suppression, fire detection cause-and-effect, maintenance cadence and emergency triage.
+- Replace broad CTA reuse with page-specific CTAs:
+  - Gas Suppression: `Request Protected Room Review`.
+  - Fire Detection: `Request Fire Detection System Review`.
+  - Compliance: `Request Maintenance / Compliance Audit`.
+  - Emergency: `Log Urgent System Fault`.
+  - Critical Infrastructure: `Request Critical Environment Assessment`.
+  - Client records: `Request Records Access`.
+- Add approved field imagery and anonymised evidence examples where commercially safe.
+
+Portal implementation strengths confirmed:
+
+- Authentication endpoint validates credentials, applies login rate limiting, supports MFA, updates last-login timestamp, logs audit events and redirects by role.
+- Session cookies are signed, `HttpOnly`, `Secure` outside local mode and `SameSite=Strict`.
+- Middleware protects portal routes, enforces RBAC, redirects unauthenticated users, handles forced password change and MFA setup, verifies CSRF for state-changing APIs and applies endpoint-specific write-rate limits.
+- Role dashboards exist for Admin, Technician, Client and Finance.
+- Document retrieval is permission checked against role, assignment or mapped client site and logs document access outcomes.
+- Technician jobcard closure validates assignment, writes PDF/evidence to R2, updates D1 job/system/finance records and audit logs the action.
+- Client maintenance request and quote approval flows check mapped site access.
+- Finance ledger has ageing, export and payment capture foundations.
+- QA harness exists for role route smoke tests, CSRF checks and post-logout replay behaviour.
+
+Portal weaknesses requiring roadmap action:
+
+- Manual credential-backed QA remains required for Admin, Finance, Technician and Client.
+- Shared temporary staging credentials must be rotated and removed from operational use immediately.
+- Admin dashboard mixes strategic overview and action queues on one dense screen.
+- Admin operations still needs production-scale search, filtering, pagination and audit-friendly change review beyond current collapsible overflow improvements.
+- Technician workflow remains too thin for real SANS-aligned field service: no GPS check-in/out, visit timing, defect capture, certificate blocking, panel readings, gas pressure/agent mass, customer role capture or offline draft workflow.
+- Client portal is currently more of a records gateway than a compliance command centre.
+- Finance model is useful for staging but not yet a full accounting workflow: VAT, invoice PDFs, debtor statements, credit notes and proof-of-payment attachments remain outstanding.
+- Portal data model is simpler than the intended Kharon operations architecture and needs explicit Client → Site → System → Job → Visit → Defect → Certificate relationships before replacing manual back-office processes.
+
+Security and governance recommendations added to build phases:
+
+- Rotate all staging credentials and force unique passwords before any broader testing.
+- Require MFA for Admin and Finance in production.
+- Add strict security headers: CSP, `frame-ancestors`, `object-src 'none'`, `base-uri 'self'`, `Referrer-Policy`, `Permissions-Policy` and `X-Content-Type-Options`.
+- Add session/device review UI in a later phase.
+- Add admin-visible failed-login, CSRF block and rate-limit review reports.
+- Run D1/R2 backup and restore drill before production cutover.
+- Complete POPIA review for analytics, contact storage, document access logs and retention policy.
+- Keep all seed data, password material, reset links and production credentials out of the public repository.
+
+Data-model maturity target added:
+
+```text
+Client
+  → Site
+    → System
+      → Job
+        → Visit
+          → Defect
+            → Quote
+          → Certificate
+Job / Quote
+  → Invoice
+User / Technician
+  → Visit / Job / Audit
+```
+
+Immediate production blockers from this audit:
+
+- [ ] Rotate and disable shared temporary role credentials.
+- [ ] Complete credential-backed role QA for Admin, Finance, Technician and Client.
+- [ ] Require MFA for Admin and Finance users before real finance/client records are loaded.
+- [ ] Add and verify strict security headers.
+- [ ] Confirm backup and restore process using real staging D1/R2 exports.
+- [ ] Convert any remaining contextual `mailto:` forms to server-side submissions.
+- [ ] Add visible phone/contact route for contact and emergency pages after approval.
+- [ ] Seed representative staging data for each role and rerun manual portal QA.
+- [ ] Confirm no analytics load on `/portal/*` once analytics is selected.
+- [ ] Complete public content authority pass before kharon.co.za cutover.
+
+Audit integration gate:
+
+- [x] Roadmap updated with public website strengths, weaknesses and recommendations.
+- [x] Roadmap updated with portal strengths, weaknesses and recommendations.
+- [x] Roadmap updated with security, governance and production blockers.
+- [x] New phases added for security headers, public authority proof, compliance hub, operational data model, technician field maturity, client compliance dashboard and finance/accounting maturity.
+- [x] Stale roadmap items corrected where later implementation evidence already shows completion.
+- [ ] Manual credential-backed QA remains outstanding.
+- [ ] Director-approved production cutover remains outstanding.
+
+Status:
+
+Audit findings integrated into roadmap. This does not by itself approve production use. Tequit remains staging until all production blockers, manual QA records and cutover sign-off are complete.
 
 ## Review Update - 2026-05-21 Portal Security And Production Hardening
 
@@ -348,7 +515,7 @@ Public website findings:
 
 - Contact form uses `action="mailto:..."` with no server-side handler. The honeypot field has no backend check and is inert. No submission confirmation is shown if the user's email client is unconfigured. This is the primary conversion risk for an enterprise B2B site.
 - No phone number appears on the contact page or emergency support page. For a fire and security business this is a meaningful content gap, particularly for emergency scenarios.
-- OG image is declared as `image/svg+xml`. Facebook, LinkedIn and WhatsApp do not render SVG OG images; social share previews will be blank or broken. Replacement with a PNG or JPEG at the same path is required before public launch.
+- OG image was previously declared as `image/svg+xml`. Resolved in the 2026-05-25 verified branding pass by generating `/og/kharon-og.png` and updating `og:image:type` to `image/png`.
 - Mobile navigation has a duplicate Compliance entry: `solutionLinks` includes Compliance & Maintenance (`/compliance-maintenance`) and `mainLinks.slice(1)` includes a second Compliance link resolving to the same route.
 - The Solutions dropdown uses `<details>/<summary>` with `role="menu"` on the inner container. Arrow-key navigation expected of a `role="menu"` landmark is not implemented, creating a keyboard accessibility gap.
 - `format-detection` meta is set to `telephone=no, address=no, email=no` globally. If a phone number is added to the site, iOS and Android auto-linking will be blocked unless this tag is updated.
@@ -511,7 +678,7 @@ Tasks:
 - Re-run Lighthouse after image integration.
 - Add bundle budget or build warning policy.
 - Resolve practical chunk warnings.
-- Replace `/og/kharon-og.svg` with a PNG or JPEG equivalent. The current OG image is declared as `image/svg+xml`; Facebook, LinkedIn and WhatsApp do not render SVG OG images. The `og:image:type` meta in `BaseLayout.astro` must be updated to match.
+- Replace `/og/kharon-og.svg` with a PNG or JPEG equivalent. Resolved in the 2026-05-25 verified branding pass with `/og/kharon-og.png` and matching `image/png` metadata.
 
 Status: pending.
 
@@ -624,6 +791,323 @@ Pending:
 
 Status: contact form server-side handler implemented. Analytics provider integration pending director approval of a POPIA-compliant provider.
 
+
+### Phase 13 - Security Headers And Browser Hardening
+
+Goal: close browser-level hardening gaps before the staging portal or public site is treated as production authoritative.
+
+Background:
+
+Core server-side protections are present, including RBAC, CSRF, rate limiting, signed sessions, session revocation, audit events and document access logs. The remaining gap is explicit browser security policy and verifiable header posture across public and portal routes.
+
+Tasks:
+
+- Add or verify a strict `Content-Security-Policy`.
+- Set `frame-ancestors 'none'` or equivalent clickjacking protection.
+- Set `object-src 'none'`.
+- Set `base-uri 'self'`.
+- Set `X-Content-Type-Options: nosniff`.
+- Set `Referrer-Policy: strict-origin-when-cross-origin`.
+- Set a restricted `Permissions-Policy`.
+- Confirm headers apply to public routes, portal routes, API JSON responses and protected file responses where appropriate.
+- Confirm CSP does not break inline scripts required by portal forms, or replace inline scripts with nonce/hash-safe alternatives.
+- Document approved external domains if analytics or email provider scripts are later added.
+- Add header checks to the site audit script.
+
+Deployable gate:
+
+- Security headers are visible in staging responses.
+- CSP has no blocking errors on key public and portal pages.
+- Portal login, dashboard forms, jobcard submission, contact form and file downloads still work.
+- `npm run build` and `npm run audit:site` pass.
+
+Status: pending.
+
+### Phase 14 - Public Page Differentiation And Authority Proof
+
+Goal: reduce repetitive page structure and replace abstract proof with concrete, approved authority signals.
+
+Background:
+
+The public site positioning is strategically correct, but several solution pages still feel templated. Kharon needs page-specific proof that demonstrates real technical and operational competence without making unapproved client or vendor claims.
+
+Tasks:
+
+- Add unique proof blocks for Gas Suppression:
+  - protected-room review flow,
+  - agent/release infrastructure considerations,
+  - room integrity and enclosure-readiness checklist,
+  - discharge/release sequence diagram,
+  - required pre-quote data capture.
+- Add unique proof blocks for Fire Detection:
+  - panel and loop review flow,
+  - detector zoning and cause-and-effect explanation,
+  - false-alarm diagnosis content,
+  - service/commissioning evidence examples.
+- Add unique proof blocks for Compliance & Maintenance:
+  - maintenance evidence pack,
+  - service report sample structure,
+  - defect register model,
+  - certificate-readiness logic.
+- Add unique proof blocks for Critical Infrastructure:
+  - uptime impact model,
+  - escalation and response dependency map,
+  - site risk-tier matrix.
+- Add unique proof blocks for Security Systems:
+  - access control, CCTV and monitoring as support systems around fire/gas priorities,
+  - avoid generic guard/alarm positioning.
+- Replace abstract proof wording with concrete but legally safe proof signals:
+  - SAQCC capability statements where approved,
+  - typical document outputs,
+  - supported system familiarity wording,
+  - commercial/industrial-only positioning,
+  - Cape Town/Western Cape operational base if approved.
+
+Deployable gate:
+
+- No two major service pages rely on the same proof-card copy.
+- Each major service page has at least one unique technical diagram, checklist or evidence-output section.
+- No unapproved client names, vendor authorisation claims or absolute compliance guarantees are introduced.
+- `npm run build` and `npm run audit:site` pass.
+
+Status: pending.
+
+### Phase 15 - Compliance Hub And SANS Operationalisation
+
+Goal: turn SANS references into practical, accessible compliance resources that support credibility, SEO and client education.
+
+Background:
+
+The current site references SANS 10139 and SANS 14520, but it does not yet provide enough practical explanation, checklists or document evidence to establish Kharon as a compliance-first authority.
+
+Tasks:
+
+- Create a `/compliance` or `/resources/compliance` hub.
+- Add practical SANS 10139 fire detection summary page.
+- Add practical SANS 14520 gaseous suppression summary page.
+- Add Fire Detection Service Report checklist.
+- Add Gas Suppression Service Report checklist.
+- Add defect severity and certificate-blocking explanation.
+- Add maintenance cadence guidance with legal caution that final requirements depend on system, site, insurer and applicable standard.
+- Add downloadable PDF versions after document design is approved.
+- Add internal links from Gas Suppression, Fire Detection, Compliance & Maintenance, Emergency Support and Client Records.
+- Add FAQ schema only after final content is approved.
+
+Deployable gate:
+
+- Compliance hub is live and linked from public navigation or footer.
+- SANS summaries are practical, non-infringing and do not reproduce copyrighted standard text.
+- Checklists are advisory and do not claim to replace professional assessment.
+- PDF downloads use verified Kharon branding.
+- `npm run build` and `npm run audit:site` pass.
+
+Status: pending.
+
+### Phase 16 - Portal Operational Data Model Expansion
+
+Goal: align the portal data model with Kharon's intended field-service and compliance lifecycle rather than a simplified staging ledger.
+
+Background:
+
+The current D1 schema is suitable for staging, authentication, role dashboards, basic jobs, finance records and document access. It is not yet deep enough to replace Kharon's intended operational chain.
+
+Target operational model:
+
+```text
+Client → Site → System → Job → Visit
+                           ↘ Defect → Quote
+                            ↘ Certificate
+Job / Quote → Invoice
+User / Technician → Visit / Job / Audit
+```
+
+Tasks:
+
+- Add or evolve a dedicated `clients` table separate from `sites`.
+- Add `job_visits` table so multiple visits can exist under one job.
+- Add `defects` table with:
+  - severity,
+  - SANS clause reference,
+  - certificate-blocking flag,
+  - recommended action,
+  - quote-required flag,
+  - status,
+  - rectification evidence.
+- Add `certificates` table tied to service/job/system and blocked by unresolved certificate-blocking defects.
+- Split quote and invoice concepts from generic `financial_records` when production accounting requirements are approved.
+- Add technician profile fields for SAQCC/register/certification data where appropriate.
+- Add site location/GPS fields for map and dispatch workflows.
+- Preserve existing staging data through migration scripts.
+- Update role dashboards to read from expanded entities without breaking existing portal flows.
+
+Deployable gate:
+
+- Migrations apply cleanly to staging.
+- Existing seeded data remains accessible.
+- Admin can view Client, Site, System, Job, Visit, Defect and Certificate relationships.
+- Client users cannot access unmapped client/site records.
+- Technician users cannot access unassigned jobs/visits.
+- `npm run build` and `npm run audit:site` pass.
+
+Status: pending.
+
+### Phase 17 - Technician Field Workflow Maturity
+
+Goal: make the technician portal fit real mobile field-service work, including poor-signal conditions and SANS-aligned evidence capture.
+
+Background:
+
+The current technician workflow supports assigned jobs, start-job action, comments, parts used, follow-up actions, photos, signature and generated jobcard evidence. It does not yet capture enough structured field telemetry for Kharon's intended compliance and service-report model.
+
+Tasks:
+
+- Add visit start and visit end timestamps.
+- Add GPS check-in and check-out capture where browser permissions allow.
+- Add customer/responsible-person name, role and contact field beside signature.
+- Add system-specific inspection sections:
+  - fire detection panel status,
+  - loop/device status,
+  - battery voltage/load,
+  - earth fault status,
+  - gas cylinder pressure/agent mass,
+  - release panel status,
+  - room condition observations.
+- Add defect capture from within jobcard closure.
+- Add "unable to complete" and "follow-up required" status outcomes.
+- Add offline draft expectations:
+  - local unsent draft warning,
+  - clear no-sync-risk messaging,
+  - retry/resubmit guidance.
+- Add evidence review before final submission.
+- Add technician history filters by date, site, system and status.
+
+Deployable gate:
+
+- Technician can complete a realistic service visit from mobile without desktop-only controls.
+- Required fields are system-type aware.
+- Defects can be captured without leaving the job workflow.
+- Signature includes responsible person's identity.
+- Evidence photos and jobcard PDF remain access-controlled.
+- `npm run build` and `npm run audit:site` pass.
+
+Status: pending.
+
+### Phase 18 - Client Compliance Command Centre
+
+Goal: evolve the client portal from record access into a compliance and lifecycle status dashboard.
+
+Background:
+
+The client dashboard currently shows mapped sites, systems, latest jobcard download, quote approvals, maintenance requests and recent request status. Clients still need a clearer compliance summary and document pack view.
+
+Tasks:
+
+- Add site-level compliance summary:
+  - next service due,
+  - overdue systems,
+  - open defects,
+  - certificate status,
+  - pending quotes,
+  - recent completed visits.
+- Add system-level status cards with risk bands.
+- Add defect list visible to mapped client users where commercially appropriate.
+- Add certificate and service-report download sections.
+- Add "download evidence pack" for a selected site/system/date range.
+- Add emergency or urgent request route from client dashboard.
+- Add client-facing explanation of document status:
+  - draft,
+  - completed,
+  - blocked by defect,
+  - awaiting quote,
+  - closed.
+- Add account/site switching for multi-site clients.
+
+Deployable gate:
+
+- Client can understand compliance status without reading raw job records.
+- Client can download authorised records only.
+- Client can identify pending actions and quote approvals.
+- Client cannot access another client's site, documents, defects or finance records.
+- `npm run build` and `npm run audit:site` pass.
+
+Status: pending.
+
+### Phase 19 - Finance Accounting And VAT Hardening
+
+Goal: mature the finance workspace beyond a staging ledger into a reliable accounting handoff layer.
+
+Background:
+
+The finance dashboard provides useful visibility into financial records, ageing and settlement, but production accounting needs VAT, invoice identifiers, debtor statements, approval controls and immutable evidence.
+
+Tasks:
+
+- Add VAT-exclusive, VAT amount and VAT-inclusive values.
+- Add invoice number sequence rules.
+- Add quote number sequence rules.
+- Add debtor ageing by client/site.
+- Add invoice PDF generation or export-ready invoice data.
+- Add proof-of-payment attachment or reference capture.
+- Add credit note or reversal workflow instead of destructive settlement edits.
+- Add immutable payment event log.
+- Add finance export mapping for the selected accounting workflow.
+- Add finance role QA for exports, settlement, failed updates and unauthorized access.
+
+Deployable gate:
+
+- Finance records are exportable without formula-injection risk.
+- VAT totals are correct and visible.
+- Settlement and reversal actions are audited.
+- Client and technician roles cannot perform finance-only actions.
+- `npm run build` and `npm run audit:site` pass.
+
+Status: pending.
+
+### Phase 20 - Portal UX Scale And Role Dashboard Refinement
+
+Goal: refine each portal role into a focused operational workspace rather than generic data panels.
+
+Tasks:
+
+- Redesign Admin landing view around:
+  - exceptions,
+  - SLA breaches,
+  - unassigned jobs,
+  - overdue systems,
+  - urgent client requests,
+  - missing documentation.
+- Redesign Technician landing view around:
+  - today's jobs,
+  - start route,
+  - site notes,
+  - checklist,
+  - submit jobcard.
+- Redesign Client landing view around:
+  - compliance status,
+  - documents,
+  - open requests,
+  - quote approvals.
+- Redesign Finance landing view around:
+  - overdue invoices,
+  - pending quotes,
+  - payment capture,
+  - exports.
+- Add empty states, loading states and error states for every portal dashboard.
+- Add search/filter patterns consistently across admin, finance and history pages.
+- Add status badges and risk indicators with consistent visual language.
+- Run mobile/tablet QA for all portal flows.
+
+Deployable gate:
+
+- Each role dashboard has one primary job to do.
+- Common actions are visible without scrolling through unrelated data.
+- Portal pages are usable on mobile and tablet.
+- Empty/error states are informative and safe.
+- `npm run build` and `npm run audit:site` pass.
+
+Status: pending.
+
+
 ## Master Feature List
 
 ### Foundation
@@ -683,7 +1167,7 @@ Status: contact form server-side handler implemented. Analytics provider integra
 - Security Systems page with access control, CCTV, monitoring and integration content.
 - Industries page with commercial and industrial environment coverage.
 - About page with Kharon positioning, engineering discipline, operating model and trust signals.
-- Contact page with accessible enquiry form and direct contact routes.
+- Contact page with server-side accessible enquiry form and direct contact routes.
 - Portal login page with role-directed authentication.
 - Technician dashboard for assigned dispatches and jobcard closure.
 - Admin dashboard for completed works, active dispatches and lifecycle exposure.
@@ -813,7 +1297,7 @@ Current implementation:
 - Session cookie: `kharon_session_token`, HttpOnly, Secure, SameSite=Strict, 12-hour expiry.
 - Password storage: PBKDF2 SHA-256 hashes generated by `npm run portal:hash-password`.
 - Middleware protects `/portal/*`, bypassing login and auth API only.
-- D1 tables: `users`, `sites`, `systems`, `jobs`, `financial_records`.
+- D1 tables: `users`, `sites`, `systems`, `jobs`, `financial_records`, `maintenance_requests`, `client_site_access`, `audit_events`, `job_evidence_files`, `document_access_logs`, `portal_rate_limits`, `password_reset_tokens`, `revoked_sessions`, `contact_submissions`.
 - R2 stores generated jobcard PDFs under `jobcards/job-[jobId]-completed.pdf`.
 - Technician job closure updates job status, lifecycle dates, R2 documentation and finance records.
 - Client file downloads are permission-checked against site ownership.
@@ -877,6 +1361,52 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Production cutover checklist for `portal.kharon.co.za`.
   - [x] Monitoring checks for login, dashboard redirect and D1/R2 availability.
 
+
+### Public Authority And Compliance Hub
+
+- Page-specific technical proof sections must replace generic repeated proof-card patterns.
+- Gas Suppression proof must include protected-room, release-infrastructure, room-integrity and agent/readiness considerations.
+- Fire Detection proof must include panel, loop, detector, zone, cause-and-effect and false-alarm diagnosis considerations.
+- Compliance content must become a practical hub, not only a service page.
+- SANS content must be advisory, summary-level and non-infringing; do not reproduce protected standard text.
+- Approved evidence examples should include service report structures, jobcard examples, defect registers, certificate-readiness explanations and anonymised project proof.
+- Public proof must avoid unapproved client names, vendor partnership claims or absolute compliance guarantees.
+
+### Security Headers And Privacy Governance
+
+- Add strict browser security headers before production cutover.
+- Keep analytics off all `/portal/*` routes.
+- Confirm POPIA implications for:
+  - public contact submissions,
+  - analytics,
+  - portal audit logs,
+  - document access logs,
+  - technician evidence photos,
+  - finance exports,
+  - client records.
+- Keep contact submissions and portal records subject to documented retention review.
+- Keep all production secrets, seed credentials, reset links and password hashes outside git.
+
+### Portal Maturity Target
+
+Target entity model:
+
+```text
+Client → Site → System → Job → Visit
+                           ↘ Defect → Quote
+                            ↘ Certificate
+Job / Quote → Invoice
+User / Technician → Visit / Job / Audit
+```
+
+Target role experience:
+
+- Admin: exceptions, dispatch, lifecycle, users, sites, systems, defects, certificates and audit.
+- Technician: mobile field workflow, assigned jobs, SANS-aware visit capture, defects, photos and signature.
+- Client: compliance status, documents, requests, quotes, invoices and evidence packs for mapped sites only.
+- Finance: quote/invoice/payment workflow, VAT, debtor ageing, accounting export and immutable audit trail.
+
+
 ## Master User Operation
 
 ### Primary Visitor Operation
@@ -910,7 +1440,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 1. Admin creates or updates site/system/user records in D1 using controlled scripts until an admin CRUD UI exists.
 2. Technician signs in to `/portal/tech/dashboard`.
 3. Technician closes assigned dispatch with comments and captured signature evidence.
-4. Portal stores generated jobcard PDF in R2, marks the job completed, advances system next due date by six months and creates an unpaid finance record.
+4. Portal stores generated jobcard PDF in R2, marks the job completed, advances the system next due date using the configured service interval and creates an unpaid finance record.
 5. Finance reviews ledger entries in `/portal/finance/dashboard`.
 6. Client sees system lifecycle status and permitted jobcard files in `/portal/client/dashboard`.
 7. Admin monitors active jobs, completed work and due systems in `/portal/admin/dashboard`.
@@ -949,6 +1479,10 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add deeper solution-specific proof points and operating evidence.
 - [x] Add trust modules: compliance records, maintenance cadence, response process, documentation outputs.
 - [x] Add South Africa-relevant compliance language where business requirements confirm scope.
+- [ ] Add page-specific technical proof sections for Gas Suppression, Fire Detection, Compliance, Critical Infrastructure and Security.
+- [ ] Add compliance hub content with SANS 10139 and SANS 14520 practical summaries.
+- [ ] Add approved document evidence examples: jobcard, service report, defect register and certificate-readiness guidance.
+- [ ] Add page-specific CTA wording and routing for protected-room review, fire detection review, compliance audit, urgent fault and records access.
 
 ### UI And Visuals
 
@@ -983,7 +1517,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add LocalBusiness schema.
 - [x] Add unique meta descriptions per page.
 - [x] Add OpenGraph image once a brand image asset exists.
-- [ ] Replace SVG OG image with PNG or JPEG and update `og:image:type` meta.
+- [x] Replace SVG OG image with PNG or JPEG and update `og:image:type` meta.
 - [x] Validate generated sitemap in built output.
 
 ### Accessibility
@@ -993,9 +1527,9 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add labelled contact form.
 - [x] Add reduced-motion support.
 - [x] Add keyboard-accessible mobile menu escape behavior.
-- [ ] Fix duplicate Compliance link in mobile navigation.
-- [ ] Add mobile menu auto-close on nav link tap.
-- [ ] Fix Solutions dropdown ARIA role and keyboard navigation pattern.
+- [x] Fix duplicate Compliance link in mobile navigation.
+- [x] Add mobile menu auto-close on nav link tap.
+- [x] Fix Solutions dropdown ARIA role and keyboard navigation pattern.
 - [ ] Audit keyboard flow in Browser across desktop and mobile.
 - [ ] Run automated accessibility check when tooling is available.
 - [ ] Verify all color combinations against WCAG AA.
@@ -1004,7 +1538,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 
 - [x] Astro SSR build passes.
 - [x] Dependency audit passes.
-- [ ] Reduce 3D client chunk warning.
+- [x] Reduce 3D client chunk warning by removing live 3D public-shell dependency.
 - [ ] Add responsive local image optimization.
 - [ ] Run Lighthouse or equivalent once browser tooling is stable.
 - [ ] Add bundle budget or build warning policy.
@@ -1037,15 +1571,21 @@ Operational gaps to resolve before replacing manual back-office processes:
 - [x] Add dispatch scheduling workflow.
 - [x] Convert client requests into scheduled dispatches.
 - [x] Add monitoring and backup SOPs.
-- [ ] Add server-side session token revocation on logout (Phase 10).
-- [ ] Add pagination and search to admin operations list views (Phase 11).
-- [ ] Add technician completed job history view (Phase 11).
-- [ ] Sanitize CSV export cells against formula injection (Phase 11).
-- [ ] Add confirmation gate to finance Mark settled action (Phase 11).
-- [ ] Replace reset link plain-text DOM rendering with copy-to-clipboard control (Phase 11).
-- [ ] Add configurable service interval per system type (Phase 11).
+- [x] Add server-side session token revocation on logout (Phase 10).
+- [x] Add pagination and search to admin operations list views (Phase 11).
+- [x] Add technician completed job history view (Phase 11).
+- [x] Sanitize CSV export cells against formula injection (Phase 11).
+- [x] Add confirmation gate to finance Mark settled action (Phase 11).
+- [x] Replace reset link plain-text DOM rendering with copy-to-clipboard control (Phase 11).
+- [x] Add configurable service interval per system type (Phase 11).
 - [ ] Add web analytics to public site (Phase 12).
 - [ ] Add migration plan from `portal.tequit.co.za` to `portal.kharon.co.za`.
+- [ ] Add strict security headers and CSP verification (Phase 13).
+- [ ] Expand portal data model with Clients, Visits, Defects and Certificates (Phase 16).
+- [ ] Add SANS-aware technician field telemetry and defect capture (Phase 17).
+- [ ] Add client compliance command centre and evidence-pack downloads (Phase 18).
+- [ ] Add finance VAT, invoice numbering, debtor ageing and proof-of-payment maturity (Phase 19).
+- [ ] Refine role dashboards around primary operational jobs (Phase 20).
 
 ## Phased Implementation
 
@@ -1295,6 +1835,121 @@ Analytics events appear in provider dashboard for public routes. No events on po
 Status:
 
 Contact form handler implemented and deployed to staging (migration `0011_contact_submissions.sql` applied). Analytics provider selection and phone number pending director input.
+
+
+### Phase 11: Security Headers And Browser Hardening
+
+Goal:
+
+Add explicit browser security policy and verify header posture across public, portal, API and protected document routes.
+
+Tasks:
+
+- Add CSP and supporting headers.
+- Confirm no portal scripts or form submissions are broken.
+- Add header checks to audit tooling.
+- Document approved external script/style/image domains.
+
+Status:
+
+Pending. Mirrors Outstanding Build Phase 13.
+
+### Phase 12: Public Authority Proof And Compliance Hub
+
+Goal:
+
+Differentiate major public pages and add practical compliance resources.
+
+Tasks:
+
+- Add page-specific proof content.
+- Add compliance hub and SANS practical summaries.
+- Add approved technical diagrams and document examples.
+- Add page-specific CTAs.
+
+Status:
+
+Pending. Mirrors Outstanding Build Phases 14 and 15.
+
+### Phase 13: Portal Operational Model Expansion
+
+Goal:
+
+Expand portal data model from staging operations to Kharon's intended compliance lifecycle.
+
+Tasks:
+
+- Add Client, Visit, Defect and Certificate entities.
+- Align role dashboards to the expanded model.
+- Preserve existing staging data through migrations.
+- Add certificate blocking logic tied to unresolved defects.
+
+Status:
+
+Pending. Mirrors Outstanding Build Phase 16.
+
+### Phase 14: Technician Field Workflow Maturity
+
+Goal:
+
+Make technician workflow suitable for real mobile field-service use.
+
+Tasks:
+
+- Add visit timing, GPS, customer identity, system-specific readings, defect capture and offline draft expectations.
+- Add evidence review before final submission.
+- Add richer technician history filters.
+
+Status:
+
+Pending. Mirrors Outstanding Build Phase 17.
+
+### Phase 15: Client Compliance Command Centre
+
+Goal:
+
+Turn client portal from record access into compliance visibility.
+
+Tasks:
+
+- Add site/system compliance summaries.
+- Add open defects, certificate status and evidence-pack downloads.
+- Add urgent request route and clearer client action states.
+
+Status:
+
+Pending. Mirrors Outstanding Build Phase 18.
+
+### Phase 16: Finance Accounting Hardening
+
+Goal:
+
+Mature finance beyond staging ledger.
+
+Tasks:
+
+- Add VAT, invoice/quote numbering, debtor ageing, proof-of-payment capture, reversal flow and accounting export mapping.
+
+Status:
+
+Pending. Mirrors Outstanding Build Phase 19.
+
+### Phase 17: Portal UX Scale Refinement
+
+Goal:
+
+Refine every role dashboard around its primary operational job.
+
+Tasks:
+
+- Redesign Admin, Technician, Client and Finance dashboards around role-specific action priority.
+- Add consistent empty states, error states, filters, search and risk indicators.
+- Complete tablet/mobile QA for every role.
+
+Status:
+
+Pending. Mirrors Outstanding Build Phase 20.
+
 
 ## Verification Commands
 
