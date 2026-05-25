@@ -84,182 +84,146 @@ try {
     </div>
   </section>
 
+  <!-- Tab navigation -->
+  <div class="border-b border-kharon-border bg-white">
+    <div class="mx-auto flex max-w-7xl flex-wrap gap-1 px-4 py-3 sm:px-6">
+      <button data-tab="enquiries" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold bg-kharon-purple text-white">Enquiries</button>
+      <button data-tab="jobs" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Jobs</button>
+      <button data-tab="users" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Users</button>
+      <button data-tab="sites" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Sites & Systems</button>
+      <button data-tab="data" class="ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey">Data</button>
+    </div>
+  </div>
+
   <section class="px-4 py-6 sm:px-6 sm:py-8">
-    <div class="mx-auto grid max-w-7xl gap-8">
-      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+    {loadError && <p class="mx-auto mb-6 max-w-7xl border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
 
+    <!-- ─── Enquiries panel ─────────────────────────────────────────── -->
+    <div id="ops-panel-enquiries" class="ops-panel mx-auto grid max-w-7xl gap-8">
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <div class="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p class="text-xs font-bold uppercase text-kharon-purple">Bulk administration</p>
-            <h2 class="mt-2 text-xl font-bold">CSV import and export</h2>
-            <p class="mt-2 max-w-3xl text-sm leading-6 text-kharon-muted">
-              Export operational records for review, then import controlled site or system updates using the exact CSV headers shown below.
-              User export is read-only; user bulk import remains blocked until password and reset-link delivery controls are approved.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=users">Export users</a>
-            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=sites">Export sites</a>
-            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=systems">Export systems</a>
-          </div>
-        </div>
-
-        <div class="mt-5 grid gap-5 lg:grid-cols-2">
-          <form class="import-form grid gap-3" data-type="sites">
-            <h3 class="font-bold">Import sites</h3>
-            <p class="portal-scroll-x rounded-md bg-kharon-light px-3 py-2 font-mono text-xs whitespace-nowrap">id,owner_company_name,physical_address,site_contact_person,site_contact_email,site_contact_phone,billing_emails</p>
-            <textarea class="portal-field min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste sites CSV here"></textarea>
-            <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Import sites</button>
-            <p class="import-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-          </form>
-
-          <form class="import-form grid gap-3" data-type="systems">
-            <h3 class="font-bold">Import systems</h3>
-            <p class="portal-scroll-x rounded-md bg-kharon-light px-3 py-2 font-mono text-xs whitespace-nowrap">id,site_id,system_type,coverage_area,manufacturer,model_reference,next_due_date</p>
-            <textarea class="portal-field min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste systems CSV here"></textarea>
-            <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Import systems</button>
-            <p class="import-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-          </form>
-        </div>
-      </article>
-
-      <div class="grid gap-6 xl:grid-cols-2">
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <h2 class="text-xl font-bold">Create user</h2>
-          <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/users">
-            <input type="hidden" name="action" value="create" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="name" placeholder="Full name" required />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="email" type="email" placeholder="email@domain.co.za" required />
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="role" required>
-              <option value="tech">Technician</option>
-              <option value="admin">Admin</option>
-              <option value="client">Client</option>
-              <option value="finance">Finance</option>
-            </select>
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="siteId">
-              <option value="">No site mapping</option>
-              {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
-            </select>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="password" type="password" minlength="14" placeholder="Temporary password" required />
-            <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="forcePasswordChange" checked /> Force password change</label>
-            <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="mfaRequired" /> Require MFA for admin/finance roles</label>
-            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create user</button>
-            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-          </form>
-        </article>
-
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <h2 class="text-xl font-bold">Create site</h2>
-          <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/sites">
-            <input type="hidden" name="action" value="create" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="ownerCompanyName" placeholder="Owner company" required />
-            <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="physicalAddress" placeholder="Physical address" required></textarea>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactPerson" placeholder="Site contact person" required />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactEmail" type="email" placeholder="site.contact@example.com" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactPhone" placeholder="Site phone" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="billingEmails" placeholder="billing@example.com" required />
-            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create site</button>
-            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-          </form>
-        </article>
-
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <h2 class="text-xl font-bold">Create system</h2>
-          <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/systems">
-            <input type="hidden" name="action" value="create" />
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
-              <option value="">Select site</option>
-              {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
-            </select>
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="systemType" required>
-              <option value="Gas Suppression">Gas Suppression</option>
-              <option value="Fire Detection">Fire Detection</option>
-            </select>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="coverageArea" placeholder="Server Room 01" required />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="manufacturer" placeholder="Manufacturer" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="modelReference" placeholder="Model/reference" />
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="nextDueDate" type="date" value={today} required />
-            <div class="flex items-center gap-3">
-              <label class="whitespace-nowrap text-sm font-semibold">Service interval (months)</label>
-              <input class="w-24 rounded-md border border-kharon-border px-3 py-2" name="serviceIntervalMonths" type="number" min="1" max="36" value="6" required />
+        <details class="ops-section" open>
+          <summary class="flex cursor-pointer items-center justify-between">
+            <div>
+              <p class="text-xs font-bold uppercase text-kharon-purple">Public contact form</p>
+              <h2 class="mt-1 text-xl font-bold">Website enquiries <span class="ml-2 text-sm font-normal text-kharon-grey">({contactEnquiries.length})</span></h2>
             </div>
-            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create system</button>
-            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-          </form>
-        </article>
-
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <h2 class="text-xl font-bold">Create job</h2>
-          <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/jobs">
-            <input type="hidden" name="action" value="create" />
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId" required>
-              <option value="">Select system</option>
-              {systems.map((system) => <option value={system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
-            </select>
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="assignedTechnicianId">
-              <option value="">Unassigned</option>
-              {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
-            </select>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="scheduledDate" type="date" value={today} required />
-            <select class="rounded-md border border-kharon-border px-4 py-3" name="status">
-              <option value="Scheduled">Scheduled</option>
-              <option value="In Progress">In Progress</option>
-            </select>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="jobType" value="Maintenance" required />
-            <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="siteNotes" placeholder="Site notes"></textarea>
-            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create job</button>
-            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
-          </form>
-        </article>
-      </div>
-
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <div class="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p class="text-xs font-bold uppercase text-kharon-purple">Client account access</p>
-            <h2 class="mt-2 text-xl font-bold">Multi-site record mapping</h2>
-            <p class="mt-2 max-w-3xl text-sm leading-6 text-kharon-muted">
-              Grant additional client site access without changing the user's primary `site_id`. Existing single-site client mapping remains supported.
-            </p>
+            <span class="text-sm text-kharon-purple">Toggle</span>
+          </summary>
+          <div class="mt-5 grid gap-3">
+            {contactEnquiries.length === 0 && (
+              <p class="text-kharon-grey">No contact enquiries have been received yet.</p>
+            )}
+            {contactEnquiries.map((item) => (
+              <article class="grid gap-2 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2">
+                <div class="min-w-0">
+                  <p class="font-semibold">{item.name}</p>
+                  <p class="text-sm text-kharon-purple">
+                    <a href={`mailto:${item.email}`} class="hover:underline">{item.email}</a>
+                  </p>
+                  <p class="mt-1 text-xs font-bold uppercase text-kharon-grey">{item.request_type}</p>
+                  <p class="mt-2 text-sm leading-6 text-kharon-black">{item.message}</p>
+                </div>
+                <div class="text-xs text-kharon-grey">
+                  <p>{item.submitted_at?.slice(0, 16).replace("T", " ")} UTC</p>
+                </div>
+              </article>
+            ))}
           </div>
-          <a class="rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" href="/portal/client/quotes">
-            Client quote view
-          </a>
-        </div>
+        </details>
+      </article>
+    </div>
 
-        <form class="client-site-access-form mt-5 grid gap-3 lg:grid-cols-3" data-endpoint="/portal/api/admin/client-site-access">
-          <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="userId" required>
-            <option value="">Select client user</option>
-            {clientUsers.map((client) => <option value={client.id}>{client.name} / {client.email}</option>)}
-          </select>
-          <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
-            <option value="">Select site</option>
-            {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
-          </select>
-          <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Grant access</button>
-          <input type="hidden" name="action" value="grant" />
-          <p class="client-site-access-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-3"></p>
-        </form>
-
-        <div class="mt-5 grid gap-3">
-          {clientSiteAccess.length === 0 && <p class="text-kharon-grey">No additional client site access mappings have been granted.</p>}
-          {clientSiteAccess.map((mapping) => (
-            <form class="client-site-access-form flex flex-wrap items-center justify-between gap-3 border border-kharon-border bg-kharon-light p-4" data-endpoint="/portal/api/admin/client-site-access">
-              <div>
-                <p class="font-semibold">{mapping.user_name} / {mapping.owner_company_name}</p>
-                <p class="text-sm text-kharon-grey">{mapping.user_email} / granted {mapping.granted_at}</p>
-              </div>
-              <input type="hidden" name="action" value="revoke" />
-              <input type="hidden" name="userId" value={mapping.user_id} />
-              <input type="hidden" name="siteId" value={mapping.site_id} />
-              <button class="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900">Revoke</button>
-              <p class="client-site-access-result hidden w-full rounded-md border px-4 py-3 text-sm font-semibold"></p>
-            </form>
-          ))}
-        </div>
+    <!-- ─── Jobs panel ─────────────────────────────────────────────── -->
+    <div id="ops-panel-jobs" class="ops-panel mx-auto grid max-w-7xl gap-8">
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <details class="ops-section" open>
+          <summary class="flex cursor-pointer items-center justify-between">
+            <h2 class="text-xl font-bold">Jobs <span class="ml-2 text-sm font-normal text-kharon-grey">({jobs.length})</span></h2>
+            <span class="text-sm text-kharon-purple">Toggle</span>
+          </summary>
+          <div class="mt-5 grid gap-4">
+            {jobs.slice(0, 20).map((record) => (
+              <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/jobs">
+                <input type="hidden" name="action" value="update" />
+                <input type="hidden" name="id" value={record.id} />
+                <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
+                  {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
+                </select>
+                <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
+                  <option value="">Unassigned</option>
+                  {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
+                </select>
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
+                <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
+                  {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
+                </select>
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
+                <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
+                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+              </form>
+            ))}
+            {jobs.length > 20 && (
+              <details class="ops-overflow mt-2">
+                <summary class="cursor-pointer rounded-md border border-kharon-border bg-kharon-light px-4 py-3 text-sm font-semibold text-kharon-purple">
+                  Show {jobs.length - 20} more jobs…
+                </summary>
+                <div class="mt-4 grid gap-4">
+                  {jobs.slice(20).map((record) => (
+                    <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/jobs">
+                      <input type="hidden" name="action" value="update" />
+                      <input type="hidden" name="id" value={record.id} />
+                      <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
+                        {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
+                      </select>
+                      <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
+                        <option value="">Unassigned</option>
+                        {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
+                      </select>
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
+                      <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
+                        {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
+                      </select>
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
+                      <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
+                      <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+                      <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+                    </form>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        </details>
       </article>
 
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <h2 class="text-xl font-bold">Create job</h2>
+        <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/jobs">
+          <input type="hidden" name="action" value="create" />
+          <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId" required>
+            <option value="">Select system</option>
+            {systems.map((system) => <option value={system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
+          </select>
+          <select class="rounded-md border border-kharon-border px-4 py-3" name="assignedTechnicianId">
+            <option value="">Unassigned</option>
+            {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
+          </select>
+          <input class="rounded-md border border-kharon-border px-4 py-3" name="scheduledDate" type="date" value={today} required />
+          <select class="rounded-md border border-kharon-border px-4 py-3" name="status">
+            <option value="Scheduled">Scheduled</option>
+            <option value="In Progress">In Progress</option>
+          </select>
+          <input class="rounded-md border border-kharon-border px-4 py-3" name="jobType" value="Maintenance" required />
+          <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="siteNotes" placeholder="Site notes"></textarea>
+          <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create job</button>
+          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+        </form>
+      </article>
+    </div>
+
+    <!-- ─── Users panel ────────────────────────────────────────────── -->
+    <div id="ops-panel-users" class="ops-panel mx-auto grid max-w-7xl gap-8">
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
         <details class="ops-section" open>
           <summary class="flex cursor-pointer items-center justify-between">
@@ -353,7 +317,34 @@ try {
       </article>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <details class="ops-section">
+        <h2 class="text-xl font-bold">Create user</h2>
+        <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/users">
+          <input type="hidden" name="action" value="create" />
+          <input class="rounded-md border border-kharon-border px-4 py-3" name="name" placeholder="Full name" required />
+          <input class="rounded-md border border-kharon-border px-4 py-3" name="email" type="email" placeholder="email@domain.co.za" required />
+          <select class="rounded-md border border-kharon-border px-4 py-3" name="role" required>
+            <option value="tech">Technician</option>
+            <option value="admin">Admin</option>
+            <option value="client">Client</option>
+            <option value="finance">Finance</option>
+          </select>
+          <select class="rounded-md border border-kharon-border px-4 py-3" name="siteId">
+            <option value="">No site mapping</option>
+            {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
+          </select>
+          <input class="rounded-md border border-kharon-border px-4 py-3" name="password" type="password" minlength="14" placeholder="Temporary password" required />
+          <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="forcePasswordChange" checked /> Force password change</label>
+          <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="mfaRequired" /> Require MFA for admin/finance roles</label>
+          <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create user</button>
+          <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+        </form>
+      </article>
+    </div>
+
+    <!-- ─── Sites & Systems panel ──────────────────────────────────── -->
+    <div id="ops-panel-sites" class="ops-panel mx-auto grid max-w-7xl gap-8">
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <details class="ops-section" open>
           <summary class="flex cursor-pointer items-center justify-between">
             <h2 class="text-xl font-bold">Sites <span class="ml-2 text-sm font-normal text-kharon-grey">({sites.length})</span></h2>
             <span class="text-sm text-kharon-purple">Toggle</span>
@@ -465,100 +456,157 @@ try {
       </article>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <details class="ops-section">
-          <summary class="flex cursor-pointer items-center justify-between">
-            <h2 class="text-xl font-bold">Jobs <span class="ml-2 text-sm font-normal text-kharon-grey">({jobs.length})</span></h2>
-            <span class="text-sm text-kharon-purple">Toggle</span>
-          </summary>
-          <div class="mt-5 grid gap-4">
-            {jobs.slice(0, 20).map((record) => (
-              <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/jobs">
-                <input type="hidden" name="action" value="update" />
-                <input type="hidden" name="id" value={record.id} />
-                <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
-                  {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
-                </select>
-                <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
-                  <option value="">Unassigned</option>
-                  {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
-                </select>
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
-                <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
-                  {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
-                </select>
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
-                <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
-                <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-              </form>
-            ))}
-            {jobs.length > 20 && (
-              <details class="ops-overflow mt-2">
-                <summary class="cursor-pointer rounded-md border border-kharon-border bg-kharon-light px-4 py-3 text-sm font-semibold text-kharon-purple">
-                  Show {jobs.length - 20} more jobs…
-                </summary>
-                <div class="mt-4 grid gap-4">
-                  {jobs.slice(20).map((record) => (
-                    <form class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7" data-endpoint="/portal/api/admin/jobs">
-                      <input type="hidden" name="action" value="update" />
-                      <input type="hidden" name="id" value={record.id} />
-                      <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
-                        {systems.map((system) => <option value={system.id} selected={record.system_id === system.id}>{system.owner_company_name} / {system.coverage_area}</option>)}
-                      </select>
-                      <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
-                        <option value="">Unassigned</option>
-                        {technicians.map((tech) => <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>)}
-                      </select>
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
-                      <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
-                        {["Scheduled", "In Progress", "Completed", "Invoiced"].map((status) => <option value={status} selected={record.status === status}>{status}</option>)}
-                      </select>
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
-                      <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
-                      <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-                      <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
-                    </form>
-                  ))}
-                </div>
-              </details>
-            )}
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-bold uppercase text-kharon-purple">Client account access</p>
+            <h2 class="mt-2 text-xl font-bold">Multi-site record mapping</h2>
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-kharon-muted">
+              Grant additional client site access without changing the user's primary `site_id`. Existing single-site client mapping remains supported.
+            </p>
           </div>
-        </details>
+          <a class="rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" href="/portal/client/quotes">
+            Client quote view
+          </a>
+        </div>
+
+        <form class="client-site-access-form mt-5 grid gap-3 lg:grid-cols-3" data-endpoint="/portal/api/admin/client-site-access">
+          <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="userId" required>
+            <option value="">Select client user</option>
+            {clientUsers.map((client) => <option value={client.id}>{client.name} / {client.email}</option>)}
+          </select>
+          <select class="portal-field rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
+            <option value="">Select site</option>
+            {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
+          </select>
+          <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Grant access</button>
+          <input type="hidden" name="action" value="grant" />
+          <p class="client-site-access-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-3"></p>
+        </form>
+
+        <div class="mt-5 grid gap-3">
+          {clientSiteAccess.length === 0 && <p class="text-kharon-grey">No additional client site access mappings have been granted.</p>}
+          {clientSiteAccess.map((mapping) => (
+            <form class="client-site-access-form flex flex-wrap items-center justify-between gap-3 border border-kharon-border bg-kharon-light p-4" data-endpoint="/portal/api/admin/client-site-access">
+              <div>
+                <p class="font-semibold">{mapping.user_name} / {mapping.owner_company_name}</p>
+                <p class="text-sm text-kharon-grey">{mapping.user_email} / granted {mapping.granted_at}</p>
+              </div>
+              <input type="hidden" name="action" value="revoke" />
+              <input type="hidden" name="userId" value={mapping.user_id} />
+              <input type="hidden" name="siteId" value={mapping.site_id} />
+              <button class="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900">Revoke</button>
+              <p class="client-site-access-result hidden w-full rounded-md border px-4 py-3 text-sm font-semibold"></p>
+            </form>
+          ))}
+        </div>
       </article>
 
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <details class="ops-section">
-          <summary class="flex cursor-pointer items-center justify-between">
-            <div>
-              <p class="text-xs font-bold uppercase text-kharon-purple">Public contact form</p>
-              <h2 class="mt-1 text-xl font-bold">Website enquiries <span class="ml-2 text-sm font-normal text-kharon-grey">({contactEnquiries.length})</span></h2>
+      <div class="grid gap-6 xl:grid-cols-2">
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
+          <h2 class="text-xl font-bold">Create site</h2>
+          <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/sites">
+            <input type="hidden" name="action" value="create" />
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="ownerCompanyName" placeholder="Owner company" required />
+            <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="physicalAddress" placeholder="Physical address" required></textarea>
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactPerson" placeholder="Site contact person" required />
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactEmail" type="email" placeholder="site.contact@example.com" />
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="siteContactPhone" placeholder="Site phone" />
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="billingEmails" placeholder="billing@example.com" required />
+            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create site</button>
+            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+          </form>
+        </article>
+
+        <article class="border border-kharon-border bg-white p-4 sm:p-5">
+          <h2 class="text-xl font-bold">Create system</h2>
+          <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/systems">
+            <input type="hidden" name="action" value="create" />
+            <select class="rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
+              <option value="">Select site</option>
+              {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
+            </select>
+            <select class="rounded-md border border-kharon-border px-4 py-3" name="systemType" required>
+              <option value="Gas Suppression">Gas Suppression</option>
+              <option value="Fire Detection">Fire Detection</option>
+            </select>
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="coverageArea" placeholder="Server Room 01" required />
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="manufacturer" placeholder="Manufacturer" />
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="modelReference" placeholder="Model/reference" />
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="nextDueDate" type="date" value={today} required />
+            <div class="flex items-center gap-3">
+              <label class="whitespace-nowrap text-sm font-semibold">Service interval (months)</label>
+              <input class="w-24 rounded-md border border-kharon-border px-3 py-2" name="serviceIntervalMonths" type="number" min="1" max="36" value="6" required />
             </div>
-            <span class="text-sm text-kharon-purple">Toggle</span>
-          </summary>
-          <div class="mt-5 grid gap-3">
-            {contactEnquiries.length === 0 && (
-              <p class="text-kharon-grey">No contact enquiries have been received yet.</p>
-            )}
-            {contactEnquiries.map((item) => (
-              <article class="grid gap-2 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2">
-                <div class="min-w-0">
-                  <p class="font-semibold">{item.name}</p>
-                  <p class="text-sm text-kharon-purple">
-                    <a href={`mailto:${item.email}`} class="hover:underline">{item.email}</a>
-                  </p>
-                  <p class="mt-1 text-xs font-bold uppercase text-kharon-grey">{item.request_type}</p>
-                  <p class="mt-2 text-sm leading-6 text-kharon-black">{item.message}</p>
-                </div>
-                <div class="text-xs text-kharon-grey">
-                  <p>{item.submitted_at?.slice(0, 16).replace("T", " ")} UTC</p>
-                </div>
-              </article>
-            ))}
+            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create system</button>
+            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+          </form>
+        </article>
+      </div>
+    </div>
+
+    <!-- ─── Data panel ──────────────────────────────────────────────── -->
+    <div id="ops-panel-data" class="ops-panel mx-auto grid max-w-7xl gap-8">
+      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-bold uppercase text-kharon-purple">Bulk administration</p>
+            <h2 class="mt-2 text-xl font-bold">CSV import and export</h2>
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-kharon-muted">
+              Export operational records for review, then import controlled site or system updates using the exact CSV headers shown below.
+              User export is read-only; user bulk import remains blocked until password and reset-link delivery controls are approved.
+            </p>
           </div>
-        </details>
+          <div class="flex flex-wrap gap-2">
+            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=users">Export users</a>
+            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=sites">Export sites</a>
+            <a class="rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black" href="/portal/api/admin/export?type=systems">Export systems</a>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-5 lg:grid-cols-2">
+          <form class="import-form grid gap-3" data-type="sites">
+            <h3 class="font-bold">Import sites</h3>
+            <p class="portal-scroll-x rounded-md bg-kharon-light px-3 py-2 font-mono text-xs whitespace-nowrap">id,owner_company_name,physical_address,site_contact_person,site_contact_email,site_contact_phone,billing_emails</p>
+            <textarea class="portal-field min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste sites CSV here"></textarea>
+            <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Import sites</button>
+            <p class="import-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+          </form>
+
+          <form class="import-form grid gap-3" data-type="systems">
+            <h3 class="font-bold">Import systems</h3>
+            <p class="portal-scroll-x rounded-md bg-kharon-light px-3 py-2 font-mono text-xs whitespace-nowrap">id,site_id,system_type,coverage_area,manufacturer,model_reference,next_due_date</p>
+            <textarea class="portal-field min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste systems CSV here"></textarea>
+            <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Import systems</button>
+            <p class="import-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+          </form>
+        </div>
       </article>
     </div>
   </section>
+
+  <script>
+    const VALID_TABS = ["enquiries", "jobs", "users", "sites", "data"];
+    const CLS_ACTIVE = "ops-tab rounded-md px-4 py-2 text-sm font-semibold bg-kharon-purple text-white";
+    const CLS_INACTIVE = "ops-tab rounded-md px-4 py-2 text-sm font-semibold text-kharon-grey";
+
+    function switchTab(tabId: string) {
+      const id = VALID_TABS.includes(tabId) ? tabId : "enquiries";
+      for (const panel of document.querySelectorAll<HTMLElement>(".ops-panel")) {
+        panel.style.display = panel.id === `ops-panel-${id}` ? "grid" : "none";
+      }
+      for (const btn of document.querySelectorAll<HTMLElement>(".ops-tab")) {
+        btn.className = (btn as HTMLButtonElement).dataset.tab === id ? CLS_ACTIVE : CLS_INACTIVE;
+      }
+      history.replaceState(null, "", `#${id}`);
+    }
+
+    const initialTab = location.hash.slice(1);
+    switchTab(VALID_TABS.includes(initialTab) ? initialTab : "enquiries");
+
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".ops-tab")) {
+      btn.addEventListener("click", () => switchTab(btn.dataset.tab ?? "enquiries"));
+    }
+  </script>
 
   <script is:inline>
     function formPayload(form) {
