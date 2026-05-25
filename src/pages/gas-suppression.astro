@@ -5,6 +5,7 @@ import SplitFeature from "../components/sections/SplitFeature.astro";
 import ProofGrid from "../components/sections/ProofGrid.astro";
 import EngineeringSystems from "../components/sections/EngineeringSystems.astro";
 import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
+import SuppressionTechnicalBlocks from "../components/sections/SuppressionTechnicalBlocks.astro";
 import Footer from "../components/layout/Footer.astro";
 import { pageMeta } from "../data/site.js";
 
@@ -52,6 +53,8 @@ const proofItems = [
     visual="suppression"
     imageAlt="Schematic showing gas cylinder bank, release panel and protected room"
   />
+
+  <SuppressionTechnicalBlocks />
 
   <ProofGrid
     eyebrow="Suppression Evidence"

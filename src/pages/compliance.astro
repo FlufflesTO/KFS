@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Footer from "../components/layout/Footer.astro";
+import ComplianceTechnicalBlocks from "../components/sections/ComplianceTechnicalBlocks.astro";
+import DetectionTechnicalBlocks from "../components/sections/DetectionTechnicalBlocks.astro";
+import SuppressionTechnicalBlocks from "../components/sections/SuppressionTechnicalBlocks.astro";
+import { pageMeta } from "../data/site.js";
+---
+
+<BaseLayout
+  title={pageMeta.complianceHub.title}
+  description={pageMeta.complianceHub.description}
+  canonicalPath="/compliance"
+>
+  <section class="bg-kharon-black px-6 py-14 text-white sm:py-16">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Standards Reference</p>
+      <h1 class="mt-4 max-w-4xl text-3xl font-bold leading-tight sm:text-5xl">
+        Practical compliance reference for fire detection and gas suppression systems.
+      </h1>
+      <p class="mt-5 max-w-3xl text-base leading-8 text-white/70">
+        Guidance for commercial and industrial responsible persons reviewing maintenance cadence, evidence expectations,
+        defect severity and certificate readiness. SANS references are treated as operating standards where required by
+        contract, authority, insurer or site governance.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3 text-xs font-bold uppercase tracking-wide">
+        <span class="border border-white/20 px-3 py-2 text-white/80">SANS 10139</span>
+        <span class="border border-white/20 px-3 py-2 text-white/80">SANS 14520</span>
+        <span class="border border-white/20 px-3 py-2 text-white/80">Service evidence</span>
+        <span class="border border-white/20 px-3 py-2 text-white/80">Defect control</span>
+      </div>
+    </div>
+  </section>
+
+  <ComplianceTechnicalBlocks />
+  <DetectionTechnicalBlocks />
+  <SuppressionTechnicalBlocks />
+
+  <Footer />
+</BaseLayout>

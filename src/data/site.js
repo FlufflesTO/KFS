@@ -69,6 +69,11 @@ export const pageMeta = {
     title: "Contact Kharon | Request Site Assessment",
     description:
       "Contact Kharon to discuss commercial fire detection, gas suppression, compliance maintenance or integrated security requirements."
+  },
+  complianceHub: {
+    title: "Protection System Compliance Reference | Kharon",
+    description:
+      "Practical guidance on SANS 10139 and SANS 14520 maintenance requirements, service report structure, maintenance cadence and defect classification for commercial fire detection and gas suppression systems."
   }
 };
 
@@ -124,7 +129,8 @@ export const sitemapPages = [
   "security-systems",
   "industries",
   "about",
-  "contact"
+  "contact",
+  "compliance"
 ];
 
 export const industries = [

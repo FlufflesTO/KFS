@@ -333,7 +333,7 @@ try {
               <input class="rounded-md border border-kharon-border px-3 py-2" name="billingEmails" value={record.billing_emails} />
               <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
               <textarea class="min-h-20 rounded-md border border-kharon-border px-3 py-2 lg:col-span-6" name="physicalAddress">{record.physical_address}</textarea>
-              <button type="button" class="link-to-section text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-6" data-target-search="systems-search" data-target-value={record.owner_company_name}>→ Systems for {record.owner_company_name}</button>
+              <button type="button" class="link-to-section text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-6" data-target-search="systems-search" data-target-value={record.owner_company_name}>-> Systems for {record.owner_company_name}</button>
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
             </form>
           ))}
@@ -386,15 +386,15 @@ try {
               <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
               {record.next_due_date && record.next_due_date < today && (
                 <p class="rounded border border-red-300 bg-red-50 px-3 py-2 text-xs font-bold uppercase text-red-900 lg:col-span-7">
-                  ⚠ Service overdue — due {record.next_due_date}. Update after the next completed visit.
+                  Warning: Service overdue  -  due {record.next_due_date}. Update after the next completed visit.
                 </p>
               )}
               {record.next_due_date && record.next_due_date >= today && record.next_due_date <= soonDate && (
                 <p class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold uppercase text-amber-900 lg:col-span-7">
-                  Service due {record.next_due_date} — within 30 days.
+                  Service due {record.next_due_date}  -  within 30 days.
                 </p>
               )}
-              <button type="button" class="link-to-tab text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-7" data-target-tab="jobs" data-target-search="jobs-search" data-target-value={`${record.owner_company_name} ${record.coverage_area}`}>→ Jobs for {record.coverage_area}</button>
+              <button type="button" class="link-to-tab text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-7" data-target-tab="jobs" data-target-search="jobs-search" data-target-value={`${record.owner_company_name} ${record.coverage_area}`}>-> Jobs for {record.coverage_area}</button>
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
             </form>
           ))}
@@ -779,7 +779,7 @@ try {
           return;
         }
         const resetUrl = String(body.resetUrl || "");
-        result.textContent = `Reset link issued — valid until ${body.expiresAt}. `;
+        result.textContent = `Reset link issued  -  valid until ${body.expiresAt}. `;
         result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 lg:col-span-6";
         const copyBtn = document.createElement("button");
         copyBtn.type = "button";

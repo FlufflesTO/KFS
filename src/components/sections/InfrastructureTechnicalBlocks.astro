@@ -1,0 +1,313 @@
+<section class="section-padding bg-white">
+  <div class="mx-auto max-w-7xl px-6">
+
+    {/* Block 1: Uptime Impact Model */}
+    <div class="max-w-4xl">
+      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">
+        Uptime Impact Model
+      </span>
+      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">
+        The cost of failure changes by facility tier.
+      </h2>
+    </div>
+
+    <div class="mt-12 grid gap-5 md:grid-cols-3">
+      {/* Tier 1 */}
+      <article class="rounded-lg border border-kharon-border p-6 bg-white">
+        <div class="flex items-center gap-3">
+          <div class="h-3 w-3 rounded-full bg-kharon-red"></div>
+          <p class="text-xs font-bold uppercase text-kharon-red">Tier 1</p>
+        </div>
+        <h3 class="mt-3 text-xl font-bold leading-tight text-kharon-black">
+          Mission Critical
+        </h3>
+        <p class="mt-2 text-sm text-kharon-grey">
+          Data centres, hospitals, banking
+        </p>
+        <dl class="mt-5 space-y-4">
+          <div>
+            <dt class="text-xs font-bold uppercase text-kharon-grey">Financial</dt>
+            <dd class="mt-1 text-sm font-semibold text-kharon-black">&gt;R500k/hour</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold uppercase text-kharon-grey">Operational</dt>
+            <dd class="mt-1 text-sm font-semibold text-kharon-black">Full service interruption</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold uppercase text-kharon-grey">Reputation</dt>
+            <dd class="mt-1 text-sm font-semibold text-kharon-black">Regulatory investigation + public disclosure</dd>
+          </div>
+        </dl>
+      </article>
+
+      {/* Tier 2 */}
+      <article class="rounded-lg border border-kharon-border p-6 bg-white">
+        <div class="flex items-center gap-3">
+          <div class="h-3 w-3 rounded-full bg-kharon-amber"></div>
+          <p class="text-xs font-bold uppercase text-kharon-amber">Tier 2</p>
+        </div>
+        <h3 class="mt-3 text-xl font-bold leading-tight text-kharon-black">
+          Business Critical
+        </h3>
+        <p class="mt-2 text-sm text-kharon-grey">
+          Manufacturing, warehousing, logistics
+        </p>
+        <dl class="mt-5 space-y-4">
+          <div>
+            <dt class="text-xs font-bold uppercase text-kharon-grey">Financial</dt>
+            <dd class="mt-1 text-sm font-semibold text-kharon-black">R50-500k/hour</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold uppercase text-kharon-grey">Operational</dt>
+            <dd class="mt-1 text-sm font-semibold text-kharon-black">Production halt</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold uppercase text-kharon-grey">Reputation</dt>
+            <dd class="mt-1 text-sm font-semibold text-kharon-black">Contract penalties + client notification</dd>
+          </div>
+        </dl>
+      </article>
+
+      {/* Tier 3 */}
+      <article class="rounded-lg border border-kharon-border p-6 bg-white">
+        <div class="flex items-center gap-3">
+          <div class="h-3 w-3 rounded-full bg-kharon-grey"></div>
+          <p class="text-xs font-bold uppercase text-kharon-grey">Tier 3</p>
+        </div>
+        <h3 class="mt-3 text-xl font-bold leading-tight text-kharon-black">
+          Business Important
+        </h3>
+        <p class="mt-2 text-sm text-kharon-grey">
+          Commercial offices, retail
+        </p>
+        <dl class="mt-5 space-y-4">
+          <div>
+            <dt class="text-xs font-bold uppercase text-kharon-grey">Financial</dt>
+            <dd class="mt-1 text-sm font-semibold text-kharon-black">&lt;R50k/hour</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold uppercase text-kharon-grey">Operational</dt>
+            <dd class="mt-1 text-sm font-semibold text-kharon-black">Partial disruption</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold uppercase text-kharon-grey">Reputation</dt>
+            <dd class="mt-1 text-sm font-semibold text-kharon-black">Internal incident report</dd>
+          </div>
+        </dl>
+      </article>
+    </div>
+
+    {/* Block 2: Escalation and Response Dependency Map */}
+    <div class="mt-16">
+      <div class="max-w-4xl">
+        <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">
+          Escalation and Response Dependency Map
+        </span>
+        <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">
+          Every minute is mapped from detection to resolution.
+        </h2>
+      </div>
+
+      <div class="mt-10">
+        <svg
+          viewBox="0 0 1200 220"
+          role="img"
+          aria-label="Escalation and response dependency map"
+          class="h-auto w-full max-w-4xl mx-auto"
+        >
+          {/* Connector lines */}
+          <line x1="100" y1="100" x2="220" y2="100" stroke="#00C2FF" stroke-width="2" />
+          <line x1="280" y1="100" x2="400" y2="100" stroke="#00C2FF" stroke-width="2" />
+          <line x1="460" y1="100" x2="580" y2="100" stroke="#00C2FF" stroke-width="2" />
+          <line x1="640" y1="100" x2="760" y2="100" stroke="#00C2FF" stroke-width="2" />
+          <line x1="820" y1="100" x2="940" y2="100" stroke="#C4332F" stroke-width="2" stroke-dasharray="6 4" />
+          <line x1="1000" y1="100" x2="1100" y2="100" stroke="#00C2FF" stroke-width="2" />
+
+          {/* Node 1: Detection Event */}
+          <rect x="10" y="68" width="90" height="64" rx="8" fill="#4B2E83" />
+          <text x="55" y="100" text-anchor="middle" fill="#FFFFFF" font-size="11" font-family="Century Gothic, Arial">Detection</text>
+          <text x="55" y="118" text-anchor="middle" fill="#FFFFFF" font-size="11" font-family="Century Gothic, Arial">Event</text>
+
+          {/* Time: 2 min */}
+          <rect x="160" y="82" width="48" height="20" rx="4" fill="#F59E0B" />
+          <text x="184" y="96" text-anchor="middle" fill="#0B0D0F" font-size="10" font-weight="bold" font-family="Century Gothic, Arial">2 min</text>
+
+          {/* Node 2: Control Room Acknowledgement */}
+          <rect x="220" y="68" width="60" height="64" rx="8" fill="#4B2E83" />
+          <text x="250" y="94" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Control</text>
+          <text x="250" y="108" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Room</text>
+          <text x="250" y="122" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Ack</text>
+
+          {/* Time: Tier dispatch */}
+          <rect x="345" y="74" width="64" height="20" rx="4" fill="#F59E0B" />
+          <text x="377" y="88" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="bold" font-family="Century Gothic, Arial">T1: 30min</text>
+          <rect x="345" y="98" width="64" height="20" rx="4" fill="#F59E0B" />
+          <text x="377" y="112" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="bold" font-family="Century Gothic, Arial">T2: 2hr</text>
+          <rect x="345" y="122" width="64" height="20" rx="4" fill="#F59E0B" />
+          <text x="377" y="136" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="bold" font-family="Century Gothic, Arial">T3: 4hr</text>
+
+          {/* Node 3: Field Technician Dispatch */}
+          <rect x="400" y="68" width="60" height="64" rx="8" fill="#4B2E83" />
+          <text x="430" y="94" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Field</text>
+          <text x="430" y="108" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Tech</text>
+          <text x="430" y="122" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Dispatch</text>
+
+          {/* Time label */}
+          <text x="520" y="96" text-anchor="middle" fill="#F59E0B" font-size="10" font-weight="bold" font-family="Century Gothic, Arial">Varies</text>
+
+          {/* Node 4: On-Site Assessment */}
+          <rect x="580" y="68" width="60" height="64" rx="8" fill="#4B2E83" />
+          <text x="610" y="94" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">On-Site</text>
+          <text x="610" y="108" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Assessment</text>
+
+          {/* Time label */}
+          <text x="700" y="96" text-anchor="middle" fill="#F59E0B" font-size="10" font-weight="bold" font-family="Century Gothic, Arial">Immediate</text>
+
+          {/* Node 5: Resolution or Escalation */}
+          <rect x="760" y="68" width="60" height="64" rx="8" fill="#C4332F" />
+          <text x="790" y="94" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Resolution</text>
+          <text x="790" y="108" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">or</text>
+          <text x="790" y="122" text-anchor="middle" fill="#FFFFFF" font-size="10" font-family="Century Gothic, Arial">Escalation</text>
+
+          {/* Time: 24hr */}
+          <rect x="930" y="82" width="44" height="20" rx="4" fill="#F59E0B" />
+          <text x="952" y="96" text-anchor="middle" fill="#0B0D0F" font-size="10" font-weight="bold" font-family="Century Gothic, Arial">24hr</text>
+
+          {/* Node 6: Post-Incident Report */}
+          <rect x="1100" y="68" width="90" height="64" rx="8" fill="#4B2E83" />
+          <text x="1145" y="100" text-anchor="middle" fill="#FFFFFF" font-size="11" font-family="Century Gothic, Arial">Post-Incident</text>
+          <text x="1145" y="118" text-anchor="middle" fill="#FFFFFF" font-size="11" font-family="Century Gothic, Arial">Report</text>
+        </svg>
+      </div>
+    </div>
+
+    {/* Block 3: Site Risk-Tier Matrix */}
+    <div class="mt-16">
+      <div class="max-w-4xl">
+        <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">
+          Site Risk-Tier Matrix
+        </span>
+        <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">
+          Protection requirements by facility classification.
+        </h2>
+      </div>
+
+      <div class="mt-10 overflow-x-auto">
+        <div class="min-w-[640px] rounded-lg border border-kharon-border bg-white">
+          {/* Header row */}
+          <div class="grid grid-cols-4 border-b border-kharon-border">
+            <div class="px-5 py-4 text-xs font-bold uppercase text-kharon-grey">
+              Criteria
+            </div>
+            <div class="px-5 py-4 text-center text-xs font-bold uppercase bg-kharon-purple text-white">
+              Tier 1
+            </div>
+            <div class="px-5 py-4 text-center text-xs font-bold uppercase text-kharon-black bg-kharon-light">
+              Tier 2
+            </div>
+            <div class="px-5 py-4 text-center text-xs font-bold uppercase text-kharon-black bg-kharon-light">
+              Tier 3
+            </div>
+          </div>
+
+          {/* Row 1: Response SLA */}
+          <div class="grid grid-cols-4 border-b border-kharon-border">
+            <div class="px-5 py-4 text-sm font-semibold text-kharon-black">
+              Response SLA
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black bg-kharon-purple/5">
+              30 min
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              2 hours
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              4 hours
+            </div>
+          </div>
+
+          {/* Row 2: Inspection Frequency */}
+          <div class="grid grid-cols-4 border-b border-kharon-border">
+            <div class="px-5 py-4 text-sm font-semibold text-kharon-black">
+              Inspection Frequency
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black bg-kharon-purple/5">
+              Monthly
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              Quarterly
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              6-Monthly
+            </div>
+          </div>
+
+          {/* Row 3: System Redundancy */}
+          <div class="grid grid-cols-4 border-b border-kharon-border">
+            <div class="px-5 py-4 text-sm font-semibold text-kharon-black">
+              System Redundancy
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black bg-kharon-purple/5">
+              N+1 mandatory
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              Recommended
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              Optional
+            </div>
+          </div>
+
+          {/* Row 4: Monitoring */}
+          <div class="grid grid-cols-4 border-b border-kharon-border">
+            <div class="px-5 py-4 text-sm font-semibold text-kharon-black">
+              Monitoring
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black bg-kharon-purple/5">
+              24/7 remote + on-site
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              24/7 remote
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              Business hours
+            </div>
+          </div>
+
+          {/* Row 5: Backup Power */}
+          <div class="grid grid-cols-4 border-b border-kharon-border">
+            <div class="px-5 py-4 text-sm font-semibold text-kharon-black">
+              Backup Power
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black bg-kharon-purple/5">
+              UPS + generator mandatory
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              UPS recommended
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              None required
+            </div>
+          </div>
+
+          {/* Row 6: Documentation */}
+          <div class="grid grid-cols-4">
+            <div class="px-5 py-4 text-sm font-semibold text-kharon-black">
+              Documentation
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black bg-kharon-purple/5">
+              Real-time digital
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              Digital quarterly
+            </div>
+            <div class="px-5 py-4 text-center text-sm text-kharon-black">
+              Annual paper
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

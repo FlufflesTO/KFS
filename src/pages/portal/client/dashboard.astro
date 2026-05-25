@@ -143,7 +143,7 @@ try {
                   ? "border-amber-300 bg-amber-50 text-amber-900"
                   : "border-kharon-border text-kharon-grey"
               }`}>
-                {system.next_due_date && system.next_due_date < today ? "⚠ Overdue — " : "Due "}{system.next_due_date || "Not scheduled"}
+                {system.next_due_date && system.next_due_date < today ? "Warning: Overdue  -  " : "Due "}{system.next_due_date || "Not scheduled"}
               </span>
             </div>
             <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">

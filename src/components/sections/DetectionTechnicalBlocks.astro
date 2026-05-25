@@ -1,0 +1,295 @@
+---
+const events = [
+  "Smoke Detector (any zone)",
+  "Heat Detector (any zone)",
+  "Manual Call Point",
+  "Sprinkler Flow Switch",
+  "Gas Release Panel",
+];
+
+const actions = [
+  "Sounders",
+  "Visual Alarm",
+  "HVAC Shutdown",
+  "Fire Door Release",
+  "Suppression Trigger",
+  "Lift Recall",
+];
+
+const matrix = [
+  [true, true, true, true, false, true],
+  [true, true, true, true, false, true],
+  [true, true, true, true, false, true],
+  [true, true, false, false, false, true],
+  [true, true, true, true, true, true],
+];
+
+const serviceSteps = [
+  {
+    step: "01",
+    title: "Panel Event Log Interrogation",
+    text: "Download and review all events since last service  -  faults, alarms, isolations and operator actions recorded on the panel.",
+  },
+  {
+    step: "02",
+    title: "Battery Load Test",
+    text: "Measure standby battery voltage under load and compare against minimum threshold for compliance and evacuation duration.",
+  },
+  {
+    step: "03",
+    title: "Detector Sensitivity Test",
+    text: "Each detection head tested to manufacturer sensitivity specification  -  optical, thermal or multi-sensor as applicable.",
+  },
+  {
+    step: "04",
+    title: "Cause-and-Effect Verification",
+    text: "Trigger each input in turn and confirm the correct output actions fire as programmed  -  sounders, visuals, plant shutdowns.",
+  },
+  {
+    step: "05",
+    title: "Zone Identification Walk",
+    text: "Confirm all zones correctly labelled, devices mapped, and zone plans match the physical layout across the protected site.",
+  },
+  {
+    step: "06",
+    title: "System Report with Recommendations",
+    text: "Written findings, outstanding actions, risk observations and next-service scheduling delivered as an evidence record.",
+  },
+];
+
+const zoningStrategies = [
+  {
+    title: "L-shaped buildings",
+    text: "Split zones at the angle change. Each wing operates as a separate detection zone with independent alarm routing and evacuation direction.",
+  },
+  {
+    title: "Multi-storey facilities",
+    text: "One zone per floor per fire compartment. Stairwell zones treated separately for phased evacuation sequencing and floor-by-floor fault isolation.",
+  },
+  {
+    title: "Open-plan areas",
+    text: "Maximum 2000m�2 per zone. Detector spacing and type selected for ceiling height, airflow conditions and occupancy profile.",
+  },
+  {
+    title: "High-risk areas",
+    text: "Dedicated zone with enhanced detection density, faster response threshold and direct suppression interface  -  server rooms, switchgear, process plant.",
+  },
+];
+---
+
+<section class="section-padding bg-white">
+  <div class="mx-auto max-w-7xl px-6">
+
+    <!-- ─── Block 1: Cause-and-Effect Matrix ─── -->
+    <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Cause-and-Effect Logic</span>
+    <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Detection events and their triggered actions.</h2>
+    <p class="mt-4 max-w-3xl text-lg leading-8 text-kharon-grey">
+      Every detection input maps to specific outputs. This matrix defines which actions are triggered by which events  -  the core of fire-system response logic.
+    </p>
+
+    <div class="mt-10 overflow-x-auto portal-scroll-x">
+      <table class="w-full min-w-[640px] border-collapse text-sm">
+        <thead>
+          <tr>
+            <th class="border border-kharon-border bg-kharon-purple px-4 py-3 text-left font-bold text-white whitespace-nowrap">
+              Detection Event
+            </th>
+            {actions.map((action) => (
+              <th class="border border-kharon-border bg-kharon-blue px-3 py-3 text-center font-bold text-white whitespace-nowrap">
+                {action}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {events.map((event, rowIdx) => (
+            <tr class={rowIdx % 2 === 0 ? "bg-white" : "bg-kharon-light"}>
+              <td class="border border-kharon-border px-4 py-3 font-semibold text-kharon-black whitespace-nowrap">
+                {event}
+              </td>
+              {matrix[rowIdx].map((active) => (
+                <td class="border border-kharon-border px-3 py-3 text-center">
+                  {active ? (
+                    <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-kharon-cyan/20">
+                      <span class="block h-3 w-3 rounded-full bg-kharon-cyan"></span>
+                    </span>
+                  ) : (
+                    <span class="inline-flex h-5 w-5 items-center justify-center text-kharon-border"> - </span>
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ─── Block 2: False Alarm Diagnosis Flowchart ─── -->
+    <div class="mt-16">
+      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">False Alarm Diagnosis</span>
+      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Systematic fault-tracing for recurring false alarms.</h2>
+      <p class="mt-4 max-w-3xl text-lg leading-8 text-kharon-grey">
+        When false alarms persist, each branch of this decision tree isolates a root cause  -  from environmental interference to wiring faults  -  and directs a corrective action.
+      </p>
+
+      <div class="mt-10 w-full max-w-3xl mx-auto">
+        <svg viewBox="0 0 780 700" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto" role="img" aria-label="False alarm diagnosis decision tree flowchart">
+          <defs>
+            <marker id="flowArrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6 Z" fill="#00C2FF" />
+            </marker>
+          </defs>
+
+          <!-- Start node -->
+          <rect x="140" y="18" width="250" height="48" rx="10" fill="#4B2E83" />
+          <text x="265" y="47" text-anchor="middle" fill="#0B0D0F" font-size="13" font-weight="700">
+            <tspan fill="#FFFFFF">Recurring false alarms?</tspan>
+          </text>
+
+          <!-- Connector: Start -> Diamond 1 -->
+          <line x1="265" y2="100" y1="66" x2="265" stroke="#00C2FF" stroke-width="2" marker-end="url(#flowArrow)" />
+
+          <!-- Diamond 1: Environmental factors? -->
+          <polygon points="265,100 370,155 265,210 160,155" fill="#4B2E83" />
+          <text x="265" y="159" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
+            Environmental factors?
+          </text>
+
+          <!-- Yes arrow -> Action 1 -->
+          <line x1="370" y1="155" x2="430" y2="155" stroke="#00C2FF" stroke-width="2" marker-end="url(#flowArrow)" />
+          <text x="396" y="147" text-anchor="middle" fill="#00C2FF" font-size="11" font-weight="700">Yes</text>
+
+          <!-- Action 1 rect -->
+          <rect x="430" y="131" width="290" height="48" rx="8" fill="#1F4E79" />
+          <text x="575" y="160" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
+            Relocate or change detector type
+          </text>
+
+          <!-- No arrow -> Diamond 2 -->
+          <line x1="265" y1="210" x2="265" y2="245" stroke="#00C2FF" stroke-width="2" marker-end="url(#flowArrow)" />
+          <text x="278" y="224" fill="#00C2FF" font-size="11" font-weight="700">No</text>
+
+          <!-- Diamond 2: Detector age >10 years? -->
+          <polygon points="265,245 370,300 265,355 160,300" fill="#4B2E83" />
+          <text x="265" y="304" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
+            Detector age >10 years?
+          </text>
+
+          <!-- Yes arrow -> Action 2 -->
+          <line x1="370" y1="300" x2="430" y2="300" stroke="#00C2FF" stroke-width="2" marker-end="url(#flowArrow)" />
+          <text x="396" y="292" text-anchor="middle" fill="#00C2FF" font-size="11" font-weight="700">Yes</text>
+
+          <!-- Action 2 rect -->
+          <rect x="430" y="276" width="290" height="48" rx="8" fill="#1F4E79" />
+          <text x="575" y="305" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
+            Replace head
+          </text>
+
+          <!-- No arrow -> Diamond 3 -->
+          <line x1="265" y1="355" x2="265" y2="390" stroke="#00C2FF" stroke-width="2" marker-end="url(#flowArrow)" />
+          <text x="278" y="370" fill="#00C2FF" font-size="11" font-weight="700">No</text>
+
+          <!-- Diamond 3: Placement within 500mm of air vent? -->
+          <polygon points="265,390 370,445 265,500 160,445" fill="#4B2E83" />
+          <text x="265" y="438" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="600">
+            <tspan x="265" dy="0">Placement within</tspan>
+            <tspan x="265" dy="15">500mm of air vent?</tspan>
+          </text>
+
+          <!-- Yes arrow -> Action 3 -->
+          <line x1="370" y1="445" x2="430" y2="445" stroke="#00C2FF" stroke-width="2" marker-end="url(#flowArrow)" />
+          <text x="396" y="437" text-anchor="middle" fill="#00C2FF" font-size="11" font-weight="700">Yes</text>
+
+          <!-- Action 3 rect -->
+          <rect x="430" y="421" width="290" height="48" rx="8" fill="#1F4E79" />
+          <text x="575" y="450" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
+            Relocate detector
+          </text>
+
+          <!-- No arrow -> Diamond 4 -->
+          <line x1="265" y1="500" x2="265" y2="535" stroke="#00C2FF" stroke-width="2" marker-end="url(#flowArrow)" />
+          <text x="278" y="515" fill="#00C2FF" font-size="11" font-weight="700">No</text>
+
+          <!-- Diamond 4: Service interval >12 months? -->
+          <polygon points="265,535 370,590 265,645 160,590" fill="#4B2E83" />
+          <text x="265" y="584" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="600">
+            <tspan x="265" dy="0">Service interval</tspan>
+            <tspan x="265" dy="14">>12 months?</tspan>
+          </text>
+
+          <!-- Yes arrow -> Action 4 -->
+          <line x1="370" y1="590" x2="430" y2="590" stroke="#00C2FF" stroke-width="2" marker-end="url(#flowArrow)" />
+          <text x="396" y="582" text-anchor="middle" fill="#00C2FF" font-size="11" font-weight="700">Yes</text>
+
+          <!-- Action 4 rect -->
+          <rect x="430" y="566" width="290" height="48" rx="8" fill="#1F4E79" />
+          <text x="575" y="595" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">
+            Schedule service
+          </text>
+
+          <!-- No arrow -> Final action -->
+          <line x1="265" y1="645" x2="265" y2="668" stroke="#00C2FF" stroke-width="2" marker-end="url(#flowArrow)" />
+          <text x="278" y="658" fill="#00C2FF" font-size="11" font-weight="700">No</text>
+
+          <!-- Final action rect -->
+          <rect x="140" y="668" width="250" height="48" rx="10" fill="#1F4E79" />
+          <text x="265" y="694" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="700">
+            Investigate wiring/panel fault
+          </text>
+
+          <!-- Subtle annotation labels -->
+          <text x="140" y="13" text-anchor="start" fill="#4B2E83" font-size="10" font-weight="600" opacity="0.7">DECISION</text>
+          <text x="430" y="13" text-anchor="start" fill="#1F4E79" font-size="10" font-weight="600" opacity="0.7">CORRECTIVE ACTION</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ─── Block 3: Service Evidence Examples ─── -->
+    <div class="mt-16">
+      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Service Evidence</span>
+      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">What a professional fire detection service visit produces.</h2>
+      <p class="mt-4 max-w-3xl text-lg leading-8 text-kharon-grey">
+        A compliant service visit generates documented evidence at every step  -  not just a pass/fail sticker, but traceable records that responsible persons can rely on.
+      </p>
+
+      <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {serviceSteps.map((item) => (
+          <div class="rounded-lg border border-kharon-border p-6 bg-white">
+            <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-md border border-kharon-border text-kharon-purple">
+              <span class="text-sm font-bold">{item.step}</span>
+            </div>
+            <h3 class="text-lg font-semibold text-kharon-black">{item.title}</h3>
+            <p class="mt-3 text-sm leading-6 text-kharon-grey">{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- ─── Block 4: Zoning Strategy Guide ─── -->
+    <div class="mt-16">
+      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Zone Planning</span>
+      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Fire detection zone strategy principles.</h2>
+      <p class="mt-4 max-w-3xl text-lg leading-8 text-kharon-grey">
+        Zone boundaries are drawn around building geometry, occupancy risk and evacuation logic  -  not convenience. These principles guide compliant zone planning.
+      </p>
+
+      <div class="mt-10 grid gap-5 md:grid-cols-2">
+        {zoningStrategies.map((item) => (
+          <div class="rounded-lg border border-kharon-border p-6 bg-white">
+            <div class="mb-4 inline-flex items-center gap-2">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-kharon-purple/10 text-kharon-purple">
+                <svg class="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z" opacity="0.3" />
+                  <path d="M8 4a.75.75 0 01.75.75v2.5h2.5a.75.75 0 010 1.5h-2.5v2.5a.75.75 0 01-1.5 0v-2.5h-2.5a.75.75 0 010-1.5h2.5v-2.5A.75.75 0 018 4z" />
+                </svg>
+              </span>
+              <h3 class="text-lg font-semibold text-kharon-black">{item.title}</h3>
+            </div>
+            <p class="text-sm leading-6 text-kharon-grey">{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+</section>

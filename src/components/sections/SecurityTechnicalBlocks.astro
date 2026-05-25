@@ -1,0 +1,303 @@
+---
+const accessTiers = [
+  {
+    level: 1,
+    label: "Perimeter Control",
+    purpose: "Control site entry/exit",
+    tech: ["RFID cards", "Number plate recognition", "Intercom"],
+    examples: "Turnstiles, boom gates, vehicle access"
+  },
+  {
+    level: 2,
+    label: "Departmental Control",
+    purpose: "Restrict sensitive areas",
+    tech: ["Biometric readers", "PIN + card", "Time-based scheduling"],
+    examples: "Internal door access, lift control"
+  },
+  {
+    level: 3,
+    label: "Restricted Zone",
+    purpose: "Maximum accountability",
+    tech: ["Multi-factor (biometric + card + PIN)", "Mantrap interlocks", "Real-time logging + alerts"],
+    examples: "Server rooms, vaults, control rooms"
+  }
+];
+
+const cctvZones = [
+  {
+    zone: "Entry/Exit Points",
+    description: "All pedestrian and vehicle access recorded 24/7",
+    retention: "30-day minimum"
+  },
+  {
+    zone: "Perimeter",
+    description: "Fence line coverage with motion-triggered recording",
+    retention: "30-day minimum"
+  },
+  {
+    zone: "High-Value Zones",
+    description: "Cash handling, server rooms, stock areas  -  continuous recording",
+    retention: "90-day (high-risk)"
+  },
+  {
+    zone: "Blind-Spot Elimination",
+    description: "Corridor intersections, stairwells, behind columns",
+    retention: "30-day minimum"
+  },
+  {
+    zone: "Retention Requirements",
+    description: "POPIA-compliant storage with audit-grade retrieval and chain-of-custody logging",
+    retention: "30-90 day tiered"
+  }
+];
+
+const integrationNodes = [
+  { id: "access", label: "Access Control", cx: 300, cy: 60 },
+  { id: "cctv", label: "CCTV", cx: 510, cy: 155 },
+  { id: "fire", label: "Fire Detection", cx: 450, cy: 355 },
+  { id: "gas", label: "Gas Suppression", cx: 150, cy: 355 },
+  { id: "intruder", label: "Intruder Alarm", cx: 90, cy: 155 }
+];
+
+const integrationEvents = [
+  {
+    label: "Fire alarm",
+    detail: "Doors unlock (egress), Lifts recall, CCTV flags event",
+    x1: 390,
+    y1: 260,
+    x2: 300,
+    y2: 60,
+    color: "#C4332F"
+  },
+  {
+    label: "Gas release",
+    detail: "Access lockout (zone), CCTV records pre/post",
+    x1: 280,
+    y1: 260,
+    x2: 150,
+    y2: 355,
+    color: "#C4332F"
+  },
+  {
+    label: "Intrusion",
+    detail: "CCTV switches to live view, Access logs frozen, Alert dispatched",
+    x1: 250,
+    y1: 260,
+    x2: 90,
+    y2: 155,
+    color: "#C4332F"
+  },
+  {
+    label: "After-hours",
+    detail: "Reduced access zones, CCTV motion sensitivity increased",
+    x1: 340,
+    y1: 260,
+    x2: 510,
+    y2: 155,
+    color: "#00C2FF"
+  }
+];
+---
+
+<!-- Block 1: Access Control Tiers -->
+<section class="section-padding bg-white">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="max-w-3xl">
+      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Access Control Tiers</span>
+      <h2 class="mt-2 text-3xl font-bold leading-tight text-kharon-black">
+        Escalating control levels matched to zone sensitivity.
+      </h2>
+    </div>
+
+    <div class="mt-10 grid gap-5 md:grid-cols-3">
+      {accessTiers.map((tier) => (
+        <article
+          class:list={[
+            "rounded-lg border border-kharon-border bg-white p-6",
+            tier.level === 3 && "border-l-4 border-l-kharon-purple"
+          ]}
+        >
+          <div class="flex items-center gap-3">
+            <span class="flex h-9 w-9 items-center justify-center rounded-md text-sm font-bold text-white"
+              class:list={[tier.level === 3 ? "bg-kharon-purple" : "bg-kharon-blue"]}
+            >
+              L{tier.level}
+            </span>
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-kharon-grey">Level {tier.level}</p>
+              <h3 class="text-lg font-bold text-kharon-black">{tier.label}</h3>
+            </div>
+          </div>
+
+          <p class="mt-4 text-sm font-semibold text-kharon-purple">Purpose: {tier.purpose}</p>
+          <p class="mt-2 text-sm text-kharon-grey">{tier.examples}</p>
+
+          <div class="mt-4 border-t border-kharon-border pt-4">
+            <p class="mb-2 text-xs font-bold uppercase tracking-wider text-kharon-grey">Technology</p>
+            <ul class="space-y-1">
+              {tier.tech.map((t) => (
+                <li class="flex items-start gap-2 text-sm text-kharon-grey">
+                  <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-kharon-cyan"></span>
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- Block 2: CCTV Coverage Planning -->
+<section class="section-padding bg-kharon-light">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="max-w-3xl">
+      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">CCTV Coverage Planning</span>
+      <h2 class="mt-2 text-3xl font-bold leading-tight text-kharon-black">
+        Camera placement by zone, retention by risk.
+      </h2>
+    </div>
+
+    <div class="mt-10 grid gap-5 md:grid-cols-2">
+      {cctvZones.map((item) => (
+        <article class="rounded-lg border border-kharon-border bg-white p-6">
+          <div class="flex items-start justify-between gap-4">
+            <h3 class="text-lg font-bold text-kharon-black">{item.zone}</h3>
+            <span class="shrink-0 rounded-md bg-kharon-blue/10 px-3 py-1 text-xs font-bold text-kharon-blue">
+              {item.retention}
+            </span>
+          </div>
+          <p class="mt-2 text-sm leading-7 text-kharon-grey">{item.description}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- Block 3: Integration Points Diagram -->
+<section class="section-padding bg-white">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="max-w-3xl">
+      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Integration Points</span>
+      <h2 class="mt-2 text-3xl font-bold leading-tight text-kharon-black">
+        Security systems integrated with fire and life-safety.
+      </h2>
+    </div>
+
+    <div class="mt-10 w-full max-w-3xl mx-auto">
+      <svg viewBox="0 0 600 420" role="img" aria-label="Integration points diagram showing Building Management System connected to Access Control, CCTV, Fire Detection, Gas Suppression and Intruder Alarm" class="h-auto w-full">
+        <!-- Connector lines from hub to nodes -->
+        {integrationNodes.map((node) => (
+          <line
+            x1="300"
+            y1="240"
+            x2={node.cx}
+            y2={node.cy}
+            stroke="#D6D9DD"
+            stroke-width="1.5"
+            stroke-dasharray="4 3"
+          />
+        ))}
+
+        <!-- Event connector lines -->
+        {integrationEvents.map((evt, i) => (
+          <line
+            x1={evt.x1}
+            y1={evt.y1}
+            x2={evt.x2}
+            y2={evt.y2}
+            stroke={evt.color}
+            stroke-width="2"
+            stroke-dasharray="6 3"
+            opacity="0.7"
+          />
+        ))}
+
+        <!-- Central hub node -->
+        <rect x="205" y="200" width="190" height="80" rx="10" fill="#4B2E83" />
+        <text x="300" y="235" text-anchor="middle" fill="white" font-size="13" font-weight="700" font-family="Century Gothic, Arial">Building Management</text>
+        <text x="300" y="255" text-anchor="middle" fill="white" font-size="13" font-weight="700" font-family="Century Gothic, Arial">System</text>
+
+        <!-- System nodes -->
+        {integrationNodes.map((node) => (
+          <g>
+            <rect
+              x={node.cx - 60}
+              y={node.cy - 22}
+              width="120"
+              height="44"
+              rx="8"
+              fill="#1F4E79"
+            />
+            <text
+              x={node.cx}
+              y={node.cy + 5}
+              text-anchor="middle"
+              fill="white"
+              font-size="12"
+              font-weight="600"
+              font-family="Century Gothic, Arial"
+            >
+              {node.label}
+            </text>
+          </g>
+        ))}
+
+        <!-- Event labels -->
+        <g font-size="9" font-family="Century Gothic, Arial">
+          <!-- Fire alarm label -->
+          <rect x="290" y="145" width="72" height="18" rx="3" fill="#C4332F" opacity="0.15" />
+          <text x="326" y="158" text-anchor="middle" fill="#C4332F" font-weight="700">Fire alarm</text>
+
+          <!-- Gas release label -->
+          <rect x="170" y="300" width="82" height="18" rx="3" fill="#C4332F" opacity="0.15" />
+          <text x="211" y="313" text-anchor="middle" fill="#C4332F" font-weight="700">Gas release</text>
+
+          <!-- Intrusion label -->
+          <rect x="125" y="145" width="68" height="18" rx="3" fill="#C4332F" opacity="0.15" />
+          <text x="159" y="158" text-anchor="middle" fill="#C4332F" font-weight="700">Intrusion</text>
+
+          <!-- After-hours label -->
+          <rect x="380" y="175" width="82" height="18" rx="3" fill="#00C2FF" opacity="0.12" />
+          <text x="421" y="188" text-anchor="middle" fill="#00A3D6" font-weight="700">After-hours</text>
+        </g>
+
+        <!-- Event detail annotations -->
+        <g font-size="8.5" font-family="Century Gothic, Arial" fill="#2B3138">
+          <text x="395" y="105">Doors unlock (egress), Lifts recall,</text>
+          <text x="395" y="117">CCTV flags event</text>
+
+          <text x="60" y="395">Access lockout (zone),</text>
+          <text x="60" y="407">CCTV records pre/post</text>
+
+          <text x="10" y="100">CCTV switches to live view,</text>
+          <text x="10" y="112">Access logs frozen, Alert dispatched</text>
+
+          <text x="420" y="210">Reduced access zones,</text>
+          <text x="420" y="222">CCTV motion sensitivity increased</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Integration event legend -->
+    <div class="mx-auto mt-8 flex max-w-3xl flex-wrap items-center gap-6 text-sm text-kharon-grey">
+      <span class="flex items-center gap-2">
+        <span class="inline-block h-3 w-6 rounded-sm bg-[#4B2E83]"></span>
+        Central BMS
+      </span>
+      <span class="flex items-center gap-2">
+        <span class="inline-block h-3 w-6 rounded-sm bg-[#1F4E79]"></span>
+        Subsystem
+      </span>
+      <span class="flex items-center gap-2">
+        <span class="inline-block h-0.5 w-6 bg-[#C4332F]"></span>
+        Alert path
+      </span>
+      <span class="flex items-center gap-2">
+        <span class="inline-block h-0.5 w-6 bg-[#00C2FF]"></span>
+        Status path
+      </span>
+    </div>
+  </div>
+</section>
