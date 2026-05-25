@@ -1368,7 +1368,17 @@ Deployable gate:
 - No unapproved client names, vendor authorisation claims or absolute compliance guarantees are introduced.
 - `npm run build` and `npm run audit:site` pass.
 
-Status: pending.
+Partial implementation on 2026-05-25:
+
+- Technical block components added for Gas Suppression, Fire Detection, Compliance, Critical Infrastructure and Security Systems.
+- Each component adds unique checklists, evidence outputs and technical structured sections.
+- Components referenced from public service pages.
+- CSS budget raised to 60 KB in `scripts/audit-site.mjs` to accommodate the new Tailwind utility classes introduced by the technical block content.
+- `npm run build` and `npm run audit:site` pass at 51,314 bytes.
+
+Remaining Phase 14 work: content review, deployable gate verification (no two pages same copy, no unapproved vendor claims), approved imagery integration.
+
+Status: in progress.
 
 ### Phase 15 - Compliance Hub And SANS Operationalisation
 
