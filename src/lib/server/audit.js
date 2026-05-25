@@ -37,3 +37,39 @@ export async function auditEvent(db, request, options = {}) {
     console.error("audit event write failed", error);
   }
 }
+export async function auditError(db, request, error, options = {}) {
+  try {
+    const user = options.user || null;
+    const fingerprint = await requestFingerprint(request, user?.email || "");
+    const errorDetails = {
+      message: error instanceof Error ? error.message : String(error),
+      name: error instanceof Error ? error.name : 'UnknownError',
+      path: new URL(request.url).pathname,
+      ...options.metadata
+    };
+    
+    // Log securely to database, never exposing stack traces to the client
+    await db
+      .prepare(
+        `INSERT INTO audit_events
+           (id, actor_user_id, actor_role, event_type, entity_type, entity_id, outcome, ip_hash, user_agent, metadata_json)
+         VALUES
+           (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)`
+      )
+      .bind(
+        crypto.randomUUID(),
+        user?.id || null,
+        user?.role || null,
+        "security.error",
+        String(options.entityType || "system"),
+        options.entityId ? String(options.entityId) : "fatal",
+        "error",
+        fingerprint.ipHash,
+        fingerprint.userAgent,
+        JSON.stringify(errorDetails).slice(0, 4000)
+      )
+      .run();
+  } catch (err) {
+    console.error("audit error write failed", err);
+  }
+}

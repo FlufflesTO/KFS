@@ -1,5 +1,5 @@
 import { getDatabase } from "../../../lib/server/bindings.js";
-import { auditEvent } from "../../../lib/server/audit.js";
+import { auditEvent, auditError } from "../../../lib/server/audit.js";
 import { createSessionToken, sessionCookie, verifyPassword } from "../../../lib/server/auth.js";
 import { decryptMfaSecret, verifyTotpCode } from "../../../lib/server/mfa.js";
 import { consumeRateLimit, resetRateLimit } from "../../../lib/server/rateLimit.js";
@@ -160,7 +160,10 @@ export async function POST({ request }) {
       }
     );
   } catch (error) {
-    console.error("portal auth failed", error);
+    await auditError(db, request, error, {
+      entityType: "portal_api",
+      entityId: "auth_login"
+    });
     return serverError("Authentication could not be completed.");
   }
 }

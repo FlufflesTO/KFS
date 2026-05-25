@@ -33,7 +33,7 @@ function securityHeaders(nonce) {
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Content-Security-Policy":
-      `default-src 'self'; script-src 'self' 'nonce-${nonce}' https://static.cloudflareinsights.com https://challenges.cloudflare.com https://cdn.skypack.dev; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; frame-src https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests`,
+      `default-src 'none'; script-src 'strict-dynamic' 'nonce-${nonce}' https://static.cloudflareinsights.com https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; frame-src https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests; manifest-src 'self'`,
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Cross-Origin-Opener-Policy": "same-origin",
     "Cross-Origin-Resource-Policy": "same-origin",
@@ -83,11 +83,20 @@ function redirectToRoleDashboard(context, role, nonce) {
 }
 
 function allowedForPath(pathname, role) {
+  if (pathname.startsWith("/portal/account/")) return true;
+  
+  if (pathname.startsWith("/portal/api/tech/")) return role === "tech" || role === "admin";
+  if (pathname.startsWith("/portal/api/admin/")) return role === "admin";
+  if (pathname.startsWith("/portal/api/finance/")) return role === "finance" || role === "admin";
+  if (pathname.startsWith("/portal/api/client/")) return role === "client" || role === "admin";
+  if (pathname.startsWith("/portal/api/")) return true;
+
   if (pathname.startsWith("/portal/tech/")) return role === "tech" || role === "admin";
   if (pathname.startsWith("/portal/admin/")) return role === "admin";
   if (pathname.startsWith("/portal/finance/")) return role === "finance" || role === "admin";
-  if (pathname.startsWith("/portal/client/")) return role === "client";
-  return true;
+  if (pathname.startsWith("/portal/client/")) return role === "client" || role === "admin";
+  
+  return false;
 }
 
 function pathContainsTraversal(pathname) {
@@ -115,25 +124,27 @@ function rateLimitResponse(retryAfter, nonce) {
 
 function rateLimitConfig(pathname) {
   const configs = {
-    "/portal/api/maintenance-request": { scope: "portal.maintenance_request", maxAttempts: 10, windowSeconds: 15 * 60 },
-    "/portal/api/approve-quote": { scope: "portal.quote_approval", maxAttempts: 20, windowSeconds: 15 * 60 },
-    "/portal/api/job-status": { scope: "portal.job_status", maxAttempts: 30, windowSeconds: 15 * 60 },
-    "/portal/api/job-visits": { scope: "portal.job_visits", maxAttempts: 40, windowSeconds: 15 * 60 },
-    "/portal/api/submit-jobcard": { scope: "portal.jobcard_submit", maxAttempts: 20, windowSeconds: 15 * 60 },
-    "/portal/api/change-password": { scope: "portal.change_password", maxAttempts: 10, windowSeconds: 15 * 60 },
-    "/portal/api/mfa": { scope: "portal.mfa", maxAttempts: 20, windowSeconds: 15 * 60 },
-    "/portal/api/logout": { scope: "portal.logout", maxAttempts: 20, windowSeconds: 15 * 60 },
-    "/portal/api/finance/payments": { scope: "portal.finance.payments", maxAttempts: 40, windowSeconds: 15 * 60 },
-    "/portal/api/admin/users": { scope: "portal.admin.users", maxAttempts: 60, windowSeconds: 15 * 60 },
-    "/portal/api/admin/sites": { scope: "portal.admin.sites", maxAttempts: 60, windowSeconds: 15 * 60 },
-    "/portal/api/admin/systems": { scope: "portal.admin.systems", maxAttempts: 60, windowSeconds: 15 * 60 },
-    "/portal/api/admin/jobs": { scope: "portal.admin.jobs", maxAttempts: 60, windowSeconds: 15 * 60 },
-    "/portal/api/admin/client-site-access": { scope: "portal.admin.client_site_access", maxAttempts: 60, windowSeconds: 15 * 60 },
-    "/portal/api/admin/import": { scope: "portal.admin.import", maxAttempts: 20, windowSeconds: 15 * 60 },
-    "/portal/api/admin/maintenance-requests": { scope: "portal.admin.maintenance_requests", maxAttempts: 60, windowSeconds: 15 * 60 }
+    "/portal/api/auth": { scope: "portal.auth.login", maxAttempts: 5, windowSeconds: 900 },
+    "/portal/api/reset-password": { scope: "portal.auth.reset", maxAttempts: 3, windowSeconds: 3600 },
+    "/portal/api/change-password": { scope: "portal.change_password", maxAttempts: 5, windowSeconds: 900 },
+    "/portal/api/mfa": { scope: "portal.mfa", maxAttempts: 5, windowSeconds: 900 },
+    "/portal/api/logout": { scope: "portal.logout", maxAttempts: 10, windowSeconds: 900 },
+    "/portal/api/maintenance-request": { scope: "portal.maintenance_request", maxAttempts: 10, windowSeconds: 900 },
+    "/portal/api/approve-quote": { scope: "portal.quote_approval", maxAttempts: 20, windowSeconds: 900 },
+    "/portal/api/job-status": { scope: "portal.job_status", maxAttempts: 30, windowSeconds: 900 },
+    "/portal/api/job-visits": { scope: "portal.job_visits", maxAttempts: 40, windowSeconds: 900 },
+    "/portal/api/submit-jobcard": { scope: "portal.jobcard_submit", maxAttempts: 20, windowSeconds: 900 },
+    "/portal/api/finance/payments": { scope: "portal.finance.payments", maxAttempts: 40, windowSeconds: 900 },
+    "/portal/api/admin/users": { scope: "portal.admin.users", maxAttempts: 60, windowSeconds: 900 },
+    "/portal/api/admin/sites": { scope: "portal.admin.sites", maxAttempts: 60, windowSeconds: 900 },
+    "/portal/api/admin/systems": { scope: "portal.admin.systems", maxAttempts: 60, windowSeconds: 900 },
+    "/portal/api/admin/jobs": { scope: "portal.admin.jobs", maxAttempts: 60, windowSeconds: 900 },
+    "/portal/api/admin/client-site-access": { scope: "portal.admin.client_site_access", maxAttempts: 60, windowSeconds: 900 },
+    "/portal/api/admin/import": { scope: "portal.admin.import", maxAttempts: 20, windowSeconds: 900 },
+    "/portal/api/admin/maintenance-requests": { scope: "portal.admin.maintenance_requests", maxAttempts: 60, windowSeconds: 900 }
   };
 
-  return configs[pathname] || { scope: `portal.write.${pathname.replaceAll("/", ".")}`.slice(0, 80), maxAttempts: 45, windowSeconds: 15 * 60 };
+  return configs[pathname] || { scope: `portal.write.${pathname.replaceAll("/", ".")}`.slice(0, 80), maxAttempts: 20, windowSeconds: 900 };
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {

@@ -28,12 +28,13 @@ CREATE TABLE IF NOT EXISTS sites (
   site_contact_phone TEXT,
   billing_emails TEXT NOT NULL CHECK (length(trim(billing_emails)) BETWEEN 3 AND 1000),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
 CREATE TABLE IF NOT EXISTS systems (
   id TEXT PRIMARY KEY,
-  site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  site_id TEXT NOT NULL REFERENCES sites(id),
   system_type TEXT NOT NULL CHECK (system_type IN ('Gas Suppression', 'Fire Detection')),
   coverage_area TEXT NOT NULL CHECK (length(trim(coverage_area)) BETWEEN 2 AND 200),
   manufacturer TEXT,
@@ -42,13 +43,14 @@ CREATE TABLE IF NOT EXISTS systems (
   last_service_date TEXT,
   last_checked_at TEXT,
   next_due_date TEXT NOT NULL,
+  deleted_at TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
 CREATE TABLE IF NOT EXISTS jobs (
   id TEXT PRIMARY KEY,
-  system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE CASCADE,
+  system_id TEXT NOT NULL REFERENCES systems(id),
   assigned_technician_id TEXT REFERENCES users(id) ON DELETE SET NULL,
   scheduled_date TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'Scheduled' CHECK (status IN ('Scheduled', 'In Progress', 'Completed', 'Invoiced')),
@@ -68,7 +70,7 @@ CREATE TABLE IF NOT EXISTS jobs (
 
 CREATE TABLE IF NOT EXISTS financial_records (
   id TEXT PRIMARY KEY,
-  site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  site_id TEXT NOT NULL REFERENCES sites(id),
   job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
   amount INTEGER NOT NULL CHECK (amount >= 0),
   item_type TEXT NOT NULL CHECK (item_type IN ('Quote', 'Invoice', 'Payment')),
@@ -119,54 +121,6 @@ CREATE TABLE IF NOT EXISTS financial_records (
     OR sage_amount_ex_vat + sage_vat_amount = sage_amount_inc_vat
   )
 );
-
-CREATE TABLE IF NOT EXISTS maintenance_requests (
-  id TEXT PRIMARY KEY,
-  site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
-  system_id TEXT REFERENCES systems(id) ON DELETE SET NULL,
-  requester_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-  request_type TEXT NOT NULL CHECK (request_type IN ('Maintenance', 'Fault', 'Compliance Documentation', 'Quote Request', 'Emergency Follow-up')),
-  priority TEXT NOT NULL DEFAULT 'Routine' CHECK (priority IN ('Routine', 'Urgent', 'Critical')),
-  status TEXT NOT NULL DEFAULT 'New' CHECK (status IN ('New', 'Reviewing', 'Scheduled', 'Closed')),
-  subject TEXT NOT NULL CHECK (length(trim(subject)) BETWEEN 3 AND 160),
-  message TEXT NOT NULL CHECK (length(trim(message)) BETWEEN 10 AND 2000),
-  linked_job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-);
-
-CREATE TABLE IF NOT EXISTS client_site_access (
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
-  access_level TEXT NOT NULL DEFAULT 'records' CHECK (access_level IN ('records')),
-  granted_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-  granted_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  PRIMARY KEY (user_id, site_id)
-);
-
-CREATE TABLE IF NOT EXISTS audit_events (
-  id TEXT PRIMARY KEY,
-  actor_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-  actor_role TEXT CHECK (actor_role IS NULL OR actor_role IN ('tech', 'admin', 'client', 'finance')),
-  event_type TEXT NOT NULL CHECK (length(trim(event_type)) BETWEEN 3 AND 80),
-  entity_type TEXT NOT NULL CHECK (length(trim(entity_type)) BETWEEN 2 AND 80),
-  entity_id TEXT,
-  outcome TEXT NOT NULL CHECK (outcome IN ('success', 'failure', 'blocked')),
-  ip_hash TEXT,
-  user_agent TEXT,
-  metadata_json TEXT,
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-);
-
-CREATE TABLE IF NOT EXISTS job_evidence_files (
-  id TEXT PRIMARY KEY,
-  job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
-  system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE CASCADE,
-  uploaded_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-  evidence_type TEXT NOT NULL CHECK (evidence_type IN ('Photo')),
-  storage_path TEXT NOT NULL UNIQUE CHECK (storage_path LIKE 'job-evidence/%'),
-  content_type TEXT NOT NULL CHECK (content_type IN ('image/jpeg', 'image/png', 'image/webp')),
-  file_size_bytes INTEGER NOT NULL CHECK (file_size_bytes BETWEEN 1 AND 1572864),
   caption TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
@@ -306,7 +260,7 @@ CREATE TABLE IF NOT EXISTS clients (
 
 CREATE TABLE IF NOT EXISTS job_visits (
   id TEXT PRIMARY KEY,
-  job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+  job_id TEXT NOT NULL REFERENCES jobs(id),
   technician_id TEXT REFERENCES users(id) ON DELETE SET NULL,
   visit_date TEXT NOT NULL,
   arrival_time TEXT,
@@ -324,7 +278,7 @@ CREATE TABLE IF NOT EXISTS job_visits (
 
 CREATE TABLE IF NOT EXISTS defects (
   id TEXT PRIMARY KEY,
-  system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE CASCADE,
+  system_id TEXT NOT NULL REFERENCES systems(id),
   job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
   severity TEXT NOT NULL CHECK (severity IN ('Critical', 'Major', 'Minor', 'Observation')),
   sans_clause_ref TEXT CHECK (sans_clause_ref IS NULL OR length(trim(sans_clause_ref)) BETWEEN 3 AND 80),
@@ -339,7 +293,7 @@ CREATE TABLE IF NOT EXISTS defects (
 
 CREATE TABLE IF NOT EXISTS certificates (
   id TEXT PRIMARY KEY,
-  system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE CASCADE,
+  system_id TEXT NOT NULL REFERENCES systems(id),
   job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
   certificate_type TEXT NOT NULL CHECK (certificate_type IN ('Fire Detection', 'Gas Suppression', 'Emergency Lighting', 'Evacuation', 'Combined')),
   issued_date TEXT NOT NULL,

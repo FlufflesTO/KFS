@@ -56,6 +56,7 @@ The master delivery plan is in `docs/roadmap/MASTER_ROADMAP.md`.
 | Phase | Title | Status |
 |-------|-------|--------|
 | 1–13 | Foundation through security hardening | ✅ Complete |
+| 4 | Immediate Security Enhancements (CSP, Telemetry) | ✅ Complete — deployed to tequit.co.za |
 | 14 | Public Page Differentiation | ✅ Complete — each service page has unique technical blocks |
 | 15 | Compliance Hub and SANS Operationalisation | ✅ Complete — `/compliance` hub live with SANS summaries, checklists, defect/certificate guidance |
 | 16 | Portal Operational Data Model Expansion | ✅ Complete — clients, job_visits, defects, certificates tables + dashboard updates |

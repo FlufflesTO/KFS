@@ -5,14 +5,14 @@
  * Structural Role: Job administration endpoint
  */
 import { getDatabase } from "../../../../lib/server/bindings.js";
-import { auditEvent } from "../../../../lib/server/audit.js";
+import { auditEvent, auditError } from "../../../../lib/server/audit.js";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
 import { readJson, requireAdmin } from "../../../../lib/server/admin.js";
 import { JobAssignSchema, JobSetDispatchSchema } from "@sentinel/types";
 
 export const prerender = false;
 
-export async function POST({ request, locals }: { request: Request, locals: any }): Promise<Response> {
+export async function POST({ request, locals }: { request: Request, locals: App.Locals }): Promise<Response> {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
@@ -104,9 +104,13 @@ export async function POST({ request, locals }: { request: Request, locals: any 
     }
 
     return badRequest("Unknown dispatch action.");
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error.message) return badRequest(error.message);
-    console.error("admin dispatch failed", error);
+    await auditError(db, request, error, {
+      user: locals.user,
+      entityType: "portal_api",
+      entityId: "dispatch_admin"
+    });
     return serverError("Dispatch administration failed.");
   }
 }

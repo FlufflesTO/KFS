@@ -54,11 +54,46 @@ const links = [
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script is:inline>
-      window.kharonPortalFetch = (input, init = {}) => {
+      window.kharonPortalFetch = async (input, init = {}) => {
         const token = document.querySelector('meta[name="kharon-csrf-token"]')?.content || "";
         const headers = new Headers(init.headers || {});
         if (token && !headers.has("x-csrf-token")) headers.set("x-csrf-token", token);
-        return fetch(input, { ...init, headers });
+        
+        const maxAttempts = 3;
+        const baseDelayMs = 500;
+        const maxDelayMs = 5000;
+        const retryableStatuses = [408, 429, 500, 502, 503, 504];
+        let attempt = 0;
+
+        while (attempt < maxAttempts) {
+          try {
+            const response = await fetch(input, { ...init, headers });
+            
+            if (response.ok || !retryableStatuses.includes(response.status)) {
+              return response;
+            }
+
+            let delayMs = baseDelayMs * Math.pow(2, attempt);
+            const retryAfter = response.headers.get('Retry-After');
+            if (retryAfter) {
+              const retryAfterSecs = parseInt(retryAfter, 10);
+              if (!isNaN(retryAfterSecs)) {
+                delayMs = retryAfterSecs * 1000;
+              }
+            }
+            delayMs = Math.min(delayMs, maxDelayMs);
+            
+            attempt++;
+            if (attempt >= maxAttempts) return response;
+            await new Promise(r => setTimeout(r, delayMs));
+          } catch (error) {
+            attempt++;
+            if (attempt >= maxAttempts) throw error;
+            const delayMs = Math.min(baseDelayMs * Math.pow(2, attempt - 1), maxDelayMs);
+            await new Promise(r => setTimeout(r, delayMs));
+          }
+        }
+        throw new Error("Maximum retry attempts exceeded.");
       };
     </script>
   </head>

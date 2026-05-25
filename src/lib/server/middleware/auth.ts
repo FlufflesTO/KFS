@@ -1,5 +1,5 @@
 import { getDatabase } from "../bindings";
-import { verifyCsrfToken } from "./csrf";
+import { verifyCsrfToken } from "../csrf.js";
 
 export interface AuthResult {
   user: any;
@@ -25,7 +25,7 @@ export async function authenticateRequest(request: Request, requiredRole?: strin
   try {
     // Verify session exists and is not expired
     const session = await db.prepare(
-      `SELECT user_id, expires_at, csrf_token, created_at FROM sessions WHERE id = ?1 AND expires_at > datetime('now')`
+      `SELECT user_id, expires_at, csrf_token, created_at, mfa_verified FROM sessions WHERE id = ?1 AND expires_at > datetime('now')`
     ).bind(sessionId).first();
     
     if (!session) {
@@ -55,7 +55,7 @@ export async function authenticateRequest(request: Request, requiredRole?: strin
     }
 
     // Check MFA requirement - NOW INCLUDING TECHNICIAN ROLE
-    if (requiresMFA(user.role) && !isMFAVerified(request)) {
+    if (requiresMFA(user.role) && !isMFAVerified(session)) {
       return { user: user, isValid: false, error: "MFA verification required" };
     }
 
@@ -71,8 +71,6 @@ export function requiresMFA(role: string): boolean {
   return ["admin", "finance", "tech"].includes(role); // Added tech role
 }
 
-function isMFAVerified(request: Request): boolean {
-  // Implementation for checking if MFA has been verified in current session
-  // This would typically check a separate MFA verification flag in the session
-  return true; // Placeholder - actual implementation would check MFA verification status
+function isMFAVerified(session: any): boolean {
+  return Boolean(session && (session.mfa_verified === 1 || session.mfa_verified === true));
 }

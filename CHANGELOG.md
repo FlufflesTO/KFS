@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-25
 
+### Phase 4 - Immediate Security Enhancements (completed)
+- **CSP Headers Hardening**: Tightened `default-src` to `'none'`, enforced `strict-dynamic` with nonce verification across `middleware.js` to prevent malicious injections.
+- **Granular Rate Limiting**: Deployed hyper-restrictive rate limits for `/portal/api/auth`, `/mfa`, and `/reset-password` (5 attempts per 15 mins) to aggressively throttle brute force attempts.
+- **Enhanced Telemetry**: Implemented `auditError` telemetry utility within `src/lib/server/audit.js` to capture unhandled server crashes and 500s directly to the forensic database without leaking stack traces.
+- **Input Validation Layers**: Conducted backend verification ensuring Zod and custom schema assertions strict-parse payload payloads prior to D1 ingestion.
+
 ### Phase 22 - Portal UI/UX Polish and CSS Budget Hardening
 - Redesigned and spaced out flowcharts and SVG diagrams in service pages.
 - Redesigned `SplitFeature` blocks grid into a premium glassmorphic grid with custom vector SVG icons, and fixed mobile column squeezing.
