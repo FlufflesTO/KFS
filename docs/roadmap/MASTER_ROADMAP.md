@@ -1404,7 +1404,7 @@ Tasks:
 - [x] ContextualInquiry CTA with compliance-specific fields.
 - [x] Footer "Standards Reference" link pointing to /compliance.
 - [x] sitemapPages updated; pageMeta.complianceHub title and description set.
-- [ ] Internal cross-links from Emergency Support and Client Records pages.
+- [x] Internal cross-links from Emergency Support and Client Records pages (commit a05a368).
 - [ ] Downloadable PDF versions — deferred pending approved document design.
 - [ ] FAQ schema — deferred pending final content approval.
 
@@ -1416,7 +1416,7 @@ Deployable gate:
 - [ ] PDF downloads — deferred.
 - [ ] `npm run build` and `npm run audit:site` — run to confirm before deployment.
 
-Status: partially complete — core hub shipped (commit 905ee07). PDF downloads and FAQ schema deferred. Cross-links to Emergency Support and Client Records remain open.
+Status: core deliverables complete (commits 905ee07, 2030780, a05a368). All cross-links in place. PDF downloads and FAQ schema deferred pending design approval and final content sign-off.
 
 ### Phase 16 - Portal Operational Data Model Expansion
 
