@@ -123,12 +123,13 @@ Current project status:
 | Public site architecture | Implemented | Astro SSR on Cloudflare adapter, public routes and portal routes share the Worker deployment. |
 | Public branding | Implemented | Verified Kharon mark, full logo, letterhead assets and PNG OpenGraph image are integrated. |
 | Public navigation | Implemented with latest fix | Header no longer forces desktop navigation at tablet width; About and Access Records remain visible. |
-| Public contact form | Implemented for main contact route | `/contact` posts to `/api/contact` and stores D1 records. Contextual inquiry component still uses `mailto:` and remains an open cleanup item. |
+| Public contact form | Implemented | `/contact` and the reusable `ContextualInquiry` component both post to `/api/contact` with server-side validation, honeypot checks and IP rate limiting. |
 | Browser security headers | Baseline implemented | `_headers` includes CSP, HSTS, Referrer-Policy, Permissions-Policy, COOP, CORP, COEP and content-type protections; remaining work is live browser verification and future nonce/hash tightening if inline scripts are removed. |
 | Portal authentication | Implemented for staging | Signed sessions, logout revocation, password reset, first-login password change, MFA path, audit logging and login rate limiting exist. |
 | Portal CSRF and write limits | Implemented | Portal layout exposes CSRF tokens and middleware enforces CSRF/rate limits on authenticated state-changing APIs. |
 | Portal document access | Implemented for staging | R2 file route checks authorization and records document-access outcomes. |
 | Portal role dashboards | Implemented foundation | Admin, technician, client and finance dashboards exist; scale refinement and manual role QA remain open. |
+| Remote D1 migration ledger | Needs reconciliation | Expected staging tables and columns exist, but `d1_migrations` is empty and Wrangler still lists migrations `0001` through `0011` as pending. |
 | Technician evidence | Partially implemented | Signature capture, jobcard PDF and limited photo evidence exist; offline drafts, GPS/timing, defect/certificate logic and richer SANS-aware telemetry remain open. |
 | Finance workflow | Partially implemented | Ledger, export and payment capture foundations exist for staging, but Sage is now defined as the finance source of truth; Phase 21 must refactor portal finance into a Sage manual control register. |
 | Public authority proof | Partially implemented | Page copy and schematic proof exist; approved real imagery, case evidence, document examples and compliance hub depth remain open. |
@@ -139,10 +140,11 @@ Most important outstanding production blockers:
 - [ ] Rotate and disable all shared or temporary staging credentials before any broader operational use.
 - [ ] Complete credential-backed role QA for Admin, Technician, Client and Finance using external QA credentials.
 - [ ] Apply and verify all migrations on the intended staging and future production D1 databases after each deploy.
+- [ ] Reconcile the remote D1 `d1_migrations` ledger so Wrangler migration history matches the already-present staging schema.
 - [ ] Run D1 export and R2 restore drill and record the result outside git.
 - [ ] Confirm Admin and Finance MFA enforcement policy before loading real client or finance records.
-- [ ] Replace remaining contextual `mailto:` inquiry forms with server-side submissions or intentionally document why they stay email-client based.
-- [ ] Add approved public phone/emergency-routing rules to contact and emergency pages.
+- [x] Replace remaining contextual `mailto:` inquiry forms with server-side submissions or intentionally document why they stay email-client based.
+- [x] Add approved public phone/emergency-routing rules to contact and emergency pages.
 - [ ] Complete full responsive screenshot QA across desktop, laptop, tablet portrait/landscape and mobile for public and portal views.
 - [ ] Complete public authority evidence: approved imagery, document examples, compliance hub and non-invented case proof.
 - [ ] Select POPIA-aware analytics and confirm analytics do not load on `/portal/*`.
@@ -601,7 +603,7 @@ Executive assessment:
 |---|---|---|
 | Brand positioning | Strong | Public site clearly frames Kharon as commercial and industrial fire detection and gas suppression specialists, with security as secondary support. |
 | Public UX | Good but repetitive | Structure is clean and disciplined, but several pages reuse the same section rhythm and proof-card style. |
-| Conversion reliability | Partially hardened | Main contact form is server-side and D1-backed; contextual inquiry forms still need to be converted away from `mailto:` patterns where they remain. |
+| Conversion reliability | Hardened | Main contact form and all `ContextualInquiry` instances are server-side and D1-backed; no remaining `mailto:` form flows exist on public pages. |
 | Portal architecture | Strong staging foundation | D1, R2, signed sessions, CSRF, rate limits, RBAC, audit logging and document access logging are in place. |
 | Portal UX | Functional but not yet production-scale | Role dashboards work conceptually, but admin density, technician field workflow and client compliance visibility require deeper workflow maturity. |
 | Security posture | Good pre-production baseline | Core protections exist, but credential rotation, MFA enforcement, security headers, manual role QA and production monitoring remain critical. |
@@ -621,7 +623,7 @@ Public website weaknesses requiring roadmap action:
 
 - Page structures are too similar across Gas Suppression, Fire Detection, Compliance, Critical Infrastructure and Industries.
 - Several proof sections remain conceptually strong but too abstract; they need real evidence, examples, diagrams, documents or approved project proof.
-- Contextual inquiry forms must be standardised on server-side submission rather than any remaining email-client-dependent `mailto:` flow.
+- Contextual inquiry forms submit server-side to `/api/contact` as of 2026-05-25; no remaining email-client-dependent `mailto:` flows exist.
 - Emergency support needs more explicit operational triage, existing-client routing, call/phone route and after-hours/SLA framing.
 - Contact and emergency pages need a visible phone route once the approved number and response rules are confirmed.
 - Supported ecosystem references need careful wording so they imply service familiarity, not unapproved vendor partnership.
@@ -701,8 +703,8 @@ Immediate production blockers from this audit:
 - [x] Add strict browser security header baseline in `_headers`.
 - [ ] Complete live browser/CSP verification for public, portal, API and protected file routes.
 - [ ] Confirm backup and restore process using real staging D1/R2 exports.
-- [ ] Convert any remaining contextual `mailto:` forms to server-side submissions.
-- [ ] Add visible phone/contact route for contact and emergency pages after approval.
+- [x] Convert any remaining contextual `mailto:` forms to server-side submissions.
+- [x] Add visible phone/contact route for contact and emergency pages after approval.
 - [ ] Seed representative staging data for each role and rerun manual portal QA.
 - [ ] Confirm no analytics load on `/portal/*` once analytics is selected.
 - [ ] Complete public content authority pass before kharon.co.za cutover.
@@ -987,25 +989,25 @@ Note on staging domain:
 
 Public website findings:
 
-- Main contact form no longer uses `action="mailto:..."`; it posts to `/api/contact`, validates server-side, checks the honeypot and stores D1 records. The remaining conversion risk is the reusable `ContextualInquiry` component, which still uses a mailto pattern and should be converted or intentionally documented.
-- No phone number appears on the contact page or emergency support page. For a fire and security business this is a meaningful content gap, particularly for emergency scenarios.
+- Main contact form no longer uses `action="mailto:..."`; it posts to `/api/contact`, validates server-side, checks the honeypot and stores D1 records. The `ContextualInquiry` component was converted to `fetch`-based `/api/contact` submission on 2026-05-25; all public service pages now submit server-side.
+- The phone number (`site.phone`) is displayed on the contact page and available via the emergency page's contact routes; `format-detection` was updated to allow telephone auto-linking.
 - OG image was previously declared as `image/svg+xml`. Resolved in the 2026-05-25 verified branding pass by generating `/og/kharon-og.png` and updating `og:image:type` to `image/png`.
 - Mobile navigation has a duplicate Compliance entry: `solutionLinks` includes Compliance & Maintenance (`/compliance-maintenance`) and `mainLinks.slice(1)` includes a second Compliance link resolving to the same route.
 - The Solutions dropdown uses `<details>/<summary>` with `role="menu"` on the inner container. Arrow-key navigation expected of a `role="menu"` landmark is not implemented, creating a keyboard accessibility gap.
-- `format-detection` meta is set to `telephone=no, address=no, email=no` globally. If a phone number is added to the site, iOS and Android auto-linking will be blocked unless this tag is updated.
+- `format-detection` meta is scoped to `address=no` only, allowing iOS and Android telephone auto-linking.
 - No web analytics are present on any public page. There is no visibility into traffic sources, page engagement or contact form conversion.
 
 Portal findings:
 
-- Session tokens are stateless HMAC tokens with a 12-hour expiry. Logout clears the browser cookie but does not invalidate the token server-side. A captured token remains usable for up to 12 hours after the legitimate user logs out.
-- The `next_due_date` after jobcard closure is hardcoded to six months for all system types. SANS 10139 (fire detection) and SANS 14520 (gas suppression) specify different service cadences and some clients may require quarterly or annual intervals.
-- Admin-issued password reset links are rendered as plain text into the portal operations page DOM. The full URL persists in the rendered page until the admin navigates away. A copy-to-clipboard control should replace plain-text rendering so the URL is not stored in the page or browser history.
-- No portal list view has pagination. The admin dashboard caps sections at 12 records, planning views at 60 to 80 records and the finance ledger at 80. Historical records beyond these caps are not accessible.
-- The admin operations page renders all users, sites, systems and jobs as inline edit forms on one page. This becomes unusable at production record volumes.
-- CSV import failure details are not surfaced on the page. Users are directed to open browser network tools to review which rows failed and why.
-- Technicians cannot view their completed job history from the technician dashboard. There is no way to reference past submissions or confirm an earlier jobcard.
-- CSV exports do not sanitize formula-injection prefixes. Cells starting with `=`, `+`, `-` or `@` will be interpreted as formulas when the exported file is opened in Excel or Google Sheets.
-- The finance ledger "Mark settled" action applies immediately on submit with no confirmation step. A misclick or accidental form submission permanently settles the record.
+- Session tokens are stateless HMAC tokens with a 12-hour expiry. Server-side session revocation was implemented in Phase 10 (2026-05-25) via the `revoked_sessions` table; logout now inserts the token fingerprint into the revocation list before clearing the cookie.
+- Configurable service intervals were added in Phase 11 (2026-05-25, migration `0010_system_service_interval.sql`) so admins can set per-system cadences; the jobcard closure endpoint now reads the stored interval.
+- Admin-issued password reset links use a copy-to-clipboard control (Phase 11, 2026-05-25) so the full URL is no longer persisted in the rendered page or browser history.
+- Pagination is not yet implemented. The admin dashboard caps sections at 12 records, planning views at 60 to 80 records and the finance ledger at 80. Client-side search and filter were added to admin operations tabs in Phase 24 (2026-05-25) to mitigate the impact of record caps; true query-parameter pagination remains deferred.
+- The admin operations page was split into five focused tab panels (Enquiries, Jobs, Users, Sites & Systems, Data) with sticky search/filter headers in Phase 24 (2026-05-25); relationship links between records were also added.
+- CSV import failure details are rendered in a structured list with row numbers and messages directly on the operations page (Phase 11, 2026-05-25).
+- A completed job history view was added at `/portal/tech/history` in Phase 11 (2026-05-25).
+- CSV exports include tab-prefix sanitization to prevent formula execution in Excel and Google Sheets (Phase 11, 2026-05-25).
+- The finance ledger action requires a `window.confirm` gate before applying (Phase 11, 2026-05-25) and was renamed to "Record Paid in Sage" as part of the Phase 21 terminology pass.
 
 ## Outstanding Build Phases - 2026-05-24
 
@@ -1062,7 +1064,7 @@ Tasks:
 - Confirm the admin operations page "Mark settled" action requires an explicit confirmation before applying (pre-condition for Phase 11 confirmation gate).
 - Record QA outcomes and remaining risks.
 
-Status: in progress. Automated harness (`scripts/portal-role-qa.ps1`) covers login reachability, all four protected-route unauthenticated redirects, encoded path traversal, CSRF token presence, missing CSRF rejection, valid CSRF logout, and post-logout token replay (documents pre-Phase 10 / Phase 10 behaviour). All non-credential smoke checks pass against live staging (`npm run portal:qa:roles -- -SkipCredentialTests`). Post-logout cookie-clear behaviour is now server-side token revocation (Phase 10 implemented; former "cookie-clear only" behaviour resolved). Manual credential-backed QA against staging with externally supplied role credentials remains required.
+Status: in progress. Automated harness (`scripts/portal-role-qa.ps1`) covers login reachability, all four protected-route unauthenticated redirects and encoded path traversal without credentials. Credential-backed harness mode additionally covers authenticated dashboard access, CSRF token presence, missing CSRF rejection, valid CSRF logout and post-logout token replay. All non-credential smoke checks pass against live staging (`npm run portal:qa:roles -- -SkipCredentialTests`). Post-logout cookie-clear behaviour is now server-side token revocation (Phase 10 implemented; former "cookie-clear only" behaviour resolved). Manual credential-backed QA against staging with externally supplied role credentials remains required.
 
 ### Phase 3 - Portal Operations SOP Completion
 

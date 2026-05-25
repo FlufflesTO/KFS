@@ -122,7 +122,7 @@ The harness does not replace the manual data-access and document-access tests be
 - [ ] Admin operations page overflow records are accessible via expand control.
 - [ ] CSV import failure details are shown on the page (not in network tools).
 - [ ] Password reset link is shown as copy-to-clipboard only; raw URL is not visible in the DOM after copying.
-- [ ] Finance ledger "Mark settled" requires explicit confirmation before applying.
+- [ ] Finance ledger "Record Paid in Sage" action requires explicit confirmation before applying.
 - [ ] Admin can set `service_interval_months` on a system record from operations.
 
 ## Public Contact Form
