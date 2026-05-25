@@ -13,10 +13,17 @@ let totals = { unpaid: 0, pending: 0, settled: 0 };
 let aging = { current: 0, thirty: 0, sixty: 0 };
 let loadError = "";
 
+const params = Astro.url.searchParams;
+const page = Math.max(1, Math.min(999, parseInt(params.get('page') || '1', 10) || 1));
+const perPage = 50;
+const offset = (page - 1) * perPage;
+let totalPages = 1;
+
 try {
   const db = getDatabase();
 
-  const [aggResult, recordsResult, sitesResult, jobsResult, invoiceRequiredResult] = await db.batch([
+  const [countResult, aggResult, recordsResult, sitesResult, jobsResult, invoiceRequiredResult] = await db.batch([
+    db.prepare(`SELECT COUNT(*) as total FROM financial_records`),
     db.prepare(`
       SELECT
         COALESCE(SUM(CASE WHEN payment_status = 'Unpaid' THEN amount ELSE 0 END), 0)             AS unpaid,
@@ -39,8 +46,8 @@ try {
        INNER JOIN sites ON sites.id = financial_records.site_id
        LEFT JOIN jobs ON jobs.id = financial_records.job_id
        ORDER BY financial_records.distribution_date DESC
-       LIMIT 80`
-    ),
+       LIMIT ? OFFSET ?`
+    ).bind(perPage, offset),
     db.prepare(
       `SELECT id, owner_company_name FROM sites ORDER BY owner_company_name`
     ),
@@ -70,6 +77,9 @@ try {
        LIMIT 20`
     )
   ]);
+
+  const ledgerTotal = Number((countResult.results[0] as any)?.total ?? 0);
+  totalPages = Math.ceil(ledgerTotal / perPage) || 1;
 
   const agg = (aggResult.results[0] as any) || {};
   totals = {
@@ -275,6 +285,22 @@ try {
           </tbody>
         </table>
       </div>
+
+      {records.length > 0 && (
+        <nav class="flex items-center justify-between mt-6 pt-4 border-t border-kharon-border">
+          {page > 1 ? (
+            <a href={`?page=${page - 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Previous</a>
+          ) : (
+            <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Previous</span>
+          )}
+          <span class="text-sm text-kharon-grey">Page {page} of {totalPages}</span>
+          {page < totalPages ? (
+            <a href={`?page=${page + 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Next</a>
+          ) : (
+            <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Next</span>
+          )}
+        </nav>
+      )}
     </div>
   </section>
   <script>

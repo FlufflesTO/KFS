@@ -7,6 +7,13 @@ export const prerender = false;
 const user = Astro.locals.user;
 const today    = new Date().toISOString().slice(0, 10);
 const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+const params = Astro.url.searchParams;
+const activeTab = params.get('tab') || 'enquiries';
+const page = Math.max(1, Math.min(999, parseInt(params.get('page') || '1', 10) || 1));
+const perPage = 50;
+const offset = (page - 1) * perPage;
+
 let users = [];
 let sites = [];
 let systems = [];
@@ -15,10 +22,14 @@ let technicians = [];
 let clientUsers = [];
 let clientSiteAccess = [];
 let contactEnquiries = [];
+let jobsTotal = 0;
+let contactsTotal = 0;
 let loadError = "";
 
 try {
   const db = getDatabase();
+  jobsTotal = (await db.prepare(`SELECT COUNT(*) as total FROM jobs`).first()).total ?? 0;
+  contactsTotal = (await db.prepare(`SELECT COUNT(*) as total FROM contact_submissions`).first()).total ?? 0;
   users = (await db.prepare(
     `SELECT id, name, email, role, site_id, is_active, force_password_change, mfa_required, mfa_enabled, last_login_at
      FROM users
@@ -47,8 +58,8 @@ try {
      INNER JOIN systems ON systems.id = jobs.system_id
      INNER JOIN sites ON sites.id = systems.site_id
      ORDER BY jobs.scheduled_date DESC
-     LIMIT 80`
-  ).all()).results || [];
+     LIMIT ? OFFSET ?`
+  ).bind(perPage, offset).all()).results || [];
 
   technicians = users.filter((item) => item.role === "tech" && item.is_active);
   clientUsers = users.filter((item) => item.role === "client" && item.is_active);
@@ -66,12 +77,15 @@ try {
     `SELECT id, name, email, request_type, message, submitted_at
      FROM contact_submissions
      ORDER BY submitted_at DESC
-     LIMIT 50`
-  ).all()).results || [];
+     LIMIT ? OFFSET ?`
+  ).bind(perPage, offset).all()).results || [];
 } catch (error) {
   console.error("admin operations failed", error);
   loadError = "Administration data could not be loaded.";
 }
+
+const jobsTotalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
+const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
 ---
 
 <PortalLayout title="Admin Operations | Kharon Portal" active="operations" user={user}>
@@ -132,6 +146,19 @@ try {
           </div>
         </details>
       </article>
+      <nav class="flex items-center justify-between mt-6 pt-4 border-t border-kharon-border">
+        {page > 1 ? (
+          <a href={`?tab=enquiries&page=${page - 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Previous</a>
+        ) : (
+          <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Previous</span>
+        )}
+        <span class="text-sm text-kharon-grey">Page {page} of {contactsTotalPages}</span>
+        {page < contactsTotalPages ? (
+          <a href={`?tab=enquiries&page=${page + 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Next</a>
+        ) : (
+          <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Next</span>
+        )}
+      </nav>
     </div>
 
     <!-- ─── Jobs panel ─────────────────────────────────────────────── -->
@@ -185,6 +212,19 @@ try {
         </div>
         <p id="jobs-no-results" class="hidden py-4 text-sm text-kharon-grey">No jobs match your filter.</p>
       </article>
+      <nav class="flex items-center justify-between mt-6 pt-4 border-t border-kharon-border">
+        {page > 1 ? (
+          <a href={`?tab=jobs&page=${page - 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Previous</a>
+        ) : (
+          <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Previous</span>
+        )}
+        <span class="text-sm text-kharon-grey">Page {page} of {jobsTotalPages}</span>
+        {page < jobsTotalPages ? (
+          <a href={`?tab=jobs&page=${page + 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Next</a>
+        ) : (
+          <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Next</span>
+        )}
+      </nav>
 
       <article class="border border-kharon-border bg-white p-4 sm:p-5">
         <h2 class="text-xl font-bold">Create job</h2>
@@ -545,11 +585,18 @@ try {
       for (const btn of document.querySelectorAll<HTMLElement>(".ops-tab")) {
         btn.className = (btn as HTMLButtonElement).dataset.tab === id ? CLS_ACTIVE : CLS_INACTIVE;
       }
-      history.replaceState(null, "", `#${id}`);
+      const url = new URL(location.href);
+      url.searchParams.set('tab', id);
+      url.searchParams.delete('page');
+      url.hash = id;
+      history.replaceState(null, "", url.pathname + url.search + url.hash);
     }
 
-    const initialTab = location.hash.slice(1);
-    switchTab(VALID_TABS.includes(initialTab) ? initialTab : "enquiries");
+    const urlTab = new URLSearchParams(location.search).get('tab');
+    const hashTab = location.hash.slice(1);
+    const initialTab = (urlTab && VALID_TABS.includes(urlTab)) ? urlTab :
+                       (hashTab && VALID_TABS.includes(hashTab)) ? hashTab : "enquiries";
+    switchTab(initialTab);
 
     for (const btn of document.querySelectorAll<HTMLButtonElement>(".ops-tab")) {
       btn.addEventListener("click", () => switchTab(btn.dataset.tab ?? "enquiries"));
