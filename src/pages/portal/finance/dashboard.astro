@@ -161,6 +161,28 @@ try {
         <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-red">Open 60+ days</p><p class="mt-2 text-xl font-bold">R {aging.sixty.toFixed(2)}</p></article>
       </div>
 
+      <div class="sticky top-0 z-10 bg-kharon-light pb-2 flex flex-wrap items-center gap-3">
+        <input
+          id="finance-search"
+          type="search"
+          class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
+          placeholder="Search client or reference…"
+          size="26"
+        />
+        <select id="finance-status-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
+          <option value="">All statuses</option>
+          <option value="Unpaid">Unpaid</option>
+          <option value="Pending Approval">Pending Approval</option>
+          <option value="Settled">Paid in Sage</option>
+        </select>
+        <select id="finance-type-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
+          <option value="">All types</option>
+          <option value="Quote">Quote</option>
+          <option value="Invoice">Invoice</option>
+        </select>
+      </div>
+      <p id="finance-no-results" class="hidden py-3 text-sm text-kharon-grey">No records match your filter.</p>
+
       <div class="portal-scroll-x border border-kharon-border bg-white">
         <table class="w-full min-w-[760px] border-collapse text-left text-sm">
           <thead class="bg-kharon-charcoal text-white">
@@ -175,9 +197,14 @@ try {
               <th class="p-4">Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="finance-tbody">
             {records.map((record) => (
-              <tr class="border-t border-kharon-border">
+              <tr
+                class="border-t border-kharon-border"
+                data-search={`${record.owner_company_name} ${record.reference || ""} ${record.item_type}`}
+                data-status={record.payment_status}
+                data-type={record.item_type}
+              >
                 <td class="p-4 font-semibold">{record.owner_company_name}</td>
                 <td class="p-4">{record.item_type}</td>
                 <td class="p-4">{record.payment_status === "Settled" ? "Paid in Sage" : record.payment_status}</td>
@@ -205,6 +232,37 @@ try {
     </div>
   </section>
   <script>
+    // ── Ledger search / filter ──────────────────────────────────────────────
+    const financeSearch       = document.getElementById("finance-search") as HTMLInputElement | null;
+    const financeStatusFilter = document.getElementById("finance-status-filter") as HTMLSelectElement | null;
+    const financeTypeFilter   = document.getElementById("finance-type-filter") as HTMLSelectElement | null;
+    const financeTbody        = document.getElementById("finance-tbody");
+    const financeNoResults    = document.getElementById("finance-no-results");
+
+    function applyFinanceFilter() {
+      if (!financeTbody) return;
+      const q  = (financeSearch?.value  || "").toLowerCase().trim();
+      const sv = financeStatusFilter?.value || "";
+      const tv = financeTypeFilter?.value   || "";
+      const rows = financeTbody.querySelectorAll<HTMLTableRowElement>("tr[data-search]");
+      let visible = 0;
+      for (const row of rows) {
+        const text = (row.dataset.search ?? "").toLowerCase();
+        const show =
+          (!q  || text.includes(q)) &&
+          (!sv || (row.dataset.status ?? "") === sv) &&
+          (!tv || (row.dataset.type   ?? "") === tv);
+        row.style.display = show ? "" : "none";
+        if (show) visible++;
+      }
+      if (financeNoResults) financeNoResults.style.display = visible === 0 ? "" : "none";
+    }
+
+    financeSearch?.addEventListener("input",  applyFinanceFilter);
+    financeStatusFilter?.addEventListener("change", applyFinanceFilter);
+    financeTypeFilter?.addEventListener("change",   applyFinanceFilter);
+
+    // ── Payment forms ───────────────────────────────────────────────────────
     for (const form of document.querySelectorAll(".payment-form")) {
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
