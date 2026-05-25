@@ -138,6 +138,30 @@ Scope: public page differentiation, compliance hub, and operational data model e
 - [ ] Rotate all shared staging credentials and enforce unique per-user passwords.
 - [ ] Complete credential-backed role QA for Admin, Technician, Client and Finance.
 - [ ] Confirm Admin and Finance MFA enforcement policy.
+
+---
+
+## Audit Update - 2026-05-25 DOM Sink Hardening Pass
+
+Scope: browser-side DOM safety, portal/public form success states, finance select rebuilding, and technician defect capture rendering.
+
+### Changes
+
+- Replaced public contact and contextual inquiry success-state `innerHTML` assignments with `document.createElement`, `textContent`, and `replaceChildren`.
+- Replaced admin dashboard `outerHTML` status replacement with a constructed `span` and `replaceWith`.
+- Replaced finance dashboard select-option `innerHTML` resets with explicit option creation and `replaceChildren`.
+- Rebuilt technician defect-card rendering without HTML string concatenation.
+- Removed technician defect submission parsing from rendered HTML; submission now copies the structured defect array directly.
+- Extended `scripts/audit-site.mjs` to fail on application-source HTML string sinks, `document.write`, `insertAdjacentHTML`, `eval`, and `new Function`.
+
+### Verification
+
+- `rg` confirms the remaining `innerHTML`/`outerHTML`/dynamic-code matches are limited to the audit script patterns themselves.
+- `npm run build` passes.
+- `npm run audit:site` passes.
+- `npm audit --omit=dev` reports 0 vulnerabilities.
+- `npm run portal:qa:roles -- -SkipCredentialTests` passes.
+- `npm run portal:monitor` passes.
 - [ ] Full responsive screenshot QA across desktop, tablet and mobile.
 - [ ] Production domain migration plan for `www.kharon.co.za` and `portal.kharon.co.za`.
 - [ ] Approved public imagery to replace schematic visuals.

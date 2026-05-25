@@ -77,6 +77,10 @@ for (const file of textDistFiles) {
 }
 
 const forbiddenSourcePatterns = [
+  { pattern: /\.(innerHTML|outerHTML)\s*=/i, label: "HTML string injection sink" },
+  { pattern: /\.insertAdjacentHTML\s*\(/i, label: "HTML string insertion sink" },
+  { pattern: /document\.write(?:ln)?\s*\(/i, label: "document.write sink" },
+  { pattern: /\beval\s*\(|new Function\s*\(/i, label: "dynamic code execution sink" },
   { pattern: /hover:-translate/i, label: "hover lift animation" },
   { pattern: /shadow-\[0_0/i, label: "glow shadow utility" },
   { pattern: /font-size:[^;]*vw/i, label: "viewport-scaled font sizing" },

@@ -112,7 +112,10 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
         const body = await response.json().catch(() => ({ ok: false, message: "Submission failed." }));
 
         if (body.ok) {
-          form.innerHTML = `<p class="py-4 text-base font-semibold text-kharon-purple">Request received. Kharon will be in contact shortly.</p>`;
+          const success = document.createElement("p");
+          success.className = "py-4 text-base font-semibold text-kharon-purple";
+          success.textContent = "Request received. Kharon will be in contact shortly.";
+          form.replaceChildren(success);
         } else {
           if (resultEl) {
             resultEl.textContent = body.message || "Submission failed. Try emailing admin@kharon.co.za directly.";

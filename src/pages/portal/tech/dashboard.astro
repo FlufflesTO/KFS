@@ -457,7 +457,7 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
 
       function renderDefects() {
         if (!defectList) return;
-        defectList.innerHTML = "";
+        defectList.replaceChildren();
         if (defects.length === 0) {
           if (defectCountEl) defectCountEl.textContent = "No defects recorded.";
           return;
@@ -471,14 +471,40 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
                                 d.severity === "Major" ? "bg-amber-200 text-amber-800" :
                                 d.severity === "Minor" ? "bg-blue-100 text-blue-800" :
                                 "bg-kharon-grey/20 text-kharon-grey";
-          card.innerHTML =
-            `<div class="min-w-0">` +
-              `<span class="rounded px-1.5 py-0.5 text-xs font-bold ${severityColor}">${d.severity}</span>` +
-              (d.sansClauseRef ? ` <span class="text-xs text-kharon-grey">[${d.sansClauseRef}]</span>` : "") +
-              `<p class="mt-1 text-xs">${d.description}</p>` +
-              (d.certificateBlocking ? `<p class="mt-1 text-xs font-bold text-amber-700">Blocks certificate</p>` : "") +
-            `</div>` +
-            `<button type="button" class="remove-defect rounded border border-red-300 px-2 py-1 text-xs font-semibold text-red-900" data-index="${i}">Remove</button>`;
+          const body = document.createElement("div");
+          body.className = "min-w-0";
+
+          const severity = document.createElement("span");
+          severity.className = `rounded px-1.5 py-0.5 text-xs font-bold ${severityColor}`;
+          severity.textContent = d.severity;
+          body.appendChild(severity);
+
+          if (d.sansClauseRef) {
+            const sans = document.createElement("span");
+            sans.className = "ml-1 text-xs text-kharon-grey";
+            sans.textContent = `[${d.sansClauseRef}]`;
+            body.appendChild(sans);
+          }
+
+          const description = document.createElement("p");
+          description.className = "mt-1 text-xs";
+          description.textContent = d.description;
+          body.appendChild(description);
+
+          if (d.certificateBlocking) {
+            const blocking = document.createElement("p");
+            blocking.className = "mt-1 text-xs font-bold text-amber-700";
+            blocking.textContent = "Blocks certificate";
+            body.appendChild(blocking);
+          }
+
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "remove-defect rounded border border-red-300 px-2 py-1 text-xs font-semibold text-red-900";
+          remove.dataset.index = String(i);
+          remove.textContent = "Remove";
+
+          card.append(body, remove);
           defectList.appendChild(card);
         }
         for (const rm of defectList.querySelectorAll(".remove-defect")) {
@@ -559,20 +585,7 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
           return;
         }
 
-        // Collect defects from the closure scope
-        const formDefects: Array<{severity: string; sansClauseRef: string; description: string; certificateBlocking: boolean}> = [];
-        for (const card of defectListForSubmit?.querySelectorAll("article") || []) {
-          const removeBtn = card.querySelector(".remove-defect");
-          const severityEl = card.querySelector("span.rounded");
-          const descEl = card.querySelector("p.mt-1");
-          if (!severityEl || !descEl) continue;
-          const severity = severityEl.textContent || "Minor";
-          const description = descEl.textContent || "";
-          const sansMatch = card.innerHTML.match(/\[(.*?)\]/);
-          const sansClauseRef = sansMatch ? sansMatch[1] : "";
-          const certificateBlocking = card.innerHTML.includes("Blocks certificate");
-          formDefects.push({ severity, sansClauseRef, description, certificateBlocking });
-        }
+        const formDefects = defects.map((defect) => ({ ...defect }));
 
         const response = await window.kharonPortalFetch("/portal/api/submit-jobcard", {
           method: "POST",

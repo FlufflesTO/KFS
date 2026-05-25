@@ -504,7 +504,10 @@ try {
       const siteId = financeSiteSelect.value;
       if (siteId) {
         const siteJobs = financeJobsData.filter((j) => j.site_id === siteId);
-        financeJobSelect.innerHTML = '<option value="">No job (standalone record)</option>';
+        const defaultOpt = document.createElement("option");
+        defaultOpt.value = "";
+        defaultOpt.textContent = "No job (standalone record)";
+        financeJobSelect.replaceChildren(defaultOpt);
         for (const job of siteJobs) {
           const opt = document.createElement("option");
           opt.value = job.id;
@@ -514,7 +517,10 @@ try {
         financeJobSelect.disabled = false;
       } else {
         financeJobSelect.disabled = true;
-        financeJobSelect.innerHTML = '<option value="">Select site first</option>';
+        const defaultOpt = document.createElement("option");
+        defaultOpt.value = "";
+        defaultOpt.textContent = "Select site first";
+        financeJobSelect.replaceChildren(defaultOpt);
       }
     });
 
@@ -548,7 +554,10 @@ try {
         financeCreateResult.className = "text-sm font-semibold text-kharon-blue";
         financeCreateForm.reset();
         financeJobSelect.disabled = true;
-        financeJobSelect.innerHTML = '<option value="">Select site first</option>';
+        const defaultOpt = document.createElement("option");
+        defaultOpt.value = "";
+        defaultOpt.textContent = "Select site first";
+        financeJobSelect.replaceChildren(defaultOpt);
         if (financeDistDate) financeDistDate.value = new Date().toISOString().split("T")[0];
         setTimeout(() => window.location.reload(), 2000);
       } else {

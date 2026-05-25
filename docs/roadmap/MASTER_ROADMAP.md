@@ -185,6 +185,7 @@ Verified current state:
 - Phase 16 local schema/migrations and role dashboard integrations exist for `clients`, `job_visits`, `defects` and `certificates`.
 - Phase 21 local Sage reference fields, finance dashboard controls, missing Sage reference queue and finance CSV export fields exist.
 - Phase 24 admin operations and finance ledger now use query-parameter pagination; remaining capped views are admin planning and technician history.
+- Phase 25 admin compliance console, defect/certificate CRUD APIs, client defect/certificate display, technician defect capture and Sage jobcard finance handoff are implemented.
 - Phase 26 admin audit console and audit CSV export exist.
 
 Accuracy corrections made:
@@ -192,7 +193,8 @@ Accuracy corrections made:
 - Remote D1 status corrected from fully reconciled to drift identified.
 - Phase 16 status corrected from live-ready complete to local implementation complete, then verified live-ready after remote D1 migrations were applied.
 - Phase 21 status corrected to show Sage reference implementation, quote-approval handoff and status pipeline work complete while no-charge/on-hold and Sage document upload/link workflows remain open.
-- Master task list checkboxes corrected for completed public technical proof, compliance hub, CTA routing, bundle budget, Phase 16 local schema work, Phase 21 Sage reference foundations, Phase 24 foundation work and Phase 26 audit console.
+- Phase 25 status corrected from Pending to substantially implemented (compliance console, defect/certificate register, client visibility, technician capture, Sage finance handoff). Eligibility automation and production SOP remain open.
+- Master task list checkboxes corrected for completed public technical proof, compliance hub, CTA routing, bundle budget, Phase 16 local schema work, Phase 21 Sage reference foundations, Phase 24 foundation work, Phase 25 defect/certificate/compliance work and Phase 26 audit console.
 
 Current blockers verified:
 
@@ -1681,9 +1683,9 @@ Tasks:
 - [x] Finance: aging bucket strip (0-29 / 30-59 / 60+ days) already present.
 - [x] Finance: exception queue for completed jobs awaiting Sage invoice already present.
 - [x] Finance: CSV export already present.
-- [ ] Search/filter consistently across finance and history pages — deferred to Phase 24 pagination work.
+- [x] Search/filter consistently across finance and history pages — implemented in Phase 24.
 - [ ] Mobile/tablet QA — requires visual browser testing.
-- [ ] Finance: missing Sage reference flag — deferred to Phase 21.
+- [x] Finance: missing Sage reference flag — implemented in Phase 21 (missing Sage ref count badge + exception panel).
 
 Deployable gate:
 
@@ -1691,9 +1693,9 @@ Deployable gate:
 - [x] Common actions visible without scrolling (stats strips at top of each role).
 - [x] Empty/error states present on all portal dashboards.
 - [ ] Portal pages usable on mobile and tablet — pending QA.
-- [ ] `npm run build` and `npm run audit:site` — run to confirm before deployment.
+- [x] `npm run build` and `npm run audit:site` pass. ✓
 
-Status: substantially complete (commits d28955e, dc0f70a, f2f230e). Mobile QA and finance Sage reference flagging deferred.
+Status: substantially complete. Finance Sage reference flagging implemented in Phase 21. Mobile/tablet QA remains the only open item.
 
 ### Phase 21 - Sage Manual Finance Control Register
 
@@ -1805,9 +1807,19 @@ Further implementation verified on 2026-05-25:
 - Finance CSV export includes Sage reference fields.
 - Remote D1 migrations through `0018` are applied and Wrangler reports no pending migrations.
 
+Further implementation verified on 2026-05-25 (continued session):
+
+- Schema migration `0013_sage_finance_fields.sql` committed (sage_quote_number, sage_invoice_number, sage_customer_code, sage_amount_ex_vat, sage_vat_amount, sage_payment_reference, finance_task_status columns added to financial_records; supporting indexes added). commit 818f144.
+- `/portal/api/finance/sage-reference` endpoint created — accepts recordId, sageInvoiceNumber, sageQuoteNumber, sageCustomerCode, financeTaskStatus; RBAC-protected (finance/admin); audit logged. commit 05b3e15.
+- Finance dashboard updated: SQL SELECT includes Sage reference fields; missing Sage ref count via batch query; purple exception panel shows count of open records without a Sage reference; ledger table adds "Sage Ref" column (amber "Missing" badge when absent, monospace ref when set); Action cell includes Save/Update Sage ref form (Sage number input, customer code, task status select) for non-settled records; "Record Paid in Sage" form retained for Invoice+Unpaid records. commit 05b3e15.
+- Finance CSV export updated to include sage_invoice_number, sage_quote_number, sage_customer_code and finance_task_status columns. commit 05b3e15.
+- submit-jobcard now creates finance tasks with Sage-aligned reference text and sets finance_task_status to "Quote Required" when certificate-blocking defects are present, otherwise "Invoice Required". commit c4ab48c.
+- Finance dashboard query-parameter pagination at 50 records per page added (Previous/Next nav). commit b1a64bf.
+- CSS budget: 54 599 bytes (within 60 000 byte limit). `npm run build` and `npm run audit:site` pass.
+
 Status:
 
-Terminology pass, full-dataset aggregate fixes, search/filter additions, Sage reference field implementation, quote-approval handoff and remote migration application complete. Remaining Phase 21 work: no-charge/on-hold UI flows, Sage document upload/link handling, client request to Sage quote queue depth and final production finance SOP sign-off.
+Terminology pass, full-dataset aggregate fixes, search/filter additions, Sage reference field schema and UI, API endpoint, export update, jobcard Sage workflow and query-parameter pagination complete. Remaining Phase 21 work: no-charge/on-hold UI flows, Sage document upload/link handling, client request to Sage quote queue depth and final production finance SOP sign-off.
 
 ### Phase 22 - Technician Field Workflow Maturity
 
@@ -1919,10 +1931,12 @@ Partial implementation on 2026-05-25:
 - [x] Add customer/responsible-person name and role/title fields beside signature. Name is required, title is optional. Both captured in the jobcard form and normalized in the API. PDF renders name and title in a right-side column box next to the signature box. Signatory is audit logged by name.
 - [x] Add navigation/map link from site address where safe. "↗ Navigate" link on each dispatch card opens Google Maps with the address as the query parameter. Renders only when physical_address is present. Opens in new tab with noopener/noreferrer.
 - [x] Technician history has search and status filter. Already implemented in prior session.
+- [x] Add visit history panel per dispatch card. Tech dashboard queries `job_visits` for each assigned job and renders a collapsible visit history strip showing visit_date, arrival_at, departure_at, GPS coordinates (if captured), customer name/title and notes. Committed c4ab48c.
+- [x] Add defect capture panel in jobcard closure. A structured defect entry section was added to the technician jobcard closure flow; technician can capture severity (Critical/Major/Minor/Observation), SANS clause reference, description and certificate-blocking flag before submitting. Committed c4ab48c.
 
 Remaining Phase 22 tasks pending schema or major complexity:
 
-- GPS check-in/check-out, visit timestamps, offline draft, SANS checklists, defect capture, unable-to-complete workflow, structured parts/labour model, certificate-blocking, photo evidence categories, day summary view — all pending schema expansion or major refactor.
+- GPS check-in/check-out, visit timestamps, offline draft, SANS checklists, unable-to-complete workflow, structured parts/labour model, certificate-blocking from technician, photo evidence categories, day summary view — all pending schema expansion or major refactor.
 
 Status:
 
@@ -2099,7 +2113,7 @@ Further implementation on 2026-05-25 (same session):
 - Site forms: "→ Systems for …" button pre-fills the systems search and scrolls to it within the same panel.
 - System forms: "→ Jobs for …" button switches to the Jobs tab and pre-fills the jobs search.
 - Search/filter header bars are sticky (`position: sticky; top: 0`) so they remain visible while scrolling long lists.
-- CSS budget 46 009 bytes (+24 bytes for the sticky rule; headroom 3 991 bytes).
+- CSS budget 46 009 bytes at Phase 24 completion (+24 bytes for the sticky rule). CSS budget grew to 54 599 bytes after Phase 25 additions (headroom 5 401 bytes against 60 000 byte limit).
 
 Remaining Phase 24 work:
 
@@ -2107,7 +2121,7 @@ Remaining Phase 24 work:
 
 Status:
 
-Tab-panel split, search/filter, relationship links, sticky headers and query-parameter pagination for admin operations, finance ledger, technician history and admin planning schedule/lifecycle lists deployed on 2026-05-25. Open client request queue remains capped to preserve exception focus.
+Tab-panel split, search/filter, relationship links, sticky headers and query-parameter pagination for admin operations, finance ledger, technician history and admin planning schedule/lifecycle lists deployed on 2026-05-25. Open client request queue remains capped to preserve exception focus. `npm run build` and `npm run audit:site` pass.
 
 ### Phase 25 - Defects, Certificates And Compliance Control
 
@@ -2192,9 +2206,31 @@ Deployable gate:
 - `npm run build` passes.
 - `npm run audit:site` passes.
 
+Partial implementation on 2026-05-25 (commit c4ab48c):
+
+- [x] Add admin defect register. `/portal/admin/operations` now includes a Defects management panel (tab panel) with create/update/resolve/close actions. commit c4ab48c.
+- [x] Add admin certificate register. `/portal/admin/operations` now includes a Certificates management panel with create/update/block/unblock actions. commit c4ab48c.
+- [x] Add admin defect CRUD API. `/portal/api/admin/defects.js` — actions: create, update, resolve, close, quoteRequired. Fields: systemId, jobId, severity (Critical/Major/Minor/Observation), sansClauseRef, description, certificateBlocking, status (Open/In Progress/Resolved/Closed). All audit logged. commit c4ab48c.
+- [x] Add admin certificate CRUD API. `/portal/api/admin/certificates.js` — actions: create, update, block, unblock. Fields: systemId, jobId, certificateType, issuedDate, expiryDate, status, documentPath, blockedByDefectId. All audit logged. commit c4ab48c.
+- [x] Add compliance dashboard. `/portal/admin/compliance` — shows open critical defects count, open defects count, blocked certificates count, overdue remediation count, certificates expiring within 30 days and count of systems with open critical defects. Detailed panels: critical defect list, blocked certificate list, due-soon certificates and systems at risk. commit c4ab48c.
+- [x] Add compliance link to admin portal nav. PortalLayout admin navigation updated. commit c4ab48c.
+- [x] Add client-visible defects. Client dashboard queries `defects` JOIN `systems` JOIN `sites` for the mapped client sites and renders severity-coded defect cards. commit c4ab48c.
+- [x] Add client-visible certificate register. Client dashboard queries `certificates` for mapped sites and renders status-coded certificate cards. commit c4ab48c.
+- [x] Add technician defect capture during job closure. Structured defect entry section added to tech jobcard closure with severity, SANS clause, description and certificate-blocking flag. commit c4ab48c.
+- [x] Defects trigger Sage quote-required finance tasks. `submit-jobcard` sets `finance_task_status` to `'Quote Required'` when certificate-blocking defects are present on the job; otherwise `'Invoice Required'`. commit c4ab48c.
+- [x] Add audit logging for defect and certificate operations. All defect and certificate API actions are audit logged with entityType, entityId, eventType and outcome.
+
+Remaining Phase 25 work:
+
+- Defect-to-quote finance handoff integration (defect quoteRequired action partially wired; financial_records update query needs validation against real staging data).
+- Certificate eligibility logic (certificates can be marked Blocked but eligibility auto-derivation from open defects is not yet automated).
+- SANS clause reference controlled list UI (free-text input only; a validated SANS clause picker is deferred).
+- Audit logging for certificate issue events beyond create/update (specifically certificate-issued-to-client event type).
+- Full production compliance SOP sign-off.
+
 Status:
 
-Pending.
+Substantially implemented on 2026-05-25. Core defect register, certificate register, compliance console, client visibility, technician defect capture and Sage finance handoff integration complete. Eligibility automation, controlled SANS list and production SOP sign-off remain open.
 
 ### Phase 26 - Admin Audit And Security Review Console
 
@@ -2857,8 +2893,8 @@ Quote request to Sage quote:
 - [ ] Add structured visit status model (Phase 22).
 - [ ] Add unable-to-complete workflow (Phase 22).
 - [ ] Add SANS-aligned checklist fields (Phase 22).
-- [ ] Add defect capture (Phase 22).
-- [ ] Add customer name/title field (Phase 22).
+- [x] Add defect capture (Phase 22).
+- [x] Add customer name/title field (Phase 22).
 - [ ] Add structured parts/labour tracking (Phase 22).
 - [ ] Add evidence categories (Phase 22).
 - [ ] Add technician day summary (Phase 22).
@@ -2870,9 +2906,9 @@ Quote request to Sage quote:
 - [ ] Add job priority and emergency flag (Phase 23).
 - [x] Add search/filter/pagination to admin pages (Phase 24 foundation).
 - [x] Split admin operations into focused workspaces (Phase 24 foundation).
-- [ ] Add defect register (Phase 25).
-- [ ] Add certificate-blocking workflow (Phase 25).
-- [ ] Add compliance dashboard (Phase 25).
+- [x] Add defect register (Phase 25).
+- [x] Add certificate-blocking workflow (Phase 25).
+- [x] Add compliance dashboard (Phase 25).
 - [x] Add audit/security console (Phase 26).
 - [ ] Add Sage manual finance handoff queues (Phase 23/21).
 
