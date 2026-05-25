@@ -8,6 +8,7 @@ const user = Astro.locals.user;
 let records = [];
 let sites = [];
 let linkableJobs = [];
+let invoiceRequired = [];
 let totals = { unpaid: 0, pending: 0, settled: 0 };
 let aging = { current: 0, thirty: 0, sixty: 0 };
 let loadError = "";
@@ -15,7 +16,7 @@ let loadError = "";
 try {
   const db = getDatabase();
 
-  const [aggResult, recordsResult, sitesResult, jobsResult] = await db.batch([
+  const [aggResult, recordsResult, sitesResult, jobsResult, invoiceRequiredResult] = await db.batch([
     db.prepare(`
       SELECT
         COALESCE(SUM(CASE WHEN payment_status = 'Unpaid' THEN amount ELSE 0 END), 0)             AS unpaid,
@@ -50,6 +51,23 @@ try {
        WHERE jobs.status IN ('Scheduled', 'In Progress', 'Completed')
        ORDER BY jobs.scheduled_date DESC
        LIMIT 150`
+    ),
+    // ── Completed/Invoiced jobs with no linked finance record ────────────
+    db.prepare(
+      `SELECT jobs.id, jobs.completed_at, jobs.status, jobs.job_type,
+              systems.system_type, systems.coverage_area,
+              sites.owner_company_name, sites.id AS site_id
+       FROM jobs
+       INNER JOIN systems ON systems.id = jobs.system_id
+       INNER JOIN sites ON sites.id = systems.site_id
+       WHERE jobs.status IN ('Completed', 'Invoiced')
+         AND jobs.documentation_path IS NOT NULL
+         AND NOT EXISTS (
+           SELECT 1 FROM financial_records
+           WHERE financial_records.job_id = jobs.id
+         )
+       ORDER BY jobs.completed_at DESC
+       LIMIT 20`
     )
   ]);
 
@@ -64,9 +82,10 @@ try {
     thirty:  Number(agg.age_thirty  ?? 0),
     sixty:   Number(agg.age_sixty   ?? 0)
   };
-  records      = recordsResult.results || [];
-  sites        = sitesResult.results   || [];
-  linkableJobs = jobsResult.results    || [];
+  records         = recordsResult.results         || [];
+  sites           = sitesResult.results           || [];
+  linkableJobs    = jobsResult.results            || [];
+  invoiceRequired = invoiceRequiredResult.results || [];
 
   // Per-row age (days) for table display only
   for (const record of records) {
@@ -160,6 +179,33 @@ try {
         <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Open 30-59 days</p><p class="mt-2 text-xl font-bold">R {aging.thirty.toFixed(2)}</p></article>
         <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-red">Open 60+ days</p><p class="mt-2 text-xl font-bold">R {aging.sixty.toFixed(2)}</p></article>
       </div>
+
+      {invoiceRequired.length > 0 && (
+        <section class="border border-amber-300 bg-amber-50 p-4 sm:p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase text-amber-700">Finance exception queue</p>
+              <h2 class="mt-2 text-lg font-bold text-kharon-black">Completed jobs awaiting Sage invoice ({invoiceRequired.length})</h2>
+              <p class="mt-1 text-sm text-kharon-grey">These jobs have a completed jobcard but no linked finance record. Create a financial record for each using the form above.</p>
+            </div>
+          </div>
+          <div class="mt-4 grid gap-2">
+            {invoiceRequired.map((job) => (
+              <article class="flex flex-wrap items-center justify-between gap-3 border border-amber-200 bg-white px-4 py-3">
+                <div class="min-w-0">
+                  <p class="font-semibold text-sm">{job.owner_company_name}</p>
+                  <p class="text-xs text-kharon-grey">{job.system_type} / {job.coverage_area} / {job.job_type || "General"}</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 text-xs text-right">
+                  <span class="text-kharon-grey">Completed {job.completed_at ? String(job.completed_at).slice(0, 10) : "—"}</span>
+                  <span class="rounded border border-amber-300 bg-amber-100 px-2 py-1 font-bold uppercase text-amber-800">{job.status}</span>
+                  <span class="font-mono text-kharon-grey/70">{job.id}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div class="sticky top-0 z-10 bg-kharon-light pb-2 flex flex-wrap items-center gap-3">
         <input
