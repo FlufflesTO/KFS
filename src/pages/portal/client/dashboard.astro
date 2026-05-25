@@ -109,6 +109,13 @@ const compliantCount = systems.filter((s: any) => !s.next_due_date || s.next_due
         </div>
       )}
 
+      <div class="flex flex-wrap items-center justify-between gap-3 border border-kharon-border bg-white px-4 py-3">
+        <p class="text-sm text-kharon-grey">For live faults, compliance interventions or urgent technical requests:</p>
+        <a href="/emergency-support" class="rounded-md bg-kharon-red px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+          Emergency support →
+        </a>
+      </div>
+
       {sites.length > 0 && (
         <section class="border border-kharon-border bg-white p-4 sm:p-5">
           <div class="flex flex-wrap items-start justify-between gap-3">
