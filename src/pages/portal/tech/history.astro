@@ -65,12 +65,12 @@ try {
 
       {jobs.length > 0 && (
         <>
-          <div class="sticky top-0 z-10 mb-4 bg-kharon-light flex flex-wrap items-center gap-3">
+          <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center gap-3 border-b border-kharon-border bg-kharon-light pb-3 pt-3">
             <input
               id="history-search"
               type="search"
               class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
-              placeholder="Search site or system…"
+              placeholder="Search site, system or comments…"
               size="26"
             />
             <select id="history-status-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
@@ -78,6 +78,19 @@ try {
               <option value="Completed">Completed</option>
               <option value="Invoiced">Invoiced</option>
             </select>
+            <select id="history-type-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
+              <option value="">All job types</option>
+              <option value="Routine service">Routine service</option>
+              <option value="Compliance inspection">Compliance inspection</option>
+              <option value="Fault response">Fault response</option>
+              <option value="Panel issue">Panel issue</option>
+              <option value="Detection device issue">Detection device issue</option>
+              <option value="Suppression release infrastructure">Suppression release infrastructure</option>
+              <option value="Follow-up required">Follow-up required</option>
+            </select>
+            <button id="history-clear" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-xs font-semibold text-kharon-grey hover:bg-white">
+              Clear filters
+            </button>
           </div>
           <div class="overflow-x-auto">
             <table class="min-w-full border-collapse text-sm">
@@ -98,6 +111,7 @@ try {
                     class="border-b border-kharon-border hover:bg-kharon-light"
                     data-search={`${job.owner_company_name} ${job.coverage_area} ${job.system_type} ${job.job_type || ""} ${job.tech_comments || ""}`}
                     data-status={job.status}
+                    data-jobtype={job.job_type || ""}
                   >
                     <td class="px-4 py-3 whitespace-nowrap">{job.completed_at ? job.completed_at.slice(0, 10) : "-"}</td>
                     <td class="px-4 py-3">
@@ -132,27 +146,43 @@ try {
     </div>
   </section>
   <script>
-    const search = document.getElementById("history-search") as HTMLInputElement | null;
+    const search       = document.getElementById("history-search")       as HTMLInputElement  | null;
     const statusFilter = document.getElementById("history-status-filter") as HTMLSelectElement | null;
-    const tbody = document.getElementById("history-rows");
-    const noResults = document.getElementById("history-no-results");
+    const typeFilter   = document.getElementById("history-type-filter")   as HTMLSelectElement | null;
+    const clearBtn     = document.getElementById("history-clear")         as HTMLButtonElement | null;
+    const tbody        = document.getElementById("history-rows");
+    const noResults    = document.getElementById("history-no-results");
 
     function applyFilter() {
       if (!search || !tbody) return;
-      const q = search.value.toLowerCase().trim();
+      const q  = search.value.toLowerCase().trim();
       const sv = statusFilter?.value || "";
+      const tv = typeFilter?.value   || "";
       const rows = tbody.querySelectorAll<HTMLTableRowElement>("[data-search]");
       let visible = 0;
       for (const row of rows) {
-        const text = (row.dataset.search ?? "").toLowerCase();
-        const show = (!q || text.includes(q)) && (!sv || (row.dataset.status ?? "") === sv);
+        const text    = (row.dataset.search   ?? "").toLowerCase();
+        const status  = row.dataset.status    ?? "";
+        const jobtype = row.dataset.jobtype   ?? "";
+        const show = (!q  || text.includes(q))
+                  && (!sv || status  === sv)
+                  && (!tv || jobtype === tv);
         row.style.display = show ? "" : "none";
         if (show) visible++;
       }
       if (noResults) noResults.style.display = visible === 0 ? "" : "none";
     }
 
-    search?.addEventListener("input", applyFilter);
+    function clearFilters() {
+      if (search)       search.value       = "";
+      if (statusFilter) statusFilter.value = "";
+      if (typeFilter)   typeFilter.value   = "";
+      applyFilter();
+    }
+
+    search?.addEventListener("input",   applyFilter);
     statusFilter?.addEventListener("change", applyFilter);
+    typeFilter?.addEventListener("change",   applyFilter);
+    clearBtn?.addEventListener("click",      clearFilters);
   </script>
 </PortalLayout>
