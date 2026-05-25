@@ -10,6 +10,8 @@ let systems = [];
 let quotes = [];
 let requests = [];
 let sites = [];
+let openDefects = [];
+let certificates = [];
 let loadError = "";
 const sectionErrors = [];
 const today    = new Date().toISOString().slice(0, 10);
@@ -80,7 +82,6 @@ try {
       sectionErrors.push("Recent service requests could not be loaded.");
     }
 
-    let openDefects = [];
     try {
       openDefects = (await db.prepare(
         `SELECT defects.id, defects.severity, defects.sans_clause_ref, defects.status,
@@ -99,7 +100,6 @@ try {
       sectionErrors.push("Defect register could not be loaded.");
     }
 
-    let certificates = [];
     try {
       certificates = (await db.prepare(
         `SELECT certificates.id, certificates.certificate_type, certificates.status,
