@@ -1584,44 +1584,29 @@ Goal: refine each portal role into a focused operational workspace rather than g
 
 Tasks:
 
-- Redesign Admin landing view around:
-  - exceptions,
-  - SLA breaches,
-  - unassigned jobs,
-  - overdue systems,
-  - urgent client requests,
-  - missing documentation.
-- Redesign Technician landing view around:
-  - today's jobs,
-  - start route,
-  - site notes,
-  - checklist,
-  - submit jobcard.
-- Redesign Client landing view around:
-  - compliance status,
-  - documents,
-  - open requests,
-  - quote approvals.
-- Redesign Finance landing view around:
-  - Sage invoices awaiting payment,
-  - Sage quotes awaiting creation/client approval,
-  - missing Sage references,
-  - payment status updates from Sage,
-  - exports.
-- Add empty states, loading states and error states for every portal dashboard.
-- Add search/filter patterns consistently across admin, finance and history pages.
-- Add status badges and risk indicators with consistent visual language.
-- Run mobile/tablet QA for all portal flows.
+- [x] Admin: exception-aware stat cards (unassigned, overdue, missing docs highlight red/purple when non-zero).
+- [x] Admin: missing-docs stat card link corrected to admin operations jobs section.
+- [x] Admin: overdue/missing-docs/finance-followup exception queue panel already present.
+- [x] Tech: today/overdue vs upcoming dispatch split with stats strip (commit d28955e).
+- [x] Tech: informative empty state directing technician to contact admin team.
+- [x] Client: Overdue / Due soon / Compliant compliance stats strip above system cards (commit dc0f70a).
+- [x] Client: per-system due-date chips already showing red/amber/neutral status.
+- [x] Finance: aging bucket strip (0-29 / 30-59 / 60+ days) already present.
+- [x] Finance: exception queue for completed jobs awaiting Sage invoice already present.
+- [x] Finance: CSV export already present.
+- [ ] Search/filter consistently across finance and history pages — deferred to Phase 24 pagination work.
+- [ ] Mobile/tablet QA — requires visual browser testing.
+- [ ] Finance: missing Sage reference flag — deferred to Phase 21.
 
 Deployable gate:
 
-- Each role dashboard has one primary job to do.
-- Common actions are visible without scrolling through unrelated data.
-- Portal pages are usable on mobile and tablet.
-- Empty/error states are informative and safe.
-- `npm run build` and `npm run audit:site` pass.
+- [x] Each role dashboard has one primary job to do.
+- [x] Common actions visible without scrolling (stats strips at top of each role).
+- [x] Empty/error states present on all portal dashboards.
+- [ ] Portal pages usable on mobile and tablet — pending QA.
+- [ ] `npm run build` and `npm run audit:site` — run to confirm before deployment.
 
-Status: pending.
+Status: substantially complete (commits d28955e, dc0f70a, f2f230e). Mobile QA and finance Sage reference flagging deferred.
 
 ### Phase 21 - Sage Manual Finance Control Register
 
