@@ -540,7 +540,7 @@ try {
               <p class="text-kharon-grey">No contact enquiries have been received yet.</p>
             )}
             {contactEnquiries.map((item) => (
-              <article class="grid gap-2 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-[1fr_0.6fr]">
+              <article class="grid gap-2 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2">
                 <div class="min-w-0">
                   <p class="font-semibold">{item.name}</p>
                   <p class="text-sm text-kharon-purple">
@@ -549,7 +549,7 @@ try {
                   <p class="mt-1 text-xs font-bold uppercase text-kharon-grey">{item.request_type}</p>
                   <p class="mt-2 text-sm leading-6 text-kharon-black">{item.message}</p>
                 </div>
-                <div class="text-xs text-kharon-grey lg:text-right">
+                <div class="text-xs text-kharon-grey">
                   <p>{item.submitted_at?.slice(0, 16).replace("T", " ")} UTC</p>
                 </div>
               </article>

@@ -16,6 +16,27 @@ export async function POST({ request, locals }) {
   try {
     const body = await readJson(request);
     const action = String(body.action || "create");
+
+    if (action === "markInvoiced") {
+      const id = cleanId(body.id, "id");
+      const job = await db
+        .prepare(`SELECT id, status FROM jobs WHERE id = ?1 LIMIT 1`)
+        .bind(id)
+        .first();
+      if (!job) return badRequest("Job not found.");
+      if (job.status !== "Completed") return badRequest("Only Completed jobs can be marked as Invoiced.");
+      await db.prepare(`UPDATE jobs SET status = 'Invoiced' WHERE id = ?1`).bind(id).run();
+      await auditEvent(db, request, {
+        eventType: "admin.job.markInvoiced",
+        entityType: "job",
+        entityId: id,
+        outcome: "success",
+        user: locals.user,
+        metadata: { status: "Invoiced" }
+      });
+      return json({ ok: true, id, status: "Invoiced" });
+    }
+
     const id = action === "create" ? crypto.randomUUID() : cleanId(body.id, "id");
     const systemId = cleanId(body.systemId, "systemId");
     const assignedTechnicianId = cleanId(body.assignedTechnicianId, "assignedTechnicianId", { required: false });

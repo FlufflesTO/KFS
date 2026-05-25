@@ -6,6 +6,8 @@ export const prerender = false;
 
 const user = Astro.locals.user;
 let records = [];
+let sites = [];
+let linkableJobs = [];
 let totals = { unpaid: 0, pending: 0, settled: 0 };
 let aging = { current: 0, thirty: 0, sixty: 0 };
 let loadError = "";
@@ -39,6 +41,19 @@ try {
       record.age_days = 0;
     }
   }
+
+  sites = (await db.prepare(
+    `SELECT id, owner_company_name FROM sites ORDER BY owner_company_name`
+  ).all()).results || [];
+
+  linkableJobs = (await db.prepare(
+    `SELECT jobs.id, jobs.scheduled_date, jobs.status, systems.coverage_area, systems.site_id
+     FROM jobs
+     INNER JOIN systems ON systems.id = jobs.system_id
+     WHERE jobs.status IN ('Scheduled', 'In Progress', 'Completed')
+     ORDER BY jobs.scheduled_date DESC
+     LIMIT 150`
+  ).all()).results || [];
 } catch (error) {
   console.error("finance dashboard failed", error);
   loadError = "Finance ledger could not be loaded.";
@@ -60,6 +75,59 @@ try {
   <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto grid max-w-7xl gap-6">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+
+      <div id="finance-jobs-data" hidden aria-hidden="true" data-jobs={JSON.stringify(linkableJobs)}></div>
+
+      <details class="border border-kharon-border bg-white">
+        <summary class="flex cursor-pointer list-none items-center justify-between px-4 py-4 sm:px-5">
+          <span class="text-sm font-bold uppercase text-kharon-purple">Create financial record</span>
+          <span class="text-xs text-kharon-grey">Quote or invoice</span>
+        </summary>
+        <div class="border-t border-kharon-border p-4 sm:p-5">
+          <form id="finance-create-form" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Item type
+              <select name="itemType" class="rounded-md border border-kharon-border px-3 py-2 font-normal">
+                <option value="Quote">Quote</option>
+                <option value="Invoice">Invoice</option>
+              </select>
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Client site
+              <select id="finance-site-id" name="siteId" class="rounded-md border border-kharon-border px-3 py-2 font-normal" required>
+                <option value="">Select client site</option>
+                {sites.map((s) => (
+                  <option value={s.id}>{s.owner_company_name}</option>
+                ))}
+              </select>
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Link to job <span class="font-normal text-kharon-grey">(optional)</span>
+              <select id="finance-job-id" name="jobId" class="rounded-md border border-kharon-border px-3 py-2 font-normal" disabled>
+                <option value="">Select site first</option>
+              </select>
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Amount (ZAR)
+              <input type="number" name="amount" class="rounded-md border border-kharon-border px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" required />
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Distribution date
+              <input id="finance-dist-date" type="date" name="distributionDate" class="rounded-md border border-kharon-border px-3 py-2 font-normal" required />
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+              Reference <span class="font-normal text-kharon-grey">(optional)</span>
+              <input type="text" name="reference" class="rounded-md border border-kharon-border px-3 py-2 font-normal" maxlength="120" placeholder="PO number, quote ref…" />
+            </label>
+            <div class="flex flex-wrap items-center gap-3 lg:col-span-3">
+              <button id="finance-create-submit" class="rounded-md bg-kharon-purple px-5 py-3 text-sm font-semibold text-white hover:bg-kharon-blue">
+                Create record
+              </button>
+              <p id="finance-create-result" class="hidden text-sm font-semibold" aria-live="polite"></p>
+            </div>
+          </form>
+        </div>
+      </details>
 
       <div class="grid gap-4 md:grid-cols-3">
         <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Unpaid</p><p class="mt-2 text-2xl font-bold">R {totals.unpaid.toFixed(2)}</p></article>
@@ -141,5 +209,77 @@ try {
         if (body.ok) window.location.reload();
       });
     }
+
+    // Create financial record form
+    const financeSiteSelect = document.getElementById("finance-site-id");
+    const financeJobSelect = document.getElementById("finance-job-id");
+    const financeCreateForm = document.getElementById("finance-create-form");
+    const financeCreateResult = document.getElementById("finance-create-result");
+    const financeCreateSubmit = document.getElementById("finance-create-submit");
+    const financeDistDate = document.getElementById("finance-dist-date");
+    const financeJobsData = JSON.parse(document.getElementById("finance-jobs-data")?.getAttribute("data-jobs") || "[]");
+
+    if (financeDistDate && !financeDistDate.value) {
+      financeDistDate.value = new Date().toISOString().split("T")[0];
+    }
+
+    financeSiteSelect?.addEventListener("change", () => {
+      const siteId = financeSiteSelect.value;
+      if (siteId) {
+        const siteJobs = financeJobsData.filter((j) => j.site_id === siteId);
+        financeJobSelect.innerHTML = '<option value="">No job (standalone record)</option>';
+        for (const job of siteJobs) {
+          const opt = document.createElement("option");
+          opt.value = job.id;
+          opt.textContent = `${job.coverage_area} / ${job.status} / ${job.scheduled_date || ""}`;
+          financeJobSelect.appendChild(opt);
+        }
+        financeJobSelect.disabled = false;
+      } else {
+        financeJobSelect.disabled = true;
+        financeJobSelect.innerHTML = '<option value="">Select site first</option>';
+      }
+    });
+
+    financeCreateForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      financeCreateSubmit.disabled = true;
+      financeCreateSubmit.textContent = "Creating…";
+      financeCreateResult.className = "hidden text-sm font-semibold";
+
+      const data = new FormData(financeCreateForm);
+      const jobId = data.get("jobId");
+      const reference = data.get("reference");
+      const payload = {
+        itemType: data.get("itemType"),
+        siteId: data.get("siteId"),
+        amount: data.get("amount"),
+        distributionDate: data.get("distributionDate"),
+        ...(jobId && { jobId }),
+        ...(reference && { reference })
+      };
+
+      const response = await window.kharonPortalFetch("/portal/api/finance/records", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const body = await response.json().catch(() => ({ ok: false, message: "Request failed." }));
+
+      if (body.ok) {
+        financeCreateResult.textContent = `${body.itemType} created — ${body.paymentStatus} / R ${Number(body.amount).toFixed(2)}`;
+        financeCreateResult.className = "text-sm font-semibold text-kharon-blue";
+        financeCreateForm.reset();
+        financeJobSelect.disabled = true;
+        financeJobSelect.innerHTML = '<option value="">Select site first</option>';
+        if (financeDistDate) financeDistDate.value = new Date().toISOString().split("T")[0];
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        financeCreateResult.textContent = body.message || "Record could not be created.";
+        financeCreateResult.className = "text-sm font-semibold text-red-700";
+        financeCreateSubmit.disabled = false;
+        financeCreateSubmit.textContent = "Create record";
+      }
+    });
   </script>
 </PortalLayout>
