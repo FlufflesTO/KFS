@@ -198,7 +198,9 @@ for (const v of unusedVars) {
 output = output
   .replace(/\/\*[\s\S]*?\*\//g, '') // remove comments
   .replace(/\s+/g, ' ')             // collapse multiple spaces
-  .replace(/\s*([{};:])\s*/g, '$1') // remove space around separators
+  .replace(/\s*([{};:,])\s*/g, '$1') // remove space around separators
+  .replace(/;}/g, '}')              // remove trailing semicolons
+  .replace(/([: ,\(])0(?:px|em|rem|%|vw|vh)/g, '$10') // remove zero units
   .trim();
 
 console.log('Purged CSS size after variable pruning & minification:', output.length, 'bytes');

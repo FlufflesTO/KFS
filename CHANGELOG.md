@@ -9,10 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Phase 22 - Portal UI/UX Polish and CSS Budget Hardening
 - Redesigned and spaced out flowcharts and SVG diagrams in service pages.
-- Redesigned `SplitFeature` blocks grid into a premium glassmorphic grid with custom vector SVG icons.
+- Redesigned `SplitFeature` blocks grid into a premium glassmorphic grid with custom vector SVG icons, and fixed mobile column squeezing.
 - Polished layouts and header spacing in `PortalLayout`.
-- Upgraded Tech dashboard dispatches cards with modern priority badges.
-- Hardened CSS size budget with a post-build CSS purger (`scripts/purge-css.mjs`) that prunes unused Tailwind CSS classes, reducing stylesheet bundle size from 68.9KB to 58.1KB to pass the 60KB budget check.
+- Upgraded Tech dashboard dispatches cards with modern priority badges and upcoming vs overdue section dividers.
+- Standardised portal-wide header gradients and typography scales (admin, tech, client, finance).
+- Fixed `ProofGrid` responsive logic to correctly render arrays of 4 items without orphan cards.
+- Fixed `finance` dashboard container radii (`rounded-xl` and `shadow-sm`) for consistent glassmorphic styling.
+- Standardised `compliance` and `404` page hero animations.
+- Enhanced CSS minification logic (stripping trailing semicolons and zero units), pushing the bundle back under the 60KB limit (59.6KB).
 
 ### Phase 14 - Public Page Differentiation (completed)
 - Removed shared `EngineeringSystems` component from all service pages (gas-suppression, fire-detection, compliance-maintenance, critical-infrastructure).

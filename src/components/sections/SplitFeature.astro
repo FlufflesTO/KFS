@@ -101,7 +101,7 @@ const labelIcons = {
           <div class="h-full w-24 bg-gradient-to-r from-transparent via-white/80 to-transparent animate-pulse"></div>
         </div>
 
-        <div class="relative z-10 grid h-full grid-cols-3 items-center gap-4">
+        <div class="relative z-10 grid h-full grid-cols-1 items-center gap-4 sm:grid-cols-3">
           {labels.map((label, index) => {
             const iconHtml = labelIcons[label] || `<svg class="h-6 w-6 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
             const isLast = index === labels.length - 1;

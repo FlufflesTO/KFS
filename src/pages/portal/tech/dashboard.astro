@@ -61,7 +61,7 @@ function priorityClass(priority) {
 <PortalLayout title="Technician Dispatches | Kharon Portal" active="tech" user={user}>
   <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
     <div class="mx-auto max-w-7xl">
-      <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-cyan">Technician Workspace</p>
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Technician Workspace</p>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Assigned dispatches</h1>
       <p class="mt-3 max-w-3xl text-sm text-white/60">
         Open a dispatch to log arrival, capture evidence, record defects and submit the completed jobcard from a focused field workflow.
@@ -103,7 +103,56 @@ function priorityClass(priority) {
         </div>
       )}
 
-      {[...actionJobs, ...upcomingJobs].map((job) => (
+      {actionJobs.map((job) => (
+        <article class="grid gap-6 rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-200 lg:grid-cols-[1fr_auto]">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${priorityClass(job.priority || "Normal")}`}>{job.priority || "Normal"} Priority</span>
+              {job.is_emergency === 1 && <span class="rounded-full bg-red-100 text-red-800 ring-1 ring-red-600/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">Emergency</span>}
+              <span class="rounded-full bg-slate-100 text-slate-800 ring-1 ring-slate-600/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">{job.status}</span>
+              {job.required_by_date && <span class="text-xs font-medium text-slate-400">Required by {job.required_by_date}</span>}
+            </div>
+            <h2 class="mt-4 text-xl font-bold text-slate-800 tracking-tight">{job.owner_company_name}</h2>
+            <p class="mt-1 text-sm font-semibold text-kharon-purple">{job.system_type} / {job.coverage_area}</p>
+            <p class="mt-2 text-sm text-slate-500">{job.physical_address}</p>
+            <dl class="mt-5 grid gap-4 text-xs sm:grid-cols-3 border-t border-slate-50 pt-4">
+              <div><dt class="font-bold uppercase tracking-wider text-slate-400">Job Type</dt><dd class="mt-1 font-semibold text-slate-700">{job.job_type}</dd></div>
+              <div><dt class="font-bold uppercase tracking-wider text-slate-400">Scheduled</dt><dd class="mt-1 font-semibold text-slate-700">{job.scheduled_date}</dd></div>
+              <div><dt class="font-bold uppercase tracking-wider text-slate-400">Job ID</dt><dd class="mt-1 font-mono text-slate-500 break-all">{job.id}</dd></div>
+            </dl>
+            {job.site_notes && (
+              <div class="mt-4 rounded-lg border-l-4 border-kharon-blue bg-kharon-blue/5 p-4 text-sm text-slate-600">
+                <p class="font-semibold text-xs text-kharon-blue uppercase tracking-wider mb-1">Site Notes</p>
+                {job.site_notes}
+              </div>
+            )}
+          </div>
+
+          <aside class="flex flex-col gap-3 justify-center sm:min-w-[14rem]">
+            <a class="inline-flex justify-center rounded-lg bg-kharon-purple px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-md shadow-kharon-purple/10 hover:bg-kharon-blue transition-all duration-200" href={`/portal/tech/jobs/${job.id}`}>
+              Open dispatch
+            </a>
+            {job.physical_address && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex justify-center rounded-lg border border-slate-200 bg-white px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 hover:bg-slate-50 transition-all duration-200"
+              >
+                Navigate
+              </a>
+            )}
+          </aside>
+        </article>
+      ))}
+
+      {upcomingJobs.length > 0 && (
+        <div class="flex items-center gap-2 rounded-lg border-l-4 border-kharon-purple bg-kharon-purple/5 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-800">
+          <span>Upcoming Dispatches</span>
+        </div>
+      )}
+
+      {upcomingJobs.map((job) => (
         <article class="grid gap-6 rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-200 lg:grid-cols-[1fr_auto]">
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">

@@ -1,4 +1,10 @@
 ---
+/**
+ * Project Sentinel - Finance Dashboard
+ * Purpose: Commercial ledger tied to field dispatches with aging and totals.
+ * Dependencies: PortalLayout, financial-utils, bindings.
+ * Structural Role: Finance operational view in the portal.
+ */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
@@ -144,11 +150,11 @@ try {
 ---
 
 <PortalLayout title="Finance Ledger | Kharon Portal" active="finance" user={user}>
-  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
+  <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
     <div class="mx-auto max-w-7xl">
-      <p class="text-xs font-bold uppercase text-kharon-cyan">Finance workspace</p>
-      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Commercial ledger tied to field dispatches</h1>
-      <p class="mt-4 max-w-3xl text-white/65">Pending customer invoices, quote approvals, payments recorded in Sage and dispatch-linked revenue visibility.</p>
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Finance workspace</p>
+      <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Commercial ledger tied to field dispatches</h1>
+      <p class="mt-3 max-w-3xl text-sm text-white/60">Pending customer invoices, quote approvals, payments recorded in Sage and dispatch-linked revenue visibility.</p>
       <a class="mt-6 inline-flex rounded-md border border-white/20 px-5 py-3 text-sm font-semibold text-white/80 hover:border-white/40 hover:text-white" href="/portal/api/finance/export">
         Export ledger CSV
       </a>
@@ -161,7 +167,7 @@ try {
 
       <div id="finance-jobs-data" hidden aria-hidden="true" data-jobs={JSON.stringify(linkableJobs)}></div>
 
-      <details class="border border-kharon-border bg-white">
+      <details class="rounded-xl border border-kharon-border bg-white shadow-sm">
         <summary class="flex cursor-pointer list-none items-center justify-between px-4 py-4 sm:px-5">
           <span class="text-sm font-bold uppercase text-kharon-purple">Create financial record</span>
           <span class="text-xs text-kharon-grey">Quote or invoice</span>
@@ -233,19 +239,19 @@ try {
       </details>
 
       <div class="grid gap-4 md:grid-cols-3">
-        <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Unpaid</p><p class="mt-2 text-2xl font-bold">{formatCurrency(totals.unpaid)}</p></article>
-        <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Pending approval</p><p class="mt-2 text-2xl font-bold">{formatCurrency(totals.pending)}</p></article>
-        <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Paid in Sage</p><p class="mt-2 text-2xl font-bold">{formatCurrency(totals.settled)}</p></article>
+        <article class="rounded-xl border border-kharon-border bg-white p-4 sm:p-5 shadow-sm"><p class="text-xs font-bold uppercase text-kharon-purple">Unpaid</p><p class="mt-2 text-2xl font-bold">{formatCurrency(totals.unpaid)}</p></article>
+        <article class="rounded-xl border border-kharon-border bg-white p-4 sm:p-5 shadow-sm"><p class="text-xs font-bold uppercase text-kharon-purple">Pending approval</p><p class="mt-2 text-2xl font-bold">{formatCurrency(totals.pending)}</p></article>
+        <article class="rounded-xl border border-kharon-border bg-white p-4 sm:p-5 shadow-sm"><p class="text-xs font-bold uppercase text-kharon-purple">Paid in Sage</p><p class="mt-2 text-2xl font-bold">{formatCurrency(totals.settled)}</p></article>
       </div>
 
       <div class="grid gap-4 md:grid-cols-3">
-        <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-blue">Open 0-29 days</p><p class="mt-2 text-xl font-bold">{formatCurrency(aging.current)}</p></article>
-        <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Open 30-59 days</p><p class="mt-2 text-xl font-bold">{formatCurrency(aging.thirty)}</p></article>
-        <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-red">Open 60+ days</p><p class="mt-2 text-xl font-bold">{formatCurrency(aging.sixty)}</p></article>
+        <article class="rounded-xl border border-kharon-border bg-white p-4 sm:p-5 shadow-sm"><p class="text-xs font-bold uppercase text-kharon-blue">Open 0-29 days</p><p class="mt-2 text-xl font-bold">{formatCurrency(aging.current)}</p></article>
+        <article class="rounded-xl border border-kharon-border bg-white p-4 sm:p-5 shadow-sm"><p class="text-xs font-bold uppercase text-kharon-purple">Open 30-59 days</p><p class="mt-2 text-xl font-bold">{formatCurrency(aging.thirty)}</p></article>
+        <article class="rounded-xl border border-kharon-border bg-white p-4 sm:p-5 shadow-sm"><p class="text-xs font-bold uppercase text-kharon-red">Open 60+ days</p><p class="mt-2 text-xl font-bold">{formatCurrency(aging.sixty)}</p></article>
       </div>
 
       {invoiceRequired.length > 0 && (
-        <section class="border border-amber-300 bg-amber-50 p-4 sm:p-5">
+        <section class="rounded-xl border border-amber-300 bg-amber-50 p-4 sm:p-5 shadow-sm">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p class="text-xs font-bold uppercase text-amber-700">Finance exception queue</p>
@@ -272,7 +278,7 @@ try {
       )}
 
       {missingSageCount > 0 && (
-        <section class="border border-kharon-purple bg-purple-50 px-4 py-4 sm:px-5">
+        <section class="rounded-xl border border-kharon-purple bg-purple-50 px-4 py-4 sm:px-5 shadow-sm">
           <p class="text-xs font-bold uppercase text-kharon-purple">Missing Sage references</p>
           <p class="mt-1 text-sm text-kharon-grey">
             {missingSageCount} open {missingSageCount === 1 ? "record lacks" : "records lack"} a Sage invoice or quote number.
@@ -303,7 +309,7 @@ try {
       </div>
       <p id="finance-no-results" class="hidden py-3 text-sm text-kharon-grey">No records match your filter.</p>
 
-      <div class="portal-scroll-x border border-kharon-border bg-white">
+      <div class="portal-scroll-x rounded-xl border border-kharon-border bg-white shadow-sm overflow-hidden">
         <table class="w-full min-w-[1200px] border-collapse text-left text-sm">
           <thead class="bg-kharon-charcoal text-white">
             <tr>
