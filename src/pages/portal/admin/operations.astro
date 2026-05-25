@@ -26,7 +26,6 @@ const today    = new Date().toISOString().slice(0, 10);
 const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
 const params  = Astro.url.searchParams;
-const activeTab = params.get("tab") || "enquiries";
 const page    = Math.max(1, Math.min(999, parseInt(params.get("page") || "1", 10) || 1));
 const perPage = 50;
 const offset  = (page - 1) * perPage;
@@ -297,7 +296,6 @@ const contactsTotalPages  = Math.max(1, Math.ceil(contactsTotal / perPage));
         const { response, body } = await portalPost("/portal/api/admin/import", { type: form.dataset.type ?? "", csv });
         if (!response.ok) {
           setResult(result, body.message ?? "Import failed.", "error");
-          if (result) result.classList.remove("hidden");
           return;
         }
         const failures = (body.failures as unknown[])?.length ?? 0;
@@ -314,7 +312,6 @@ const contactsTotalPages  = Math.max(1, Math.ceil(contactsTotal / perPage));
         } else {
           setResult(result, `Imported ${(body.results as unknown[])?.length ?? 0} row(s) successfully.`, "success");
         }
-        if (result) result.classList.remove("hidden");
       });
     }
 

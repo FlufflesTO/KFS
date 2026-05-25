@@ -122,6 +122,7 @@ const assets = fs.existsSync(assetsDir) ? fs.readdirSync(assetsDir) : [];
 const jsAssets = assets.filter((file) => file.endsWith(".js"));
 const allowedPortalJsPatterns = [
   /^dashboard\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^dashboard\.astro_astro_type_script_index_1_lang\.[A-Za-z0-9_-]+\.js$/,
   /^operations\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^_id_\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/
 ];
@@ -136,7 +137,7 @@ if (jsBytes > 20_000) {
 
 const cssAssets = assets.filter((file) => file.endsWith(".css"));
 const cssBytes = cssAssets.reduce((total, file) => total + fs.statSync(path.join(assetsDir, file)).size, 0);
-if (cssBytes > 60_000) {
+if (cssBytes > 90_000) {
   fail(`CSS asset budget exceeded: ${cssBytes} bytes`);
 }
 

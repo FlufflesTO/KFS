@@ -309,6 +309,28 @@ export async function POST({ request, locals }) {
 
     await db.batch(batchStatements);
 
+    if (!job.existing_financial_record_id) {
+      const hasBlockingDefects = defects.some((d) => d.certificateBlocking === 1);
+      await auditEvent(db, request, {
+        eventType: "finance.record.create",
+        entityType: "financial_record",
+        entityId: financialRecordId,
+        outcome: "success",
+        user,
+        metadata: {
+          itemType: "Invoice",
+          siteId: job.site_id,
+          jobId,
+          amountExVat: null,
+          vatAmount: null,
+          amountIncVat: amount,
+          paymentStatus: "Unpaid",
+          reference: hasBlockingDefects ? `Sage quote required for defect remediation on job ${jobId}` : `Sage invoice required for completed job ${jobId}`,
+          financeTaskStatus: hasBlockingDefects ? "Quote Required" : "Invoice Required"
+        }
+      });
+    }
+
     await auditEvent(db, request, {
       eventType: "jobcard.close",
       entityType: "job",

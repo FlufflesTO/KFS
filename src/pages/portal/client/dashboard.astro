@@ -333,6 +333,10 @@ const compliantCount = systems.filter((s) => !s.next_due_date || s.next_due_date
           
           {/* Section: Outstanding Quotes */}
           <KharonCard title="Outstanding Quotes" subtitle="Finance">
+            <div class="mb-3 flex items-center justify-between gap-3 rounded-lg border border-kharon-border bg-white px-3 py-2 text-xs" data-approval-endpoint="/portal/api/approve-quote">
+              <span class="font-semibold text-kharon-grey">Mapped client sites: {sites.length}</span>
+              <KharonButton href="/portal/client/quotes" variant="ghost" size="sm">Review approvals</KharonButton>
+            </div>
             <div class="mt-4 space-y-3">
               {quotes.length === 0 && <p class="text-sm text-kharon-grey italic py-2">No outstanding quotes require your approval.</p>}
               {quotes.map((quote) => (

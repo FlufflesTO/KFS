@@ -64,8 +64,8 @@ export async function POST({ request, locals }) {
     let amountExVat, vatAmount, amountIncVat, distributionDate, sageDocumentDate, sageDueDate;
     try {
       amountExVat = cleanAmount(body.amountExVat);
-      vatAmount = body.vatAmount ? cleanAmount(body.vatAmount) : Math.round(amountExVat * 0.15 * 100) / 100;
-      amountIncVat = body.amountIncVat ? cleanAmount(body.amountIncVat) : Math.round((amountExVat + vatAmount) * 100) / 100;
+      vatAmount = body.vatAmount ? cleanAmount(body.vatAmount) : Math.round(amountExVat * 0.15);
+      amountIncVat = body.amountIncVat ? cleanAmount(body.amountIncVat) : amountExVat + vatAmount;
       distributionDate = cleanDate(body.distributionDate, "distributionDate");
       sageDocumentDate = body.sageDocumentDate ? cleanDate(body.sageDocumentDate, "sageDocumentDate") : null;
       sageDueDate = body.sageDueDate ? cleanDate(body.sageDueDate, "sageDueDate") : null;

@@ -55,6 +55,8 @@ const VARIANT_CSS: Record<ResultVariant, string> = {
 };
 
 // Writes a result message into a result element with the appropriate Tailwind classes.
+// Preserves any existing "*-result" identifier class so querySelector can re-find
+// the element on subsequent submissions.
 export function setResult(
   el: HTMLElement | null,
   text: string,
@@ -62,9 +64,11 @@ export function setResult(
   extraClasses = ""
 ): void {
   if (!el) return;
+  const idClass = [...el.classList].find((c) => c.endsWith("-result")) ?? "";
   el.textContent = text;
-  el.className =
-    `${extraClasses} rounded-md border px-4 py-3 text-sm font-semibold ${VARIANT_CSS[variant]}`.trim();
+  el.className = [idClass, extraClasses, "rounded-md border px-4 py-3 text-sm font-semibold", VARIANT_CSS[variant]]
+    .filter(Boolean)
+    .join(" ");
 }
 
 // Binds submit handlers to all .admin-form elements. Reads data-endpoint and
@@ -96,8 +100,6 @@ export function bindAdminForms(): void {
         successMsg = `Defect marked ${body.status}.`;
       }
 
-      setResult(result, successMsg, "success");
-
       if (action === "create") {
         setResult(
           result,
@@ -107,6 +109,8 @@ export function bindAdminForms(): void {
           "success"
         );
         setTimeout(() => window.location.reload(), 500);
+      } else {
+        setResult(result, successMsg, "success");
       }
     });
   }

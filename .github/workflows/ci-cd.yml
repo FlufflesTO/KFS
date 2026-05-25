@@ -1,0 +1,55 @@
+name: Kharon Portal CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (>=22.12.0)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: TypeScript Strict Validation
+        run: npx tsc --noEmit
+        
+      - name: CSS Purging & Asset Validation
+        run: node scripts/purge-css.mjs
+
+      - name: Build Application
+        run: npm run build
+        env:
+          PUBLIC_SITE_URL: ${{ github.ref == 'refs/heads/main' && 'https://www.kharon.co.za' || 'https://www.tequit.co.za' }}
+          PUBLIC_PORTAL_URL: ${{ github.ref == 'refs/heads/main' && 'https://portal.kharon.co.za' || 'https://portal.tequit.co.za' }}
+
+  deploy-to-cloudflare:
+    needs: validate-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: kharon-website
+          directory: dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

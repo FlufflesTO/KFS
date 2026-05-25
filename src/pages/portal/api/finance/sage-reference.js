@@ -47,9 +47,9 @@ export async function POST({ request, locals }) {
     const sageQuoteNumber   = String(body.sageQuoteNumber    || "").trim().slice(0, 60) || null;
     const sageCustomerCode  = String(body.sageCustomerCode   || "").trim().slice(0, 40) || null;
     const financeTaskStatus = String(body.financeTaskStatus  || "").trim() || null;
-    const sageAmountExVat   = body.sageAmountExVat   != null ? Math.round(Number(body.sageAmountExVat) * 100) / 100 : null;
-    const sageVatAmount     = body.sageVatAmount     != null ? Math.round(Number(body.sageVatAmount) * 100) / 100 : null;
-    const sageAmountIncVat  = body.sageAmountIncVat  != null ? Math.round(Number(body.sageAmountIncVat) * 100) / 100 : null;
+    const sageAmountExVat   = body.sageAmountExVat   != null ? Math.round(Number(body.sageAmountExVat) * 100) : null;
+    const sageVatAmount     = body.sageVatAmount     != null ? Math.round(Number(body.sageVatAmount) * 100) : null;
+    const sageAmountIncVat  = body.sageAmountIncVat  != null ? Math.round(Number(body.sageAmountIncVat) * 100) : null;
     const sageDocumentDate  = String(body.sageDocumentDate || "").trim().slice(0, 10) || null;
     const sageDueDate       = String(body.sageDueDate       || "").trim().slice(0, 10) || null;
     const financeNotes      = String(body.financeNotes      || "").trim().slice(0, 500) || null;

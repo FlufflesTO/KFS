@@ -1,0 +1,170 @@
+openapi: 3.0.0
+info:
+  title: Kharon Portal API
+  description: Internal API specification for Kharon Fire and Security FSM operations.
+  version: 1.0.0
+servers:
+  - url: https://portal.kharon.co.za
+    description: Production Environment
+  - url: https://portal.tequit.co.za
+    description: Staging Environment
+security:
+  - SessionCookie: []
+    CsrfToken: []
+components:
+  securitySchemes:
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: kharon_session
+    CsrfToken:
+      type: apiKey
+      in: header
+      name: x-csrf-token
+paths:
+  /api/contact:
+    post:
+      summary: Submit a new contextual inquiry or contact request
+      security: [] # Public endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                requestType:
+                  type: string
+                message:
+                  type: string
+                website:
+                  type: string
+                  description: Honeypot field
+      responses:
+        '200':
+          description: Inquiry received successfully.
+  /portal/api/auth:
+    post:
+      summary: Authenticate user and initialize session
+      security: [] # Public endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                mfaCode:
+                  type: string
+      responses:
+        '200':
+          description: Authentication successful
+        '401':
+          description: Invalid credentials or missing MFA
+  /portal/api/finance/sage-reference:
+    post:
+      summary: Update financial records with Sage accounting ledger references
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                record_id:
+                  type: string
+                sage_reference:
+                  type: string
+                status:
+                  type: string
+                  enum: [Quote Sent, Invoice Required, Paid]
+      responses:
+        '200':
+          description: Sage reference successfully reconciled
+  # Structure reserved for remaining 25 endpoints
+  /portal/api/logout:
+    post:
+      summary: Terminate session
+  /portal/api/mfa:
+    post:
+      summary: Verify/Configure MFA
+  /portal/api/reset-password:
+    post:
+      summary: Request password reset
+  /portal/api/change-password:
+    post:
+      summary: Execute password change
+  /portal/api/submit-jobcard:
+    post:
+      summary: Submit technician jobcard
+  /portal/api/job-status:
+    post:
+      summary: Update dispatch status
+  /portal/api/job-visits:
+    post:
+      summary: Log GPS site visit
+  /portal/api/maintenance-request:
+    post:
+      summary: Submit maintenance ticket
+  /portal/api/approve-quote:
+    post:
+      summary: Client quote approval
+  /portal/api/file/{key}:
+    get:
+      summary: Secure document retrieval
+  /portal/api/admin/audit-export:
+    get:
+      summary: Export security audit logs
+  /portal/api/admin/certificates:
+    get:
+      summary: Retrieve compliance certificates
+  /portal/api/admin/client-site-access:
+    post:
+      summary: Manage site access
+  /portal/api/admin/defects:
+    get:
+      summary: View system defects
+  /portal/api/admin/dispatch:
+    post:
+      summary: Manage technician assignments
+  /portal/api/admin/export:
+    get:
+      summary: Global CSV export
+  /portal/api/admin/import:
+    post:
+      summary: Global CSV import
+  /portal/api/admin/jobs:
+    get:
+      summary: Query job records
+  /portal/api/admin/maintenance-requests:
+    get:
+      summary: Query maintenance queue
+  /portal/api/admin/sites:
+    get:
+      summary: Query site registry
+  /portal/api/admin/systems:
+    get:
+      summary: Query installed systems
+  /portal/api/admin/users:
+    get:
+      summary: Manage RBAC access
+  /portal/api/finance/credit-note:
+    post:
+      summary: Process credit notes
+  /portal/api/finance/export:
+    get:
+      summary: Export financial ledger
+  /portal/api/finance/payments:
+    post:
+      summary: Log manual payments
+  /portal/api/finance/records:
+    get:
+      summary: Query financial records
