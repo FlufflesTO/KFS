@@ -153,7 +153,54 @@ function isSelectorUsed(sel) {
   }
   return matchesFound > 0;
 }
+console.log('Purged CSS size before variable pruning:', output.length, 'bytes');
 
-console.log('Purged CSS size:', output.length, 'bytes');
+// Collect all used variables
+const usedVarNames = new Set();
+let refMatch;
+const varRefRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
+while ((refMatch = varRefRegex.exec(output)) !== null) {
+  usedVarNames.add(refMatch[1]);
+}
+for (const file of astroFiles) {
+  const content = fs.readFileSync(file, 'utf8');
+  let astroMatch;
+  const astroVarRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
+  while ((astroMatch = astroVarRegex.exec(content)) !== null) {
+    usedVarNames.add(astroMatch[1]);
+  }
+}
+
+const varRegex = /(--[a-zA-Z0-9_-]+)\s*:[^;]+;/g;
+let match;
+const vars = [];
+while ((match = varRegex.exec(output)) !== null) {
+  vars.push(match[1]);
+}
+const uniqueVars = Array.from(new Set(vars));
+console.log('Total CSS variables found:', uniqueVars.length);
+
+const unusedVars = [];
+for (const v of uniqueVars) {
+  if (!usedVarNames.has(v)) {
+    unusedVars.push(v);
+  }
+}
+console.log('Unused CSS variables to prune:', unusedVars.length);
+
+
+for (const v of unusedVars) {
+  const escaped = v.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const defRegex = new RegExp(escaped + '\\s*:[^;]+;', 'g');
+  output = output.replace(defRegex, '');
+}
+// Simple CSS minifier to strip whitespace and comments
+output = output
+  .replace(/\/\*[\s\S]*?\*\//g, '') // remove comments
+  .replace(/\s+/g, ' ')             // collapse multiple spaces
+  .replace(/\s*([{};:])\s*/g, '$1') // remove space around separators
+  .trim();
+
+console.log('Purged CSS size after variable pruning & minification:', output.length, 'bytes');
 fs.writeFileSync(cssPath, output);
 console.log('Purged CSS written.');
