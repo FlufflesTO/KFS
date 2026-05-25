@@ -4,6 +4,7 @@ import Footer from "../components/layout/Footer.astro";
 import ComplianceTechnicalBlocks from "../components/sections/ComplianceTechnicalBlocks.astro";
 import DetectionTechnicalBlocks from "../components/sections/DetectionTechnicalBlocks.astro";
 import SuppressionTechnicalBlocks from "../components/sections/SuppressionTechnicalBlocks.astro";
+import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
 import { pageMeta } from "../data/site.js";
 ---
 
@@ -12,6 +13,7 @@ import { pageMeta } from "../data/site.js";
   description={pageMeta.complianceHub.description}
   canonicalPath="/compliance"
 >
+  <!-- ─── Hero ─── -->
   <section class="bg-kharon-black px-6 py-14 text-white sm:py-16">
     <div class="mx-auto max-w-7xl">
       <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Standards Reference</p>
@@ -32,9 +34,168 @@ import { pageMeta } from "../data/site.js";
     </div>
   </section>
 
+  <!-- ─── Standards Scope Advisory ─── -->
+  <section class="bg-amber-50 px-6 py-8 border-y border-amber-200">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-sm leading-7 text-amber-900">
+        <span class="font-bold uppercase tracking-wide">Reference scope —</span>
+        This page summarises maintenance requirements, service evidence expectations and defect classification as they apply to
+        commercial and industrial fire detection and gas suppression systems in South Africa.
+        SANS 10139 and SANS 14520 are the applicable national standards. Where a contract, authority having jurisdiction,
+        insurer or site governance document specifies compliance with these standards, the full published standard is the binding
+        reference. This page is a working summary for operational review, not a substitute for the published text.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── Standards Overview ─── -->
+  <section class="section-padding bg-white">
+    <div class="mx-auto max-w-7xl px-6">
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Applicable Standards</p>
+      <h2 class="mt-3 max-w-3xl text-3xl font-bold leading-tight text-kharon-black">
+        The standards that govern service and maintenance obligations.
+      </h2>
+      <p class="mt-4 max-w-3xl leading-7 text-kharon-grey">
+        Two SANS standards define the inspection, testing and maintenance requirements for the protection systems Kharon
+        designs, installs and maintains. Both are referenced here as operating standards.
+      </p>
+
+      <div class="mt-10 grid gap-6 md:grid-cols-2">
+        <!-- SANS 10139 -->
+        <div class="rounded-lg border border-kharon-border bg-kharon-light p-7">
+          <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Fire Detection</p>
+          <h3 class="mt-2 text-2xl font-bold text-kharon-black">SANS 10139</h3>
+          <p class="mt-1 text-sm font-semibold text-kharon-grey">
+            Fire detection and alarm systems for buildings — Service, maintenance and testing
+          </p>
+          <p class="mt-4 leading-7 text-kharon-grey">
+            Specifies service frequencies, test procedures and record requirements for addressable and conventional fire detection
+            and alarm systems. Covers detectors, manual call points, control panels, sounders, visual alarms and ancillary
+            output devices.
+          </p>
+          <div class="mt-6 space-y-3 border-t border-kharon-border pt-5">
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-kharon-cyan text-xs font-bold text-kharon-black">✓</span>
+              <p class="text-sm leading-6 text-kharon-grey">Monthly visual inspection of all devices and control equipment</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-kharon-cyan text-xs font-bold text-kharon-black">✓</span>
+              <p class="text-sm leading-6 text-kharon-grey">Quarterly functional testing of detectors, manual call points and output devices</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-kharon-cyan text-xs font-bold text-kharon-black">✓</span>
+              <p class="text-sm leading-6 text-kharon-grey">Annual full-system inspection, battery test and cause-and-effect verification</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-kharon-cyan text-xs font-bold text-kharon-black">✓</span>
+              <p class="text-sm leading-6 text-kharon-grey">Documented service records maintained and available to the responsible person</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SANS 14520 -->
+        <div class="rounded-lg border border-kharon-border bg-kharon-light p-7">
+          <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Gas Suppression</p>
+          <h3 class="mt-2 text-2xl font-bold text-kharon-black">SANS 14520</h3>
+          <p class="mt-1 text-sm font-semibold text-kharon-grey">
+            Gaseous fire-extinguishing systems — Physical properties and system design
+          </p>
+          <p class="mt-4 leading-7 text-kharon-grey">
+            Governs the design, installation, inspection and maintenance of clean-agent and inert-gas suppression systems.
+            Covers cylinder integrity, agent quantity verification, nozzle coverage, detection integration and discharge
+            readiness for protected enclosures.
+          </p>
+          <div class="mt-6 space-y-3 border-t border-kharon-border pt-5">
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-kharon-cyan text-xs font-bold text-kharon-black">✓</span>
+              <p class="text-sm leading-6 text-kharon-grey">Monthly cylinder pressure or weight check and visual inspection of the release infrastructure</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-kharon-cyan text-xs font-bold text-kharon-black">✓</span>
+              <p class="text-sm leading-6 text-kharon-grey">Quarterly functional test of detection, alarm and abort-switch logic without discharge</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-kharon-cyan text-xs font-bold text-kharon-black">✓</span>
+              <p class="text-sm leading-6 text-kharon-grey">Annual full inspection including room integrity assessment and agent quantity verification</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-kharon-cyan text-xs font-bold text-kharon-black">✓</span>
+              <p class="text-sm leading-6 text-kharon-grey">Hydrostatic testing of cylinders at manufacturer-specified intervals</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Evidence and records note -->
+      <div class="mt-8 rounded-lg border border-kharon-border bg-white p-6">
+        <p class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Evidence Expectations</p>
+        <p class="mt-3 leading-7 text-kharon-grey">
+          Both standards require that service records are maintained and available for inspection by the responsible person,
+          the authority having jurisdiction, and insurers. Records must capture the date, technician, scope, test outcomes,
+          defects identified, defect classification and any outstanding remedial actions. A Certificate of Compliance is
+          issued when all Category 1 defects have been resolved and documentation is complete.
+          An Advisory Notice is issued where Category 1 or 2 defects remain open at time of service.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Technical detail blocks ─── -->
   <ComplianceTechnicalBlocks />
   <DetectionTechnicalBlocks />
   <SuppressionTechnicalBlocks />
+
+  <!-- ─── Related services ─── -->
+  <section class="bg-kharon-charcoal px-6 py-14 text-white sm:py-16">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Kharon Services</p>
+      <h2 class="mt-3 max-w-3xl text-3xl font-bold leading-tight">
+        Compliance is maintained through scheduled service, not reactive visits.
+      </h2>
+      <p class="mt-4 max-w-2xl leading-7 text-white/70">
+        Kharon structures inspection, servicing and documentation into a recurring programme aligned to SANS requirements.
+        Service records are held in the operations portal and made available to responsible persons on request.
+      </p>
+      <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <a href="/compliance-maintenance" class="group rounded-lg border border-white/15 bg-white/5 p-6 hover:border-kharon-cyan/50 hover:bg-white/10">
+          <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Service</p>
+          <h3 class="mt-2 text-xl font-bold">Compliance and Maintenance</h3>
+          <p class="mt-3 text-sm leading-6 text-white/65">
+            Scheduled inspection, servicing and reporting for fire detection, gas suppression and integrated protection systems.
+          </p>
+          <p class="mt-4 text-xs font-bold uppercase text-kharon-cyan group-hover:underline">View service →</p>
+        </a>
+        <a href="/fire-detection" class="group rounded-lg border border-white/15 bg-white/5 p-6 hover:border-kharon-cyan/50 hover:bg-white/10">
+          <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Detection</p>
+          <h3 class="mt-2 text-xl font-bold">Fire Detection Systems</h3>
+          <p class="mt-3 text-sm leading-6 text-white/65">
+            Addressable detection infrastructure, control panels and cause-and-effect response for commercial and industrial sites.
+          </p>
+          <p class="mt-4 text-xs font-bold uppercase text-kharon-cyan group-hover:underline">View detection →</p>
+        </a>
+        <a href="/gas-suppression" class="group rounded-lg border border-white/15 bg-white/5 p-6 hover:border-kharon-cyan/50 hover:bg-white/10">
+          <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Suppression</p>
+          <h3 class="mt-2 text-xl font-bold">Gas Suppression Systems</h3>
+          <p class="mt-3 text-sm leading-6 text-white/65">
+            Clean-agent suppression for server rooms, electrical rooms and mission-critical spaces with full lifecycle support.
+          </p>
+          <p class="mt-4 text-xs font-bold uppercase text-kharon-cyan group-hover:underline">View suppression →</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Inquiry ─── -->
+  <ContextualInquiry
+    eyebrow="Compliance Enquiry"
+    title="Discuss your maintenance obligations."
+    text="Provide site context and Kharon will route the enquiry to the right service workstream."
+    requestType="Compliance review"
+    fields={[
+      { label: "System Type", name: "system_type", options: ["Fire Detection", "Gas Suppression", "Both — Fire Detection and Gas Suppression", "Other"] },
+      { label: "Current Service Provider", name: "current_provider", type: "text", required: false, maxlength: 120 }
+    ]}
+  />
 
   <Footer />
 </BaseLayout>
