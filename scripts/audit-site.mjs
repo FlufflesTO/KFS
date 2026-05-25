@@ -122,7 +122,8 @@ const assets = fs.existsSync(assetsDir) ? fs.readdirSync(assetsDir) : [];
 const jsAssets = assets.filter((file) => file.endsWith(".js"));
 const allowedPortalJsPatterns = [
   /^dashboard\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
-  /^operations\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/
+  /^operations\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^_id_\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/
 ];
 const unexpectedJsAssets = jsAssets.filter((file) => !allowedPortalJsPatterns.some((pattern) => pattern.test(file)));
 const jsBytes = jsAssets.reduce((total, file) => total + fs.statSync(path.join(assetsDir, file)).size, 0);
@@ -159,6 +160,7 @@ const expectedSourceRoutes = [
   "404.astro",
   "portal/login.astro",
   "portal/tech/dashboard.astro",
+  "portal/tech/jobs/[id].astro",
   "portal/admin/dashboard.astro",
   "portal/admin/planning.astro",
   "portal/client/dashboard.astro",
@@ -198,7 +200,8 @@ const requiredSourceTerms = new Map([
   ["src/pages/portal/reset.astro", ["/portal/api/reset-password", "Reset portal password"]],
   ["src/pages/portal/api/submit-jobcard.js", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
   ["src/pages/portal/api/file/[...key].js", ["job-evidence/", "job_evidence_files", "documentAccessLog"]],
-  ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/api/submit-jobcard", "evidencePhotos"]],
+  ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/tech/jobs/"]],
+  ["src/pages/portal/tech/jobs/[id].astro", ["/portal/api/submit-jobcard", "evidencePhotos", "/portal/api/job-visits", "Unable To Complete"]],
   ["src/pages/portal/client/dashboard.astro", ["/portal/api/file/", "/portal/api/approve-quote", "Mapped client sites"]],
   ["src/pages/portal/client/quotes.astro", ["Quote, invoice and payment history", "Commercial ledger", "/portal/api/approve-quote"]],
   ["src/pages/portal/finance/dashboard.astro", ["financial_records", "payment_status", "/portal/api/finance/export", "/portal/api/finance/payments"]],
