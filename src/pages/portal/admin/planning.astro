@@ -27,7 +27,9 @@ let management = {
   overdueSystems: 0,
   dueSoonSystems: 0,
   openCriticalRequests: 0,
-  unassignedJobs: 0
+  unassignedJobs: 0,
+  slaBreachJobs: 0,
+  slaWarningJobs: 0
 };
 let loadError = "";
 
@@ -76,7 +78,9 @@ try {
       SELECT
         SUM(CASE WHEN status = 'Scheduled'   THEN 1 ELSE 0 END) AS scheduled_count,
         SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress_count,
-        SUM(CASE WHEN status IN ('Scheduled','In Progress') AND assigned_technician_id IS NULL THEN 1 ELSE 0 END) AS unassigned_count
+        SUM(CASE WHEN status IN ('Scheduled','In Progress') AND assigned_technician_id IS NULL THEN 1 ELSE 0 END) AS unassigned_count,
+        SUM(CASE WHEN required_by_date IS NOT NULL AND date(required_by_date) < date('now') AND status IN ('Scheduled','In Progress') THEN 1 ELSE 0 END) AS sla_breach_count,
+        SUM(CASE WHEN required_by_date IS NOT NULL AND date(required_by_date) >= date('now') AND date(required_by_date) <= date('now','+3 days') AND status IN ('Scheduled','In Progress') THEN 1 ELSE 0 END) AS sla_warning_count
       FROM jobs
     `),
     db.prepare(`SELECT COUNT(*) AS total FROM jobs WHERE status IN ('Scheduled', 'In Progress')`),
@@ -156,7 +160,9 @@ try {
     unassignedJobs:       Number(jAgg.unassigned_count  ?? 0),
     overdueSystems:       Number(sAgg.overdue_count     ?? 0),
     dueSoonSystems:       Number(sAgg.due_soon_count    ?? 0),
-    openCriticalRequests: Number(rAgg.count             ?? 0)
+    openCriticalRequests: Number(rAgg.count             ?? 0),
+    slaBreachJobs:        Number(jAgg.sla_breach_count  ?? 0),
+    slaWarningJobs:       Number(jAgg.sla_warning_count ?? 0)
   };
 
   scheduled     = scheduledResult.results     || [];
@@ -189,7 +195,7 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
     <div class="mx-auto grid max-w-7xl gap-6">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
 
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article class="border border-kharon-border bg-white p-4">
           <p class="text-xs font-bold uppercase text-kharon-purple">Scheduled</p>
           <p class="mt-2 text-2xl font-bold">{management.scheduledJobs}</p>
@@ -214,6 +220,16 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
           <p class="text-xs font-bold uppercase text-kharon-grey">Unassigned jobs</p>
           <p class={`mt-2 text-2xl font-bold ${management.unassignedJobs > 0 ? "text-red-700" : ""}`}>{management.unassignedJobs}</p>
           <a href="/portal/admin/dispatch" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Dispatch board →</a>
+        </article>
+        <article class={`border p-4 ${management.slaBreachJobs > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${management.slaBreachJobs > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>SLA breached</p>
+          <p class={`mt-2 text-2xl font-bold ${management.slaBreachJobs > 0 ? "text-red-700" : ""}`}>{management.slaBreachJobs}</p>
+          <p class="mt-1 text-xs text-kharon-grey">required-by date passed</p>
+        </article>
+        <article class={`border p-4 ${management.slaWarningJobs > 0 ? "border-amber-300 bg-amber-50" : "border-kharon-border bg-white"}`}>
+          <p class={`text-xs font-bold uppercase ${management.slaWarningJobs > 0 ? "text-amber-700" : "text-kharon-grey"}`}>SLA warning</p>
+          <p class={`mt-2 text-2xl font-bold ${management.slaWarningJobs > 0 ? "text-amber-700" : ""}`}>{management.slaWarningJobs}</p>
+          <p class="mt-1 text-xs text-kharon-grey">due within 3 days</p>
         </article>
       </div>
 
@@ -249,9 +265,14 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
               const jPriority = (job as any).priority || "Normal";
               const jEmergency = (job as any).is_emergency === 1;
               const jSla = slaLabel((job as any).required_by_date ?? null);
+              const jSlaBreached = jSla !== null && jSla.cls.includes("red");
+              const jSlaWarning  = jSla !== null && jSla.cls.includes("amber");
+              const jBorderCls   = jSlaBreached ? "border-l-4 border-kharon-red bg-red-50"
+                                 : jSlaWarning  ? "border-l-4 border-amber-400 bg-amber-50"
+                                 : "border-l-4 border-kharon-blue bg-kharon-light";
               return (
                 <article
-                  class="grid gap-3 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2"
+                  class={`grid gap-3 ${jBorderCls} p-4 lg:grid-cols-2`}
                   data-search={`${job.owner_company_name} ${job.coverage_area} ${job.technician_name || ""} ${job.job_type || ""}`}
                   data-status={job.status}
                 >
