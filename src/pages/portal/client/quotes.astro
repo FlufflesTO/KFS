@@ -70,7 +70,7 @@ try {
           <p class="mt-2 text-2xl font-bold">R {totals.unpaid.toFixed(2)}</p>
         </article>
         <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <p class="text-xs font-bold uppercase text-kharon-blue">Settled records</p>
+          <p class="text-xs font-bold uppercase text-kharon-blue">Paid in Sage</p>
           <p class="mt-2 text-2xl font-bold">R {totals.settled.toFixed(2)}</p>
         </article>
       </div>
@@ -98,7 +98,7 @@ try {
       <section class="border border-kharon-border bg-white">
         <div class="border-b border-kharon-border p-4 sm:p-5">
           <h2 class="text-xl font-bold">Commercial ledger</h2>
-          <p class="mt-2 text-sm text-kharon-grey">Quotes convert to unpaid invoices once approved.</p>
+          <p class="mt-2 text-sm text-kharon-grey">Records reflect Sage document status. Official quotes and invoices are issued from Sage.</p>
         </div>
         <div class="portal-scroll-x">
           <table class="w-full min-w-[760px] border-collapse text-left text-sm">
@@ -123,7 +123,7 @@ try {
                   <td class="p-4 font-semibold">{record.owner_company_name}</td>
                   <td class="p-4">{record.reference || record.id}</td>
                   <td class="p-4">{record.item_type}</td>
-                  <td class="p-4">{record.payment_status}</td>
+                  <td class="p-4">{record.payment_status === "Settled" ? "Paid in Sage" : record.payment_status}</td>
                   <td class="p-4">R {Number(record.amount).toFixed(2)}</td>
                   <td class="p-4">{record.distribution_date}</td>
                   <td class="p-4">{record.job_id || "Not linked"}</td>

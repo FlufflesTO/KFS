@@ -56,7 +56,7 @@ export async function POST({ request, locals }) {
         user,
         metadata: { reason: "invalid_state", itemType: invoice.item_type, paymentStatus: invoice.payment_status }
       });
-      return badRequest("Only unpaid invoice records can be settled.");
+      return badRequest("Only unpaid invoice records can have a Sage payment recorded.");
     }
 
     const paymentId = crypto.randomUUID();

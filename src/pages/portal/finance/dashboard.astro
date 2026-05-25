@@ -65,7 +65,7 @@ try {
     <div class="mx-auto max-w-7xl">
       <p class="text-xs font-bold uppercase text-kharon-cyan">Finance workspace</p>
       <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Commercial ledger tied to field dispatches</h1>
-      <p class="mt-4 max-w-3xl text-white/65">Pending customer invoices, quote approvals, settled payments and dispatch-linked revenue visibility.</p>
+      <p class="mt-4 max-w-3xl text-white/65">Pending customer invoices, quote approvals, payments recorded in Sage and dispatch-linked revenue visibility.</p>
       <a class="mt-6 inline-flex rounded-md border border-white/20 px-5 py-3 text-sm font-semibold text-white/80 hover:border-white/40 hover:text-white" href="/portal/api/finance/export">
         Export ledger CSV
       </a>
@@ -132,7 +132,7 @@ try {
       <div class="grid gap-4 md:grid-cols-3">
         <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Unpaid</p><p class="mt-2 text-2xl font-bold">R {totals.unpaid.toFixed(2)}</p></article>
         <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Pending approval</p><p class="mt-2 text-2xl font-bold">R {totals.pending.toFixed(2)}</p></article>
-        <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Settled</p><p class="mt-2 text-2xl font-bold">R {totals.settled.toFixed(2)}</p></article>
+        <article class="border border-kharon-border bg-white p-4 sm:p-5"><p class="text-xs font-bold uppercase text-kharon-purple">Paid in Sage</p><p class="mt-2 text-2xl font-bold">R {totals.settled.toFixed(2)}</p></article>
       </div>
 
       <div class="grid gap-4 md:grid-cols-3">
@@ -160,7 +160,7 @@ try {
               <tr class="border-t border-kharon-border">
                 <td class="p-4 font-semibold">{record.owner_company_name}</td>
                 <td class="p-4">{record.item_type}</td>
-                <td class="p-4">{record.payment_status}</td>
+                <td class="p-4">{record.payment_status === "Settled" ? "Paid in Sage" : record.payment_status}</td>
                 <td class="p-4">R {Number(record.amount).toFixed(2)}</td>
                 <td class="p-4">{record.distribution_date}</td>
                 <td class="p-4">{record.payment_status === "Settled" ? "-" : `${record.age_days}d`}</td>
@@ -169,8 +169,8 @@ try {
                   {record.item_type === "Invoice" && record.payment_status === "Unpaid" ? (
                     <form class="payment-form flex min-w-56 flex-col gap-2" data-record-id={record.id}>
                       <label class="sr-only" for={`payment-${record.id}`}>Payment reference</label>
-                      <input id={`payment-${record.id}`} class="rounded-md border border-kharon-border px-3 py-2 text-sm" name="paymentReference" maxlength="80" placeholder="Payment reference" />
-                      <button class="rounded-md bg-kharon-purple px-3 py-2 text-sm font-semibold text-white hover:bg-kharon-blue">Mark settled</button>
+                      <input id={`payment-${record.id}`} class="rounded-md border border-kharon-border px-3 py-2 text-sm" name="paymentReference" maxlength="80" placeholder="Sage payment reference" />
+                      <button class="rounded-md bg-kharon-purple px-3 py-2 text-sm font-semibold text-white hover:bg-kharon-blue">Record Paid in Sage</button>
                       <p class="payment-result text-xs text-kharon-grey" aria-live="polite"></p>
                     </form>
                   ) : (
@@ -192,12 +192,12 @@ try {
         const refInput = form.querySelector("[name='paymentReference']");
         const ref = refInput?.value?.trim() || "";
         const confirmed = window.confirm(
-          `Mark this invoice as settled?\n\nPayment reference: ${ref || "(none entered)"}\n\nThis action cannot be undone.`
+          `Record this payment in Sage?\n\nSage payment reference: ${ref || "(none entered)"}\n\nThis action cannot be undone.`
         );
         if (!confirmed) return;
         const payload = Object.fromEntries(new FormData(form).entries());
         payload.recordId = form.dataset.recordId;
-        result.textContent = "Capturing payment...";
+        result.textContent = "Recording in Sage...";
 
         const response = await window.kharonPortalFetch("/portal/api/finance/payments", {
           method: "POST",
@@ -205,7 +205,7 @@ try {
           body: JSON.stringify(payload)
         });
         const body = await response.json().catch(() => ({ ok: false, message: "Payment capture failed." }));
-        result.textContent = body.ok ? `Settled: ${body.paymentReference}` : body.message || "Payment capture failed.";
+        result.textContent = body.ok ? `Recorded in Sage: ${body.paymentReference}` : body.message || "Payment capture failed.";
         if (body.ok) window.location.reload();
       });
     }
