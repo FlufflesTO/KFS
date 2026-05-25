@@ -66,16 +66,18 @@ export async function POST({ request, locals }) {
       db
         .prepare(
           `UPDATE financial_records
-           SET payment_status = 'Settled'
+           SET payment_status = 'Settled',
+               sage_payment_reference = ?2,
+               finance_task_status = 'Paid in Sage'
            WHERE id = ?1`
         )
-        .bind(recordId),
+        .bind(recordId, paymentRef),
       db
         .prepare(
           `INSERT INTO financial_records
-             (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference)
+             (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference, sage_payment_reference, finance_task_status)
            VALUES
-             (?1, ?2, ?3, ?4, 'Payment', 'Settled', date('now'), ?5)`
+             (?1, ?2, ?3, ?4, 'Payment', 'Settled', date('now'), ?5, ?5, 'Paid in Sage')`
         )
         .bind(paymentId, invoice.site_id, invoice.job_id, invoice.amount, paymentRef)
     ]);

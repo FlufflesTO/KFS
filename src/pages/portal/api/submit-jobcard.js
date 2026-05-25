@@ -48,6 +48,29 @@ function normalizeEvidencePhotos(value) {
   return value.map(imageDataUriToEvidence);
 }
 
+const defectSeverities = ["Critical", "Major", "Minor", "Observation"];
+
+function normalizeDefects(value) {
+  if (!value) return [];
+  if (!Array.isArray(value)) throw new Error("Defects must be an array.");
+  if (value.length > 20) throw new Error("A maximum of 20 defects can be captured per jobcard.");
+
+  return value.map((item, index) => {
+    const severity = String(item?.severity || "").trim();
+    if (!defectSeverities.includes(severity)) {
+      throw new Error(`Defect ${index + 1} severity must be one of: ${defectSeverities.join(", ")}.`);
+    }
+    const description = String(item?.description || "").trim();
+    if (description.length < 5 || description.length > 2000) {
+      throw new Error(`Defect ${index + 1} description must be between 5 and 2000 characters.`);
+    }
+    const sansClauseRef = String(item?.sansClauseRef || "").trim().slice(0, 80);
+    const certificateBlocking = item?.certificateBlocking === true || item?.certificateBlocking === 1 || item?.certificateBlocking === "1" || item?.certificateBlocking === "true";
+
+    return { severity, description, sansClauseRef, certificateBlocking: certificateBlocking ? 1 : 0 };
+  });
+}
+
 export async function POST({ request, locals }) {
   try {
     const user = locals.user;
@@ -66,6 +89,7 @@ export async function POST({ request, locals }) {
     const customerName  = String(payload.customerName  || "").trim().slice(0, 120);
     const customerTitle = String(payload.customerTitle || "").trim().slice(0, 80);
     const evidencePhotos = normalizeEvidencePhotos(payload.evidencePhotos);
+    const defects = normalizeDefects(payload.defects);
 
     if (!customerName) {
       return badRequest("Customer / responsible person name is required.");
@@ -234,12 +258,12 @@ export async function POST({ request, locals }) {
       batchStatements.push(
         db
           .prepare(
-            `INSERT INTO financial_records
-               (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference)
+          `INSERT INTO financial_records
+               (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference, finance_task_status)
              VALUES
-               (?1, ?2, ?3, ?4, 'Invoice', 'Unpaid', ?5, ?6)`
+               (?1, ?2, ?3, ?4, 'Invoice', 'Unpaid', ?5, ?6, 'Invoice Required')`
           )
-          .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, `Standard service invoice for job ${jobId}`)
+          .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, `Sage invoice required for completed job ${jobId}`)
       );
     }
 
@@ -253,6 +277,20 @@ export async function POST({ request, locals }) {
                (?1, ?2, ?3, ?4, 'Photo', ?5, ?6, ?7, ?8)`
           )
           .bind(evidence.id, jobId, systemId, user.id, evidence.storagePath, evidence.contentType, evidence.bytes.length, evidence.caption)
+      );
+    }
+
+    for (const defect of defects) {
+      const defectId = crypto.randomUUID();
+      batchStatements.push(
+        db
+          .prepare(
+            `INSERT INTO defects
+               (id, system_id, job_id, severity, sans_clause_ref, description, certificate_blocking, status)
+             VALUES
+               (?1, ?2, ?3, ?4, ?5, ?6, ?7, 'Open')`
+          )
+          .bind(defectId, systemId, jobId, defect.severity, defect.sansClauseRef || null, defect.description, defect.certificateBlocking)
       );
     }
 
@@ -273,7 +311,8 @@ export async function POST({ request, locals }) {
         partsUsed,
         followUpActions,
         customerName,
-        evidenceCount: evidenceRecords.length
+        evidenceCount: evidenceRecords.length,
+        defectCount: defects.length
       }
     });
 

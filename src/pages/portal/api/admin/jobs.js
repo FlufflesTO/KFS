@@ -20,19 +20,58 @@ export async function POST({ request, locals }) {
     if (action === "markInvoiced") {
       const id = cleanId(body.id, "id");
       const job = await db
-        .prepare(`SELECT id, status FROM jobs WHERE id = ?1 LIMIT 1`)
+        .prepare(
+          `SELECT jobs.id, jobs.status, systems.site_id
+           FROM jobs
+           INNER JOIN systems ON systems.id = jobs.system_id
+           WHERE jobs.id = ?1
+           LIMIT 1`
+        )
         .bind(id)
         .first();
       if (!job) return badRequest("Job not found.");
       if (job.status !== "Completed") return badRequest("Only Completed jobs can be marked as Invoiced.");
-      await db.prepare(`UPDATE jobs SET status = 'Invoiced' WHERE id = ?1`).bind(id).run();
+
+      const existingFinance = await db
+        .prepare(`SELECT id FROM financial_records WHERE job_id = ?1 AND item_type = 'Invoice' LIMIT 1`)
+        .bind(id)
+        .first();
+
+      const statements = [
+        db.prepare(`UPDATE jobs SET status = 'Invoiced' WHERE id = ?1`).bind(id)
+      ];
+
+      if (existingFinance) {
+        statements.push(
+          db
+            .prepare(
+              `UPDATE financial_records
+               SET finance_task_status = 'Sage Invoice Created'
+               WHERE id = ?1`
+            )
+            .bind(existingFinance.id)
+        );
+      } else {
+        statements.push(
+          db
+            .prepare(
+              `INSERT INTO financial_records
+                 (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference, finance_task_status)
+               VALUES
+                 (?1, ?2, ?3, 0, 'Invoice', 'Unpaid', date('now'), ?4, 'Sage Invoice Created')`
+            )
+            .bind(crypto.randomUUID(), job.site_id, id, `Sage invoice raised for completed job ${id}`)
+        );
+      }
+
+      await db.batch(statements);
       await auditEvent(db, request, {
         eventType: "admin.job.markInvoiced",
         entityType: "job",
         entityId: id,
         outcome: "success",
         user: locals.user,
-        metadata: { status: "Invoiced" }
+        metadata: { status: "Invoiced", financeTaskStatus: "Sage Invoice Created" }
       });
       return json({ ok: true, id, status: "Invoiced" });
     }

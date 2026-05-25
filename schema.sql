@@ -77,8 +77,25 @@ CREATE TABLE IF NOT EXISTS financial_records (
   sage_vat_amount REAL,
   sage_payment_reference TEXT,
   finance_task_status TEXT CHECK (finance_task_status IN (
-    'Invoice Required', 'Quote Required', 'Sage Reference Missing',
-    'Awaiting Payment', 'Complete'
+    'Finance Review Required',
+    'Quote Required',
+    'Sage Quote Created',
+    'Sage Quote Sent',
+    'Awaiting Client Approval',
+    'Quote Approved',
+    'Approved - Sage Invoice Required',
+    'Invoice Required',
+    'Sage Invoice Created',
+    'Sage Invoice Sent',
+    'Payment Pending in Sage',
+    'Paid in Sage',
+    'Sage Reference Missing',
+    'Awaiting Payment',
+    'Complete',
+    'On Hold',
+    'Cancelled',
+    'No Charge',
+    'Closed'
   )),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))

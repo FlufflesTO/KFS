@@ -8,11 +8,19 @@ const user = Astro.locals.user;
 const today = new Date();
 const todayIso = today.toISOString().slice(0, 10);
 const ninetyDaysFromNow = new Date(today.getTime() + 90 * 86400000).toISOString().slice(0, 10);
+const params = Astro.url.searchParams;
+const schedulePage = Math.max(1, Math.min(999, parseInt(params.get("schedulePage") || "1", 10) || 1));
+const lifecyclePage = Math.max(1, Math.min(999, parseInt(params.get("lifecyclePage") || "1", 10) || 1));
+const planningPageSize = 30;
+const scheduleOffset = (schedulePage - 1) * planningPageSize;
+const lifecycleOffset = (lifecyclePage - 1) * planningPageSize;
 
 let scheduled = [];
 let technicianLoad = [];
 let lifecycle = [];
 let openRequests = [];
+let scheduledTotal = 0;
+let lifecycleTotal = 0;
 let management = {
   scheduledJobs: 0,
   inProgressJobs: 0,
@@ -43,7 +51,8 @@ try {
   const db = getDatabase();
 
   const [
-    jobAggResult, systemAggResult, requestAggResult,
+    jobAggResult, scheduleCountResult, lifecycleCountResult,
+    systemAggResult, requestAggResult,
     scheduledResult, technicianLoadResult, lifecycleResult, openRequestsResult
   ] = await db.batch([
     // ── Full-dataset job counters ────────────────────────────────────────
@@ -54,6 +63,8 @@ try {
         SUM(CASE WHEN status IN ('Scheduled','In Progress') AND assigned_technician_id IS NULL THEN 1 ELSE 0 END) AS unassigned_count
       FROM jobs
     `),
+    db.prepare(`SELECT COUNT(*) AS total FROM jobs WHERE status IN ('Scheduled', 'In Progress')`),
+    db.prepare(`SELECT COUNT(*) AS total FROM systems WHERE date(next_due_date) <= date(?1)`).bind(ninetyDaysFromNow),
     // ── Full-dataset system counters ─────────────────────────────────────
     db.prepare(`
       SELECT
@@ -67,7 +78,7 @@ try {
       FROM maintenance_requests
       WHERE status IN ('New','Reviewing') AND priority = 'Critical'
     `),
-    // ── Display lists (capped) ───────────────────────────────────────────
+    // ── Display lists (paged) ────────────────────────────────────────────
     db.prepare(
       `SELECT jobs.id, jobs.status, jobs.scheduled_date, jobs.job_type, jobs.assigned_technician_id,
               users.name AS technician_name, systems.system_type, systems.coverage_area,
@@ -78,8 +89,8 @@ try {
        LEFT JOIN users ON users.id = jobs.assigned_technician_id
        WHERE jobs.status IN ('Scheduled', 'In Progress')
        ORDER BY jobs.scheduled_date ASC, sites.owner_company_name ASC
-       LIMIT 60`
-    ),
+       LIMIT ?1 OFFSET ?2`
+    ).bind(planningPageSize, scheduleOffset),
     db.prepare(
       `SELECT users.id, users.name,
               SUM(CASE WHEN jobs.status = 'Scheduled' THEN 1 ELSE 0 END)   AS scheduled_count,
@@ -99,8 +110,8 @@ try {
        INNER JOIN sites ON sites.id = systems.site_id
        WHERE date(systems.next_due_date) <= date(?1)
        ORDER BY systems.next_due_date ASC, sites.owner_company_name ASC
-       LIMIT 80`
-    ).bind(ninetyDaysFromNow),
+       LIMIT ?2 OFFSET ?3`
+    ).bind(ninetyDaysFromNow, planningPageSize, lifecycleOffset),
     db.prepare(
       `SELECT maintenance_requests.id, maintenance_requests.request_type, maintenance_requests.priority,
               maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
@@ -133,10 +144,15 @@ try {
   technicianLoad = technicianLoadResult.results || [];
   lifecycle     = lifecycleResult.results     || [];
   openRequests  = openRequestsResult.results  || [];
+  scheduledTotal = Number((scheduleCountResult.results[0] as any)?.total ?? 0);
+  lifecycleTotal = Number((lifecycleCountResult.results[0] as any)?.total ?? 0);
 } catch (error) {
   console.error("admin planning failed", error);
   loadError = "Planning data could not be loaded.";
 }
+
+const scheduleTotalPages = Math.max(1, Math.ceil(scheduledTotal / planningPageSize));
+const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageSize));
 ---
 
 <PortalLayout title="Planning | Kharon Portal" active="planning" user={user}>
@@ -230,6 +246,21 @@ try {
             ))}
           </div>
           <p id="schedule-no-results" class="hidden py-3 text-sm text-kharon-grey">No dispatches match your filter.</p>
+          {scheduleTotalPages > 1 && (
+            <nav class="mt-5 flex items-center justify-between border-t border-kharon-border pt-4">
+              {schedulePage > 1 ? (
+                <a href={`?schedulePage=${schedulePage - 1}&lifecyclePage=${lifecyclePage}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black hover:bg-kharon-light">Previous</a>
+              ) : (
+                <span class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey/50">Previous</span>
+              )}
+              <span class="text-sm text-kharon-grey">Dispatch page {schedulePage} of {scheduleTotalPages}</span>
+              {schedulePage < scheduleTotalPages ? (
+                <a href={`?schedulePage=${schedulePage + 1}&lifecyclePage=${lifecyclePage}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black hover:bg-kharon-light">Next</a>
+              ) : (
+                <span class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey/50">Next</span>
+              )}
+            </nav>
+          )}
         </article>
 
         <article class="border border-kharon-border bg-white p-4 sm:p-5">
@@ -298,6 +329,21 @@ try {
             })}
           </div>
           <p id="lifecycle-no-results" class="hidden py-3 text-sm text-kharon-grey">No systems match your search.</p>
+          {lifecycleTotalPages > 1 && (
+            <nav class="mt-5 flex items-center justify-between border-t border-kharon-border pt-4">
+              {lifecyclePage > 1 ? (
+                <a href={`?schedulePage=${schedulePage}&lifecyclePage=${lifecyclePage - 1}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black hover:bg-kharon-light">Previous</a>
+              ) : (
+                <span class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey/50">Previous</span>
+              )}
+              <span class="text-sm text-kharon-grey">Lifecycle page {lifecyclePage} of {lifecycleTotalPages}</span>
+              {lifecyclePage < lifecycleTotalPages ? (
+                <a href={`?schedulePage=${schedulePage}&lifecyclePage=${lifecyclePage + 1}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black hover:bg-kharon-light">Next</a>
+              ) : (
+                <span class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey/50">Next</span>
+              )}
+            </nav>
+          )}
         </article>
 
         <article class="border border-kharon-border bg-white p-4 sm:p-5">

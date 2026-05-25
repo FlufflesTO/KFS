@@ -117,7 +117,8 @@ const assetsDir = path.join(assetRoot, "_astro");
 const assets = fs.existsSync(assetsDir) ? fs.readdirSync(assetsDir) : [];
 const jsAssets = assets.filter((file) => file.endsWith(".js"));
 const allowedPortalJsPatterns = [
-  /^dashboard\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/
+  /^dashboard\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^operations\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/
 ];
 const unexpectedJsAssets = jsAssets.filter((file) => !allowedPortalJsPatterns.some((pattern) => pattern.test(file)));
 const jsBytes = jsAssets.reduce((total, file) => total + fs.statSync(path.join(assetsDir, file)).size, 0);

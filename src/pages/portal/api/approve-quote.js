@@ -5,12 +5,6 @@ import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorize
 
 export const prerender = false;
 
-function invoiceReference(recordId) {
-  const date = new Date().toISOString().slice(0, 10).replaceAll("-", "");
-  const suffix = String(recordId).replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toUpperCase();
-  return `INV-${date}-${suffix}`;
-}
-
 export async function POST({ request, locals }) {
   try {
     const user = locals.user;
@@ -26,7 +20,7 @@ export async function POST({ request, locals }) {
     const db = getDatabase();
     const record = await db
       .prepare(
-        `SELECT id, site_id, item_type, payment_status, reference
+        `SELECT id, site_id, item_type, payment_status, finance_task_status
          FROM financial_records
          WHERE id = ?1
          LIMIT 1`
@@ -46,7 +40,11 @@ export async function POST({ request, locals }) {
       return forbidden("Quote approval is not permitted for this account.");
     }
 
-    if (record.item_type !== "Quote" || record.payment_status !== "Pending Approval") {
+    if (
+      record.item_type !== "Quote" ||
+      record.payment_status !== "Pending Approval" ||
+      record.finance_task_status === "Approved - Sage Invoice Required"
+    ) {
       await auditEvent(db, request, {
         eventType: "quote.approve",
         entityType: "financial_record",
@@ -56,7 +54,8 @@ export async function POST({ request, locals }) {
         metadata: {
           reason: "invalid_state",
           itemType: record.item_type,
-          paymentStatus: record.payment_status
+          paymentStatus: record.payment_status,
+          financeTaskStatus: record.finance_task_status
         }
       });
       return badRequest("Only pending quote records can be approved.");
@@ -65,13 +64,11 @@ export async function POST({ request, locals }) {
     await db
       .prepare(
         `UPDATE financial_records
-         SET item_type = 'Invoice',
-             payment_status = 'Unpaid',
-             distribution_date = date('now'),
-             reference = COALESCE(reference, ?2)
+         SET finance_task_status = 'Approved - Sage Invoice Required',
+             updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
          WHERE id = ?1`
       )
-      .bind(recordId, invoiceReference(recordId))
+      .bind(recordId)
       .run();
 
     await auditEvent(db, request, {
@@ -80,10 +77,16 @@ export async function POST({ request, locals }) {
       entityId: recordId,
       outcome: "success",
       user,
-      metadata: { siteId: record.site_id }
+      metadata: { siteId: record.site_id, financeTaskStatus: "Approved - Sage Invoice Required" }
     });
 
-    return json({ ok: true, recordId, itemType: "Invoice", paymentStatus: "Unpaid" });
+    return json({
+      ok: true,
+      recordId,
+      itemType: "Quote",
+      paymentStatus: record.payment_status,
+      financeTaskStatus: "Approved - Sage Invoice Required"
+    });
   } catch (error) {
     if (error instanceof SyntaxError) {
       return badRequest("Request body must be valid JSON.");

@@ -32,6 +32,7 @@ try {
       db.prepare(
         `SELECT financial_records.id, financial_records.site_id, financial_records.amount,
                 financial_records.item_type, financial_records.payment_status,
+                financial_records.finance_task_status,
                 financial_records.distribution_date, financial_records.reference,
                 sites.owner_company_name, jobs.id AS job_id, jobs.status AS job_status
          FROM financial_records
@@ -161,12 +162,18 @@ try {
                   <td class="p-4 font-semibold">{record.owner_company_name}</td>
                   <td class="p-4">{record.reference || record.id}</td>
                   <td class="p-4">{record.item_type}</td>
-                  <td class="p-4">{record.payment_status === "Settled" ? "Paid in Sage" : record.payment_status}</td>
+                  <td class="p-4">
+                    {record.finance_task_status === "Approved - Sage Invoice Required"
+                      ? "Approved - Sage invoice required"
+                      : record.payment_status === "Settled"
+                        ? "Paid in Sage"
+                        : record.payment_status}
+                  </td>
                   <td class="p-4">R {Number(record.amount).toFixed(2)}</td>
                   <td class="p-4">{record.distribution_date}</td>
                   <td class="p-4">{record.job_id || "Not linked"}</td>
                   <td class="p-4">
-                    {record.item_type === "Quote" && record.payment_status === "Pending Approval" ? (
+                    {record.item_type === "Quote" && record.payment_status === "Pending Approval" && record.finance_task_status !== "Approved - Sage Invoice Required" ? (
                       <button class="rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" data-quote-id={record.id}>
                         Approve quote
                       </button>

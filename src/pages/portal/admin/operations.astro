@@ -743,7 +743,7 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
         const action = form.querySelector('[name="action"]')?.value || "";
         if (action === "create") {
           result.textContent = "Saved. Refreshing related lists...";
-          setTimeout(() => window.location.replace(`${window.location.pathname}${window.location.hash}`), 350);
+          setTimeout(() => window.location.reload(), 500);
         }
       });
     }

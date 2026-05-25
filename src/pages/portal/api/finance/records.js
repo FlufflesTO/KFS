@@ -105,14 +105,15 @@ export async function POST({ request, locals }) {
 
     const recordId = crypto.randomUUID();
     const paymentStatus = INITIAL_STATUS[itemType];
+    const financeTaskStatus = itemType === "Quote" ? "Quote Required" : "Invoice Required";
 
     await db
       .prepare(
         `INSERT INTO financial_records
-           (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`
+           (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference, finance_task_status)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)`
       )
-      .bind(recordId, siteId, jobId, amount, itemType, paymentStatus, distributionDate, reference)
+      .bind(recordId, siteId, jobId, amount, itemType, paymentStatus, distributionDate, reference, financeTaskStatus)
       .run();
 
     await auditEvent(db, request, {
@@ -121,10 +122,10 @@ export async function POST({ request, locals }) {
       entityId: recordId,
       outcome: "success",
       user,
-      metadata: { itemType, siteId, jobId, amount, paymentStatus, reference }
+      metadata: { itemType, siteId, jobId, amount, paymentStatus, reference, financeTaskStatus }
     });
 
-    return json({ ok: true, recordId, itemType, paymentStatus, amount, distributionDate });
+    return json({ ok: true, recordId, itemType, paymentStatus, financeTaskStatus, amount, distributionDate });
   } catch (error) {
     console.error("finance record creation failed", error);
     return serverError("The financial record could not be created.");

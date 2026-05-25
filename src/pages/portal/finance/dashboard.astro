@@ -338,7 +338,27 @@ try {
                           />
                           <select class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="financeTaskStatus">
                             <option value="">Task status…</option>
-                            {["Invoice Required", "Quote Required", "Sage Reference Missing", "Awaiting Payment", "Complete"].map((s) => (
+                            {[
+                              "Finance Review Required",
+                              "Quote Required",
+                              "Sage Quote Created",
+                              "Sage Quote Sent",
+                              "Awaiting Client Approval",
+                              "Quote Approved",
+                              "Approved - Sage Invoice Required",
+                              "Invoice Required",
+                              "Sage Invoice Created",
+                              "Sage Invoice Sent",
+                              "Payment Pending in Sage",
+                              "Paid in Sage",
+                              "Sage Reference Missing",
+                              "Awaiting Payment",
+                              "Complete",
+                              "On Hold",
+                              "Cancelled",
+                              "No Charge",
+                              "Closed"
+                            ].map((s) => (
                               <option value={s} selected={record.finance_task_status === s}>{s}</option>
                             ))}
                           </select>

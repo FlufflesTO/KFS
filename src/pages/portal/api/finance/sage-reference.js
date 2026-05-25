@@ -5,11 +5,25 @@ import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorize
 export const prerender = false;
 
 const VALID_TASK_STATUSES = [
-  "Invoice Required",
+  "Finance Review Required",
   "Quote Required",
+  "Sage Quote Created",
+  "Sage Quote Sent",
+  "Awaiting Client Approval",
+  "Quote Approved",
+  "Approved - Sage Invoice Required",
+  "Invoice Required",
+  "Sage Invoice Created",
+  "Sage Invoice Sent",
+  "Payment Pending in Sage",
+  "Paid in Sage",
   "Sage Reference Missing",
   "Awaiting Payment",
-  "Complete"
+  "Complete",
+  "On Hold",
+  "Cancelled",
+  "No Charge",
+  "Closed"
 ];
 
 /**
