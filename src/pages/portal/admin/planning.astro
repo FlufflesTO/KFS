@@ -42,67 +42,97 @@ function riskForDueDate(dateText) {
 try {
   const db = getDatabase();
 
-  scheduled = (await db.prepare(
-    `SELECT jobs.id, jobs.status, jobs.scheduled_date, jobs.job_type, jobs.assigned_technician_id,
-            users.name AS technician_name, systems.system_type, systems.coverage_area,
-            sites.owner_company_name, sites.physical_address
-     FROM jobs
-     INNER JOIN systems ON systems.id = jobs.system_id
-     INNER JOIN sites ON sites.id = systems.site_id
-     LEFT JOIN users ON users.id = jobs.assigned_technician_id
-     WHERE jobs.status IN ('Scheduled', 'In Progress')
-     ORDER BY jobs.scheduled_date ASC, sites.owner_company_name ASC
-     LIMIT 60`
-  ).all()).results || [];
+  const [
+    jobAggResult, systemAggResult, requestAggResult,
+    scheduledResult, technicianLoadResult, lifecycleResult, openRequestsResult
+  ] = await db.batch([
+    // ── Full-dataset job counters ────────────────────────────────────────
+    db.prepare(`
+      SELECT
+        SUM(CASE WHEN status = 'Scheduled'   THEN 1 ELSE 0 END) AS scheduled_count,
+        SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress_count,
+        SUM(CASE WHEN status IN ('Scheduled','In Progress') AND assigned_technician_id IS NULL THEN 1 ELSE 0 END) AS unassigned_count
+      FROM jobs
+    `),
+    // ── Full-dataset system counters ─────────────────────────────────────
+    db.prepare(`
+      SELECT
+        SUM(CASE WHEN date(next_due_date) < date('now') THEN 1 ELSE 0 END) AS overdue_count,
+        SUM(CASE WHEN date(next_due_date) >= date('now') AND date(next_due_date) <= date('now','+30 days') THEN 1 ELSE 0 END) AS due_soon_count
+      FROM systems
+    `),
+    // ── Full-dataset critical request counter ────────────────────────────
+    db.prepare(`
+      SELECT COUNT(*) AS count
+      FROM maintenance_requests
+      WHERE status IN ('New','Reviewing') AND priority = 'Critical'
+    `),
+    // ── Display lists (capped) ───────────────────────────────────────────
+    db.prepare(
+      `SELECT jobs.id, jobs.status, jobs.scheduled_date, jobs.job_type, jobs.assigned_technician_id,
+              users.name AS technician_name, systems.system_type, systems.coverage_area,
+              sites.owner_company_name, sites.physical_address
+       FROM jobs
+       INNER JOIN systems ON systems.id = jobs.system_id
+       INNER JOIN sites ON sites.id = systems.site_id
+       LEFT JOIN users ON users.id = jobs.assigned_technician_id
+       WHERE jobs.status IN ('Scheduled', 'In Progress')
+       ORDER BY jobs.scheduled_date ASC, sites.owner_company_name ASC
+       LIMIT 60`
+    ),
+    db.prepare(
+      `SELECT users.id, users.name,
+              SUM(CASE WHEN jobs.status = 'Scheduled' THEN 1 ELSE 0 END)   AS scheduled_count,
+              SUM(CASE WHEN jobs.status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress_count,
+              MIN(jobs.scheduled_date) AS next_dispatch_date
+       FROM users
+       LEFT JOIN jobs ON jobs.assigned_technician_id = users.id AND jobs.status IN ('Scheduled','In Progress')
+       WHERE users.role = 'tech' AND users.is_active = 1
+       GROUP BY users.id, users.name
+       ORDER BY scheduled_count DESC, in_progress_count DESC, users.name ASC`
+    ),
+    db.prepare(
+      `SELECT systems.id, systems.system_type, systems.coverage_area, systems.manufacturer,
+              systems.model_reference, systems.last_service_date, systems.next_due_date,
+              sites.owner_company_name, sites.physical_address
+       FROM systems
+       INNER JOIN sites ON sites.id = systems.site_id
+       WHERE date(systems.next_due_date) <= date(?1)
+       ORDER BY systems.next_due_date ASC, sites.owner_company_name ASC
+       LIMIT 80`
+    ).bind(ninetyDaysFromNow),
+    db.prepare(
+      `SELECT maintenance_requests.id, maintenance_requests.request_type, maintenance_requests.priority,
+              maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
+              sites.owner_company_name, systems.coverage_area
+       FROM maintenance_requests
+       INNER JOIN sites ON sites.id = maintenance_requests.site_id
+       LEFT JOIN systems ON systems.id = maintenance_requests.system_id
+       WHERE maintenance_requests.status IN ('New', 'Reviewing')
+       ORDER BY
+         CASE maintenance_requests.priority WHEN 'Critical' THEN 1 WHEN 'Urgent' THEN 2 ELSE 3 END,
+         maintenance_requests.created_at ASC
+       LIMIT 24`
+    )
+  ]);
 
-  technicianLoad = (await db.prepare(
-    `SELECT users.id, users.name,
-            SUM(CASE WHEN jobs.status = 'Scheduled' THEN 1 ELSE 0 END) AS scheduled_count,
-            SUM(CASE WHEN jobs.status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress_count,
-            MIN(jobs.scheduled_date) AS next_dispatch_date
-     FROM users
-     LEFT JOIN jobs ON jobs.assigned_technician_id = users.id AND jobs.status IN ('Scheduled', 'In Progress')
-     WHERE users.role = 'tech' AND users.is_active = 1
-     GROUP BY users.id, users.name
-     ORDER BY scheduled_count DESC, in_progress_count DESC, users.name ASC`
-  ).all()).results || [];
-
-  lifecycle = (await db.prepare(
-    `SELECT systems.id, systems.system_type, systems.coverage_area, systems.manufacturer,
-            systems.model_reference, systems.last_service_date, systems.next_due_date,
-            sites.owner_company_name, sites.physical_address
-     FROM systems
-     INNER JOIN sites ON sites.id = systems.site_id
-     WHERE date(systems.next_due_date) <= date(?1)
-     ORDER BY systems.next_due_date ASC, sites.owner_company_name ASC
-     LIMIT 80`
-  ).bind(ninetyDaysFromNow).all()).results || [];
-
-  openRequests = (await db.prepare(
-    `SELECT maintenance_requests.id, maintenance_requests.request_type, maintenance_requests.priority,
-            maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
-            sites.owner_company_name, systems.coverage_area
-     FROM maintenance_requests
-     INNER JOIN sites ON sites.id = maintenance_requests.site_id
-     LEFT JOIN systems ON systems.id = maintenance_requests.system_id
-     WHERE maintenance_requests.status IN ('New', 'Reviewing')
-     ORDER BY
-       CASE maintenance_requests.priority WHEN 'Critical' THEN 1 WHEN 'Urgent' THEN 2 ELSE 3 END,
-       maintenance_requests.created_at ASC
-     LIMIT 24`
-  ).all()).results || [];
+  const jAgg = (jobAggResult.results[0] as any)     || {};
+  const sAgg = (systemAggResult.results[0] as any)  || {};
+  const rAgg = (requestAggResult.results[0] as any) || {};
 
   management = {
-    scheduledJobs: scheduled.filter((job) => job.status === "Scheduled").length,
-    inProgressJobs: scheduled.filter((job) => job.status === "In Progress").length,
-    overdueSystems: lifecycle.filter((system) => (daysUntil(system.next_due_date) ?? 0) < 0).length,
-    dueSoonSystems: lifecycle.filter((system) => {
-      const days = daysUntil(system.next_due_date);
-      return days !== null && days >= 0 && days <= 30;
-    }).length,
-    openCriticalRequests: openRequests.filter((request) => request.priority === "Critical").length,
-    unassignedJobs: scheduled.filter((job) => !job.assigned_technician_id).length
+    scheduledJobs:        Number(jAgg.scheduled_count   ?? 0),
+    inProgressJobs:       Number(jAgg.in_progress_count ?? 0),
+    unassignedJobs:       Number(jAgg.unassigned_count  ?? 0),
+    overdueSystems:       Number(sAgg.overdue_count     ?? 0),
+    dueSoonSystems:       Number(sAgg.due_soon_count    ?? 0),
+    openCriticalRequests: Number(rAgg.count             ?? 0)
   };
+
+  scheduled     = scheduledResult.results     || [];
+  technicianLoad = technicianLoadResult.results || [];
+  lifecycle     = lifecycleResult.results     || [];
+  openRequests  = openRequestsResult.results  || [];
 } catch (error) {
   console.error("admin planning failed", error);
   loadError = "Planning data could not be loaded.";
@@ -133,21 +163,21 @@ try {
           <p class="text-xs font-bold uppercase text-kharon-blue">In progress</p>
           <p class="mt-2 text-2xl font-bold">{management.inProgressJobs}</p>
         </article>
-        <article class="border border-kharon-border bg-white p-4">
+        <article class={`border p-4 ${management.overdueSystems > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
           <p class="text-xs font-bold uppercase text-kharon-red">Overdue systems</p>
-          <p class="mt-2 text-2xl font-bold">{management.overdueSystems}</p>
+          <p class={`mt-2 text-2xl font-bold ${management.overdueSystems > 0 ? "text-red-700" : ""}`}>{management.overdueSystems}</p>
         </article>
         <article class="border border-kharon-border bg-white p-4">
           <p class="text-xs font-bold uppercase text-kharon-purple">Due within 30d</p>
           <p class="mt-2 text-2xl font-bold">{management.dueSoonSystems}</p>
         </article>
-        <article class="border border-kharon-border bg-white p-4">
+        <article class={`border p-4 ${management.openCriticalRequests > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
           <p class="text-xs font-bold uppercase text-kharon-red">Critical requests</p>
-          <p class="mt-2 text-2xl font-bold">{management.openCriticalRequests}</p>
+          <p class={`mt-2 text-2xl font-bold ${management.openCriticalRequests > 0 ? "text-red-700" : ""}`}>{management.openCriticalRequests}</p>
         </article>
-        <article class="border border-kharon-border bg-white p-4">
+        <article class={`border p-4 ${management.unassignedJobs > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
           <p class="text-xs font-bold uppercase text-kharon-grey">Unassigned jobs</p>
-          <p class="mt-2 text-2xl font-bold">{management.unassignedJobs}</p>
+          <p class={`mt-2 text-2xl font-bold ${management.unassignedJobs > 0 ? "text-red-700" : ""}`}>{management.unassignedJobs}</p>
         </article>
       </div>
 
@@ -163,10 +193,28 @@ try {
             </a>
           </div>
 
-          <div class="mt-5 grid gap-3">
+          <div class="mt-5 flex flex-wrap items-center gap-3 mb-3">
+            <input
+              id="schedule-search"
+              type="search"
+              class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
+              placeholder="Search site or area…"
+              size="22"
+            />
+            <select id="schedule-status-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
+              <option value="">All statuses</option>
+              <option value="Scheduled">Scheduled</option>
+              <option value="In Progress">In progress</option>
+            </select>
+          </div>
+          <div id="schedule-list" class="grid gap-3">
             {scheduled.length === 0 && <p class="text-kharon-grey">No scheduled or in-progress dispatches.</p>}
             {scheduled.map((job) => (
-              <article class="grid gap-3 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2">
+              <article
+                class="grid gap-3 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2"
+                data-search={`${job.owner_company_name} ${job.coverage_area} ${job.technician_name || ""} ${job.job_type || ""}`}
+                data-status={job.status}
+              >
                 <div class="min-w-0">
                   <p class="font-semibold">{job.owner_company_name}</p>
                   <p class="mt-1 text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</p>
@@ -181,6 +229,7 @@ try {
               </article>
             ))}
           </div>
+          <p id="schedule-no-results" class="hidden py-3 text-sm text-kharon-grey">No dispatches match your filter.</p>
         </article>
 
         <article class="border border-kharon-border bg-white p-4 sm:p-5">
@@ -216,12 +265,24 @@ try {
             <span class="rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">Today {todayIso}</span>
           </div>
 
-          <div class="mt-5 grid gap-3">
+          <div class="mt-5 mb-3">
+            <input
+              id="lifecycle-search"
+              type="search"
+              class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
+              placeholder="Search site, system or area…"
+              size="28"
+            />
+          </div>
+          <div id="lifecycle-list" class="grid gap-3">
             {lifecycle.length === 0 && <p class="text-kharon-grey">No systems are due in the next 90 days.</p>}
             {lifecycle.map((system) => {
               const risk = riskForDueDate(system.next_due_date);
               return (
-                <article class="grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-2">
+                <article
+                  class="grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-2"
+                  data-search={`${system.owner_company_name} ${system.system_type} ${system.coverage_area} ${system.manufacturer || ""} ${system.model_reference || ""}`}
+                >
                   <div class="min-w-0">
                     <p class="font-semibold">{system.owner_company_name}</p>
                     <p class="mt-1 text-sm text-kharon-grey">{system.system_type} / {system.coverage_area}</p>
@@ -236,6 +297,7 @@ try {
               );
             })}
           </div>
+          <p id="lifecycle-no-results" class="hidden py-3 text-sm text-kharon-grey">No systems match your search.</p>
         </article>
 
         <article class="border border-kharon-border bg-white p-4 sm:p-5">
@@ -263,4 +325,50 @@ try {
       </section>
     </div>
   </section>
+  <script>
+    // ── Active schedule filter ──────────────────────────────────────────────
+    const scheduleSearch       = document.getElementById("schedule-search") as HTMLInputElement | null;
+    const scheduleStatusFilter = document.getElementById("schedule-status-filter") as HTMLSelectElement | null;
+    const scheduleList         = document.getElementById("schedule-list");
+    const scheduleNoResults    = document.getElementById("schedule-no-results");
+
+    function applyScheduleFilter() {
+      if (!scheduleList) return;
+      const q  = (scheduleSearch?.value || "").toLowerCase().trim();
+      const sv = scheduleStatusFilter?.value || "";
+      const cards = scheduleList.querySelectorAll<HTMLElement>("[data-search]");
+      let visible = 0;
+      for (const card of cards) {
+        const text = (card.dataset.search ?? "").toLowerCase();
+        const show =
+          (!q  || text.includes(q)) &&
+          (!sv || (card.dataset.status ?? "") === sv);
+        card.style.display = show ? "" : "none";
+        if (show) visible++;
+      }
+      if (scheduleNoResults) scheduleNoResults.style.display = visible === 0 ? "" : "none";
+    }
+    scheduleSearch?.addEventListener("input",  applyScheduleFilter);
+    scheduleStatusFilter?.addEventListener("change", applyScheduleFilter);
+
+    // ── Lifecycle calendar filter ───────────────────────────────────────────
+    const lifecycleSearch    = document.getElementById("lifecycle-search") as HTMLInputElement | null;
+    const lifecycleList      = document.getElementById("lifecycle-list");
+    const lifecycleNoResults = document.getElementById("lifecycle-no-results");
+
+    function applyLifecycleFilter() {
+      if (!lifecycleList) return;
+      const q = (lifecycleSearch?.value || "").toLowerCase().trim();
+      const cards = lifecycleList.querySelectorAll<HTMLElement>("[data-search]");
+      let visible = 0;
+      for (const card of cards) {
+        const text = (card.dataset.search ?? "").toLowerCase();
+        const show = !q || text.includes(q);
+        card.style.display = show ? "" : "none";
+        if (show) visible++;
+      }
+      if (lifecycleNoResults) lifecycleNoResults.style.display = visible === 0 ? "" : "none";
+    }
+    lifecycleSearch?.addEventListener("input", applyLifecycleFilter);
+  </script>
 </PortalLayout>
