@@ -84,6 +84,11 @@ try {
   console.error("client dashboard failed", error);
   loadError = "Client system records could not be loaded.";
 }
+
+// Compliance summary counts — computed in frontmatter (< safe in TS, not JSX)
+const overdueCount  = systems.filter((s: any) => s.next_due_date && s.next_due_date < today).length;
+const dueSoonCount  = systems.filter((s: any) => s.next_due_date && s.next_due_date >= today && s.next_due_date <= soonDate).length;
+const compliantCount = systems.filter((s: any) => !s.next_due_date || s.next_due_date > soonDate).length;
 ---
 
 <PortalLayout title="Client Gateway | Kharon Portal" active="client" user={user}>
@@ -125,6 +130,23 @@ try {
             ))}
           </div>
         </section>
+      )}
+
+      {systems.length > 0 && (
+        <div class="grid grid-cols-3 gap-3 border border-kharon-border bg-white p-4">
+          <div class={`border-r border-kharon-border pr-4 ${overdueCount > 0 ? "text-red-900" : "text-kharon-grey"}`}>
+            <p class="text-xs font-bold uppercase opacity-70">Overdue</p>
+            <p class={`mt-1 text-2xl font-bold ${overdueCount > 0 ? "text-red-700" : ""}`}>{overdueCount}</p>
+          </div>
+          <div class={`border-r border-kharon-border px-4 ${dueSoonCount > 0 ? "text-amber-900" : "text-kharon-grey"}`}>
+            <p class="text-xs font-bold uppercase opacity-70">Due soon</p>
+            <p class={`mt-1 text-2xl font-bold ${dueSoonCount > 0 ? "text-amber-700" : ""}`}>{dueSoonCount}</p>
+          </div>
+          <div class="pl-4 text-kharon-grey">
+            <p class="text-xs font-bold uppercase opacity-70">Compliant</p>
+            <p class="mt-1 text-2xl font-bold text-kharon-black">{compliantCount}</p>
+          </div>
+        </div>
       )}
 
       <div class="flex items-center justify-between gap-3">
