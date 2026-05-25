@@ -70,6 +70,7 @@ Latest staging evidence:
 
 - 2026-05-25: `npm run portal:backup:d1` completed against remote `kharon-portal`; export and manifest were written under gitignored `backups/`.
 - 2026-05-25: Remote `d1_migrations` was reconciled for migrations `0001_kharon_portal.sql` through `0011_contact_submissions.sql`; `npx wrangler d1 migrations list kharon-portal --remote` returned `No migrations to apply`.
+- 2026-05-25: A fresh D1 export was created before applying migration `0012_client_site_access.sql`; Wrangler applied the migration remotely and then reported no pending migrations.
 
 ## R2 Evidence Backup
 

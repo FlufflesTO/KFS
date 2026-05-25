@@ -1017,6 +1017,8 @@ Portal findings:
 - A completed job history view was added at `/portal/tech/history` in Phase 11 (2026-05-25).
 - CSV exports include tab-prefix sanitization to prevent formula execution in Excel and Google Sheets (Phase 11, 2026-05-25).
 - The finance ledger action requires a `window.confirm` gate before applying (Phase 11, 2026-05-25) and was renamed to "Record Paid in Sage" as part of the Phase 21 terminology pass.
+- Staging defect pass on 2026-05-25 identified that the remote D1 database was missing the `client_site_access` table even though the application and schema expected it. Migration `0012_client_site_access.sql` was added and applied remotely after a D1 export, restoring the client dashboard's mapped-site data dependency.
+- Admin create forms now perform a faster full page refresh after successful create actions so dependent selects for sites, systems and users are rehydrated from D1 without requiring a manual browser refresh.
 
 ## Outstanding Build Phases - 2026-05-24
 

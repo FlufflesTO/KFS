@@ -684,7 +684,8 @@ try {
         result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
         const action = form.querySelector('[name="action"]')?.value || "";
         if (action === "create") {
-          setTimeout(() => window.location.reload(), 700);
+          result.textContent = "Saved. Refreshing related lists...";
+          setTimeout(() => window.location.replace(`${window.location.pathname}${window.location.hash}`), 350);
         }
       });
     }
