@@ -16,6 +16,20 @@ let technicians = [];
 let requestSystems = [];
 let stats = { activeJobs: 0, unassignedJobs: 0, overdueSystems: 0, openRequests: 0, missingDocuments: 0 };
 let loadError = "";
+const today    = new Date().toISOString().slice(0, 10);
+const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+function dueDateCls(nd: string | null | undefined): string {
+  if (!nd || nd > soonDate) return "border-l-4 border-kharon-blue bg-kharon-light";
+  if (nd > today) return "border-l-4 border-amber-300 bg-amber-50";
+  return "border-l-4 border-kharon-red bg-kharon-light";
+}
+function dueDateLabel(nd: string | null | undefined): string {
+  if (!nd) return "—";
+  if (nd > soonDate) return "Scheduled";
+  if (nd > today) return "Due soon";
+  return "Overdue";
+}
 
 try {
   const db = getDatabase();
@@ -120,6 +134,21 @@ try {
   console.error("admin dashboard failed", error);
   loadError = "Admin matrix data could not be loaded.";
 }
+
+const dueCards = due.map((item) => {
+  const nextDueDate = item.next_due_date;
+  const isOverdue = nextDueDate && nextDueDate < today;
+  const isDueSoon = nextDueDate && nextDueDate >= today && nextDueDate <= soonDate;
+  return {
+    ...item,
+    borderClass: isOverdue
+      ? "border-l-4 border-kharon-red bg-kharon-light"
+      : isDueSoon
+      ? "border-l-4 border-amber-300 bg-amber-50"
+      : "border-l-4 border-kharon-blue bg-kharon-light",
+    dueLabel: isOverdue ? "Overdue" : isDueSoon ? "Due soon" : "Scheduled",
+  };
+});
 ---
 
 <PortalLayout title="Admin Control Panel | Kharon Portal" active="admin" user={user}>
@@ -212,10 +241,10 @@ try {
         </div>
         <div class="mt-5 grid gap-3">
           {due.map((item) => (
-            <article class="border-l-4 border-kharon-red bg-kharon-light p-4">
+            <article class={`${dueDateCls(item.next_due_date)} p-4`}>
               <p class="font-semibold">{item.owner_company_name}</p>
               <p class="text-sm text-kharon-grey">{item.system_type} / {item.coverage_area}</p>
-              <p class="mt-2 text-xs uppercase text-kharon-grey/70">Next due: {item.next_due_date}</p>
+              <p class="mt-2 text-xs uppercase text-kharon-grey/70">{dueDateLabel(item.next_due_date)} — {item.next_due_date}</p>
             </article>
           ))}
         </div>
