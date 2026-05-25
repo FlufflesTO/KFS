@@ -4,14 +4,19 @@ export async function clientSiteIds(db, user) {
   const ids = new Set();
   if (user.siteId) ids.add(String(user.siteId));
 
-  const rows = (await db
-    .prepare(
-      `SELECT site_id
-       FROM client_site_access
-       WHERE user_id = ?1`
-    )
-    .bind(user.id)
-    .all()).results || [];
+  let rows = [];
+  try {
+    rows = (await db
+      .prepare(
+        `SELECT site_id
+         FROM client_site_access
+         WHERE user_id = ?1`
+      )
+      .bind(user.id)
+      .all()).results || [];
+  } catch (error) {
+    console.error("client site access mapping load failed", error);
+  }
 
   for (const row of rows) {
     if (row.site_id) ids.add(String(row.site_id));

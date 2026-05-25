@@ -682,6 +682,10 @@ try {
 
         result.textContent = `Saved ${body.id || ""}`.trim();
         result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+        const action = form.querySelector('[name="action"]')?.value || "";
+        if (action === "create") {
+          setTimeout(() => window.location.reload(), 700);
+        }
       });
     }
 
@@ -705,6 +709,7 @@ try {
 
         result.textContent = body.action === "grant" ? "Client site access granted." : "Client site access revoked.";
         result.className = "client-site-access-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+        setTimeout(() => window.location.reload(), 700);
       });
     }
 

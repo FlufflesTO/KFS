@@ -79,11 +79,28 @@ export async function POST({ request, locals }) {
     // Validate job if provided
     if (jobId) {
       const job = await db
-        .prepare(`SELECT id, site_id FROM jobs WHERE id = ?1 LIMIT 1`)
+        .prepare(
+          `SELECT jobs.id, systems.site_id
+           FROM jobs
+           INNER JOIN systems ON systems.id = jobs.system_id
+           WHERE jobs.id = ?1
+           LIMIT 1`
+        )
         .bind(jobId)
         .first();
       if (!job) return badRequest("The specified job was not found.");
       if (job.site_id !== siteId) return badRequest("The specified job does not belong to the selected site.");
+
+      const existing = await db
+        .prepare(
+          `SELECT id
+           FROM financial_records
+           WHERE job_id = ?1 AND item_type = ?2
+           LIMIT 1`
+        )
+        .bind(jobId, itemType)
+        .first();
+      if (existing) return badRequest(`This job already has a ${itemType.toLowerCase()} record.`);
     }
 
     const recordId = crypto.randomUUID();

@@ -16,7 +16,7 @@ export async function POST({ request, locals }) {
   try {
     const user = locals.user;
     if (!user) return unauthorized();
-    if (!["tech", "admin"].includes(user.role)) return forbidden("Only technicians or admins can update dispatch status.");
+    if (user.role !== "tech") return forbidden("Only technician accounts can update dispatch status from the field workspace.");
 
     const body = await request.json();
     const jobId = cleanId(body.jobId, "jobId");

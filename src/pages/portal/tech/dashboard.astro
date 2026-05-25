@@ -42,7 +42,9 @@ try {
       <p class="text-xs font-bold uppercase text-kharon-cyan">Technician workspace</p>
       <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Assigned dispatch closure</h1>
       <p class="mt-4 max-w-3xl text-white/65">
-        Close scheduled field work with comments and captured client signature. Completed jobcards update lifecycle dates and finance automatically.
+        {user.role === "admin"
+          ? "Read-only technician dispatch visibility for operations review. Start and closure actions remain technician-controlled."
+          : "Close scheduled field work with comments and captured client signature. Completed jobcards update lifecycle dates and finance automatically."}
       </p>
     </div>
   </section>
@@ -66,13 +68,24 @@ try {
               <div><dt class="font-bold uppercase text-kharon-grey/70">Job ID</dt><dd>{job.id}</dd></div>
             </dl>
             {job.site_notes && <p class="mt-5 border-l-4 border-kharon-blue bg-kharon-light p-4 text-sm text-kharon-grey">{job.site_notes}</p>}
-            {job.status === "Scheduled" && (
+            {user.role === "tech" && job.status === "Scheduled" && (
               <button class="start-job mt-5 rounded-md border border-kharon-blue px-5 py-3 text-sm font-semibold text-kharon-blue hover:bg-kharon-blue hover:text-white" data-job-id={job.id}>
                 Start job
               </button>
             )}
           </div>
 
+          {user.role === "admin" ? (
+            <aside class="grid min-w-0 content-start gap-3 border border-kharon-border bg-kharon-light p-4">
+              <p class="text-xs font-bold uppercase text-kharon-purple">Operations review</p>
+              <p class="text-sm leading-6 text-kharon-grey">
+                Admin users can review assigned dispatches here, but field start and jobcard closure actions must be completed by the assigned technician account.
+              </p>
+              <a class="inline-flex rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" href="/portal/admin/operations#jobs">
+                Manage dispatch in Admin Operations
+              </a>
+            </aside>
+          ) : (
           <form class="jobcard-form grid min-w-0 gap-4 border border-kharon-border bg-kharon-light p-4" data-job-id={job.id} data-system-id={job.system_id}>
             <input type="hidden" name="jobId" value={job.id} />
             <input type="hidden" name="systemId" value={job.system_id} />
@@ -116,6 +129,7 @@ try {
             <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue">Submit completed jobcard</button>
             <p class="jobcard-result hidden text-sm font-semibold"></p>
           </form>
+          )}
         </article>
       ))}
     </div>

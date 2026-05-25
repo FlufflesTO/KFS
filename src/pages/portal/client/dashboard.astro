@@ -11,6 +11,7 @@ let quotes = [];
 let requests = [];
 let sites = [];
 let loadError = "";
+const sectionErrors = [];
 
 try {
   const db = getDatabase();
@@ -20,47 +21,62 @@ try {
     loadError = "This client account is not mapped to a site.";
   } else {
     const sitePlaceholders = inClause(siteIds);
-    systems = (await db.prepare(
-      `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area, systems.last_service_date, systems.next_due_date,
-              sites.owner_company_name,
-              jobs.id AS latest_job_id, jobs.documentation_path, jobs.completed_at
-       FROM systems
-       INNER JOIN sites ON sites.id = systems.site_id
-       LEFT JOIN jobs ON jobs.id = (
-         SELECT j.id FROM jobs j
-         WHERE j.system_id = systems.id AND j.documentation_path IS NOT NULL
-         ORDER BY j.completed_at DESC
-         LIMIT 1
-       )
-       WHERE systems.site_id IN (${sitePlaceholders})
-       ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC`
-    ).bind(...siteIds).all()).results || [];
+    try {
+      systems = (await db.prepare(
+        `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area, systems.last_service_date, systems.next_due_date,
+                sites.owner_company_name,
+                latest_jobs.id AS latest_job_id, latest_jobs.documentation_path, latest_jobs.completed_at
+         FROM systems
+         INNER JOIN sites ON sites.id = systems.site_id
+         LEFT JOIN jobs AS latest_jobs ON latest_jobs.id = (
+           SELECT j.id FROM jobs j
+           WHERE j.system_id = systems.id AND j.documentation_path IS NOT NULL
+           ORDER BY COALESCE(j.completed_at, j.updated_at, j.created_at) DESC
+           LIMIT 1
+         )
+         WHERE systems.site_id IN (${sitePlaceholders})
+         ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC`
+      ).bind(...siteIds).all()).results || [];
+    } catch (error) {
+      console.error("client systems load failed", error);
+      sectionErrors.push("System records could not be loaded.");
+    }
 
-    quotes = (await db.prepare(
-      `SELECT financial_records.id, financial_records.site_id, financial_records.amount,
-              financial_records.item_type, financial_records.payment_status,
-              financial_records.distribution_date, financial_records.reference,
-              sites.owner_company_name
-       FROM financial_records
-       INNER JOIN sites ON sites.id = financial_records.site_id
-       WHERE financial_records.site_id IN (${sitePlaceholders})
-         AND financial_records.item_type = 'Quote'
-         AND financial_records.payment_status = 'Pending Approval'
-       ORDER BY financial_records.distribution_date ASC`
-    ).bind(...siteIds).all()).results || [];
+    try {
+      quotes = (await db.prepare(
+        `SELECT financial_records.id, financial_records.site_id, financial_records.amount,
+                financial_records.item_type, financial_records.payment_status,
+                financial_records.distribution_date, financial_records.reference,
+                sites.owner_company_name
+         FROM financial_records
+         INNER JOIN sites ON sites.id = financial_records.site_id
+         WHERE financial_records.site_id IN (${sitePlaceholders})
+           AND financial_records.item_type = 'Quote'
+           AND financial_records.payment_status = 'Pending Approval'
+         ORDER BY financial_records.distribution_date ASC`
+      ).bind(...siteIds).all()).results || [];
+    } catch (error) {
+      console.error("client quotes load failed", error);
+      sectionErrors.push("Quote approvals could not be loaded.");
+    }
 
-    requests = (await db.prepare(
-      `SELECT maintenance_requests.id, maintenance_requests.site_id,
-              maintenance_requests.request_type, maintenance_requests.priority,
-              maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
-              maintenance_requests.linked_job_id, systems.coverage_area, sites.owner_company_name
-       FROM maintenance_requests
-       INNER JOIN sites ON sites.id = maintenance_requests.site_id
-       LEFT JOIN systems ON systems.id = maintenance_requests.system_id
-       WHERE maintenance_requests.site_id IN (${sitePlaceholders})
-       ORDER BY maintenance_requests.created_at DESC
-       LIMIT 8`
-    ).bind(...siteIds).all()).results || [];
+    try {
+      requests = (await db.prepare(
+        `SELECT maintenance_requests.id, maintenance_requests.site_id,
+                maintenance_requests.request_type, maintenance_requests.priority,
+                maintenance_requests.status, maintenance_requests.subject, maintenance_requests.created_at,
+                maintenance_requests.linked_job_id, systems.coverage_area, sites.owner_company_name
+         FROM maintenance_requests
+         INNER JOIN sites ON sites.id = maintenance_requests.site_id
+         LEFT JOIN systems ON systems.id = maintenance_requests.system_id
+         WHERE maintenance_requests.site_id IN (${sitePlaceholders})
+         ORDER BY maintenance_requests.created_at DESC
+         LIMIT 8`
+      ).bind(...siteIds).all()).results || [];
+    } catch (error) {
+      console.error("client requests load failed", error);
+      sectionErrors.push("Recent service requests could not be loaded.");
+    }
   }
 } catch (error) {
   console.error("client dashboard failed", error);
@@ -80,6 +96,11 @@ try {
   <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto grid max-w-7xl gap-6">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+      {!loadError && sectionErrors.length > 0 && (
+        <div class="grid gap-2">
+          {sectionErrors.map((message) => <p class="border border-amber-300 bg-amber-50 p-4 text-amber-900">{message}</p>)}
+        </div>
+      )}
 
       {sites.length > 0 && (
         <section class="border border-kharon-border bg-white p-4 sm:p-5">

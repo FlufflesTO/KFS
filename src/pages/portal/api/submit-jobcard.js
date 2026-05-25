@@ -79,10 +79,15 @@ export async function POST({ request, locals }) {
         `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, jobs.scheduled_date, jobs.job_type,
                 systems.site_id, systems.system_type, systems.coverage_area,
                 systems.service_interval_months,
-                sites.owner_company_name, sites.physical_address
+                sites.owner_company_name, sites.physical_address,
+                existing_finance.id AS existing_financial_record_id
          FROM jobs
          INNER JOIN systems ON systems.id = jobs.system_id
          INNER JOIN sites ON sites.id = systems.site_id
+         LEFT JOIN financial_records AS existing_finance
+           ON existing_finance.job_id = jobs.id
+          AND existing_finance.item_type = 'Invoice'
+          AND existing_finance.payment_status IN ('Pending Approval', 'Unpaid', 'Settled')
          WHERE jobs.id = ?1 AND jobs.system_id = ?2
          LIMIT 1`
       )
@@ -130,7 +135,7 @@ export async function POST({ request, locals }) {
     const serviceIntervalMonths = Number.isInteger(job.service_interval_months) && job.service_interval_months >= 1 ? job.service_interval_months : 6;
     const nextDueDate = addMonths(completedAt, serviceIntervalMonths);
     const documentationPath = `jobcards/job-${jobId}-completed.pdf`;
-    const financialRecordId = crypto.randomUUID();
+    const financialRecordId = job.existing_financial_record_id || crypto.randomUUID();
     const amount = getStandardServiceFee();
     const evidenceRecords = evidencePhotos.map((photo, index) => {
       const id = crypto.randomUUID();
@@ -215,15 +220,20 @@ export async function POST({ request, locals }) {
            WHERE id = ?4`
         )
         .bind(serviceDate, completedAt.toISOString(), nextDueDate, systemId),
-      db
-        .prepare(
-          `INSERT INTO financial_records
-             (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference)
-           VALUES
-             (?1, ?2, ?3, ?4, 'Invoice', 'Unpaid', ?5, ?6)`
-        )
-        .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, `Standard service invoice for job ${jobId}`)
     ];
+
+    if (!job.existing_financial_record_id) {
+      batchStatements.push(
+        db
+          .prepare(
+            `INSERT INTO financial_records
+               (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference)
+             VALUES
+               (?1, ?2, ?3, ?4, 'Invoice', 'Unpaid', ?5, ?6)`
+          )
+          .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, `Standard service invoice for job ${jobId}`)
+      );
+    }
 
     for (const evidence of evidenceRecords) {
       batchStatements.push(
