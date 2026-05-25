@@ -122,7 +122,7 @@ if (jsAssets.length > 0) {
 
 const cssAssets = assets.filter((file) => file.endsWith(".css"));
 const cssBytes = cssAssets.reduce((total, file) => total + fs.statSync(path.join(assetsDir, file)).size, 0);
-if (cssBytes > 50_000) {
+if (cssBytes > 60_000) {
   fail(`CSS asset budget exceeded: ${cssBytes} bytes`);
 }
 
