@@ -110,7 +110,7 @@ try {
          INNER JOIN systems ON systems.id = certificates.system_id
          INNER JOIN sites ON sites.id = systems.site_id
          WHERE systems.site_id IN (${sitePlaceholders})
-         ORDER BY COALESCE(certificates.expiry_date, certificates.issued_at) DESC
+         ORDER BY COALESCE(certificates.expiry_date, certificates.issued_date) DESC
          LIMIT 10`
       ).bind(...siteIds).all()).results || [];
     } catch (error) {
