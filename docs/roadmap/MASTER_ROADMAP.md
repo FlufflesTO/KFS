@@ -1935,9 +1935,25 @@ Deployable gate:
 - `npm run build` passes.
 - `npm run audit:site` passes.
 
+Partial implementation on 2026-05-25:
+
+- `/portal/admin/operations` split into five focused tab panels: Enquiries, Jobs, Users, Sites & Systems, Data.
+- Tab bar added above the content section; active panel shown via inline style, inactive panels hidden.
+- URL hash updated on tab switch (`#enquiries`, `#jobs`, `#users`, `#sites`, `#data`) for direct-link navigation and browser history support.
+- Enquiries panel defaults on load since it is the highest-frequency daily view.
+- All existing form handlers (admin-form, client-site-access-form, import-form, reset-link, reset-mfa) remain intact and unmodified.
+- CSS budget unchanged (45 985 bytes); tab bar uses only existing utility classes.
+
+Remaining Phase 24 work:
+
+- Search/filter for users, sites, systems and jobs within their panels.
+- Pagination or load-more backed by query parameters to replace fixed visible record caps.
+- Direct record-relationship links (site → systems, system → jobs, etc.).
+- Mobile usability improvements for dense admin tables.
+
 Status:
 
-Pending.
+Tab-panel split deployed on 2026-05-25. Remaining search, filter and pagination work pending.
 
 ### Phase 25 - Defects, Certificates And Compliance Control
 
