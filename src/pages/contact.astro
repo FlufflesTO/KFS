@@ -13,6 +13,16 @@ const requestTypes = [
   "Client records access",
   ...solutionLinks.map((link) => link.label)
 ];
+
+const intentMap: Record<string, string> = {
+  "site-assessment": "Maintenance assessment",
+  "emergency-support": "Emergency technical support",
+  "urgent-technical-request": "Maintenance assessment",
+  "compliance-intervention": "Compliance inspection"
+};
+
+const intentParam = Astro.url.searchParams.get("intent") || "";
+const preselected = intentMap[intentParam] || "";
 ---
 
 <BaseLayout title={pageMeta.contact.title} description={pageMeta.contact.description}>
@@ -36,12 +46,22 @@ const requestTypes = [
           Include site type, existing systems, required timescale and whether gas suppression, fire detection, compliance or security is the priority.
         </p>
 
-        <div class="mt-8 grid gap-3 text-kharon-grey">
+        <div class="mt-8 grid gap-4 text-kharon-grey">
           <p>
-            Email: <span class="font-semibold text-kharon-purple">admin [at] kharon.co.za</span>
+            <span class="text-xs font-bold uppercase text-kharon-black">Phone</span><br />
+            <a href={`tel:${site.phone.replace(/\s/g, "")}`} class="font-semibold text-kharon-purple hover:text-kharon-blue">{site.phone}</a>
           </p>
           <p>
-            Client records: <a class="font-semibold text-kharon-purple" href={site.portalLoginPath}>open the secure portal</a>
+            <span class="text-xs font-bold uppercase text-kharon-black">Email</span><br />
+            <a href={`mailto:${site.email}`} class="font-semibold text-kharon-purple hover:text-kharon-blue">{site.email}</a>
+          </p>
+          <p>
+            <span class="text-xs font-bold uppercase text-kharon-black">Address</span><br />
+            <span class="leading-6">{site.address}</span>
+          </p>
+          <p>
+            <span class="text-xs font-bold uppercase text-kharon-black">Client Records</span><br />
+            <a class="font-semibold text-kharon-purple hover:text-kharon-blue" href={site.portalLoginPath}>Open the secure portal</a>
           </p>
         </div>
 
@@ -101,7 +121,9 @@ const requestTypes = [
         <label class="grid gap-2 text-sm font-semibold text-kharon-black">
           Request Type
           <select class="rounded-md border border-kharon-border px-4 py-3 font-normal" name="requestType" required>
-            {requestTypes.map((item) => <option value={item}>{item}</option>)}
+            {requestTypes.map((item) => (
+              <option value={item} selected={item === preselected}>{item}</option>
+            ))}
           </select>
         </label>
 

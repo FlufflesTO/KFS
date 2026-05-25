@@ -16,19 +16,35 @@ const ogImageUrl = new URL(ogImage, site.url).toString();
 const structuredData = [
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": "LocalBusiness",
+    "@id": `${site.url}/#business`,
     "name": site.name,
     "url": site.url,
     "email": site.email,
+    "telephone": site.phone,
     "logo": new URL("/brand/kharon-full-logo.svg", site.url).toString(),
-    "areaServed": "South Africa",
+    "image": new URL(site.ogImage, site.url).toString(),
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd",
+      "addressLocality": "Ndabeni, Maitland",
+      "addressRegion": "Western Cape",
+      "postalCode": "7405",
+      "addressCountry": "ZA"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "South Africa"
+    },
     "knowsAbout": [
       "Gas suppression systems",
       "Fire detection systems",
       "SANS 10139 aligned fire detection",
       "SANS 14520 aligned gaseous suppression",
-      "Commercial fire protection maintenance"
-    ]
+      "Commercial fire protection maintenance",
+      "Critical infrastructure protection"
+    ],
+    "sameAs": []
   },
   {
     "@context": "https://schema.org",
@@ -42,9 +58,8 @@ const structuredData = [
     "@type": "Service",
     "name": "Commercial fire detection and gaseous suppression",
     "provider": {
-      "@type": "Organization",
-      "name": site.name,
-      "url": site.url
+      "@type": "LocalBusiness",
+      "@id": `${site.url}/#business`
     },
     "areaServed": "South Africa",
     "serviceType": [
