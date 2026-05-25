@@ -1650,16 +1650,16 @@ The finance dashboard provides useful visibility into financial records, ageing 
 
 Tasks:
 
-- Add manually copied Sage VAT-exclusive, VAT amount and VAT-inclusive values.
-- Add Sage invoice number reference fields.
-- Add Sage quote number reference fields.
-- Add debtor ageing/status visibility based on Sage reference data.
-- Add Sage PDF upload/link or export-ready Sage reference data.
-- Add proof-of-payment attachment or reference capture.
-- Add credit note or reversal workflow instead of destructive settlement edits.
-- Add immutable payment event log.
-- Add finance export mapping for the selected accounting workflow.
-- Add finance role QA for exports, settlement, failed updates and unauthorized access.
+- [x] Add manually copied Sage VAT-exclusive, VAT amount and VAT-inclusive values — `sage_amount_ex_vat`, `sage_vat_amount`, `sage_amount_inc_vat` columns added (migrations 0013/0020), UI in create form and Sage ref form with auto 15% VAT calculation.
+- [x] Add Sage invoice number reference fields — already present (migration 0013), expanded with VAT/date entry.
+- [x] Add Sage quote number reference fields — already present (migration 0013), expanded with VAT/date entry.
+- [x] Add debtor ageing/status visibility based on Sage reference data — aging buckets use `sage_due_date` when available (migration 0020), table displays Ex VAT/VAT/Inc VAT/Doc Date/Due Date columns.
+- [x] Add Sage PDF upload/link or export-ready Sage reference data — `sage_document_date`, `sage_due_date`, `finance_notes` columns added (migration 0020), CSV export expanded with all VAT and date fields.
+- [ ] Add proof-of-payment attachment or reference capture — payment reference field exists in payment form; file attachment deferred.
+- [x] Add credit note or reversal workflow instead of destructive settlement edits — `/portal/api/finance/credit-note` creates negative records linked via `credit_note_for_id` with audit logging.
+- [x] Add immutable payment event log — payment actions already flow through audit_events table.
+- [x] Add finance export mapping for the selected accounting workflow — CSV export expanded with VAT breakdown, document/due dates, finance notes, credit note links, item subtype.
+- [ ] Add finance role QA for exports, settlement, failed updates and unauthorized access — requires manual QA testing.
 
 Deployable gate:
 
@@ -1669,7 +1669,7 @@ Deployable gate:
 - Client and technician roles cannot perform finance-only actions.
 - `npm run build` and `npm run audit:site` pass.
 
-Status: pending. This phase must not implement portal-generated official tax invoices while Sage remains the source of truth.
+Status: substantially complete. VAT hardening, credit note workflow, Sage date fields, finance notes, and enhanced CSV export are implemented. Proof-of-payment file attachment and manual role QA remain pending. This phase must not implement portal-generated official tax invoices while Sage remains the source of truth.
 
 ### Phase 20 - Portal UX Scale And Role Dashboard Refinement
 

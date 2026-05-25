@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Finance Export API
+ * Purpose: Exports the finance operational queue ledger to CSV format
+ * Dependencies: ../../../../lib/server/bindings.js, ../../../../lib/server/audit.js, ../../../../lib/server/http.js
+ * Structural Role: REST API controller for CSV report download
+ */
+
 import { getDatabase } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { forbidden, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
@@ -19,9 +26,14 @@ export async function GET({ request, locals }) {
     const rows = (await db
       .prepare(
         `SELECT financial_records.id, financial_records.reference, financial_records.item_type,
-                financial_records.payment_status, financial_records.amount, financial_records.distribution_date,
+                financial_records.item_subtype, financial_records.payment_status,
+                financial_records.amount, financial_records.sage_amount_ex_vat,
+                financial_records.sage_vat_amount, financial_records.sage_amount_inc_vat,
+                financial_records.distribution_date, financial_records.sage_document_date,
+                financial_records.sage_due_date,
                 financial_records.sage_invoice_number, financial_records.sage_quote_number,
                 financial_records.sage_customer_code, financial_records.finance_task_status,
+                financial_records.finance_notes, financial_records.credit_note_for_id,
                 financial_records.job_id, sites.owner_company_name, sites.billing_emails
          FROM financial_records
          INNER JOIN sites ON sites.id = financial_records.site_id
@@ -39,8 +51,11 @@ export async function GET({ request, locals }) {
     });
 
     const header = [
-      "id", "reference", "type", "status", "amount", "distribution_date",
-      "sage_invoice_number", "sage_quote_number", "sage_customer_code", "finance_task_status",
+      "id", "reference", "type", "item_subtype", "status",
+      "amount_inc_vat", "amount_ex_vat", "vat_amount",
+      "distribution_date", "sage_document_date", "sage_due_date",
+      "sage_invoice_number", "sage_quote_number", "sage_customer_code",
+      "finance_task_status", "finance_notes", "credit_note_for_id",
       "job_id", "client", "billing_emails"
     ];
     const lines = [
@@ -50,16 +65,23 @@ export async function GET({ request, locals }) {
           row.id,
           row.reference,
           row.item_type,
+          row.item_subtype || "",
           row.payment_status,
-          Number(row.amount || 0).toFixed(2),
+          (Number(row.sage_amount_inc_vat ?? row.amount ?? 0) / 100).toFixed(2),
+          (Number(row.sage_amount_ex_vat ?? 0) / 100).toFixed(2),
+          (Number(row.sage_vat_amount ?? 0) / 100).toFixed(2),
           row.distribution_date,
-          row.sage_invoice_number,
-          row.sage_quote_number,
-          row.sage_customer_code,
-          row.finance_task_status,
-          row.job_id,
+          row.sage_document_date || "",
+          row.sage_due_date || "",
+          row.sage_invoice_number || "",
+          row.sage_quote_number || "",
+          row.sage_customer_code || "",
+          row.finance_task_status || "",
+          row.finance_notes || "",
+          row.credit_note_for_id || "",
+          row.job_id || "",
           row.owner_company_name,
-          row.billing_emails
+          row.billing_emails || ""
         ].map(csvCell).join(",")
       )
     ];

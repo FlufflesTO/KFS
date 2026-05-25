@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Finance Records API
+ * Purpose: Handles creation of quotes and invoices manually in the portal
+ * Dependencies: ../../../../lib/server/bindings.js, ../../../../lib/server/audit.js, ../../../../lib/server/http.js
+ * Structural Role: REST API controller for ledger insertions
+ */
+
 import { getDatabase } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
@@ -12,7 +19,7 @@ function cleanAmount(value) {
   if (!Number.isFinite(num) || num < 0 || num > 9_999_999) {
     throw new Error("Amount must be a number between 0 and 9,999,999.");
   }
-  return +num.toFixed(2);
+  return Math.round(num * 100);
 }
 
 function cleanDate(value, field) {
@@ -54,18 +61,23 @@ export async function POST({ request, locals }) {
     const itemType = String(body.itemType || "").trim();
     if (!ITEM_TYPES.has(itemType)) return badRequest("itemType must be Quote or Invoice.");
 
-    let amount, distributionDate;
+    let amountExVat, vatAmount, amountIncVat, distributionDate, sageDocumentDate, sageDueDate;
     try {
-      amount = cleanAmount(body.amount);
+      amountExVat = cleanAmount(body.amountExVat);
+      vatAmount = body.vatAmount ? cleanAmount(body.vatAmount) : Math.round(amountExVat * 0.15 * 100) / 100;
+      amountIncVat = body.amountIncVat ? cleanAmount(body.amountIncVat) : Math.round((amountExVat + vatAmount) * 100) / 100;
       distributionDate = cleanDate(body.distributionDate, "distributionDate");
+      sageDocumentDate = body.sageDocumentDate ? cleanDate(body.sageDocumentDate, "sageDocumentDate") : null;
+      sageDueDate = body.sageDueDate ? cleanDate(body.sageDueDate, "sageDueDate") : null;
     } catch (error) {
       return badRequest(error.message);
     }
 
-    let jobId, reference;
+    let jobId, reference, financeNotes;
     try {
       jobId = cleanOptionalId(body.jobId);
       reference = cleanRef(body.reference);
+      financeNotes = body.financeNotes ? String(body.financeNotes).trim().slice(0, 500) || null : null;
     } catch (error) {
       return badRequest(error.message);
     }
@@ -110,10 +122,14 @@ export async function POST({ request, locals }) {
     await db
       .prepare(
         `INSERT INTO financial_records
-           (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference, finance_task_status)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)`
+           (id, site_id, job_id, amount, sage_amount_ex_vat, sage_vat_amount, sage_amount_inc_vat,
+            item_type, payment_status, distribution_date, sage_document_date, sage_due_date,
+            reference, finance_notes, finance_task_status)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)`
       )
-      .bind(recordId, siteId, jobId, amount, itemType, paymentStatus, distributionDate, reference, financeTaskStatus)
+      .bind(recordId, siteId, jobId, amountIncVat, amountExVat, vatAmount, amountIncVat,
+            itemType, paymentStatus, distributionDate, sageDocumentDate, sageDueDate,
+            reference, financeNotes, financeTaskStatus)
       .run();
 
     await auditEvent(db, request, {
@@ -122,10 +138,10 @@ export async function POST({ request, locals }) {
       entityId: recordId,
       outcome: "success",
       user,
-      metadata: { itemType, siteId, jobId, amount, paymentStatus, reference, financeTaskStatus }
+      metadata: { itemType, siteId, jobId, amountExVat, vatAmount, amountIncVat, paymentStatus, reference, financeTaskStatus, sageDocumentDate, sageDueDate }
     });
 
-    return json({ ok: true, recordId, itemType, paymentStatus, financeTaskStatus, amount, distributionDate });
+    return json({ ok: true, recordId, itemType, paymentStatus, financeTaskStatus, amountExVat, vatAmount, amountIncVat, distributionDate });
   } catch (error) {
     console.error("finance record creation failed", error);
     return serverError("The financial record could not be created.");

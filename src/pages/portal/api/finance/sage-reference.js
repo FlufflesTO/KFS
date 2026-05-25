@@ -47,6 +47,12 @@ export async function POST({ request, locals }) {
     const sageQuoteNumber   = String(body.sageQuoteNumber    || "").trim().slice(0, 60) || null;
     const sageCustomerCode  = String(body.sageCustomerCode   || "").trim().slice(0, 40) || null;
     const financeTaskStatus = String(body.financeTaskStatus  || "").trim() || null;
+    const sageAmountExVat   = body.sageAmountExVat   != null ? Math.round(Number(body.sageAmountExVat) * 100) / 100 : null;
+    const sageVatAmount     = body.sageVatAmount     != null ? Math.round(Number(body.sageVatAmount) * 100) / 100 : null;
+    const sageAmountIncVat  = body.sageAmountIncVat  != null ? Math.round(Number(body.sageAmountIncVat) * 100) / 100 : null;
+    const sageDocumentDate  = String(body.sageDocumentDate || "").trim().slice(0, 10) || null;
+    const sageDueDate       = String(body.sageDueDate       || "").trim().slice(0, 10) || null;
+    const financeNotes      = String(body.financeNotes      || "").trim().slice(0, 500) || null;
 
     if (!/^[A-Za-z0-9_-]{3,80}$/.test(recordId)) {
       return badRequest("recordId is invalid.");
@@ -66,14 +72,21 @@ export async function POST({ request, locals }) {
     await db
       .prepare(
         `UPDATE financial_records
-         SET sage_invoice_number = ?2,
-             sage_quote_number   = ?3,
-             sage_customer_code  = ?4,
-             finance_task_status = ?5,
-             updated_at          = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+         SET sage_invoice_number   = ?2,
+             sage_quote_number     = ?3,
+             sage_customer_code    = ?4,
+             finance_task_status   = ?5,
+             sage_amount_ex_vat    = COALESCE(?6,  sage_amount_ex_vat),
+             sage_vat_amount       = COALESCE(?7,  sage_vat_amount),
+             sage_amount_inc_vat   = COALESCE(?8,  sage_amount_inc_vat),
+             sage_document_date    = COALESCE(?9,  sage_document_date),
+             sage_due_date         = COALESCE(?10, sage_due_date),
+             finance_notes         = COALESCE(?11, finance_notes),
+             updated_at            = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
          WHERE id = ?1`
       )
-      .bind(recordId, sageInvoiceNumber, sageQuoteNumber, sageCustomerCode, financeTaskStatus)
+      .bind(recordId, sageInvoiceNumber, sageQuoteNumber, sageCustomerCode, financeTaskStatus,
+            sageAmountExVat, sageVatAmount, sageAmountIncVat, sageDocumentDate, sageDueDate, financeNotes)
       .run();
 
     await auditEvent(db, request, {
@@ -87,7 +100,13 @@ export async function POST({ request, locals }) {
         sageInvoiceNumber,
         sageQuoteNumber,
         sageCustomerCode,
-        financeTaskStatus
+        financeTaskStatus,
+        sageAmountExVat,
+        sageVatAmount,
+        sageAmountIncVat,
+        sageDocumentDate,
+        sageDueDate,
+        financeNotes
       }
     });
 
