@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS sites (
   site_contact_phone TEXT,
   billing_emails TEXT NOT NULL CHECK (length(trim(billing_emails)) BETWEEN 3 AND 1000),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
@@ -121,8 +120,39 @@ CREATE TABLE IF NOT EXISTS financial_records (
     OR sage_amount_ex_vat + sage_vat_amount = sage_amount_inc_vat
   )
 );
+
+CREATE TABLE IF NOT EXISTS maintenance_requests (
+  id TEXT PRIMARY KEY,
+  site_id TEXT NOT NULL REFERENCES sites(id),
+  system_id TEXT REFERENCES systems(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'Open' CHECK (status IN ('Open', 'In Progress', 'Completed', 'Cancelled')),
+  priority TEXT NOT NULL DEFAULT 'Normal' CHECK (priority IN ('Critical', 'High', 'Normal', 'Low')),
+  description TEXT NOT NULL CHECK (length(trim(description)) BETWEEN 10 AND 3000),
+  linked_job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS job_evidence_files (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+  system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE CASCADE,
+  uploaded_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  evidence_type TEXT NOT NULL CHECK (evidence_type IN ('Photo')),
+  storage_path TEXT NOT NULL UNIQUE CHECK (storage_path LIKE 'job-evidence/%'),
+  content_type TEXT NOT NULL CHECK (content_type IN ('image/jpeg', 'image/png', 'image/webp')),
+  file_size_bytes INTEGER NOT NULL CHECK (file_size_bytes BETWEEN 1 AND 1572864),
   caption TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS client_site_access (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  access_level TEXT NOT NULL DEFAULT 'records' CHECK (access_level IN ('records')),
+  granted_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  granted_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  PRIMARY KEY (user_id, site_id)
 );
 
 CREATE TABLE IF NOT EXISTS document_access_logs (

@@ -1,8 +1,17 @@
 import { getDatabase } from "../bindings";
 import { verifyCsrfToken } from "../csrf.js";
 
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  is_active: number;
+  mfa_secret_encrypted?: string | null;
+}
+
 export interface AuthResult {
-  user: any;
+  user: AuthUser | null;
   isValid: boolean;
   error?: string;
 }
@@ -71,6 +80,6 @@ export function requiresMFA(role: string): boolean {
   return ["admin", "finance", "tech"].includes(role); // Added tech role
 }
 
-function isMFAVerified(session: any): boolean {
+function isMFAVerified(session: { mfa_verified?: number | boolean | null } | null | undefined): boolean {
   return Boolean(session && (session.mfa_verified === 1 || session.mfa_verified === true));
 }

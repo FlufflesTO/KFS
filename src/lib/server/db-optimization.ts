@@ -101,17 +101,19 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 /**
  * Batch query to get multiple related records efficiently
  */
+export interface BatchRecords {
+  jobs?: unknown[];
+  systems?: unknown[];
+  sites?: unknown[];
+}
+
 export async function getBatchRecords(batchParams: {
   jobIds?: string[];
   systemIds?: string[];
   siteIds?: string[];
-}): Promise<{
-  jobs?: any[];
-  systems?: any[];
-  sites?: any[];
-}> {
+}): Promise<BatchRecords> {
   const db = getDatabase();
-  const results: any = {};
+  const results: Record<string, unknown> = {};
 
   const queries = [];
   const params = [];
@@ -146,16 +148,18 @@ export async function getBatchRecords(batchParams: {
   return results;
 }
 
+export interface ClientDashboardData {
+  systems: unknown[];
+  quotes: unknown[];
+  requests: unknown[];
+  openDefects: unknown[];
+  certificates: unknown[];
+}
+
 /**
  * Optimized function to get client dashboard data with proper JOINs
  */
-export async function getClientDashboardData(siteIds: string[]): Promise<{
-  systems: any[];
-  quotes: any[];
-  requests: any[];
-  openDefects: any[];
-  certificates: any[];
-}> {
+export async function getClientDashboardData(siteIds: string[]): Promise<ClientDashboardData> {
   const db = getDatabase();
   const sitePlaceholders = siteIds.map(() => '?').join(',');
 
