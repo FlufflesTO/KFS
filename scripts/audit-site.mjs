@@ -116,8 +116,16 @@ if (!fs.existsSync(serverWrangler)) {
 const assetsDir = path.join(assetRoot, "_astro");
 const assets = fs.existsSync(assetsDir) ? fs.readdirSync(assetsDir) : [];
 const jsAssets = assets.filter((file) => file.endsWith(".js"));
-if (jsAssets.length > 0) {
-  fail(`unexpected public JavaScript assets: ${jsAssets.join(", ")}`);
+const allowedPortalJsPatterns = [
+  /^dashboard\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/
+];
+const unexpectedJsAssets = jsAssets.filter((file) => !allowedPortalJsPatterns.some((pattern) => pattern.test(file)));
+const jsBytes = jsAssets.reduce((total, file) => total + fs.statSync(path.join(assetsDir, file)).size, 0);
+if (unexpectedJsAssets.length > 0) {
+  fail(`unexpected public JavaScript assets: ${unexpectedJsAssets.join(", ")}`);
+}
+if (jsBytes > 20_000) {
+  fail(`portal JavaScript asset budget exceeded: ${jsBytes} bytes`);
 }
 
 const cssAssets = assets.filter((file) => file.endsWith(".css"));
@@ -374,6 +382,7 @@ const result = {
   warnings,
   mode: fs.existsSync(serverDist) ? "server" : "static",
   jsAssets,
+  jsBytes,
   cssAssets,
   cssBytes
 };

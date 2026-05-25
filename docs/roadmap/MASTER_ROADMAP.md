@@ -130,7 +130,7 @@ Current project status:
 | Portal CSRF and write limits | Implemented | Portal layout exposes CSRF tokens and middleware enforces CSRF/rate limits on authenticated state-changing APIs. |
 | Portal document access | Implemented for staging | R2 file route checks authorization and records document-access outcomes. |
 | Portal role dashboards | Implemented foundation | Admin, technician, client and finance dashboards exist; scale refinement and manual role QA remain open. |
-| Remote D1 migration ledger | Reconciled for staging | Expected staging tables and columns exist, `d1_migrations` is stamped for migrations `0001` through `0011`, and Wrangler reports no pending remote migrations as of 2026-05-25. |
+| Remote D1 migration ledger | Drift identified | Staging was previously reconciled through `0011`; verification on 2026-05-25 now shows remote migrations `0013_sage_finance_fields.sql` through `0017_certificates.sql` are pending and must be applied before calling Phase 16/21 database-backed features live-ready. |
 | Technician evidence | Partially implemented | Signature capture, jobcard PDF and limited photo evidence exist; visit logging with GPS and arrival capture added in Phase 16; offline drafts, structured inspection fields, defect capture within jobcard closure and richer SANS-aware telemetry remain open. |
 | Finance workflow | Partially implemented | Ledger, export and payment capture foundations exist for staging, but Sage is now defined as the finance source of truth; Phase 21 must refactor portal finance into a Sage manual control register. |
 | Public authority proof | Partially implemented | Page copy and schematic proof exist; approved real imagery, case evidence, document examples and compliance hub depth remain open. |
@@ -142,6 +142,7 @@ Most important outstanding production blockers:
 - [ ] Complete credential-backed role QA for Admin, Technician, Client and Finance using external QA credentials.
 - [x] Apply and verify all migrations on the intended staging D1 database after each deploy.
 - [x] Reconcile the remote D1 `d1_migrations` ledger so Wrangler migration history matches the already-present staging schema.
+- [ ] Apply pending remote D1 migrations `0013` through `0017` and re-run portal smoke checks.
 - [x] Run D1 export and R2 restore drill and record the result outside git.
 - [ ] Confirm Admin and Finance MFA enforcement policy before loading real client or finance records.
 - [x] Replace remaining contextual `mailto:` inquiry forms with server-side submissions or intentionally document why they stay email-client based.
@@ -155,8 +156,8 @@ Most important outstanding production blockers:
 Phase 0 production-gate evidence, 2026-05-25:
 
 - `npm run portal:backup:d1` created a remote D1 export under `backups/` and confirmed R2 bucket availability. Backup output remains gitignored.
-- Remote D1 `d1_migrations` was reconciled against the already-present staging schema for migrations `0001_kharon_portal.sql` through `0011_contact_submissions.sql`.
-- `npx wrangler d1 migrations list kharon-portal --remote` returned `No migrations to apply`.
+- Remote D1 `d1_migrations` was previously reconciled against the already-present staging schema for migrations `0001_kharon_portal.sql` through `0011_contact_submissions.sql`.
+- Current verification on 2026-05-25 shows `npx wrangler d1 migrations list kharon-portal --remote` has pending migrations `0013_sage_finance_fields.sql`, `0014_clients.sql`, `0015_job_visits.sql`, `0016_defects.sql` and `0017_certificates.sql`.
 - R2 restore drill uploaded, downloaded, hash-compared and deleted a temporary object under `restore-drills/`.
 - `npm run portal:monitor` passed after the D1 ledger reconciliation and R2 drill.
 - Remaining Phase 0 gates are external-credential gates: unique credential rotation, credential-backed role QA, Admin/Finance MFA policy confirmation, production-domain migration planning and full responsive screenshot QA.
@@ -164,6 +165,43 @@ Phase 0 production-gate evidence, 2026-05-25:
 Status decision:
 
 The project is a strong staging-ready website and portal foundation. It is not yet production-authoritative for real client records until credential rotation, manual role QA, backup/restore evidence, MFA policy, responsive QA and operational cutover sign-off are complete.
+
+
+## Review Update - 2026-05-25 Roadmap Accuracy Verification Pass
+
+Scope:
+
+- Verify `MASTER_ROADMAP.md` against the current local project files, migrations, scripts and build output.
+- Correct roadmap drift where implementation status no longer matched the codebase.
+- Keep production-readiness claims separate from local implementation completion.
+
+Verified current state:
+
+- `npm run build` passes for Astro SSR / Cloudflare adapter output.
+- `npm run audit:site` passes with CSS at 53,694 bytes under the 60 KB budget.
+- The audit script now recognises the two intentional small portal dashboard JavaScript chunks and enforces a 20 KB portal JS budget; current portal JS is 9,115 bytes.
+- `npm audit --omit=dev` reports 0 vulnerabilities.
+- Public technical proof sections, the `/compliance` hub, Standards Reference footer link and contextual CTAs are implemented.
+- Phase 16 local schema/migrations and role dashboard integrations exist for `clients`, `job_visits`, `defects` and `certificates`.
+- Phase 21 local Sage reference fields, finance dashboard controls, missing Sage reference queue and finance CSV export fields exist.
+- Phase 24 admin operations and finance ledger now use query-parameter pagination; remaining capped views are admin planning and technician history.
+- Phase 26 admin audit console and audit CSV export exist.
+
+Accuracy corrections made:
+
+- Remote D1 status corrected from fully reconciled to drift identified.
+- Phase 16 status corrected from live-ready complete to local implementation complete with remote D1 migrations pending.
+- Phase 21 status corrected to show local Sage reference implementation complete while full Sage workflow and remote migration application remain open.
+- Master task list checkboxes corrected for completed public technical proof, compliance hub, CTA routing, bundle budget, Phase 16 local schema work, Phase 21 Sage reference foundations, Phase 24 foundation work and Phase 26 audit console.
+
+Current blockers verified:
+
+- Remote D1 migrations `0013_sage_finance_fields.sql`, `0014_clients.sql`, `0015_job_visits.sql`, `0016_defects.sql` and `0017_certificates.sql` are pending and must be applied to staging before the related portal views are considered live-ready.
+- Credential-backed role QA, full responsive screenshot QA, production-domain migration planning and operational sign-off remain open.
+
+Status:
+
+Roadmap is now accurate to the current local codebase and current remote D1 migration state as of this verification pass.
 
 
 ## Review Update - 2026-05-25 Sage Manual Finance Workflow Alignment
@@ -1040,7 +1078,7 @@ Completed:
 - [x] Admin dashboard — 7-card quick-stats row including open defects, critical defects and blocked certificates; exception queue includes an open defects register with severity-coded cards linking to system operations.
 - [x] Client dashboard — open defects section with severity-coded cards and a certificate register showing type, status, issued/expiry dates, both scoped to client's mapped sites.
 - [x] Technician dashboard — visit history display per job, "Log site arrival" form with GPS capture, on-site contact name/title and arrival notes; new `/portal/api/job-visits` endpoint with technician assignment validation.
-- [x] `npm run build` passes. Cloudflare deployment completed. Commit: 81c75a2.
+- [x] `npm run build` passes. Code deployment completed in prior session. Remote D1 migrations for `0013` through `0017` remain pending as of 2026-05-25 verification.
 
 Outstanding:
 
@@ -1050,7 +1088,7 @@ Outstanding:
 - [ ] Client table FK relationships to sites for multi-site client accounts.
 - [ ] Admin defect/certificate CRUD API endpoints.
 
-Status: core schema and dashboard integration complete. CRUD APIs and UI for defect/certificate management remain open.
+Status: core local schema, migration files and dashboard integration complete. Remote D1 migrations `0013` through `0017` must still be applied before these database-backed features are live-ready. CRUD APIs and UI for defect/certificate management remain open.
 
 
 ## Outstanding Build Phases - 2026-05-24
@@ -1497,7 +1535,7 @@ Deployable gate:
 - Technician users cannot access unassigned jobs/visits.
 - `npm run build` and `npm run audit:site` pass.
 
-Status: complete (2026-05-25).
+Status: local implementation complete (2026-05-25). Remote D1 migration application is still pending for `0013` through `0017`.
 
 Implementation evidence:
 
@@ -1509,7 +1547,7 @@ Implementation evidence:
 - Admin dashboard: stats object expanded with openDefects, criticalDefects, blockedCertificates, validCertificates counts. Quick-stats row expanded to 7 cards. Exception queue includes open defects register with severity-coded cards, SANS clause references, and links to system operations.
 - Client dashboard: openDefects query scoped via systems.site_id; certificates query scoped via systems.site_id. Both rendered as dedicated sections with severity/status color coding.
 - Technician dashboard: jobVisits loaded per job; visit history rendered for each dispatch; log-arrival-form with date/time, GPS, contact, and notes fields; `/portal/api/job-visits` endpoint with logArrival action validates technician assignment to job before insertion.
-- `npm run build` passes; Cloudflare deployment successful (commit 81c75a2).
+- `npm run build` passes; code deployment completed in prior session (commit 81c75a2). Remote D1 migration application is still pending.
 - Migration `0015_job_visits.sql` creates the `job_visits` table linked to `jobs`, with technician, visit date, arrival/departure times, GPS coordinates, customer name/title and notes.
 - Migration `0016_defects.sql` creates the `defects` table with severity (Critical/Major/Minor/Observation), SANS clause reference, certificate_blocking flag, status (Open/In Progress/Resolved/Closed) and remediation_notes.
 - Migration `0017_certificates.sql` creates the `certificates` table with certificate_type, issued/expiry dates, blocked_by_defect_id FK, and status (Valid/Expired/Revoked/Blocked).
@@ -1519,7 +1557,7 @@ Implementation evidence:
 - Client dashboard now displays an open defects section and a certificate register, both scoped to the client's mapped sites via `systems.site_id`.
 - Technician dashboard now fetches and displays visit history per job, with a "Log site arrival" form capturing visit date/time, GPS coordinates, on-site contact and arrival notes.
 - New API endpoint `/portal/api/job-visits` handles the `logArrival` action with technician assignment validation.
-- `npm run build` passes. Cloudflare deployment completed.
+- `npm run build` passes. Code deployment completed in prior session; remote D1 migration application remains pending.
 
 ### Phase 17 - Technician Field Workflow Maturity
 
@@ -1755,9 +1793,17 @@ Further implementation on 2026-05-25 (continued session):
 - Admin planning page: all six management stat cards (Scheduled, In Progress, Overdue systems, Due within 30d, Critical requests, Unassigned jobs) now use full-dataset SQL aggregates via db.batch() instead of counting from capped display lists. Overdue systems, Critical requests and Unassigned jobs cards turn red when non-zero. Search and status filter added to Active schedule list; search added to Lifecycle due calendar.
 - CSS budget: 46 158 bytes.
 
+Further implementation verified on 2026-05-25:
+
+- Migration `0013_sage_finance_fields.sql` adds Sage quote/invoice/customer/payment reference fields and `finance_task_status` to `financial_records`.
+- `/portal/api/finance/sage-reference` saves manual Sage references and audit logs the update.
+- Finance dashboard exposes Save/Update Sage ref controls, missing Sage reference count and completed jobs awaiting Sage invoice queue.
+- Finance CSV export includes Sage reference fields.
+- Remote D1 migration `0013_sage_finance_fields.sql` is still pending and must be applied before these fields work on staging.
+
 Status:
 
-Terminology pass, full-dataset aggregate fixes and search/filter additions complete. Full Phase 21 schema and workflow refactor (Sage reference fields, finance task model, status pipeline) pending.
+Terminology pass, full-dataset aggregate fixes, search/filter additions and local Sage reference field implementation complete. Remote D1 migration application is pending. Full Phase 21 workflow refactor remains open for no-charge/on-hold workflows, full status pipeline, Sage document upload/link handling and final production finance SOP sign-off.
 
 ### Phase 22 - Technician Field Workflow Maturity
 
@@ -2053,11 +2099,11 @@ Further implementation on 2026-05-25 (same session):
 
 Remaining Phase 24 work:
 
-- Pagination or load-more backed by query parameters to replace fixed visible record caps (jobs: LIMIT 80; client-side search mitigates impact at current scale).
+- Extend query-parameter pagination and persistent filters beyond admin operations and finance ledger to remaining capped views such as admin planning and technician history.
 
 Status:
 
-Tab-panel split, search/filter, relationship links and sticky headers deployed on 2026-05-25. Pagination deferred.
+Tab-panel split, search/filter, relationship links, sticky headers and query-parameter pagination for admin operations and finance ledger deployed on 2026-05-25. Remaining capped views are tracked as later scale work.
 
 ### Phase 25 - Defects, Certificates And Compliance Control
 
@@ -2681,10 +2727,10 @@ Quote request to Sage quote:
 - [x] Add deeper solution-specific proof points and operating evidence.
 - [x] Add trust modules: compliance records, maintenance cadence, response process, documentation outputs.
 - [x] Add South Africa-relevant compliance language where business requirements confirm scope.
-- [ ] Add page-specific technical proof sections for Gas Suppression, Fire Detection, Compliance, Critical Infrastructure and Security.
-- [ ] Add compliance hub content with SANS 10139 and SANS 14520 practical summaries.
+- [x] Add page-specific technical proof sections for Gas Suppression, Fire Detection, Compliance, Critical Infrastructure and Security.
+- [x] Add compliance hub content with SANS 10139 and SANS 14520 practical summaries.
 - [ ] Add approved document evidence examples: jobcard, service report, defect register and certificate-readiness guidance.
-- [ ] Add page-specific CTA wording and routing for protected-room review, fire detection review, compliance audit, urgent fault and records access.
+- [x] Add page-specific CTA wording and routing for protected-room review, fire detection review, compliance audit, urgent fault and records access.
 
 ### UI And Visuals
 
@@ -2743,7 +2789,7 @@ Quote request to Sage quote:
 - [x] Reduce 3D client chunk warning by removing live 3D public-shell dependency.
 - [ ] Add responsive local image optimization.
 - [ ] Run Lighthouse or equivalent once browser tooling is stable.
-- [ ] Add bundle budget or build warning policy.
+- [x] Add bundle budget or build warning policy.
 
 ### Deployment
 
@@ -2784,22 +2830,23 @@ Quote request to Sage quote:
 - [ ] Add migration plan from `portal.tequit.co.za` to `portal.kharon.co.za`.
 - [x] Add strict browser security header baseline in `_headers` (Phase 13 baseline).
 - [ ] Complete live CSP/browser verification and future nonce/hash tightening review if inline scripts are removed (Phase 13).
-- [ ] Expand portal data model with Clients, Visits, Defects and Certificates (Phase 16).
+- [x] Expand portal data model with Clients, Visits, Defects and Certificates in local schema/migrations (Phase 16).
+- [ ] Apply Phase 16/21 pending remote D1 migrations `0013` through `0017` to staging.
 - [ ] Add SANS-aware technician field telemetry and defect capture (Phase 17).
 - [ ] Add client compliance command centre and evidence-pack downloads (Phase 18).
 - [ ] Add finance VAT, invoice numbering, debtor ageing and proof-of-payment maturity (Phase 19).
 - [ ] Refine role dashboards around primary operational jobs (Phase 20).
 - [ ] Add Sage manual finance control register model (Phase 21).
-- [ ] Add Sage quote/invoice reference fields (Phase 21).
-- [ ] Add manual Sage status workflow (Phase 21).
-- [ ] Add Sage payment status tracking (Phase 21).
-- [ ] Add completed jobs awaiting Sage invoice queue (Phase 21).
+- [x] Add Sage quote/invoice reference fields (Phase 21 local schema/UI/API).
+- [x] Add manual Sage status workflow foundation (Phase 21).
+- [x] Add Sage payment status tracking foundation (Phase 21).
+- [x] Add completed jobs awaiting Sage invoice queue (Phase 21).
 - [ ] Add quote required queue (Phase 21).
 - [ ] Add approved quotes awaiting Sage invoice queue (Phase 21).
-- [ ] Add missing Sage reference exception queue (Phase 21).
-- [ ] Add clear UI labels separating portal status from Sage status (Phase 21).
-- [ ] Add audit logging for manual Sage finance updates (Phase 21).
-- [ ] Update finance export for Sage fields (Phase 21).
+- [x] Add missing Sage reference exception queue (Phase 21).
+- [x] Add clear UI labels separating portal status from Sage status (Phase 21).
+- [x] Add audit logging for manual Sage finance updates (Phase 21).
+- [x] Update finance export for Sage fields (Phase 21).
 - [ ] Add focused job detail route (Phase 22).
 - [ ] Add GPS check-in/check-out (Phase 22).
 - [ ] Add offline draft save and retry queue (Phase 22).
@@ -2817,12 +2864,12 @@ Quote request to Sage quote:
 - [ ] Add SLA level and required-by fields (Phase 23).
 - [ ] Add SLA status calculation (Phase 23).
 - [ ] Add job priority and emergency flag (Phase 23).
-- [ ] Add search/filter/pagination to admin pages (Phase 24).
-- [ ] Split admin operations into focused workspaces (Phase 24).
+- [x] Add search/filter/pagination to admin pages (Phase 24 foundation).
+- [x] Split admin operations into focused workspaces (Phase 24 foundation).
 - [ ] Add defect register (Phase 25).
 - [ ] Add certificate-blocking workflow (Phase 25).
 - [ ] Add compliance dashboard (Phase 25).
-- [ ] Add audit/security console (Phase 26).
+- [x] Add audit/security console (Phase 26).
 - [ ] Add Sage manual finance handoff queues (Phase 23/21).
 
 ## Phased Implementation
