@@ -2158,7 +2158,12 @@ Implementation on 2026-05-25:
 
 Status:
 
-Deployed on 2026-05-25. Remaining improvements (export, high-risk highlighting, date-range defaults) deferred.
+Deployed on 2026-05-25. Further improvements 2026-05-25:
+
+- CSV export added: `/portal/api/admin/audit-export` accepts the same four filter params (category, outcome, from, to) and returns up to 2 000 rows as a dated CSV. Admin-only; export itself is audit logged. Formula-injection protection via shared csvEscape/rowsToCsv helpers.
+- "Export CSV" link added to audit console page alongside result count; href reflects current filter state.
+
+Remaining deferred: high-risk event highlighting, date-range defaults.
 
 
 ## Master Feature List
