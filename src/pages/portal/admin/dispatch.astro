@@ -86,7 +86,7 @@ try {
       SELECT jobs.id, jobs.job_type, jobs.scheduled_date, jobs.priority, jobs.required_by_date,
              jobs.is_emergency, jobs.estimated_duration_minutes, jobs.status,
              systems.system_type, systems.coverage_area,
-             sites.owner_company_name,
+             sites.owner_company_name, sites.physical_address,
              users.name AS technician_name, users.id AS technician_id
       FROM jobs
       INNER JOIN systems ON systems.id = jobs.system_id
@@ -203,6 +203,15 @@ const slaAlert        = stats.slaWarning > 0;
           <option value="Scheduled">Scheduled</option>
           <option value="In Progress">In Progress</option>
         </select>
+        <input
+          id="dispatch-date"
+          type="date"
+          title="Filter by scheduled date"
+          class="border border-kharon-border px-3 py-2 text-sm focus:border-kharon-purple focus:outline-none"
+        />
+        <button id="dispatch-today" type="button" class="border border-kharon-border px-3 py-2 text-xs font-semibold hover:bg-kharon-light">Today</button>
+        <button id="dispatch-week"  type="button" class="border border-kharon-border px-3 py-2 text-xs font-semibold hover:bg-kharon-light">Next 7 days</button>
+        <button id="dispatch-alldate" type="button" class="border border-kharon-border px-3 py-2 text-xs font-semibold hover:bg-kharon-light">All dates</button>
       </div>
 
       <!-- Unassigned queue -->
@@ -224,6 +233,7 @@ const slaAlert        = stats.slaWarning > 0;
               data-search={job.searchText}
               data-priority={job.priority}
               data-status={job.status}
+              data-date={job.scheduled_date}
             >
               <div class="flex flex-wrap items-start gap-2">
                 <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.priorityCls}`}>{job.priority}</span>
@@ -232,6 +242,14 @@ const slaAlert        = stats.slaWarning > 0;
                 )}
                 <span class="font-semibold">{job.owner_company_name}</span>
                 <span class="text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</span>
+                {job.physical_address && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.physical_address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-xs font-semibold text-kharon-purple hover:underline"
+                  >↗ Navigate</a>
+                )}
               </div>
               <div class="mt-1 flex flex-wrap gap-4 text-xs text-kharon-grey">
                 <span>Scheduled: <strong class="text-kharon-black">{job.scheduled_date}</strong></span>
@@ -355,6 +373,7 @@ const slaAlert        = stats.slaWarning > 0;
                     data-search={job.searchText}
                     data-priority={job.priority}
                     data-status={job.status}
+                    data-date={job.scheduled_date}
                   >
                     <div class="flex flex-wrap items-start gap-2">
                       <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.priorityCls}`}>{job.priority}</span>
@@ -366,6 +385,14 @@ const slaAlert        = stats.slaWarning > 0;
                       </span>
                       <span class="font-semibold">{job.owner_company_name}</span>
                       <span class="text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</span>
+                      {job.physical_address && (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.physical_address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-xs font-semibold text-kharon-purple hover:underline"
+                        >↗ Navigate</a>
+                      )}
                     </div>
                     <div class="mt-1 flex flex-wrap gap-4 text-xs text-kharon-grey">
                       <span>Scheduled: <strong class="text-kharon-black">{job.scheduled_date}</strong></span>
@@ -465,16 +492,36 @@ const slaAlert        = stats.slaWarning > 0;
     var search = document.getElementById("dispatch-search");
     var priorityFilter = document.getElementById("dispatch-priority");
     var statusFilter = document.getElementById("dispatch-status");
+    var dateInput = document.getElementById("dispatch-date");
+    var dateMode = "all"; // "all" | "today" | "week" | "pick"
+
+    function todayStr() {
+      return new Date().toISOString().slice(0, 10);
+    }
 
     function applyFilter() {
       var q = search ? search.value.toLowerCase().trim() : "";
       var p = priorityFilter ? priorityFilter.value : "";
       var st = statusFilter ? statusFilter.value : "";
+      var today = todayStr();
+      var weekEnd = new Date();
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      var weekEndStr = weekEnd.toISOString().slice(0, 10);
+
       document.querySelectorAll("[data-dispatch-card]").forEach(function (card) {
         var searchText = (card.getAttribute("data-search") || "").toLowerCase();
         var priority = card.getAttribute("data-priority") || "";
         var status = card.getAttribute("data-status") || "";
-        var ok = (!q || searchText.includes(q)) && (!p || priority === p) && (!st || status === st);
+        var scheduledDate = card.getAttribute("data-date") || "";
+        var dateOk = true;
+        if (dateMode === "today") {
+          dateOk = scheduledDate === today;
+        } else if (dateMode === "week") {
+          dateOk = scheduledDate >= today && scheduledDate <= weekEndStr;
+        } else if (dateMode === "pick" && dateInput && dateInput.value) {
+          dateOk = scheduledDate === dateInput.value;
+        }
+        var ok = (!q || searchText.includes(q)) && (!p || priority === p) && (!st || status === st) && dateOk;
         card.style.display = ok ? "" : "none";
       });
     }
@@ -482,6 +529,26 @@ const slaAlert        = stats.slaWarning > 0;
     if (search) search.addEventListener("input", applyFilter);
     if (priorityFilter) priorityFilter.addEventListener("change", applyFilter);
     if (statusFilter) statusFilter.addEventListener("change", applyFilter);
+    if (dateInput) dateInput.addEventListener("change", function () { dateMode = "pick"; applyFilter(); });
+
+    var todayBtn = document.getElementById("dispatch-today");
+    var weekBtn  = document.getElementById("dispatch-week");
+    var allBtn   = document.getElementById("dispatch-alldate");
+    if (todayBtn) todayBtn.addEventListener("click", function () {
+      dateMode = "today";
+      if (dateInput) dateInput.value = "";
+      applyFilter();
+    });
+    if (weekBtn) weekBtn.addEventListener("click", function () {
+      dateMode = "week";
+      if (dateInput) dateInput.value = "";
+      applyFilter();
+    });
+    if (allBtn) allBtn.addEventListener("click", function () {
+      dateMode = "all";
+      if (dateInput) dateInput.value = "";
+      applyFilter();
+    });
 
     document.querySelectorAll(".dispatch-form").forEach(function (form) {
       form.addEventListener("submit", async function (e) {
