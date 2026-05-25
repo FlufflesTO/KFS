@@ -676,7 +676,7 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
               <select class="rounded-md border border-kharon-border px-3 py-2" name="severity">
                 {["Critical", "Major", "Minor", "Observation"].map((s) => <option value={s} selected={item.severity === s}>{s}</option>)}
               </select>
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="sansClauseRef" value={item.sans_clause_ref || ""} placeholder="SANS clause" />
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="sansClauseRef" list="sans-clauses" value={item.sans_clause_ref || ""} placeholder="SANS clause" />
               <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
                 {["Open", "In Progress", "Resolved", "Closed"].map((s) => <option value={s} selected={item.status === s}>{s}</option>)}
               </select>
@@ -728,7 +728,7 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
               <option value="Minor" selected>Minor</option>
               <option value="Observation">Observation</option>
             </select>
-            <input class="rounded-md border border-kharon-border px-4 py-3" name="sansClauseRef" placeholder="SANS clause (e.g. SANS 10139-8.3)" />
+            <input class="rounded-md border border-kharon-border px-4 py-3" name="sansClauseRef" list="sans-clauses" placeholder="SANS clause (e.g. SANS 10139-8.3)" />
             <label class="flex items-center gap-3 rounded-md border border-kharon-border px-4 py-3">
               <input type="checkbox" name="certificateBlocking" value="1" />
               <span class="text-sm font-semibold">Certificate blocking</span>
@@ -1109,11 +1109,22 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
           return;
         }
 
-        result.textContent = `Saved ${body.id || ""}`.trim();
+        // Build contextual success message
+        let successMsg = `Saved ${body.id || ""}`.trim();
+        if (body.certificatesBlocked > 0) {
+          successMsg = `Saved. ${body.certificatesBlocked} certificate(s) automatically blocked due to this defect.`;
+        } else if (body.certificatesRestored) {
+          successMsg = `Saved. Blocked certificates for this system have been restored to Valid (no remaining blocking defects).`;
+        } else if (body.status === "Resolved" || body.status === "Closed") {
+          successMsg = `Defect marked ${body.status}.`;
+        }
+        result.textContent = successMsg;
         result.className = "admin-result rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
         const action = form.querySelector('[name="action"]')?.value || "";
         if (action === "create") {
-          result.textContent = "Saved. Refreshing related lists...";
+          result.textContent = body.certificatesBlocked > 0
+            ? `Created. ${body.certificatesBlocked} certificate(s) automatically blocked. Refreshing...`
+            : "Saved. Refreshing related lists...";
           setTimeout(() => window.location.reload(), 500);
         }
       });
@@ -1233,4 +1244,30 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
       });
     }
   </script>
+<datalist id="sans-clauses">
+  <!-- SANS 10139: Fire detection and alarm systems -->
+  <option value="SANS 10139" />
+  <option value="SANS 10139-4.1" />
+  <option value="SANS 10139-4.2" />
+  <option value="SANS 10139-4.3" />
+  <option value="SANS 10139-5.1" />
+  <option value="SANS 10139-5.2" />
+  <option value="SANS 10139-6.1" />
+  <option value="SANS 10139-6.2" />
+  <option value="SANS 10139-7.1" />
+  <option value="SANS 10139-7.2" />
+  <option value="SANS 10139-8.1" />
+  <option value="SANS 10139-8.3" />
+  <option value="SANS 10139-9.1" />
+  <option value="SANS 10139-10.1" />
+  <option value="SANS 10139-11.1" />
+  <option value="SANS 10139-11.2" />
+  <!-- SANS 14520: Gaseous fire-extinguishing systems -->
+  <option value="SANS 14520" />
+  <option value="SANS 14520-1" />
+  <option value="SANS 14520-5" />
+  <option value="SANS 14520-6" />
+  <option value="SANS 14520-7" />
+  <option value="SANS 14520-9" />
+</datalist>
 </PortalLayout>
