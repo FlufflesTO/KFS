@@ -56,7 +56,9 @@ try {
 
   jobs = (await db.prepare(
     `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
-            jobs.job_type, jobs.site_notes, systems.coverage_area, sites.owner_company_name
+            jobs.job_type, jobs.site_notes,
+            jobs.priority, jobs.is_emergency, jobs.required_by_date, jobs.estimated_duration_minutes,
+            systems.coverage_area, sites.owner_company_name
      FROM jobs
      INNER JOIN systems ON systems.id = jobs.system_id
      INNER JOIN sites ON sites.id = systems.site_id
@@ -253,6 +255,11 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
               </select>
               <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
               <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
+              <select class="rounded-md border border-kharon-border px-3 py-2" name="priority">
+                {["Critical","High","Normal","Low"].map((p) => <option value={p} selected={(record as any).priority === p}>{p}</option>)}
+              </select>
+              <input class="rounded-md border border-kharon-border px-3 py-2" name="requiredByDate" type="date" value={(record as any).required_by_date || ""} placeholder="Required by date (optional)" />
+              <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="isEmergency" checked={(record as any).is_emergency === 1} /> Emergency</label>
               <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
               <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
             </form>
@@ -293,6 +300,14 @@ const contactsTotalPages = Math.max(1, Math.ceil(contactsTotal / perPage));
           </select>
           <input class="rounded-md border border-kharon-border px-4 py-3" name="jobType" value="Maintenance" required />
           <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="siteNotes" placeholder="Site notes"></textarea>
+          <select class="rounded-md border border-kharon-border px-4 py-3" name="priority">
+            <option value="Normal" selected>Normal priority</option>
+            <option value="High">High priority</option>
+            <option value="Critical">Critical priority</option>
+            <option value="Low">Low priority</option>
+          </select>
+          <input class="rounded-md border border-kharon-border px-4 py-3" name="requiredByDate" type="date" placeholder="Required by date (optional)" />
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="isEmergency" /> Emergency / after-hours</label>
           <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create job</button>
           <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
         </form>
