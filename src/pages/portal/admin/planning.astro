@@ -47,6 +47,22 @@ function riskForDueDate(dateText) {
   return { label: "Scheduled", className: "border-emerald-300 bg-emerald-50 text-emerald-900" };
 }
 
+function priorityBadge(p) {
+  if (p === "Critical") return "bg-kharon-red text-white";
+  if (p === "High") return "border border-amber-400 bg-amber-50 text-amber-800";
+  if (p === "Low") return "border border-kharon-border bg-white text-kharon-grey";
+  return "bg-kharon-light text-kharon-grey";
+}
+
+function slaLabel(requiredByDate) {
+  if (!requiredByDate) return null;
+  const days = daysUntil(requiredByDate);
+  if (days === null) return null;
+  if (days < 0) return { text: `${-days}d overdue`, cls: "text-kharon-red font-bold" };
+  if (days <= 3) return { text: `${days}d`, cls: "text-amber-700 font-semibold" };
+  return { text: `${days}d`, cls: "text-emerald-700" };
+}
+
 try {
   const db = getDatabase();
 
@@ -81,6 +97,7 @@ try {
     // ── Display lists (paged) ────────────────────────────────────────────
     db.prepare(
       `SELECT jobs.id, jobs.status, jobs.scheduled_date, jobs.job_type, jobs.assigned_technician_id,
+              jobs.priority, jobs.is_emergency, jobs.required_by_date,
               users.name AS technician_name, systems.system_type, systems.coverage_area,
               sites.owner_company_name, sites.physical_address
        FROM jobs
@@ -88,7 +105,9 @@ try {
        INNER JOIN sites ON sites.id = systems.site_id
        LEFT JOIN users ON users.id = jobs.assigned_technician_id
        WHERE jobs.status IN ('Scheduled', 'In Progress')
-       ORDER BY jobs.scheduled_date ASC, sites.owner_company_name ASC
+       ORDER BY
+         CASE jobs.priority WHEN 'Critical' THEN 1 WHEN 'High' THEN 2 WHEN 'Normal' THEN 3 ELSE 4 END,
+         jobs.scheduled_date ASC, sites.owner_company_name ASC
        LIMIT ?1 OFFSET ?2`
     ).bind(planningPageSize, scheduleOffset),
     db.prepare(
@@ -194,6 +213,7 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
         <article class={`border p-4 ${management.unassignedJobs > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
           <p class="text-xs font-bold uppercase text-kharon-grey">Unassigned jobs</p>
           <p class={`mt-2 text-2xl font-bold ${management.unassignedJobs > 0 ? "text-red-700" : ""}`}>{management.unassignedJobs}</p>
+          <a href="/portal/admin/dispatch" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Dispatch board →</a>
         </article>
       </div>
 
@@ -225,25 +245,44 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
           </div>
           <div id="schedule-list" class="grid gap-3">
             {scheduled.length === 0 && <p class="text-kharon-grey">No scheduled or in-progress dispatches.</p>}
-            {scheduled.map((job) => (
-              <article
-                class="grid gap-3 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2"
-                data-search={`${job.owner_company_name} ${job.coverage_area} ${job.technician_name || ""} ${job.job_type || ""}`}
-                data-status={job.status}
-              >
-                <div class="min-w-0">
-                  <p class="font-semibold">{job.owner_company_name}</p>
-                  <p class="mt-1 text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</p>
-                  <p class="mt-1 text-sm text-kharon-grey">{job.physical_address}</p>
-                </div>
-                <dl class="grid gap-2 text-sm sm:grid-cols-2">
-                  <div><dt class="font-bold uppercase text-kharon-grey/70">Date</dt><dd>{job.scheduled_date}</dd></div>
-                  <div><dt class="font-bold uppercase text-kharon-grey/70">Status</dt><dd>{job.status}</dd></div>
-                  <div><dt class="font-bold uppercase text-kharon-grey/70">Technician</dt><dd>{job.technician_name || "Unassigned"}</dd></div>
-                  <div><dt class="font-bold uppercase text-kharon-grey/70">Type</dt><dd>{job.job_type}</dd></div>
-                </dl>
-              </article>
-            ))}
+            {scheduled.map((job) => {
+              const jPriority = (job as any).priority || "Normal";
+              const jEmergency = (job as any).is_emergency === 1;
+              const jSla = slaLabel((job as any).required_by_date ?? null);
+              return (
+                <article
+                  class="grid gap-3 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2"
+                  data-search={`${job.owner_company_name} ${job.coverage_area} ${job.technician_name || ""} ${job.job_type || ""}`}
+                  data-status={job.status}
+                >
+                  <div class="min-w-0">
+                    <div class="mb-1 flex flex-wrap gap-1.5">
+                      {jPriority !== "Normal" && (
+                        <span class={`rounded px-1.5 py-0.5 text-xs font-bold ${priorityBadge(jPriority)}`}>{jPriority}</span>
+                      )}
+                      {jEmergency && (
+                        <span class="rounded bg-kharon-red px-1.5 py-0.5 text-xs font-bold text-white">Emergency</span>
+                      )}
+                    </div>
+                    <p class="font-semibold">{job.owner_company_name}</p>
+                    <p class="mt-1 text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</p>
+                    <p class="mt-1 text-sm text-kharon-grey">{job.physical_address}</p>
+                  </div>
+                  <dl class="grid gap-2 text-sm sm:grid-cols-2">
+                    <div><dt class="font-bold uppercase text-kharon-grey/70">Date</dt><dd>{job.scheduled_date}</dd></div>
+                    <div><dt class="font-bold uppercase text-kharon-grey/70">Status</dt><dd>{job.status}</dd></div>
+                    <div><dt class="font-bold uppercase text-kharon-grey/70">Technician</dt><dd>{job.technician_name || "Unassigned"}</dd></div>
+                    <div><dt class="font-bold uppercase text-kharon-grey/70">Type</dt><dd>{job.job_type}</dd></div>
+                    {jSla && (
+                      <div class="col-span-2">
+                        <dt class="font-bold uppercase text-kharon-grey/70">Required by</dt>
+                        <dd class={jSla.cls}>{jSla.text}</dd>
+                      </div>
+                    )}
+                  </dl>
+                </article>
+              );
+            })}
           </div>
           <p id="schedule-no-results" class="hidden py-3 text-sm text-kharon-grey">No dispatches match your filter.</p>
           {scheduleTotalPages > 1 && (
