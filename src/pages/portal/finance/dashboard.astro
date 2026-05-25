@@ -416,16 +416,16 @@ try {
     for (const form of document.querySelectorAll(".sage-ref-form")) {
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const result = form.querySelector(".sage-ref-result") as HTMLElement | null;
-        const recordId  = (form as HTMLElement).dataset.recordId;
-        const itemType  = (form as HTMLElement).dataset.itemType;
-        const sageNumber        = (form.querySelector("[name='sageNumber']")        as HTMLInputElement  | null)?.value?.trim() || undefined;
-        const sageCustomerCode  = (form.querySelector("[name='sageCustomerCode']")  as HTMLInputElement  | null)?.value?.trim() || undefined;
-        const financeTaskStatus = (form.querySelector("[name='financeTaskStatus']") as HTMLSelectElement | null)?.value?.trim() || undefined;
+        const result        = form.querySelector(".sage-ref-result");
+        const recordId      = form.dataset.recordId;
+        const itemType      = form.dataset.itemType;
+        const sageNumber        = (form.querySelector("[name='sageNumber']")?.value        ?? "").trim();
+        const sageCustomerCode  = (form.querySelector("[name='sageCustomerCode']")?.value  ?? "").trim();
+        const financeTaskStatus = (form.querySelector("[name='financeTaskStatus']")?.value ?? "").trim();
 
-        const payload: Record<string, string | undefined> = { recordId };
-        if (itemType === "Invoice") { payload.sageInvoiceNumber = sageNumber; }
-        else                        { payload.sageQuoteNumber   = sageNumber; }
+        const payload = { recordId };
+        if (itemType === "Invoice") { payload.sageInvoiceNumber = sageNumber || null; }
+        else                        { payload.sageQuoteNumber   = sageNumber || null; }
         if (sageCustomerCode)  payload.sageCustomerCode  = sageCustomerCode;
         if (financeTaskStatus) payload.financeTaskStatus = financeTaskStatus;
 

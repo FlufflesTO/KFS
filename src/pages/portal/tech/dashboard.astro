@@ -6,6 +6,7 @@ export const prerender = false;
 
 const user = Astro.locals.user;
 let jobs = [];
+let jobVisits = {};
 let loadError = "";
 const today = new Date().toISOString().slice(0, 10);
 
@@ -31,6 +32,22 @@ try {
     ? await db.prepare(query).all()
     : await db.prepare(query).bind(user.id).all();
   jobs = result.results || [];
+
+  if (user.role === "tech" && jobs.length > 0) {
+    const jobIds = jobs.map((j: any) => j.id);
+    const placeholders = jobIds.map(() => "?").join(",");
+    const visitsResult = await db.prepare(
+      `SELECT job_id, visit_date, arrival_at, departure_at, gps_latitude, gps_longitude,
+              customer_name, customer_title, notes
+       FROM job_visits
+       WHERE job_id IN (${placeholders})
+       ORDER BY visit_date DESC, arrival_at DESC`
+    ).bind(...jobIds).all();
+    for (const visit of (visitsResult.results || [])) {
+      if (!jobVisits[visit.job_id]) jobVisits[visit.job_id] = [];
+      jobVisits[visit.job_id].push(visit);
+    }
+  }
 } catch (error) {
   console.error("technician dashboard failed", error);
   loadError = "Assigned dispatches could not be loaded.";
@@ -123,6 +140,22 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
                 Start job
               </button>
             )}
+            {user.role === "tech" && (jobVisits[job.id]?.length || 0) > 0 && (
+              <div class="mt-4 border-t border-kharon-border pt-4">
+                <p class="text-xs font-bold uppercase text-kharon-purple">Visit history</p>
+                <div class="mt-2 grid gap-2">
+                  {jobVisits[job.id]?.map((visit: any) => (
+                    <article class="rounded-md border border-kharon-border bg-white p-3 text-sm">
+                      <p class="font-semibold">{visit.visit_date} / {visit.arrival_at || "Arrival not recorded"}</p>
+                      {visit.departure_at && <p class="text-xs text-kharon-grey">Departed: {visit.departure_at}</p>}
+                      {visit.gps_latitude && visit.gps_longitude && <p class="mt-1 text-xs text-kharon-grey">GPS: {visit.gps_latitude}, {visit.gps_longitude}</p>}
+                      {visit.customer_name && <p class="mt-1 text-xs text-kharon-grey">Contact: {visit.customer_name}{visit.customer_title ? ` (${visit.customer_title})` : ""}</p>}
+                      {visit.notes && <p class="mt-1 text-xs text-kharon-grey">{visit.notes}</p>}
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {user.role === "admin" ? (
@@ -136,7 +169,27 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
               </a>
             </aside>
           ) : (
-          <form class="jobcard-form grid min-w-0 gap-4 border border-kharon-border bg-kharon-light p-4" data-job-id={job.id} data-system-id={job.system_id}>
+          <div class="grid min-w-0 content-start gap-4 border border-kharon-border bg-kharon-light p-4">
+            {job.status === "Scheduled" && (
+              <form class="log-arrival-form grid gap-3" data-job-id={job.id}>
+                <input type="hidden" name="jobId" value={job.id} />
+                <p class="text-xs font-bold uppercase text-kharon-purple">Log site arrival</p>
+                <div class="grid gap-2 sm:grid-cols-2">
+                  <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="visitDate" type="date" value={today} required />
+                  <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="arrivalTime" type="time" required />
+                </div>
+                <div class="grid gap-2 sm:grid-cols-2">
+                  <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="gpsLat" placeholder="GPS latitude (optional)" />
+                  <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="gpsLng" placeholder="GPS longitude (optional)" />
+                </div>
+                <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="customerName" placeholder="On-site contact name" />
+                <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="customerTitle" placeholder="Title / role" />
+                <textarea class="portal-field min-h-16 rounded-md border border-kharon-border px-3 py-2 text-sm" name="notes" maxlength="500" placeholder="Arrival notes (access conditions, hazards, etc.)"></textarea>
+                <button class="rounded-md border border-kharon-blue px-4 py-2 text-sm font-semibold text-kharon-blue hover:bg-kharon-blue hover:text-white">Log arrival</button>
+                <p class="log-arrival-result hidden text-sm font-semibold"></p>
+              </form>
+            )}
+            <form class="jobcard-form grid min-w-0 gap-4" data-job-id={job.id} data-system-id={job.system_id}>
             <input type="hidden" name="jobId" value={job.id} />
             <input type="hidden" name="systemId" value={job.system_id} />
             <label class="grid gap-2 text-sm font-semibold text-kharon-black">
@@ -189,6 +242,7 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
             <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue">Submit completed jobcard</button>
             <p class="jobcard-result hidden text-sm font-semibold"></p>
           </form>
+          </div>
           )}
         </article>
       ))}
@@ -235,6 +289,17 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
   </section>
 
   <script>
+    async function postJson(url, payload) {
+      const response = await window.kharonPortalFetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const body = await response.json();
+      if (!response.ok || !body.ok) throw new Error(body.message || "Request failed.");
+      return body;
+    }
+
     function pointFromEvent(canvas, event) {
       const rect = canvas.getBoundingClientRect();
       return {
@@ -318,6 +383,35 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
         } else {
           button.disabled = false;
           button.textContent = body.message || "Start failed";
+        }
+      });
+    }
+
+    for (const form of document.querySelectorAll(".log-arrival-form")) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const result = form.querySelector(".log-arrival-result");
+        result.classList.add("hidden");
+        const data = new FormData(form);
+        try {
+          const body = await postJson("/portal/api/job-visits", {
+            action: "logArrival",
+            jobId: data.get("jobId"),
+            visitDate: data.get("visitDate"),
+            arrivalAt: data.get("arrivalTime"),
+            gpsLat: data.get("gpsLat") || null,
+            gpsLng: data.get("gpsLng") || null,
+            customerName: data.get("customerName") || null,
+            customerTitle: data.get("customerTitle") || null,
+            notes: data.get("notes") || null
+          });
+          result.textContent = `Arrival logged: ${body.visitId}`;
+          result.className = "log-arrival-result text-sm font-semibold text-kharon-blue";
+          form.querySelector("button").disabled = true;
+          form.querySelector("button").textContent = "Arrival logged";
+        } catch (error) {
+          result.textContent = error.message;
+          result.className = "log-arrival-result text-sm font-semibold text-red-700";
         }
       });
     }
