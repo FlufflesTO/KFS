@@ -108,6 +108,479 @@ Production branding constraints:
 - Keep QR-enabled letterhead for document templates only unless a public QR destination is approved.
 
 
+## Review Update - 2026-05-25 Current Project Status Reconciliation
+
+Review basis:
+
+- Repository state reviewed against the active Astro SSR, Cloudflare D1 and Cloudflare R2 implementation.
+- Roadmap status reconciled after the verified branding pass, header responsiveness fix, jobcard PDF visual fix, public contact-handler pass and current audit tooling.
+- Live Cloudflare deployment was previously verified on 2026-05-25 after commit `c41a2de`; this roadmap update is a documentation reconciliation pass and does not by itself change production behaviour.
+
+Current project status:
+
+| Area | Current status | Roadmap correction |
+|---|---|---|
+| Public site architecture | Implemented | Astro SSR on Cloudflare adapter, public routes and portal routes share the Worker deployment. |
+| Public branding | Implemented | Verified Kharon mark, full logo, letterhead assets and PNG OpenGraph image are integrated. |
+| Public navigation | Implemented with latest fix | Header no longer forces desktop navigation at tablet width; About and Access Records remain visible. |
+| Public contact form | Implemented for main contact route | `/contact` posts to `/api/contact` and stores D1 records. Contextual inquiry component still uses `mailto:` and remains an open cleanup item. |
+| Browser security headers | Baseline implemented | `_headers` includes CSP, HSTS, Referrer-Policy, Permissions-Policy, COOP, CORP, COEP and content-type protections; remaining work is live browser verification and future nonce/hash tightening if inline scripts are removed. |
+| Portal authentication | Implemented for staging | Signed sessions, logout revocation, password reset, first-login password change, MFA path, audit logging and login rate limiting exist. |
+| Portal CSRF and write limits | Implemented | Portal layout exposes CSRF tokens and middleware enforces CSRF/rate limits on authenticated state-changing APIs. |
+| Portal document access | Implemented for staging | R2 file route checks authorization and records document-access outcomes. |
+| Portal role dashboards | Implemented foundation | Admin, technician, client and finance dashboards exist; scale refinement and manual role QA remain open. |
+| Technician evidence | Partially implemented | Signature capture, jobcard PDF and limited photo evidence exist; offline drafts, GPS/timing, defect/certificate logic and richer SANS-aware telemetry remain open. |
+| Finance workflow | Partially implemented | Ledger, export and payment capture foundations exist for staging, but Sage is now defined as the finance source of truth; Phase 21 must refactor portal finance into a Sage manual control register. |
+| Public authority proof | Partially implemented | Page copy and schematic proof exist; approved real imagery, case evidence, document examples and compliance hub depth remain open. |
+| Responsive QA | Partially implemented | Header/tablet issue is resolved; full desktop/tablet/mobile screenshot QA across public pages and portal roles remains open. |
+
+Most important outstanding production blockers:
+
+- [ ] Rotate and disable all shared or temporary staging credentials before any broader operational use.
+- [ ] Complete credential-backed role QA for Admin, Technician, Client and Finance using external QA credentials.
+- [ ] Apply and verify all migrations on the intended staging and future production D1 databases after each deploy.
+- [ ] Run D1 export and R2 restore drill and record the result outside git.
+- [ ] Confirm Admin and Finance MFA enforcement policy before loading real client or finance records.
+- [ ] Replace remaining contextual `mailto:` inquiry forms with server-side submissions or intentionally document why they stay email-client based.
+- [ ] Add approved public phone/emergency-routing rules to contact and emergency pages.
+- [ ] Complete full responsive screenshot QA across desktop, laptop, tablet portrait/landscape and mobile for public and portal views.
+- [ ] Complete public authority evidence: approved imagery, document examples, compliance hub and non-invented case proof.
+- [ ] Select POPIA-aware analytics and confirm analytics do not load on `/portal/*`.
+- [ ] Prepare Kharon production-domain migration plan for `www.kharon.co.za` and `portal.kharon.co.za`.
+- [ ] Refactor finance portal language and workflow so Sage remains the only formal quote, invoice, VAT and payment-reconciliation source of truth.
+
+Status decision:
+
+The project is a strong staging-ready website and portal foundation. It is not yet production-authoritative for real client records until credential rotation, manual role QA, backup/restore evidence, MFA policy, responsive QA and operational cutover sign-off are complete.
+
+
+## Review Update - 2026-05-25 Sage Manual Finance Workflow Alignment
+
+Scope:
+
+- Sage remains the accounting and finance source of truth.
+- The portal must become a finance operations and Sage reference control layer.
+- The portal should not generate official quotes, official invoices, VAT invoices, debtor statements or accounting entries while Sage is used.
+- No Sage API or integration is in scope for this phase.
+- Manual entry of Sage references and statuses is the approved interim operating model.
+
+Source-of-truth split:
+
+| Function | Source of truth |
+|---|---|
+| Formal quote creation | Sage |
+| Formal invoice creation | Sage |
+| VAT and accounting records | Sage |
+| Payment reconciliation | Sage |
+| Job completion evidence | Portal |
+| Jobcard/service evidence | Portal |
+| Finance task queue | Portal |
+| Sage quote/invoice reference tracking | Portal |
+| Client-facing operational finance status | Portal |
+| Completed job to finance handoff | Portal |
+
+Current risk findings:
+
+- Current portal finance model can imply the portal is the invoice source of truth.
+- Current jobcard closure flow creates a financial invoice-like record automatically after job completion.
+- Current client quote approval flow changes a quote-like record into an invoice-like record.
+- Current finance payment action says `Mark settled`, which should be reframed as `Record Paid in Sage` if Sage controls reconciliation.
+- Dashboard totals and statuses should represent operational finance tasks and Sage reference tracking, not official accounting totals.
+- Finance portal must avoid duplicate invoice numbering, duplicate quote numbering and VAT/accounting authority conflicts.
+
+Recommended conceptual shift:
+
+From:
+
+Portal as lightweight invoice/ledger system.
+
+To:
+
+Portal as Sage control register and operational finance queue.
+
+Approved manual workflows:
+
+A. Completed Job to Sage Invoice Required:
+
+1. Technician completes jobcard.
+2. Portal creates finance task with status `Invoice Required`.
+3. Finance creates official invoice in Sage.
+4. Finance manually enters Sage invoice details into portal.
+5. Portal status changes to `Sage Invoice Created` or `Sage Invoice Sent`.
+6. Payment is reconciled in Sage.
+7. Finance manually marks portal record `Paid in Sage`.
+
+B. Client Request to Sage Quote Required:
+
+1. Client/admin request indicates quote required.
+2. Portal creates finance task with status `Quote Required`.
+3. Finance creates official quote in Sage.
+4. Finance manually enters Sage quote details into portal.
+5. Portal status changes to `Sage Quote Sent`.
+6. Client approval is recorded manually or via portal.
+7. Approved quote moves to `Approved - Sage Invoice Required`.
+8. Finance creates Sage invoice manually.
+
+C. Sage Payment Reconciled to Portal Updated:
+
+1. Finance confirms payment in Sage.
+2. Finance updates portal record manually.
+3. Portal captures payment date, reference, amount, method and notes.
+4. Portal status becomes `Paid in Sage`.
+5. Portal record closes operationally.
+
+Required terminology changes:
+
+- Replace `Mark settled` with `Record Paid in Sage`.
+- Replace `Invoice Created by Portal` concept with `Invoice Required / Sage Invoice Reference`.
+- Replace `Quote converted to Invoice` concept with `Quote Approved - Sage Invoice Required`.
+- Avoid using portal-generated invoice references as official invoice numbers.
+- Use `Sage Invoice Number` and `Sage Quote Number` fields when formal Sage documents exist.
+
+Recommended manual Sage fields:
+
+- `Sage_Customer_Code`
+- `Sage_Quote_Number`
+- `Sage_Quote_Date`
+- `Sage_Quote_Expiry_Date`
+- `Sage_Invoice_Number`
+- `Sage_Invoice_Date`
+- `Sage_Due_Date`
+- `Sage_Amount_Ex_VAT`
+- `Sage_VAT_Amount`
+- `Sage_Amount_Inc_VAT`
+- `Sage_Document_Status`
+- `Sage_Document_Link_or_Upload`
+- `Sage_Payment_Status`
+- `Sage_Payment_Date`
+- `Sage_Payment_Reference`
+- `Sage_Payment_Method`
+- `Finance_Notes`
+- `Last_Checked_In_Sage`
+- `No_Charge_Reason`
+- `On_Hold_Reason`
+
+Recommended finance statuses:
+
+- `Finance Review Required`
+- `Quote Required`
+- `Sage Quote Created`
+- `Sage Quote Sent`
+- `Awaiting Client Approval`
+- `Quote Approved`
+- `Approved - Sage Invoice Required`
+- `Invoice Required`
+- `Sage Invoice Created`
+- `Sage Invoice Sent`
+- `Payment Pending in Sage`
+- `Paid in Sage`
+- `On Hold`
+- `Cancelled`
+- `No Charge`
+- `Closed`
+
+Recommended dashboard cards:
+
+- Jobs Awaiting Sage Invoice
+- Quotes Awaiting Sage Creation
+- Quotes Awaiting Client Approval
+- Approved Quotes Awaiting Sage Invoice
+- Sage Invoices Awaiting Payment
+- Overdue Sage Invoices
+- Paid This Month
+- Missing Sage References
+- Records On Hold
+- No-Charge Jobs Awaiting Approval
+
+Recommended finance workspaces:
+
+1. Finance Overview
+2. Sage Quote Queue
+3. Sage Invoice Queue
+4. Sage Payment Status
+5. Client Account View
+6. Exceptions / Missing References
+7. Finance Audit Trail
+
+Production rules:
+
+- Sage document numbers must be entered manually and treated as authoritative.
+- Portal may show Sage references but may not invent official Sage quote or invoice numbers.
+- Portal may upload/store Sage PDFs if manually exported from Sage.
+- Portal may expose Sage quote/invoice status to clients, but should clearly label documents as Sage-generated where applicable.
+- Portal should not calculate or present official VAT/tax invoice values unless they are manually copied from Sage.
+- Portal may show operational totals, but must label them as portal-tracked values, not official accounting balances.
+- If Sage and portal differ, Sage wins.
+
+Non-goals:
+
+- No Sage API integration.
+- No replacement of Sage quoting.
+- No replacement of Sage invoicing.
+- No automated payment reconciliation.
+- No official tax invoice generation inside the portal.
+- No automated VAT/accounting calculations unless manually copied from Sage.
+- No production accounting package migration.
+
+Future implementation notes:
+
+- Current `financial_records` may be refactored into a `finance_tasks` model or extended with Sage fields.
+- Current `approve-quote` behaviour should be changed later so it moves status to `Approved - Sage Invoice Required`.
+- Current `submit-jobcard` finance insert should later create `Invoice Required`.
+- Current `finance/payments` endpoint should later become `record-sage-payment` or similar.
+- UI labels should avoid `settled` unless referencing Sage-confirmed payment.
+- Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only.
+- Finance export should include Sage reference fields and retain formula-injection protection.
+
+Status:
+
+Pending. This is a roadmap alignment only; no application code, schema or migration change has been made for Sage manual finance workflows in this pass.
+
+
+## Review Update - 2026-05-25 Technician And Admin Portal Operational Assessment
+
+Scope:
+
+- Review operational ability and usability of Technician Portal.
+- Review operational ability and usability of Admin Portal.
+- Assess current portal against real field-service, dispatch, compliance, lifecycle, evidence and production-readiness needs.
+- Convert findings into implementation roadmap phases.
+
+Summary:
+
+The current Technician and Admin portals prove the core operational loop:
+
+```text
+Admin creates/assigns job
+  -> Technician sees assigned dispatch
+  -> Technician starts job
+  -> Technician submits jobcard with comments, photos and signature
+  -> Portal stores jobcard/evidence
+  -> System lifecycle dates update
+  -> Admin sees completed work, due systems, missing documents and finance follow-up
+```
+
+This loop is directionally correct and useful for staging.
+
+However, the current system breaks down when real operational complexity appears:
+
+- no site access,
+- poor signal,
+- multiple visits,
+- defects found,
+- parts required,
+- quote required,
+- certificate blocked,
+- job partially complete,
+- customer unavailable,
+- SLA breach,
+- reassignment needed,
+- urgent callout,
+- Sage quote/invoice handoff required,
+- compliance evidence required.
+
+Technician Portal assessment:
+
+| Area | Score | Assessment |
+|---|---:|---|
+| Assigned job visibility | 7/10 | Tech sees assigned scheduled/in-progress jobs; admin can view all. |
+| Job start workflow | 6.5/10 | Supports Scheduled to In Progress, with assignment protection. |
+| Jobcard closure | 7/10 | Captures comments, fault category, parts, follow-up, photos, signature. |
+| Evidence capture | 6.5/10 | Up to 3 photos and signature; stored as operational evidence. |
+| Compliance/SANS depth | 3.5/10 | No SANS-specific field capture yet. |
+| Field usability | 5.5/10 | Functional, but too form-heavy and not offline/mobile-first enough. |
+| Production readiness | 5.5/10 | Good staging foundation; not enough for real-world technician operations yet. |
+
+Technician Portal strengths:
+
+- Assigned dispatch visibility.
+- Start-job transition.
+- Jobcard closure flow.
+- Photo evidence support.
+- Signature capture.
+- Jobcard PDF generation.
+- Completed job history.
+- Assignment protection.
+- Audit logging.
+
+Technician Portal weaknesses:
+
+- Too focused on closure, not full field visit workflow.
+- No GPS check-in/check-out.
+- No offline draft mode.
+- No local save/retry queue for poor signal.
+- No SANS-specific inspection fields.
+- No structured defect workflow.
+- No `unable to complete` pathway.
+- No customer name/title next to signature.
+- No multi-visit support.
+- Inline form per job can become heavy on mobile.
+- No route/navigation support.
+- No structured labour/time/parts model.
+- No certificate-blocking logic from technician findings.
+- Current jobcard closure still creates finance-style records and must align with Sage manual finance workflow.
+
+Target Technician workflow:
+
+Technician home:
+
+- Today's jobs.
+- Urgent jobs.
+- In-progress job.
+- Jobs needing sync.
+- Completed today.
+
+Job detail:
+
+- Site details.
+- System details.
+- Access notes.
+- Navigation.
+- Start/check-in.
+- Service checklist.
+- Defects.
+- Photos.
+- Parts/labour.
+- Customer sign-off.
+- Submit / save draft.
+
+Required Technician features:
+
+- GPS check-in/check-out.
+- Offline draft/save.
+- Sync retry queue.
+- Defect capture.
+- SANS-aligned service checklist by system type.
+- Unable-to-complete workflow.
+- Customer name/title with signature.
+- Job detail screen instead of full inline forms.
+- Evidence upload progress/retry.
+- Route/navigation link.
+- Structured parts and labour capture.
+- Technician day summary.
+
+Admin Portal assessment:
+
+| Area | Score | Assessment |
+|---|---:|---|
+| Operational overview | 7/10 | Dashboard has completed, active, due, requests and exceptions. |
+| Dispatch planning | 6.5/10 | Planning view exists, but not a true calendar/board scheduler. |
+| User/site/system/job admin | 7/10 | Admin CRUD foundations are usable. |
+| Client request handling | 7/10 | Admin can update requests and schedule dispatches. |
+| Lifecycle visibility | 6.5/10 | Due/overdue systems visible, but limited by caps and no deep drilldown. |
+| Usability at scale | 5/10 | Dense pages, hard limits, limited search/filter/pagination. |
+| Production readiness | 5.5/10 | Strong staging foundation; needs workflow depth and scaling. |
+
+Admin Portal strengths:
+
+- Operational dashboard exists.
+- Completed works visible.
+- Active dispatches visible.
+- Lifecycle due dates visible.
+- Client request queue exists.
+- Exception queue exists.
+- Overdue systems visible.
+- Missing documentation visible.
+- Finance follow-up visible.
+- Planning view exists.
+- Technician load visible.
+- Lifecycle due calendar exists.
+- Admin operations page supports users, sites, systems and jobs.
+- Client-site access mapping exists.
+- CSV import/export foundation exists.
+- Admin can issue reset links and manage MFA requirements.
+- Client requests can be converted into scheduled dispatches.
+- Admin actions are audit logged.
+
+Admin Portal weaknesses:
+
+- Dashboard, planning and operations overlap.
+- No true dispatch board.
+- No calendar scheduler.
+- No drag-and-drop or board assignment.
+- No technician day view.
+- No route or map clustering.
+- No SLA model.
+- No required-by date model.
+- No breach/warning/escalation system.
+- No defect register.
+- No certificate-blocking workflow.
+- No compliance officer workflow.
+- No SANS clause tracking.
+- No audit/security viewer.
+- Operations page is too dense.
+- Users, sites, systems, jobs and imports are all concentrated in one page.
+- Record limits and visible caps reduce production reliability.
+- Job creation does not include full operational job package fields.
+- No structured finance handoff queues for Sage manual workflow.
+
+Target Admin workspaces:
+
+- Admin Home.
+- Dispatch Board.
+- Client Requests.
+- Sites & Systems.
+- Users & Staff.
+- Compliance / Defects.
+- Documents.
+- Finance Handoff.
+- Audit / Security.
+
+Target Admin Home exception cards:
+
+- Critical requests.
+- Unassigned jobs.
+- Jobs due today.
+- Jobs in progress.
+- Overdue systems.
+- Due within 30 days.
+- Missing jobcards.
+- Finance handoff required.
+- SLA warnings.
+- Certificate blockers.
+- No-access/failed visits.
+- Follow-up required.
+
+Target Dispatch Board:
+
+- Unassigned queue.
+- Technician columns.
+- Calendar/date selector.
+- Priority filters.
+- Assign/reassign.
+- SLA indicator.
+- Job detail drawer.
+- Route/geography hint.
+- Estimated duration.
+- Required-by date.
+- Client/site contact display.
+
+Target Client Requests workflow:
+
+- New.
+- Reviewing.
+- Quote Required.
+- Scheduled.
+- Waiting for Client.
+- Closed.
+- Cancelled / Duplicate.
+
+Target Compliance workspace:
+
+- Defects.
+- Certificates.
+- Blocked certificates.
+- SANS references.
+- Remediation queue.
+- Follow-up visits.
+- Certificate eligibility.
+- Compliance risk status.
+
+Status:
+
+Pending. This assessment has been added to the roadmap only; no application code, schema or migration change has been made in this pass.
+
+
 ## Review Update - 2026-05-25 Full Website And Portal Audit Integration
 
 Scope:
@@ -225,7 +698,8 @@ Immediate production blockers from this audit:
 - [ ] Rotate and disable shared temporary role credentials.
 - [ ] Complete credential-backed role QA for Admin, Finance, Technician and Client.
 - [ ] Require MFA for Admin and Finance users before real finance/client records are loaded.
-- [ ] Add and verify strict security headers.
+- [x] Add strict browser security header baseline in `_headers`.
+- [ ] Complete live browser/CSP verification for public, portal, API and protected file routes.
 - [ ] Confirm backup and restore process using real staging D1/R2 exports.
 - [ ] Convert any remaining contextual `mailto:` forms to server-side submissions.
 - [ ] Add visible phone/contact route for contact and emergency pages after approval.
@@ -513,7 +987,7 @@ Note on staging domain:
 
 Public website findings:
 
-- Contact form uses `action="mailto:..."` with no server-side handler. The honeypot field has no backend check and is inert. No submission confirmation is shown if the user's email client is unconfigured. This is the primary conversion risk for an enterprise B2B site.
+- Main contact form no longer uses `action="mailto:..."`; it posts to `/api/contact`, validates server-side, checks the honeypot and stores D1 records. The remaining conversion risk is the reusable `ContextualInquiry` component, which still uses a mailto pattern and should be converted or intentionally documented.
 - No phone number appears on the contact page or emergency support page. For a fire and security business this is a meaningful content gap, particularly for emergency scenarios.
 - OG image was previously declared as `image/svg+xml`. Resolved in the 2026-05-25 verified branding pass by generating `/og/kharon-og.png` and updating `og:image:type` to `image/png`.
 - Mobile navigation has a duplicate Compliance entry: `solutionLinks` includes Compliance & Maintenance (`/compliance-maintenance`) and `mainLinks.slice(1)` includes a second Compliance link resolving to the same route.
@@ -665,7 +1139,7 @@ Tasks:
 - Add compliance and maintenance evidence examples where commercially safe.
 - Replace schematic placeholders where real imagery is stronger.
 
-Status: pending.
+Status: pending. Schematic and copy-based authority signals exist, but approved project examples, real imagery and publishable evidence remain outstanding.
 
 ### Phase 8 - Image Optimization And Performance Governance
 
@@ -802,17 +1276,17 @@ Core server-side protections are present, including RBAC, CSRF, rate limiting, s
 
 Tasks:
 
-- Add or verify a strict `Content-Security-Policy`.
-- Set `frame-ancestors 'none'` or equivalent clickjacking protection.
-- Set `object-src 'none'`.
-- Set `base-uri 'self'`.
-- Set `X-Content-Type-Options: nosniff`.
-- Set `Referrer-Policy: strict-origin-when-cross-origin`.
-- Set a restricted `Permissions-Policy`.
-- Confirm headers apply to public routes, portal routes, API JSON responses and protected file responses where appropriate.
-- Confirm CSP does not break inline scripts required by portal forms, or replace inline scripts with nonce/hash-safe alternatives.
-- Document approved external domains if analytics or email provider scripts are later added.
-- Add header checks to the site audit script.
+- [x] Add or verify a strict baseline `Content-Security-Policy`.
+- [x] Set clickjacking protection through `frame-ancestors 'self'` and `X-Frame-Options: SAMEORIGIN`.
+- [x] Set `object-src 'none'`.
+- [x] Set `base-uri 'self'`.
+- [x] Set `X-Content-Type-Options: nosniff`.
+- [x] Set `Referrer-Policy: strict-origin-when-cross-origin`.
+- [x] Set a restricted `Permissions-Policy`.
+- [x] Add header checks to the site audit script.
+- [ ] Confirm headers apply to public routes, portal routes, API JSON responses and protected file responses where appropriate.
+- [ ] Confirm CSP does not break inline scripts required by portal forms, or replace inline scripts with nonce/hash-safe alternatives.
+- [ ] Document approved external domains again if analytics or email provider scripts are later added.
 
 Deployable gate:
 
@@ -1034,19 +1508,19 @@ Status: pending.
 
 ### Phase 19 - Finance Accounting And VAT Hardening
 
-Goal: mature the finance workspace beyond a staging ledger into a reliable accounting handoff layer.
+Goal: mature the finance workspace beyond a staging ledger into a reliable Sage handoff and reference-control layer.
 
 Background:
 
-The finance dashboard provides useful visibility into financial records, ageing and settlement, but production accounting needs VAT, invoice identifiers, debtor statements, approval controls and immutable evidence.
+The finance dashboard provides useful visibility into financial records, ageing and settlement, but Sage remains the authoritative accounting system. Phase 19 is constrained by the Sage manual finance alignment: portal values may support operations, but official VAT/tax invoice values, quote numbers, invoice numbers, debtor statements and reconciliation remain in Sage unless manually copied into the portal as references.
 
 Tasks:
 
-- Add VAT-exclusive, VAT amount and VAT-inclusive values.
-- Add invoice number sequence rules.
-- Add quote number sequence rules.
-- Add debtor ageing by client/site.
-- Add invoice PDF generation or export-ready invoice data.
+- Add manually copied Sage VAT-exclusive, VAT amount and VAT-inclusive values.
+- Add Sage invoice number reference fields.
+- Add Sage quote number reference fields.
+- Add debtor ageing/status visibility based on Sage reference data.
+- Add Sage PDF upload/link or export-ready Sage reference data.
 - Add proof-of-payment attachment or reference capture.
 - Add credit note or reversal workflow instead of destructive settlement edits.
 - Add immutable payment event log.
@@ -1056,12 +1530,12 @@ Tasks:
 Deployable gate:
 
 - Finance records are exportable without formula-injection risk.
-- VAT totals are correct and visible.
+- VAT totals are only presented when manually copied from Sage and clearly labelled as Sage-derived.
 - Settlement and reversal actions are audited.
 - Client and technician roles cannot perform finance-only actions.
 - `npm run build` and `npm run audit:site` pass.
 
-Status: pending.
+Status: pending. This phase must not implement portal-generated official tax invoices while Sage remains the source of truth.
 
 ### Phase 20 - Portal UX Scale And Role Dashboard Refinement
 
@@ -1088,9 +1562,10 @@ Tasks:
   - open requests,
   - quote approvals.
 - Redesign Finance landing view around:
-  - overdue invoices,
-  - pending quotes,
-  - payment capture,
+  - Sage invoices awaiting payment,
+  - Sage quotes awaiting creation/client approval,
+  - missing Sage references,
+  - payment status updates from Sage,
   - exports.
 - Add empty states, loading states and error states for every portal dashboard.
 - Add search/filter patterns consistently across admin, finance and history pages.
@@ -1106,6 +1581,499 @@ Deployable gate:
 - `npm run build` and `npm run audit:site` pass.
 
 Status: pending.
+
+### Phase 21 - Sage Manual Finance Control Register
+
+Goal:
+
+Make the Finance Portal operationally useful while Sage remains the formal quoting, invoicing and accounting source of truth.
+
+Scope:
+
+- No Sage API.
+- No accounting integration.
+- Manual Sage reference entry only.
+- Portal acts as queue, tracker, evidence register and client visibility layer.
+
+Non-goals:
+
+- No Sage API integration.
+- No replacement of Sage quoting.
+- No replacement of Sage invoicing.
+- No automated payment reconciliation.
+- No official tax invoice generation inside the portal.
+- No automated VAT/accounting calculations unless manually copied from Sage.
+- No production accounting package migration.
+
+Tasks:
+
+- Refactor finance language in the roadmap and future UI from `portal invoices` to `Sage invoice references` where appropriate.
+- Change future jobcard closure behaviour so completed jobs create `Invoice Required` finance tasks, not official invoice records.
+- Change future quote approval behaviour so approved quotes move to `Approved - Sage Invoice Required`, not automatic portal invoice conversion.
+- Add manual Sage reference fields to finance records or a new finance task model.
+- Add Sage quote and invoice number fields.
+- Add Sage customer code field.
+- Add Sage due date and document date fields.
+- Add Sage amount ex VAT, VAT amount and amount inc VAT fields for manually copied values.
+- Add manual Sage payment status fields.
+- Add `Record Paid in Sage` workflow.
+- Add no-charge and on-hold workflows.
+- Add finance exception queue for missing Sage quote/invoice numbers.
+- Add completed jobs awaiting Sage invoice queue.
+- Add client requests awaiting Sage quote queue.
+- Add approved quotes awaiting Sage invoice queue.
+- Add filtered finance dashboard cards for Sage/manual workflow.
+- Add client-facing finance status wording that clearly distinguishes portal status from Sage documents.
+- Add ability to upload or link Sage-generated quote/invoice PDFs manually, if desired.
+- Add audit events for manual Sage reference entry, status changes, payment status updates, no-charge markings and on-hold markings.
+- Update finance CSV export to include Sage fields and manual finance statuses.
+- Add documentation explaining daily manual finance workflow with Sage.
+- Keep all finance write operations RBAC-protected and CSRF-protected.
+
+Deployable gate:
+
+- Completed job creates a finance task requiring Sage invoice creation.
+- Portal does not auto-generate official invoice numbers.
+- Client quote approval does not auto-create an official invoice.
+- Finance can manually enter Sage quote and invoice references.
+- Finance can manually mark a record as paid in Sage.
+- Finance dashboard clearly shows manual Sage workflow queues.
+- Finance records distinguish portal task status from Sage document status.
+- Client-facing views do not imply the portal is the official accounting system.
+- CSV export includes Sage reference fields.
+- All finance status changes are audit logged.
+- `npm run build` passes.
+- `npm run audit:site` passes.
+
+Future implementation notes:
+
+- Current `financial_records` may be refactored into a `finance_tasks` model or extended with Sage fields.
+- Current `approve-quote` behaviour should be changed later so it moves status to `Approved - Sage Invoice Required`.
+- Current `submit-jobcard` finance insert should later create `Invoice Required`.
+- Current `finance/payments` endpoint should later become `record-sage-payment` or similar.
+- UI labels should avoid `settled` unless referencing Sage-confirmed payment.
+- Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only.
+- Finance export should include Sage reference fields and retain formula-injection protection.
+
+Status:
+
+Pending.
+
+### Phase 22 - Technician Field Workflow Maturity
+
+Goal:
+
+Move the Technician Portal from a jobcard closure form to a field-service visit workflow suitable for poor-signal environments, compliance evidence capture and real site conditions.
+
+Scope:
+
+- Technician-focused workflow.
+- Mobile-first.
+- Offline/poor-signal aware.
+- No AppSheet replacement yet; this is the custom portal workflow.
+- SANS-aligned field capture.
+- Structured defects and visit outcomes.
+
+Non-goals:
+
+- No full native mobile app in this phase.
+- No AppSheet replacement claim.
+- No advanced route optimisation yet.
+- No automatic SANS certification issuance.
+- No biometric signature validation.
+
+Tasks:
+
+- Replace full inline jobcard forms on every dispatch card with a compact job list and a dedicated job detail/closure screen.
+- Add job detail page or route for individual dispatches.
+- Add GPS check-in and check-out fields.
+- Add arrival time, departure time and time-on-site tracking.
+- Add navigation/map link from site address where safe.
+- Add offline draft save.
+- Add retry/sync queue for poor signal submissions.
+- Add structured visit status:
+  - Not Started
+  - Travelling
+  - Arrived
+  - In Progress
+  - Completed
+  - Unable To Complete
+  - Follow-up Required
+  - Quote Required
+- Add structured unable-to-complete reasons:
+  - No Access
+  - Client Unavailable
+  - Unsafe To Proceed
+  - Parts Required
+  - System Isolated
+  - Quote Required
+  - Return Visit Required
+  - Cancelled On Site
+- Add customer/responsible-person name and role/title fields beside signature.
+- Add technician labour/time capture.
+- Add structured parts/materials used.
+- Add photo evidence categories:
+  - Before
+  - After
+  - Defect
+  - Panel
+  - Label
+  - Cylinder
+  - General Evidence
+- Add upload progress/retry user feedback.
+- Add SANS-aligned inspection checklist by system type.
+- Add fire detection checklist fields:
+  - panel condition/status
+  - loop faults
+  - battery voltage/load
+  - earth fault status
+  - detector condition
+  - MCP condition
+  - sounder/strobe test
+  - cause-and-effect tested
+  - isolation status
+  - fault notes
+- Add gas suppression checklist fields:
+  - cylinder pressure
+  - agent mass/weight
+  - release panel status
+  - nozzle obstruction
+  - abort/manual release condition
+  - room integrity concern
+  - signage condition
+  - detection integration status
+  - isolation status
+  - fault notes
+- Add defect capture during job closure.
+- Add certificate-blocking flag when a defect prevents certification.
+- Add technician day summary view.
+- Update jobcard PDF output to include structured checklist results, visit times, GPS if captured, responsible person name/title and defect summary.
+- Keep all technician writes assignment-protected, CSRF-protected, rate-limited and audit logged.
+
+Deployable gate:
+
+- Technician can open a single focused job detail workflow.
+- Technician can save a draft before submitting.
+- Technician can record check-in and check-out details.
+- Technician can capture structured checklist data by system type.
+- Technician can capture structured defects.
+- Technician can mark a visit unable to complete with a reason.
+- Technician can capture customer name/title and signature.
+- Jobcard output includes structured visit and compliance evidence.
+- Offline/poor-signal behaviour is documented and at least draft-safe.
+- `npm run build` passes.
+- `npm run audit:site` passes.
+
+Status:
+
+Pending.
+
+### Phase 23 - Admin Dispatch Board And SLA Operations
+
+Goal:
+
+Move the Admin Portal from static planning snapshots to an operational dispatch command centre with assignment, prioritisation, SLA visibility and exception control.
+
+Scope:
+
+- Admin dispatch management.
+- Daily operational planning.
+- Request-to-job conversion.
+- SLA and priority handling.
+- Technician workload visibility.
+- No external calendar integration yet unless later approved.
+
+Non-goals:
+
+- No full ERP replacement.
+- No external calendar integration unless later approved.
+- No automatic technician dispatch optimisation.
+- No Sage API integration in Admin/Finance phases.
+- No deletion/destructive cleanup workflows without separate approval.
+
+Tasks:
+
+- Create a dedicated Dispatch Board route.
+- Add unassigned job queue.
+- Add technician workload columns or board layout.
+- Add date selector for daily/weekly planning.
+- Add job detail drawer or expandable job cards.
+- Add assign/reassign technician action.
+- Add secondary technician support if needed.
+- Add required-by date field to jobs.
+- Add priority field to jobs.
+- Add SLA level field.
+- Add SLA status calculation:
+  - On Track
+  - Warning
+  - Breached
+  - Completed
+- Add breach/warning visual indicators.
+- Add after-hours/emergency flag.
+- Add estimated duration field.
+- Add access requirements field.
+- Add site contact display on dispatch cards.
+- Add route/geography hint where possible from address.
+- Add job status transitions controlled by admin where appropriate:
+  - Scheduled
+  - In Progress
+  - Completed
+  - Unable To Complete
+  - Follow-up Required
+  - Cancelled
+- Add filters:
+  - technician
+  - date
+  - priority
+  - SLA status
+  - client/site
+  - system type
+  - unassigned only
+- Add search by client, site, system, job ID.
+- Add audit logging for assignment and schedule changes.
+- Preserve existing planning snapshot page or merge it into the new dispatch board after feature parity.
+
+Deployable gate:
+
+- Admin can view all unassigned and assigned jobs in one dispatch workspace.
+- Admin can assign/reassign technicians.
+- Admin can filter jobs by priority, date, technician and SLA status.
+- Admin can see required-by and SLA risk.
+- Admin can convert eligible client requests into dispatches.
+- Admin can see critical operational exceptions without scanning multiple pages.
+- `npm run build` passes.
+- `npm run audit:site` passes.
+
+Status:
+
+Pending.
+
+### Phase 24 - Admin Portal Information Architecture And Scale Retune
+
+Goal:
+
+Split the dense admin operations page into focused workspaces and make the admin portal usable at production record volumes.
+
+Scope:
+
+- Admin UX.
+- Navigation clarity.
+- Search/filter/pagination.
+- Record management scale.
+- No major schema redesign unless separately approved.
+
+Non-goals:
+
+- No full ERP replacement.
+- No automatic technician dispatch optimisation.
+- No Sage API integration in Admin/Finance phases.
+- No deletion/destructive cleanup workflows without separate approval.
+
+Tasks:
+
+- Split `/portal/admin/operations` into focused sections or child routes:
+  - Users & Staff
+  - Sites
+  - Systems
+  - Jobs
+  - Client Access
+  - Imports/Exports
+  - Security
+- Add search to users, sites, systems and jobs.
+- Add filters to users:
+  - role
+  - active/inactive
+  - MFA required
+  - last login
+- Add filters to sites:
+  - client/company
+  - contact
+  - billing email
+- Add filters to systems:
+  - site
+  - system type
+  - due date
+  - overdue
+  - manufacturer
+- Add filters to jobs:
+  - status
+  - technician
+  - date
+  - site
+  - system type
+- Replace fixed visible record caps with pagination or load-more backed by query parameters.
+- Add bulk-safe confirmation patterns for high-impact actions.
+- Add better success/error feedback after admin actions.
+- Add clear `last updated` and audit hints where useful.
+- Add direct links between related records:
+  - site to systems
+  - system to jobs
+  - job to jobcard/history
+  - client to site access
+- Keep import/export controls in a dedicated admin data-management area.
+- Improve mobile usability for admin pages without making dense tables unusable.
+
+Deployable gate:
+
+- Admin can find a specific user/site/system/job without scrolling through all records.
+- Admin can manage each operational entity in a focused area.
+- Admin pages remain usable with production-scale record counts.
+- No important records are hidden behind hard-coded caps without navigation.
+- `npm run build` passes.
+- `npm run audit:site` passes.
+
+Status:
+
+Pending.
+
+### Phase 25 - Defects, Certificates And Compliance Control
+
+Goal:
+
+Add the missing compliance chain so field findings can produce defects, certificate blockers, remediation work and audit-ready evidence.
+
+Scope:
+
+- Defect register.
+- Certificate control.
+- SANS-linked findings.
+- Compliance risk.
+- Technician/admin/client visibility.
+
+Non-goals:
+
+- No automatic SANS certification issuance.
+- No full ERP replacement.
+- No Sage API integration in Admin/Finance phases.
+- No deletion/destructive cleanup workflows without separate approval.
+
+Tasks:
+
+- Add defect model to roadmap as future schema:
+  - Defect_ID
+  - Job_ID
+  - Visit_ID if visit model exists
+  - Site_ID
+  - System_ID
+  - Defect_Number
+  - Category
+  - Severity
+  - Status
+  - SANS_Clause_Ref
+  - Description
+  - Recommended_Action
+  - Defect_Photo
+  - Certificate_Blocking
+  - Quote_Required
+  - Remediation_Due_Date
+  - Assigned_To
+  - Rectified_By
+  - Resolved_At
+- Add certificate model to roadmap as future schema:
+  - Certificate_ID
+  - Service_ID / Job_ID
+  - Site_ID
+  - System_ID
+  - Certificate_Type
+  - Issue_Date
+  - Expiry_Date
+  - Certificate_Status
+  - Blocked_By_Defects
+  - Document_Path
+  - Issued_By
+  - Approved_By
+- Add technician defect capture during job closure.
+- Add admin defect register.
+- Add client-visible defects where appropriate.
+- Add certificate-blocking logic.
+- Add remediation queue.
+- Add quote-required handoff for defects.
+- Add certificate eligibility status.
+- Add SANS reference field and controlled list.
+- Add compliance dashboard:
+  - open critical defects
+  - certificate blocked
+  - overdue remediation
+  - due certificates
+  - systems at risk
+- Add audit logging for defect creation, status change, rectification and certificate issue.
+- Ensure defect and certificate workflows integrate with Sage manual finance handoff when quotes/invoices are required.
+
+Deployable gate:
+
+- Technician can capture a structured defect.
+- Admin can review and manage open defects.
+- Certificate-blocking defects prevent certificate issue or mark certificate as blocked.
+- Defects can trigger Sage quote-required finance tasks.
+- Client can see appropriate compliance status without exposing internal-only notes.
+- `npm run build` passes.
+- `npm run audit:site` passes.
+
+Status:
+
+Pending.
+
+### Phase 26 - Admin Audit And Security Review Console
+
+Goal:
+
+Give administrators a readable portal view of sensitive activity, access events and security exceptions before production cutover.
+
+Scope:
+
+- Audit visibility.
+- Security review.
+- Operational accountability.
+- No third-party SIEM integration yet.
+
+Non-goals:
+
+- No full ERP replacement.
+- No external SIEM integration in this phase.
+- No deletion/destructive cleanup workflows without separate approval.
+
+Tasks:
+
+- Add admin audit console route.
+- Show recent audit events.
+- Add filters:
+  - actor
+  - role
+  - event type
+  - entity type
+  - outcome
+  - date range
+- Show security events:
+  - failed login
+  - blocked CSRF
+  - rate limit block
+  - revoked session
+  - password reset issued
+  - MFA reset
+  - user role change
+  - document access blocked
+  - finance update
+  - job assignment
+  - job closure
+- Add document access log view.
+- Add export for audit review if appropriate.
+- Add high-risk event highlighting.
+- Add monthly review checklist reference.
+- Keep logs read-only in UI.
+- Confirm only admin can access this console.
+
+Deployable gate:
+
+- Admin can review security and operational audit events without querying D1 manually.
+- Sensitive event types are visible and filterable.
+- Document access attempts can be reviewed.
+- Audit viewer is read-only.
+- `npm run build` passes.
+- `npm run audit:site` passes.
+
+Status:
+
+Pending.
 
 
 ## Master Feature List
@@ -1175,7 +2143,7 @@ Status: pending.
 - Admin operations page for user, site, system and job administration.
 - Client dashboard for system status, maintenance dates, jobcard downloads and quote approval.
 - Client maintenance request submission and recent request tracking.
-- Finance dashboard for pending invoices, receipts and balance summaries.
+- Finance dashboard for Sage manual control queues, pending Sage references, payment status tracking and operational finance exceptions.
 
 ### Component System
 
@@ -1323,6 +2291,16 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Capture parts used, fault categories, photos and follow-up actions.
   - [x] Improve generated jobcard PDF to include visual signature and richer site/system evidence.
   - [x] Add completed job history view for technicians (Phase 11).
+  - [ ] Add dedicated job detail workflow.
+  - [ ] Add GPS check-in/check-out.
+  - [ ] Add offline draft and retry queue.
+  - [ ] Add SANS-aligned checklist capture.
+  - [ ] Add structured defect capture.
+  - [ ] Add unable-to-complete outcomes.
+  - [ ] Add customer name/title and signature.
+  - [ ] Add evidence categories.
+  - [ ] Add technician day summary.
+  - [ ] Add structured parts/labour tracking.
 - Admin workflow:
   - [x] Dispatch planner for scheduling jobs and assigning technicians.
   - [x] Lifecycle due calendar by site, system type and risk tier.
@@ -1332,6 +2310,17 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Collapsible or tabbed sections on admin operations page (Phase 11).
   - [x] Import failure row details surfaced on page (Phase 11).
   - [x] Configurable service interval per system type replacing hardcoded six months (Phase 11).
+  - [ ] Add Dispatch Board.
+  - [ ] Add SLA and priority management.
+  - [ ] Add required-by dates.
+  - [ ] Add technician workload board.
+  - [ ] Add admin search/filter/pagination.
+  - [ ] Split admin operations into focused workspaces.
+  - [ ] Add defect register.
+  - [ ] Add certificate-blocking workflow.
+  - [ ] Add compliance dashboard.
+  - [ ] Add audit/security console.
+  - [ ] Add Sage finance handoff queues.
 - Client workflow:
   - [x] Client account-to-site management for multi-site customers.
   - [x] Quote approval history and confirmation receipts.
@@ -1339,10 +2328,18 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Client-visible request status and linked scheduled dispatch reference.
   - [x] Per-document access logs for sensitive records.
 - Finance workflow:
-  - [x] Invoice number generation and immutable ledger references.
-  - [x] Payment capture and reconciliation states.
-  - [x] Export to accounting workflow or CSV.
-  - [x] Approval controls before invoices are marked settled.
+  - [x] Current portal ledger, export and payment-capture foundations exist for staging review.
+  - [x] Finance settlement confirmation gate exists in the current portal workflow.
+  - [ ] Reframe finance portal as Sage manual control register.
+  - [ ] Replace portal invoice authority with Sage reference tracking.
+  - [ ] Add manual Sage quote/invoice/payment fields.
+  - [ ] Add completed-job-to-Sage-invoice queue.
+  - [ ] Add request-to-Sage-quote queue.
+  - [ ] Add approved-quote-to-Sage-invoice queue.
+  - [ ] Add `Record Paid in Sage` workflow.
+  - [ ] Add no-charge/on-hold workflow.
+  - [ ] Add Sage PDF upload/link workflow if approved.
+  - [ ] Add finance exception queue for missing Sage references.
 - Security and audit:
   - [x] Audit table for auth, record access, status changes and financial changes.
   - [x] Rate limiting for login endpoint.
@@ -1374,7 +2371,7 @@ Operational gaps to resolve before replacing manual back-office processes:
 
 ### Security Headers And Privacy Governance
 
-- Add strict browser security headers before production cutover.
+- Strict browser security headers are present in `_headers`; complete live CSP/browser checks before production cutover.
 - Keep analytics off all `/portal/*` routes.
 - Confirm POPIA implications for:
   - public contact submissions,
@@ -1404,7 +2401,7 @@ Target role experience:
 - Admin: exceptions, dispatch, lifecycle, users, sites, systems, defects, certificates and audit.
 - Technician: mobile field workflow, assigned jobs, SANS-aware visit capture, defects, photos and signature.
 - Client: compliance status, documents, requests, quotes, invoices and evidence packs for mapped sites only.
-- Finance: quote/invoice/payment workflow, VAT, debtor ageing, accounting export and immutable audit trail.
+- Finance: Sage manual control register for quote/invoice/payment references, finance queues, debtor-status visibility and immutable audit trail while Sage remains authoritative.
 
 
 ## Master User Operation
@@ -1440,10 +2437,59 @@ Target role experience:
 1. Admin creates or updates site/system/user records in D1 using controlled scripts until an admin CRUD UI exists.
 2. Technician signs in to `/portal/tech/dashboard`.
 3. Technician closes assigned dispatch with comments and captured signature evidence.
-4. Portal stores generated jobcard PDF in R2, marks the job completed, advances the system next due date using the configured service interval and creates an unpaid finance record.
-5. Finance reviews ledger entries in `/portal/finance/dashboard`.
+4. Portal stores generated jobcard PDF in R2, marks the job completed, advances the system next due date using the configured service interval and currently creates a staging finance record.
+5. Finance reviews finance entries in `/portal/finance/dashboard`; Phase 21 will reframe this as a Sage manual control register rather than a portal invoice ledger.
 6. Client sees system lifecycle status and permitted jobcard files in `/portal/client/dashboard`.
 7. Admin monitors active jobs, completed work and due systems in `/portal/admin/dashboard`.
+
+### Technician Field Operation
+
+1. Technician opens assigned jobs.
+2. Technician opens a focused job detail screen.
+3. Technician checks site/system details and access notes.
+4. Technician starts travel or marks job in progress.
+5. Technician checks in on site.
+6. Technician performs system-specific checklist.
+7. Technician captures readings, defects, photos, parts and notes.
+8. Technician records follow-up, quote-required or unable-to-complete outcomes if needed.
+9. Technician captures responsible-person name, role and signature.
+10. Technician submits jobcard or saves offline draft.
+11. Portal generates evidence pack and updates lifecycle/compliance status.
+
+### Admin Dispatch And Compliance Operation
+
+1. Admin reviews exception-first dashboard.
+2. Admin reviews unassigned jobs and client requests.
+3. Admin assigns/reassigns technicians from Dispatch Board.
+4. Admin monitors SLA warnings and breaches.
+5. Admin tracks overdue systems and lifecycle due dates.
+6. Admin reviews defects and certificate blockers.
+7. Admin manages users, sites, systems and jobs in focused admin workspaces.
+8. Admin reviews audit/security events.
+9. Admin monitors Sage finance handoff queues.
+
+### Manual Sage Finance Operation
+
+Completed job to Sage invoice:
+
+1. Technician completes jobcard in portal.
+2. Portal creates finance task: `Invoice Required`.
+3. Finance creates official invoice in Sage.
+4. Finance enters Sage invoice number and amount details into portal.
+5. Portal exposes operational invoice status to admin/client.
+6. Finance reconciles payment in Sage.
+7. Finance records `Paid in Sage` in portal.
+8. Portal closes operational finance task.
+
+Quote request to Sage quote:
+
+1. Client/admin request requires quote.
+2. Portal creates finance task: `Quote Required`.
+3. Finance creates Sage quote.
+4. Finance enters Sage quote number/status in portal.
+5. Client approval is recorded.
+6. Portal moves task to `Approved - Sage Invoice Required`.
+7. Finance creates Sage invoice manually.
 
 ### Internal Maintenance Operation
 
@@ -1580,12 +2626,48 @@ Target role experience:
 - [x] Add configurable service interval per system type (Phase 11).
 - [ ] Add web analytics to public site (Phase 12).
 - [ ] Add migration plan from `portal.tequit.co.za` to `portal.kharon.co.za`.
-- [ ] Add strict security headers and CSP verification (Phase 13).
+- [x] Add strict browser security header baseline in `_headers` (Phase 13 baseline).
+- [ ] Complete live CSP/browser verification and future nonce/hash tightening review if inline scripts are removed (Phase 13).
 - [ ] Expand portal data model with Clients, Visits, Defects and Certificates (Phase 16).
 - [ ] Add SANS-aware technician field telemetry and defect capture (Phase 17).
 - [ ] Add client compliance command centre and evidence-pack downloads (Phase 18).
 - [ ] Add finance VAT, invoice numbering, debtor ageing and proof-of-payment maturity (Phase 19).
 - [ ] Refine role dashboards around primary operational jobs (Phase 20).
+- [ ] Add Sage manual finance control register model (Phase 21).
+- [ ] Add Sage quote/invoice reference fields (Phase 21).
+- [ ] Add manual Sage status workflow (Phase 21).
+- [ ] Add Sage payment status tracking (Phase 21).
+- [ ] Add completed jobs awaiting Sage invoice queue (Phase 21).
+- [ ] Add quote required queue (Phase 21).
+- [ ] Add approved quotes awaiting Sage invoice queue (Phase 21).
+- [ ] Add missing Sage reference exception queue (Phase 21).
+- [ ] Add clear UI labels separating portal status from Sage status (Phase 21).
+- [ ] Add audit logging for manual Sage finance updates (Phase 21).
+- [ ] Update finance export for Sage fields (Phase 21).
+- [ ] Add focused job detail route (Phase 22).
+- [ ] Add GPS check-in/check-out (Phase 22).
+- [ ] Add offline draft save and retry queue (Phase 22).
+- [ ] Add structured visit status model (Phase 22).
+- [ ] Add unable-to-complete workflow (Phase 22).
+- [ ] Add SANS-aligned checklist fields (Phase 22).
+- [ ] Add defect capture (Phase 22).
+- [ ] Add customer name/title field (Phase 22).
+- [ ] Add structured parts/labour tracking (Phase 22).
+- [ ] Add evidence categories (Phase 22).
+- [ ] Add technician day summary (Phase 22).
+- [ ] Add Dispatch Board (Phase 23).
+- [ ] Add unassigned job queue (Phase 23).
+- [ ] Add technician workload board (Phase 23).
+- [ ] Add SLA level and required-by fields (Phase 23).
+- [ ] Add SLA status calculation (Phase 23).
+- [ ] Add job priority and emergency flag (Phase 23).
+- [ ] Add search/filter/pagination to admin pages (Phase 24).
+- [ ] Split admin operations into focused workspaces (Phase 24).
+- [ ] Add defect register (Phase 25).
+- [ ] Add certificate-blocking workflow (Phase 25).
+- [ ] Add compliance dashboard (Phase 25).
+- [ ] Add audit/security console (Phase 26).
+- [ ] Add Sage manual finance handoff queues (Phase 23/21).
 
 ## Phased Implementation
 
@@ -1845,14 +2927,16 @@ Add explicit browser security policy and verify header posture across public, po
 
 Tasks:
 
-- Add CSP and supporting headers.
-- Confirm no portal scripts or form submissions are broken.
-- Add header checks to audit tooling.
-- Document approved external script/style/image domains.
+- [x] Add CSP and supporting headers in `public/_headers`.
+- [x] Add header checks to audit tooling.
+- [x] Document current CSP tradeoff: inline JSON-LD and portal helper scripts require `'unsafe-inline'` for now.
+- [ ] Confirm no portal scripts or form submissions are broken through credential-backed browser QA.
+- [ ] Document approved external script/style/image domains again after analytics or email provider selection.
+- [ ] Review whether portal inline scripts can move to static files or CSP hashes/nonces in a later hardening pass.
 
 Status:
 
-Pending. Mirrors Outstanding Build Phase 13.
+Baseline implemented. Live/browser verification and future CSP tightening remain open. Mirrors Outstanding Build Phase 13.
 
 ### Phase 12: Public Authority Proof And Compliance Hub
 
@@ -1950,6 +3034,42 @@ Status:
 
 Pending. Mirrors Outstanding Build Phase 20.
 
+### Phase 18: Sage Manual Finance Control Register
+
+Goal:
+
+Make the Finance Portal operationally useful while Sage remains the formal quoting, invoicing and accounting source of truth.
+
+Scope:
+
+- No Sage API.
+- No accounting integration.
+- Manual Sage reference entry only.
+- Portal acts as queue, tracker, evidence register and client visibility layer.
+
+Tasks:
+
+- Reframe finance portal language away from portal invoice authority and toward Sage reference tracking.
+- Add Sage customer, quote, invoice, document date, due date, amount, payment and exception fields.
+- Change completed job handoff to create `Invoice Required` tasks.
+- Change quote approval handoff to create `Approved - Sage Invoice Required` tasks.
+- Add `Record Paid in Sage`, no-charge and on-hold workflows.
+- Add finance queues for missing Sage references, completed jobs awaiting Sage invoice, quote required work and approved quotes awaiting Sage invoice.
+- Add audit events and CSV export coverage for Sage manual finance updates.
+
+Deployable gate:
+
+- Sage remains source of truth.
+- Portal records do not conflict with Sage numbering.
+- Portal labels distinguish operational status from accounting status.
+- Manual Sage references can be entered and audited.
+- Client-facing language does not imply the portal is the accounting system.
+- `npm run build` and `npm run audit:site` pass.
+
+Status:
+
+Pending. Mirrors Outstanding Build Phase 21.
+
 
 ## Verification Commands
 
@@ -1979,3 +3099,26 @@ A phase is done only when:
 - Mobile and desktop layouts are usable.
 - SEO and accessibility obligations in that phase are met.
 - The phase can be deployed without relying on unfinished future work.
+
+For finance phases involving Sage:
+
+- Sage remains source of truth.
+- Portal records do not conflict with Sage numbering.
+- Portal labels distinguish operational status from accounting status.
+- Manual Sage references can be entered and audited.
+- No portal workflow creates an official quote/invoice number unless copied from Sage.
+- All status updates are traceable to a user and timestamp.
+- Client-facing language does not imply the portal is the accounting system.
+
+For Technician/Admin portal phases:
+
+- Workflow must support real field-service scenarios, not only happy-path completion.
+- Admin must be able to find records without relying on hard-coded caps or scrolling.
+- Technician must be able to handle poor signal, follow-up, defects and unable-to-complete outcomes.
+- Field captures must be structured enough to support compliance evidence.
+- Admin must have exception-first visibility.
+- High-impact actions must be audit logged.
+- Role access must remain RBAC-protected.
+- State-changing actions must remain CSRF-protected and rate-limited.
+- Client-facing views must not expose internal-only notes or unsafe data.
+- Build and audit scripts must pass.
