@@ -14,6 +14,8 @@ const baseFields = [
   { label: "Email", name: "email", type: "email", autocomplete: "email", inputmode: "email", maxlength: 120 },
   { label: "Company / Site", name: "site", type: "text", autocomplete: "organization", maxlength: 140 }
 ];
+
+const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 ---
 
 <section class="section-padding bg-white">
@@ -28,12 +30,11 @@ const baseFields = [
       </div>
     </div>
 
-    <form class="grid gap-5 rounded-lg border border-kharon-border bg-kharon-light p-6" action={`mailto:${site.email}`} method="post" enctype="text/plain" aria-describedby={`${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-help`}>
-      <p id={`${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-help`} class="text-sm text-kharon-grey">
-        Submission opens your default email client with this request context included.
-      </p>
-
+    <form id={formId} class="grid gap-5 rounded-lg border border-kharon-border bg-kharon-light p-6">
+      <label class="sr-only" for={`${formId}-website`}>Website</label>
+      <input id={`${formId}-website`} class="hidden" name="website" tabindex="-1" autocomplete="off" />
       <input type="hidden" name="request_type" value={requestType} />
+
       {[...baseFields, ...fields].map((field) => (
         <label class="grid gap-2 text-sm font-semibold text-kharon-black">
           {field.label}
@@ -60,9 +61,72 @@ const baseFields = [
         <textarea class="min-h-32 rounded-md border border-kharon-border px-4 py-3 font-normal" name="operational_notes" maxlength="3000" required></textarea>
       </label>
 
+      <p class="hidden text-sm font-semibold" aria-live="polite"></p>
+
       <button class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
         Submit Request
       </button>
     </form>
   </div>
 </section>
+<script>
+  for (const form of document.querySelectorAll("[id^='ci-']")) {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const btn = form.querySelector("button");
+      const resultEl = form.querySelector("[aria-live='polite']");
+      if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
+      if (resultEl) resultEl.className = "hidden text-sm font-semibold";
+
+      const data = new FormData(form);
+
+      // Build message from Company/Site + contextual fields + operational notes
+      const parts = [];
+      const siteValue = String(data.get("site") || "").trim();
+      if (siteValue) parts.push(`Company / Site: ${siteValue}`);
+
+      const skip = new Set(["name", "email", "site", "website", "request_type", "operational_notes"]);
+      for (const [key, value] of data.entries()) {
+        if (skip.has(key) || !value) continue;
+        const label = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        parts.push(`${label}: ${value}`);
+      }
+
+      const notes = String(data.get("operational_notes") || "").trim();
+      if (notes) parts.push(`\nNotes:\n${notes}`);
+
+      const payload = {
+        website: String(data.get("website") || ""),
+        name: String(data.get("name") || ""),
+        email: String(data.get("email") || ""),
+        requestType: String(data.get("request_type") || ""),
+        message: parts.join("\n")
+      };
+
+      try {
+        const response = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const body = await response.json().catch(() => ({ ok: false, message: "Submission failed." }));
+
+        if (body.ok) {
+          form.innerHTML = `<p class="py-4 text-base font-semibold text-kharon-purple">Request received. Kharon will be in contact shortly.</p>`;
+        } else {
+          if (resultEl) {
+            resultEl.textContent = body.message || "Submission failed. Try emailing admin@kharon.co.za directly.";
+            resultEl.className = "text-sm font-semibold text-red-700";
+          }
+          if (btn) { btn.disabled = false; btn.textContent = "Submit Request"; }
+        }
+      } catch {
+        if (resultEl) {
+          resultEl.textContent = "Could not reach the server. Try emailing admin@kharon.co.za directly.";
+          resultEl.className = "text-sm font-semibold text-red-700";
+        }
+        if (btn) { btn.disabled = false; btn.textContent = "Submit Request"; }
+      }
+    });
+  }
+</script>

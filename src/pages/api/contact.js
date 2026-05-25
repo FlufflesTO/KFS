@@ -6,17 +6,28 @@ import { sha256Text } from "../../lib/server/request.js";
 export const prerender = false;
 
 const ALLOWED_REQUEST_TYPES = new Set([
+  // Main contact form options
   "Emergency technical support",
   "Gas suppression evaluation",
   "Fire detection system review",
   "Compliance inspection",
   "Maintenance assessment",
   "Client records access",
+  // Solution link labels
   "Gas Suppression",
   "Fire Detection",
   "Compliance & Maintenance",
   "Critical Infrastructure",
-  "Integrated Security"
+  "Integrated Security",
+  // Contextual inquiry form types (one per public service/solution page)
+  "Gas suppression assessment",
+  "Fire detection review",
+  "Compliance assessment",
+  "Critical infrastructure protection discussion",
+  "Emergency / SLA support",
+  "Capability discussion",
+  "Sector protection assessment",
+  "Integrated infrastructure security review"
 ]);
 
 function json(data, status = 200) {
