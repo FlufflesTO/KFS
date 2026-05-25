@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Kharon FSM</title>
+  <meta name="theme-color" content="#1e3a5f">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      padding: 20px;
+    }
+    .container {
+      text-align: center;
+      max-width: 400px;
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    p {
+      font-size: 14px;
+      opacity: 0.9;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .status {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .status-label {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+    .status-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    button {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    button.primary {
+      background: #fff;
+      color: #1e3a5f;
+      border: none;
+    }
+    button.primary:hover {
+      background: #f0f0f0;
+    }
+    .sync-status {
+      margin-top: 20px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    .pending-count {
+      display: inline-block;
+      background: #f59e0b;
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>You're Offline</h1>
+    <p>
+      No internet connection detected. Your data is saved locally and will sync automatically when you're back online.
+    </p>
+    
+    <div class="status">
+      <div class="status-label">Connection Status</div>
+      <div class="status-value" id="connectionStatus">Checking...</div>
+    </div>
+    
+    <div class="status">
+      <div class="status-label">Pending Sync Items</div>
+      <div class="status-value" id="pendingCount">Loading...</div>
+    </div>
+    
+    <div class="actions">
+      <button onclick="location.reload()">🔄 Try Again</button>
+      <button class="primary" onclick="window.history.back()">← Go Back</button>
+    </div>
+    
+    <div class="sync-status" id="syncStatus"></div>
+  </div>
+
+  <script>
+    // Connection status monitoring
+    function updateConnectionStatus() {
+      const statusEl = document.getElementById('connectionStatus');
+      if (navigator.onLine) {
+        statusEl.textContent = '✅ Online';
+        statusEl.style.color = '#4ade80';
+        
+        // Trigger sync check
+        checkPendingSync();
+      } else {
+        statusEl.textContent = '❌ Offline';
+        statusEl.style.color = '#f87171';
+      }
+    }
+
+    // Check pending sync items from IndexedDB
+    async function checkPendingSync() {
+      const pendingEl = document.getElementById('pendingCount');
+      const syncStatusEl = document.getElementById('syncStatus');
+      
+      try {
+        // Open IndexedDB
+        const db = await new Promise((resolve, reject) => {
+          const request = indexedDB.open('kharon-offline-db', 1);
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => resolve(request.result);
+        });
+
+        // Get counts from each store
+        const stores = ['visits', 'signatures', 'photos', 'syncQueue'];
+        let total = 0;
+        
+        for (const storeName of stores) {
+          try {
+            const count = await new Promise((resolve) => {
+              const tx = db.transaction([storeName], 'readonly');
+              const store = tx.objectStore(storeName);
+              const req = store.count();
+              req.onsuccess = () => resolve(req.result || 0);
+              req.onerror = () => resolve(0);
+            });
+            total += count;
+          } catch (e) {
+            // Store might not exist yet
+          }
+        }
+
+        pendingEl.innerHTML = total > 0 
+          ? `${total} items <span class="pending-count">${total}</span>`
+          : 'None';
+        
+        if (total > 0 && navigator.onLine) {
+          syncStatusEl.textContent = '🔄 Data will sync automatically...';
+        } else if (navigator.onLine) {
+          syncStatusEl.textContent = '✅ All data synchronized';
+        }
+      } catch (error) {
+        pendingEl.textContent = '—';
+      }
+    }
+
+    // Listen for connection changes
+    window.addEventListener('online', () => {
+      updateConnectionStatus();
+      setTimeout(() => location.reload(), 2000);
+    });
+    
+    window.addEventListener('offline', updateConnectionStatus);
+
+    // Initial check
+    updateConnectionStatus();
+    checkPendingSync();
+  </script>
+</body>
+</html>

@@ -1,37 +1,70 @@
+```
 # Dependencies
 node_modules/
 
-# Build output
+# Build artifacts
 dist/
-.astro/
-
-# Cloudflare / local runtime state
-.wrangler/
-
-# Environment files
-.env
-.env.*
-!.env.example
-seed-users.sql
+build/
+target/
 
 # Logs
 *.log
+
+# Environment variables
+.env
+.env.local
+*.env.*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+htmlcov/
+.coverage.*
+.pytest_cache/
+.mypy_cache/
+
+# Node.js specific
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Local operational exports
-backups/
-monitor-results/
-retention-reports/
-memory/
-portal_test.html
-.claude/
+# Distribution / packaging
+*.tar
+*.tar.gz
+*.zip
+*.dmg
+*.pkg
+*.msi
 
-# OS / editor noise
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-.vscode/
-.idea/
-.qoder/
-0.26.0
+
+# PWA related
+sw.js
+workbox-*.js
+precache-*.js
+
+# Certificate and optimization related artifacts
+*.pdf
+*.cert
+*.crt
+*.key
+```

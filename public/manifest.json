@@ -1,0 +1,63 @@
+{
+  "name": "Kharon Fire & Security Solutions - Field Service Portal",
+  "short_name": "Kharon FSM",
+  "description": "Field Service Management portal for Kharon Fire and Security Solutions technicians",
+  "start_url": "/portal/tech/dashboard",
+  "scope": "/portal/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1e3a5f",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/brand/kharon-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/brand/kharon-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/kharon-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "My Jobs",
+      "short_name": "Jobs",
+      "description": "View assigned jobs",
+      "url": "/portal/tech/jobs",
+      "icons": [{ "src": "/brand/kharon-mark.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Log Visit",
+      "short_name": "Visit",
+      "description": "Log a new site visit",
+      "url": "/portal/tech/history",
+      "icons": [{ "src": "/brand/kharon-mark.svg", "sizes": "any" }]
+    }
+  ],
+  "share_target": {
+    "action": "/portal/tech/jobs/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "desc",
+      "files": [
+        {
+          "name": "evidence",
+          "accept": ["image/*"]
+        }
+      ]
+    }
+  }
+}
