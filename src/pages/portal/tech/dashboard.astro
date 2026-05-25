@@ -6,7 +6,6 @@ export const prerender = false;
 
 const user = Astro.locals.user;
 let jobs = [];
-let jobVisits = {};
 let loadError = "";
 const today = new Date().toISOString().slice(0, 10);
 
@@ -14,14 +13,18 @@ try {
   const db = getDatabase();
   const query = user.role === "admin"
     ? `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-              jobs.job_type, systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address
+              jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
+              systems.system_type, systems.coverage_area,
+              sites.owner_company_name, sites.physical_address
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
        WHERE jobs.status IN ('Scheduled', 'In Progress')
        ORDER BY jobs.scheduled_date ASC`
     : `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-              jobs.job_type, systems.system_type, systems.coverage_area, sites.owner_company_name, sites.physical_address
+              jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
+              systems.system_type, systems.coverage_area,
+              sites.owner_company_name, sites.physical_address
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
@@ -32,43 +35,31 @@ try {
     ? await db.prepare(query).all()
     : await db.prepare(query).bind(user.id).all();
   jobs = result.results || [];
-
-  if (user.role === "tech" && jobs.length > 0) {
-    const jobIds = jobs.map((j: any) => j.id);
-    const placeholders = jobIds.map(() => "?").join(",");
-    const visitsResult = await db.prepare(
-      `SELECT job_id, visit_date, arrival_at, departure_at, gps_latitude, gps_longitude,
-              customer_name, customer_title, notes
-       FROM job_visits
-       WHERE job_id IN (${placeholders})
-       ORDER BY visit_date DESC, arrival_at DESC`
-    ).bind(...jobIds).all();
-    for (const visit of (visitsResult.results || [])) {
-      if (!jobVisits[visit.job_id]) jobVisits[visit.job_id] = [];
-      jobVisits[visit.job_id].push(visit);
-    }
-  }
 } catch (error) {
   console.error("technician dashboard failed", error);
   loadError = "Assigned dispatches could not be loaded.";
 }
 
-// Split dispatches: today-and-overdue need action; future-only are informational
-const actionJobs   = jobs.filter((j: any) => j.scheduled_date <= today);
-const upcomingJobs = jobs.filter((j: any) => j.scheduled_date > today);
-const todayCount   = jobs.filter((j: any) => j.scheduled_date === today).length;
-const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "Today and overdue — action required";
+const actionJobs = jobs.filter((j) => j.scheduled_date <= today);
+const upcomingJobs = jobs.filter((j) => j.scheduled_date > today);
+const todayCount = jobs.filter((j) => j.scheduled_date === today).length;
+const inProgressCount = jobs.filter((j) => j.status === "In Progress").length;
+
+function priorityClass(priority) {
+  if (priority === "Critical") return "bg-kharon-red text-white";
+  if (priority === "High") return "border border-amber-400 bg-amber-50 text-amber-800";
+  if (priority === "Low") return "border border-kharon-border bg-white text-kharon-grey";
+  return "bg-kharon-light text-kharon-grey";
+}
 ---
 
 <PortalLayout title="Technician Dispatches | Kharon Portal" active="tech" user={user}>
   <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
     <div class="mx-auto max-w-7xl">
       <p class="text-xs font-bold uppercase text-kharon-cyan">Technician workspace</p>
-      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Assigned dispatch closure</h1>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Assigned dispatches</h1>
       <p class="mt-4 max-w-3xl text-white/65">
-        {user.role === "admin"
-          ? "Read-only technician dispatch visibility for operations review. Start and closure actions remain technician-controlled."
-          : "Close scheduled field work with comments and captured client signature. Completed jobcards update lifecycle dates and finance automatically."}
+        Open a dispatch to log arrival, capture evidence, record defects and submit the completed jobcard from a focused field workflow.
       </p>
     </div>
   </section>
@@ -78,7 +69,7 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
 
       {!loadError && jobs.length > 0 && (
-        <div class="grid grid-cols-3 gap-3 border border-kharon-border bg-white p-4 sm:grid-cols-3">
+        <div class="grid grid-cols-3 gap-3 border border-kharon-border bg-white p-4">
           <div class="border-r border-kharon-border pr-4">
             <p class="text-xs font-bold uppercase text-kharon-grey/60">Today</p>
             <p class="mt-1 text-2xl font-bold text-kharon-black">{todayCount}</p>
@@ -89,7 +80,7 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
           </div>
           <div class="pl-4">
             <p class="text-xs font-bold uppercase text-kharon-grey/60">In progress</p>
-            <p class="mt-1 text-2xl font-bold text-kharon-purple">{jobs.filter((j: any) => j.status === "In Progress").length}</p>
+            <p class="mt-1 text-2xl font-bold text-kharon-purple">{inProgressCount}</p>
           </div>
         </div>
       )}
@@ -100,515 +91,50 @@ const actionLabel  = actionJobs.length === todayCount ? `Today — ${today}` : "
           <p class="mt-2 text-sm text-kharon-grey">No scheduled dispatches are currently assigned to this account. Contact the admin team if you expect jobs to appear here.</p>
         </div>
       )}
-      {user.role === "tech" && jobs.length > 0 && (
-        <p class="border border-kharon-border bg-kharon-light px-4 py-3 text-sm text-kharon-grey">
-          <strong>Poor signal or offline?</strong> Complete the form and submit when you have a connection. Drafts are not automatically saved  -  do not close this page until the submission is confirmed.
-        </p>
-      )}
 
       {actionJobs.length > 0 && (
         <p class="border-l-4 border-kharon-cyan bg-kharon-light px-4 py-3 text-sm font-bold uppercase tracking-wide text-kharon-black">
-          {actionLabel}
+          Today and overdue - action required
         </p>
       )}
-      {actionJobs.map((job) => (
-        <article class="grid gap-5 border border-kharon-border bg-white p-4 sm:p-5 lg:grid-cols-[1fr_0.9fr]">
+
+      {[...actionJobs, ...upcomingJobs].map((job) => (
+        <article class="grid gap-4 border border-kharon-border bg-white p-4 sm:p-5 lg:grid-cols-[1fr_auto]">
           <div class="min-w-0">
-            <p class="text-xs font-bold uppercase text-kharon-purple">{job.status}</p>
-            <h2 class="mt-2 text-xl font-bold text-kharon-black">{job.owner_company_name}</h2>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class={`rounded px-2 py-0.5 text-xs font-bold ${priorityClass(job.priority || "Normal")}`}>{job.priority || "Normal"}</span>
+              {job.is_emergency === 1 && <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Emergency</span>}
+              <span class="rounded bg-kharon-light px-2 py-0.5 text-xs font-bold uppercase text-kharon-grey">{job.status}</span>
+              {job.required_by_date && <span class="text-xs font-semibold text-kharon-grey">Required by {job.required_by_date}</span>}
+            </div>
+            <h2 class="mt-3 text-xl font-bold text-kharon-black">{job.owner_company_name}</h2>
+            <p class="mt-1 text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</p>
             <p class="mt-2 text-sm text-kharon-grey">{job.physical_address}</p>
+            <dl class="mt-4 grid gap-2 text-sm sm:grid-cols-3">
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Job Type</dt><dd>{job.job_type}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Scheduled</dt><dd>{job.scheduled_date}</dd></div>
+              <div><dt class="font-bold uppercase text-kharon-grey/70">Job ID</dt><dd class="break-all">{job.id}</dd></div>
+            </dl>
+            {job.site_notes && <p class="mt-4 border-l-4 border-kharon-blue bg-kharon-light p-3 text-sm text-kharon-grey">{job.site_notes}</p>}
+          </div>
+
+          <aside class="grid content-start gap-3 sm:min-w-52">
+            <a class="inline-flex justify-center rounded-md bg-kharon-purple px-5 py-3 text-sm font-semibold text-white hover:bg-kharon-blue" href={`/portal/tech/jobs/${job.id}`}>
+              Open dispatch
+            </a>
             {job.physical_address && (
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="mt-1 inline-block text-xs font-semibold text-kharon-blue hover:underline"
+                class="inline-flex justify-center rounded-md border border-kharon-border px-5 py-3 text-sm font-semibold text-kharon-grey hover:bg-kharon-light"
               >
-                Navigate Navigate
+                Navigate
               </a>
             )}
-            <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-              <div><dt class="font-bold uppercase text-kharon-grey/70">System</dt><dd>{job.system_type}</dd></div>
-              <div><dt class="font-bold uppercase text-kharon-grey/70">Coverage</dt><dd>{job.coverage_area}</dd></div>
-              <div><dt class="font-bold uppercase text-kharon-grey/70">Job Type</dt><dd>{job.job_type}</dd></div>
-              <div><dt class="font-bold uppercase text-kharon-grey/70">Scheduled</dt><dd>{job.scheduled_date}</dd></div>
-              <div><dt class="font-bold uppercase text-kharon-grey/70">Job ID</dt><dd>{job.id}</dd></div>
-            </dl>
-            {job.site_notes && <p class="mt-5 border-l-4 border-kharon-blue bg-kharon-light p-4 text-sm text-kharon-grey">{job.site_notes}</p>}
-            {user.role === "tech" && job.status === "Scheduled" && (
-              <button class="start-job mt-5 rounded-md border border-kharon-blue px-5 py-3 text-sm font-semibold text-kharon-blue hover:bg-kharon-blue hover:text-white" data-job-id={job.id}>
-                Start job
-              </button>
-            )}
-            {user.role === "tech" && (jobVisits[job.id]?.length || 0) > 0 && (
-              <div class="mt-4 border-t border-kharon-border pt-4">
-                <p class="text-xs font-bold uppercase text-kharon-purple">Visit history</p>
-                <div class="mt-2 grid gap-2">
-                  {jobVisits[job.id]?.map((visit: any) => (
-                    <article class="rounded-md border border-kharon-border bg-white p-3 text-sm">
-                      <p class="font-semibold">{visit.visit_date} / {visit.arrival_at || "Arrival not recorded"}</p>
-                      {visit.departure_at && <p class="text-xs text-kharon-grey">Departed: {visit.departure_at}</p>}
-                      {visit.gps_latitude && visit.gps_longitude && <p class="mt-1 text-xs text-kharon-grey">GPS: {visit.gps_latitude}, {visit.gps_longitude}</p>}
-                      {visit.customer_name && <p class="mt-1 text-xs text-kharon-grey">Contact: {visit.customer_name}{visit.customer_title ? ` (${visit.customer_title})` : ""}</p>}
-                      {visit.notes && <p class="mt-1 text-xs text-kharon-grey">{visit.notes}</p>}
-                    </article>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {user.role === "admin" ? (
-            <aside class="grid min-w-0 content-start gap-3 border border-kharon-border bg-kharon-light p-4">
-              <p class="text-xs font-bold uppercase text-kharon-purple">Operations review</p>
-              <p class="text-sm leading-6 text-kharon-grey">
-                Admin users can review assigned dispatches here, but field start and jobcard closure actions must be completed by the assigned technician account.
-              </p>
-              <a class="inline-flex rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" href="/portal/admin/operations#jobs">
-                Manage dispatch in Admin Operations
-              </a>
-            </aside>
-          ) : (
-          <div class="grid min-w-0 content-start gap-4 border border-kharon-border bg-kharon-light p-4">
-            {job.status === "Scheduled" && (
-              <form class="log-arrival-form grid gap-3" data-job-id={job.id}>
-                <input type="hidden" name="jobId" value={job.id} />
-                <p class="text-xs font-bold uppercase text-kharon-purple">Log site arrival</p>
-                <div class="grid gap-2 sm:grid-cols-2">
-                  <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="visitDate" type="date" value={today} required />
-                  <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="arrivalTime" type="time" required />
-                </div>
-                <div class="grid gap-2 sm:grid-cols-2">
-                  <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="gpsLat" placeholder="GPS latitude (optional)" />
-                  <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="gpsLng" placeholder="GPS longitude (optional)" />
-                </div>
-                <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="customerName" placeholder="On-site contact name" />
-                <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="customerTitle" placeholder="Title / role" />
-                <textarea class="portal-field min-h-16 rounded-md border border-kharon-border px-3 py-2 text-sm" name="notes" maxlength="500" placeholder="Arrival notes (access conditions, hazards, etc.)"></textarea>
-                <button class="rounded-md border border-kharon-blue px-4 py-2 text-sm font-semibold text-kharon-blue hover:bg-kharon-blue hover:text-white">Log arrival</button>
-                <p class="log-arrival-result hidden text-sm font-semibold"></p>
-              </form>
-            )}
-            <form class="jobcard-form grid min-w-0 gap-4" data-job-id={job.id} data-system-id={job.system_id}>
-            <input type="hidden" name="jobId" value={job.id} />
-            <input type="hidden" name="systemId" value={job.system_id} />
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Fault / work category
-              <select name="faultCategory" class="portal-field rounded-md border border-kharon-border px-4 py-3">
-                <option value="Routine service">Routine service</option>
-                <option value="Fault response">Fault response</option>
-                <option value="Compliance inspection">Compliance inspection</option>
-                <option value="Panel issue">Panel issue</option>
-                <option value="Detection device issue">Detection device issue</option>
-                <option value="Suppression release infrastructure">Suppression release infrastructure</option>
-                <option value="Follow-up required">Follow-up required</option>
-              </select>
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Technician comments
-              <textarea name="techComments" class="portal-field min-h-28 rounded-md border border-kharon-border px-4 py-3" maxlength="3000" required></textarea>
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Parts used
-              <input name="partsUsed" class="portal-field rounded-md border border-kharon-border px-4 py-3" maxlength="500" placeholder="None / detector head / battery / cylinder label / other" />
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Follow-up actions
-              <textarea name="followUpActions" class="portal-field min-h-20 rounded-md border border-kharon-border px-4 py-3" maxlength="1000" placeholder="No follow-up required, or describe required action."></textarea>
-            </label>
-            <div class="grid gap-4 sm:grid-cols-2">
-              <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-                Customer / responsible person name
-                <input name="customerName" class="portal-field rounded-md border border-kharon-border px-4 py-3" maxlength="120" placeholder="Full name of client signatory" required />
-              </label>
-              <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-                Title / role
-                <input name="customerTitle" class="portal-field rounded-md border border-kharon-border px-4 py-3" maxlength="80" placeholder="e.g. Facilities Manager" />
-              </label>
-            </div>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Photo evidence
-              <span class="text-xs font-normal text-kharon-grey">Optional. Up to 3 JPEG, PNG or WebP images, maximum 1.5 MB each. Capture only relevant system, panel, label, defect or completion evidence.</span>
-              <input name="evidencePhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple class="portal-field rounded-md border border-kharon-border bg-white px-4 py-3" />
-            </label>
-
-            <!-- Defect capture -->
-            <div class="grid gap-3 rounded-md border border-kharon-border bg-kharon-light p-4">
-              <div class="flex items-center justify-between">
-                <p class="text-sm font-bold text-kharon-black">Defects found on site</p>
-                <button type="button" class="add-defect-btn rounded-md border border-kharon-red px-3 py-1 text-xs font-semibold text-kharon-red hover:bg-kharon-red hover:text-white">+ Add defect</button>
-              </div>
-              <div class="defect-list grid gap-3"></div>
-              <div class="defect-form hidden grid gap-3 rounded-md border border-kharon-red bg-white p-3 sm:grid-cols-2">
-                <select class="defect-severity rounded-md border border-kharon-border px-3 py-2 text-sm" required>
-                  <option value="Critical">Critical</option>
-                  <option value="Major">Major</option>
-                  <option value="Minor" selected>Minor</option>
-                  <option value="Observation">Observation</option>
-                </select>
-                <input class="defect-sans rounded-md border border-kharon-border px-3 py-2 text-sm" placeholder="SANS clause (e.g. SANS 10139-8.3)" />
-                <textarea class="defect-desc sm:col-span-2 min-h-16 rounded-md border border-kharon-border px-3 py-2 text-sm" maxlength="2000" placeholder="Describe the defect (5–2000 characters)" required></textarea>
-                <label class="flex items-center gap-2 text-xs font-semibold">
-                  <input type="checkbox" class="defect-blocking" />
-                  Blocks certificate issuance
-                </label>
-                <div class="flex gap-2 sm:col-span-2">
-                  <button type="button" class="save-defect rounded-md bg-kharon-red px-3 py-1 text-xs font-semibold text-white">Save defect</button>
-                  <button type="button" class="cancel-defect rounded-md border border-kharon-border px-3 py-1 text-xs font-semibold text-kharon-grey">Cancel</button>
-                </div>
-              </div>
-              <p class="defect-count text-xs text-kharon-grey">No defects recorded.</p>
-            </div>
-
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Client / responsible person signature
-              <span class="text-xs font-normal text-kharon-grey">Sign inside the box. Clear and re-sign if the capture is not legible.</span>
-              <canvas class="signature-pad h-36 w-full touch-none rounded-md border border-kharon-border bg-white sm:h-40" width="720" height="220" aria-label="Signature capture area"></canvas>
-              <input type="hidden" name="signatureBase64" required />
-              <input type="hidden" name="signatureStrokes" />
-            </label>
-            <button type="button" class="clear-signature rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey hover:bg-white">Clear signature</button>
-            <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue">Submit completed jobcard</button>
-            <p class="jobcard-result hidden text-sm font-semibold"></p>
-          </form>
-          </div>
-          )}
-        </article>
-      ))}
-
-      {upcomingJobs.length > 0 && (
-        <p class="border-l-4 border-kharon-border bg-kharon-light px-4 py-3 text-sm font-bold uppercase tracking-wide text-kharon-grey">
-          Upcoming dispatches
-        </p>
-      )}
-      {upcomingJobs.map((job) => (
-        <article class="grid gap-5 border border-kharon-border bg-white p-4 sm:p-5 lg:grid-cols-[1fr_0.9fr]">
-          <div class="min-w-0">
-            <p class="text-xs font-bold uppercase text-kharon-purple">{job.status}</p>
-            <h2 class="mt-2 text-xl font-bold text-kharon-black">{job.owner_company_name}</h2>
-            <p class="mt-2 text-sm text-kharon-grey">{job.physical_address}</p>
-            {job.physical_address && (
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mt-1 inline-block text-xs font-semibold text-kharon-blue hover:underline"
-              >
-                Navigate Navigate
-              </a>
-            )}
-            <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-              <div><dt class="font-bold uppercase text-kharon-grey/70">System</dt><dd>{job.system_type}</dd></div>
-              <div><dt class="font-bold uppercase text-kharon-grey/70">Coverage</dt><dd>{job.coverage_area}</dd></div>
-              <div><dt class="font-bold uppercase text-kharon-grey/70">Job Type</dt><dd>{job.job_type}</dd></div>
-              <div><dt class="font-bold uppercase text-kharon-grey/70">Scheduled</dt><dd>{job.scheduled_date}</dd></div>
-              <div><dt class="font-bold uppercase text-kharon-grey/70">Job ID</dt><dd>{job.id}</dd></div>
-            </dl>
-            {job.site_notes && <p class="mt-5 border-l-4 border-kharon-blue bg-kharon-light p-4 text-sm text-kharon-grey">{job.site_notes}</p>}
-          </div>
-          <aside class="grid min-w-0 content-start gap-3 border border-kharon-border bg-kharon-light p-4">
-            <p class="text-xs font-bold uppercase text-kharon-purple">Upcoming  -  not yet due</p>
-            <p class="text-sm leading-6 text-kharon-grey">
-              This dispatch is scheduled for a future date. You can review site details here, but the start and closure form will appear when the job is due.
-            </p>
           </aside>
         </article>
       ))}
     </div>
   </section>
-
-  <script>
-    async function postJson(url, payload) {
-      const response = await window.kharonPortalFetch(url, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const body = await response.json();
-      if (!response.ok || !body.ok) throw new Error(body.message || "Request failed.");
-      return body;
-    }
-
-    function pointFromEvent(canvas, event) {
-      const rect = canvas.getBoundingClientRect();
-      return {
-        x: Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
-        y: Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height))
-      };
-    }
-
-    function drawStroke(canvas, stroke) {
-      if (stroke.length < 2) return;
-      const context = canvas.getContext("2d");
-      context.lineWidth = 3;
-      context.lineCap = "round";
-      context.lineJoin = "round";
-      context.strokeStyle = "#0B0D0F";
-      context.beginPath();
-      context.moveTo(stroke[0].x * canvas.width, stroke[0].y * canvas.height);
-      for (const point of stroke.slice(1)) {
-        context.lineTo(point.x * canvas.width, point.y * canvas.height);
-      }
-      context.stroke();
-    }
-
-    for (const form of document.querySelectorAll(".jobcard-form")) {
-      const canvas = form.querySelector(".signature-pad");
-      const clearButton = form.querySelector(".clear-signature");
-      const signatureInput = form.querySelector('input[name="signatureBase64"]');
-      const strokesInput = form.querySelector('input[name="signatureStrokes"]');
-      const context = canvas.getContext("2d");
-      const strokes = [];
-      let activeStroke = null;
-
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-
-      canvas.addEventListener("pointerdown", (event) => {
-        canvas.setPointerCapture(event.pointerId);
-        activeStroke = [pointFromEvent(canvas, event)];
-      });
-
-      canvas.addEventListener("pointermove", (event) => {
-        if (!activeStroke) return;
-        activeStroke.push(pointFromEvent(canvas, event));
-        drawStroke(canvas, activeStroke.slice(-2));
-      });
-
-      function finishSignature() {
-        if (activeStroke && activeStroke.length > 1) {
-          strokes.push(activeStroke);
-          signatureInput.value = canvas.toDataURL("image/png");
-          strokesInput.value = JSON.stringify(strokes);
-        }
-        activeStroke = null;
-      }
-
-      canvas.addEventListener("pointerup", finishSignature);
-      canvas.addEventListener("pointercancel", finishSignature);
-
-      clearButton.addEventListener("click", () => {
-        strokes.length = 0;
-        activeStroke = null;
-        context.fillStyle = "#ffffff";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        signatureInput.value = "";
-        strokesInput.value = "";
-      });
-    }
-
-    for (const button of document.querySelectorAll(".start-job")) {
-      button.addEventListener("click", async () => {
-        button.disabled = true;
-        const response = await window.kharonPortalFetch("/portal/api/job-status", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ jobId: button.dataset.jobId, status: "In Progress" })
-        });
-        const body = await response.json();
-        if (body.ok) {
-          button.textContent = "In progress";
-          button.className = "start-job mt-5 rounded-md bg-kharon-blue px-5 py-3 text-sm font-semibold text-white";
-        } else {
-          button.disabled = false;
-          button.textContent = body.message || "Start failed";
-        }
-      });
-    }
-
-    for (const form of document.querySelectorAll(".log-arrival-form")) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const result = form.querySelector(".log-arrival-result");
-        result.classList.add("hidden");
-        const data = new FormData(form);
-        try {
-          const body = await postJson("/portal/api/job-visits", {
-            action: "logArrival",
-            jobId: data.get("jobId"),
-            visitDate: data.get("visitDate"),
-            arrivalAt: data.get("arrivalTime"),
-            gpsLat: data.get("gpsLat") || null,
-            gpsLng: data.get("gpsLng") || null,
-            customerName: data.get("customerName") || null,
-            customerTitle: data.get("customerTitle") || null,
-            notes: data.get("notes") || null
-          });
-          result.textContent = `Arrival logged: ${body.visitId}`;
-          result.className = "log-arrival-result text-sm font-semibold text-kharon-blue";
-          form.querySelector("button").disabled = true;
-          form.querySelector("button").textContent = "Arrival logged";
-        } catch (error) {
-          result.textContent = error.message;
-          result.className = "log-arrival-result text-sm font-semibold text-red-700";
-        }
-      });
-    }
-
-    // ─── Defect capture per jobcard form ─────────────────────────────
-    for (const form of document.querySelectorAll(".jobcard-form")) {
-      const defectList = form.querySelector(".defect-list");
-      const defectFormEl = form.querySelector(".defect-form");
-      const addBtn = form.querySelector(".add-defect-btn");
-      const saveBtn = form.querySelector(".save-defect");
-      const cancelBtn = form.querySelector(".cancel-defect");
-      const defectCountEl = form.querySelector(".defect-count");
-      const defects: Array<{severity: string; sansClauseRef: string; description: string; certificateBlocking: boolean}> = [];
-
-      function renderDefects() {
-        if (!defectList) return;
-        defectList.replaceChildren();
-        if (defects.length === 0) {
-          if (defectCountEl) defectCountEl.textContent = "No defects recorded.";
-          return;
-        }
-        if (defectCountEl) defectCountEl.textContent = `${defects.length} defect(s) recorded.`;
-        for (let i = 0; i < defects.length; i++) {
-          const d = defects[i];
-          const card = document.createElement("article");
-          card.className = "flex items-start justify-between gap-3 rounded border border-kharon-border bg-kharon-light p-3 text-sm";
-          const severityColor = d.severity === "Critical" ? "bg-kharon-red text-white" :
-                                d.severity === "Major" ? "bg-amber-200 text-amber-800" :
-                                d.severity === "Minor" ? "bg-blue-100 text-blue-800" :
-                                "bg-kharon-grey/20 text-kharon-grey";
-          const body = document.createElement("div");
-          body.className = "min-w-0";
-
-          const severity = document.createElement("span");
-          severity.className = `rounded px-1.5 py-0.5 text-xs font-bold ${severityColor}`;
-          severity.textContent = d.severity;
-          body.appendChild(severity);
-
-          if (d.sansClauseRef) {
-            const sans = document.createElement("span");
-            sans.className = "ml-1 text-xs text-kharon-grey";
-            sans.textContent = `[${d.sansClauseRef}]`;
-            body.appendChild(sans);
-          }
-
-          const description = document.createElement("p");
-          description.className = "mt-1 text-xs";
-          description.textContent = d.description;
-          body.appendChild(description);
-
-          if (d.certificateBlocking) {
-            const blocking = document.createElement("p");
-            blocking.className = "mt-1 text-xs font-bold text-amber-700";
-            blocking.textContent = "Blocks certificate";
-            body.appendChild(blocking);
-          }
-
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.className = "remove-defect rounded border border-red-300 px-2 py-1 text-xs font-semibold text-red-900";
-          remove.dataset.index = String(i);
-          remove.textContent = "Remove";
-
-          card.append(body, remove);
-          defectList.appendChild(card);
-        }
-        for (const rm of defectList.querySelectorAll(".remove-defect")) {
-          rm.addEventListener("click", () => {
-            defects.splice(Number(rm.dataset.index), 1);
-            renderDefects();
-          });
-        }
-      }
-
-      addBtn?.addEventListener("click", () => {
-        defectFormEl?.classList.remove("hidden");
-      });
-      cancelBtn?.addEventListener("click", () => {
-        defectFormEl?.classList.add("hidden");
-        (form.querySelector(".defect-severity") as HTMLSelectElement).value = "Minor";
-        (form.querySelector(".defect-sans") as HTMLInputElement).value = "";
-        (form.querySelector(".defect-desc") as HTMLTextAreaElement).value = "";
-        (form.querySelector(".defect-blocking") as HTMLInputElement).checked = false;
-      });
-      saveBtn?.addEventListener("click", () => {
-        const severity = (form.querySelector(".defect-severity") as HTMLSelectElement).value;
-        const sansClauseRef = (form.querySelector(".defect-sans") as HTMLInputElement).value.trim();
-        const description = (form.querySelector(".defect-desc") as HTMLTextAreaElement).value.trim();
-        const certificateBlocking = (form.querySelector(".defect-blocking") as HTMLInputElement).checked;
-
-        if (description.length < 5) {
-          alert("Defect description must be at least 5 characters.");
-          return;
-        }
-
-        defects.push({ severity, sansClauseRef, description, certificateBlocking });
-        renderDefects();
-        defectFormEl?.classList.add("hidden");
-        (form.querySelector(".defect-severity") as HTMLSelectElement).value = "Minor";
-        (form.querySelector(".defect-sans") as HTMLInputElement).value = "";
-        (form.querySelector(".defect-desc") as HTMLTextAreaElement).value = "";
-        (form.querySelector(".defect-blocking") as HTMLInputElement).checked = false;
-      });
-
-      renderDefects();
-    }
-
-    for (const form of document.querySelectorAll(".jobcard-form")) {
-      const defectListForSubmit = form.querySelector(".defect-list");
-      const defectCountForSubmit = form.querySelector(".defect-count");
-
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const result = form.querySelector(".jobcard-result");
-        result.classList.add("hidden");
-        const data = new FormData(form);
-        const evidenceInput = form.querySelector('input[name="evidencePhotos"]');
-        const evidenceFiles = Array.from(evidenceInput?.files || []);
-        if (evidenceFiles.length > 3) {
-          result.textContent = "A maximum of 3 evidence photos can be attached.";
-          result.className = "jobcard-result text-sm font-semibold text-red-700";
-          return;
-        }
-        const evidencePhotos = [];
-        for (const [index, file] of evidenceFiles.entries()) {
-          if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 1572864) {
-            result.textContent = `Evidence photo ${index + 1} must be JPEG, PNG or WebP and 1.5 MB or smaller.`;
-            result.className = "jobcard-result text-sm font-semibold text-red-700";
-            return;
-          }
-          const dataUri = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result || ""));
-            reader.onerror = () => reject(new Error("Photo could not be read."));
-            reader.readAsDataURL(file);
-          });
-          evidencePhotos.push({ dataUri, caption: file.name || `Evidence photo ${index + 1}` });
-        }
-        if (!data.get("signatureBase64")) {
-          result.textContent = "A captured signature is required.";
-          result.className = "jobcard-result text-sm font-semibold text-red-700";
-          return;
-        }
-
-        const formDefects = defects.map((defect) => ({ ...defect }));
-
-        const response = await window.kharonPortalFetch("/portal/api/submit-jobcard", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            jobId: data.get("jobId"),
-            systemId: data.get("systemId"),
-            techComments: data.get("techComments"),
-            faultCategory: data.get("faultCategory"),
-            partsUsed: data.get("partsUsed"),
-            followUpActions: data.get("followUpActions"),
-            signatureBase64: data.get("signatureBase64"),
-            signatureStrokes: JSON.parse(data.get("signatureStrokes") || "[]"),
-            customerName: data.get("customerName"),
-            customerTitle: data.get("customerTitle"),
-            evidencePhotos,
-            defects: formDefects
-          })
-        });
-        const body = await response.json();
-        result.textContent = body.ok ? `Completed. Document: ${body.documentationPath}` : body.message || "Submission failed.";
-        result.className = `jobcard-result text-sm font-semibold ${body.ok ? "text-kharon-blue" : "text-red-700"}`;
-      });
-    }
-  </script>
 </PortalLayout>

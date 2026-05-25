@@ -90,6 +90,7 @@ function rateLimitConfig(pathname) {
     "/portal/api/maintenance-request": { scope: "portal.maintenance_request", maxAttempts: 10, windowSeconds: 15 * 60 },
     "/portal/api/approve-quote": { scope: "portal.quote_approval", maxAttempts: 20, windowSeconds: 15 * 60 },
     "/portal/api/job-status": { scope: "portal.job_status", maxAttempts: 30, windowSeconds: 15 * 60 },
+    "/portal/api/job-visits": { scope: "portal.job_visits", maxAttempts: 40, windowSeconds: 15 * 60 },
     "/portal/api/submit-jobcard": { scope: "portal.jobcard_submit", maxAttempts: 20, windowSeconds: 15 * 60 },
     "/portal/api/change-password": { scope: "portal.change_password", maxAttempts: 10, windowSeconds: 15 * 60 },
     "/portal/api/mfa": { scope: "portal.mfa", maxAttempts: 20, windowSeconds: 15 * 60 },

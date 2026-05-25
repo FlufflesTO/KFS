@@ -299,6 +299,8 @@ CREATE TABLE IF NOT EXISTS job_visits (
   customer_name TEXT CHECK (customer_name IS NULL OR length(trim(customer_name)) BETWEEN 2 AND 160),
   customer_title TEXT CHECK (customer_title IS NULL OR length(trim(customer_title)) BETWEEN 2 AND 80),
   notes TEXT CHECK (notes IS NULL OR length(trim(notes)) BETWEEN 5 AND 3000),
+  visit_status TEXT NOT NULL DEFAULT 'Arrived' CHECK (visit_status IN ('Travelling', 'Arrived', 'In Progress', 'Completed', 'Unable To Complete', 'Follow-up Required', 'Quote Required')),
+  unable_reason TEXT CHECK (unable_reason IS NULL OR unable_reason IN ('No Access', 'Client Unavailable', 'Unsafe To Proceed', 'Parts Required', 'System Isolated', 'Quote Required', 'Return Visit Required', 'Cancelled On Site')),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
