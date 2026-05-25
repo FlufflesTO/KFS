@@ -375,6 +375,22 @@ try {
                           <p class="payment-result text-xs text-kharon-grey" aria-live="polite"></p>
                         </form>
                       )}
+                      {record.item_type !== "Payment" && !["No Charge","On Hold","Complete","Closed","Cancelled"].includes(record.finance_task_status || "") && (
+                        <div class="mt-1 flex gap-1.5">
+                          <button
+                            class="finance-quick-status rounded border border-kharon-border px-2 py-1 text-xs font-semibold text-kharon-grey hover:bg-kharon-light"
+                            data-record-id={record.id}
+                            data-status="No Charge"
+                            type="button"
+                          >No Charge</button>
+                          <button
+                            class="finance-quick-status rounded border border-kharon-border px-2 py-1 text-xs font-semibold text-kharon-grey hover:bg-kharon-light"
+                            data-record-id={record.id}
+                            data-status="On Hold"
+                            type="button"
+                          >On Hold</button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </td>
@@ -458,6 +474,29 @@ try {
         const body = await response.json().catch(() => ({ ok: false, message: "Save failed." }));
         if (result) result.textContent = body.ok ? "Saved." : (body.message || "Save failed.");
         if (body.ok) setTimeout(() => window.location.reload(), 700);
+      });
+    }
+
+    // ── Finance quick-status buttons (No Charge / On Hold) ─────────────────
+    for (const btn of document.querySelectorAll(".finance-quick-status")) {
+      btn.addEventListener("click", async () => {
+        const recordId = (btn as HTMLElement).dataset.recordId;
+        const status   = (btn as HTMLElement).dataset.status;
+        if (!recordId || !status) return;
+        if (!window.confirm(`Mark this record as "${status}"? You can change it later.`)) return;
+        (btn as HTMLButtonElement).disabled = true;
+        const response = await window.kharonPortalFetch("/portal/api/finance/sage-reference", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ recordId, financeTaskStatus: status })
+        });
+        const body = await response.json().catch(() => ({ ok: false }));
+        if (body.ok) {
+          window.location.reload();
+        } else {
+          alert(body.message || "Status update failed.");
+          (btn as HTMLButtonElement).disabled = false;
+        }
       });
     }
 
