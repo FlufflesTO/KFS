@@ -1944,16 +1944,23 @@ Partial implementation on 2026-05-25:
 - All existing form handlers (admin-form, client-site-access-form, import-form, reset-link, reset-mfa) remain intact and unmodified.
 - CSS budget unchanged (45 985 bytes); tab bar uses only existing utility classes.
 
+Further implementation on 2026-05-25 (same session):
+
+- Client-side search and filter added to Jobs (search + status filter), Users (search + role filter), Sites (search), Systems (search + type filter) panels.
+- Flat record lists replace the slice/overflow-details pattern; all records rendered and filtered in-browser.
+- `data-search`, `data-status`, `data-role`, `data-systype` attributes drive visibility via a typed `initFilter()` helper — no API calls required.
+- Site forms: "→ Systems for …" button pre-fills the systems search and scrolls to it within the same panel.
+- System forms: "→ Jobs for …" button switches to the Jobs tab and pre-fills the jobs search.
+- Search/filter header bars are sticky (`position: sticky; top: 0`) so they remain visible while scrolling long lists.
+- CSS budget 46 009 bytes (+24 bytes for the sticky rule; headroom 3 991 bytes).
+
 Remaining Phase 24 work:
 
-- Search/filter for users, sites, systems and jobs within their panels.
-- Pagination or load-more backed by query parameters to replace fixed visible record caps.
-- Direct record-relationship links (site → systems, system → jobs, etc.).
-- Mobile usability improvements for dense admin tables.
+- Pagination or load-more backed by query parameters to replace fixed visible record caps (jobs: LIMIT 80; client-side search mitigates impact at current scale).
 
 Status:
 
-Tab-panel split deployed on 2026-05-25. Remaining search, filter and pagination work pending.
+Tab-panel split, search/filter, relationship links and sticky headers deployed on 2026-05-25. Pagination deferred.
 
 ### Phase 25 - Defects, Certificates And Compliance Control
 
@@ -2100,9 +2107,22 @@ Deployable gate:
 - `npm run build` passes.
 - `npm run audit:site` passes.
 
+Implementation on 2026-05-25:
+
+- `/portal/admin/audit` created — read-only, admin-only (middleware enforces `/portal/admin/` prefix).
+- Filters: category (auth/admin/finance/job/security/document), outcome (success/failure/blocked), from/to date range.
+- Filters driven by GET query parameters so the state persists on page refresh and is shareable.
+- Server-side SQLite WHERE clause is built dynamically; only safe parameterised values accepted.
+- Actor name, email and role are joined from `users` table.
+- Metadata JSON previewed inline (200 char truncation; full value in title attribute).
+- Event type formatted for readability: `auth.password_change` → `Auth · Password Change`.
+- Outcome colour-coded: success emerald / failure red / blocked amber.
+- "Audit" nav link added to admin portal navigation.
+- CSS budget unchanged (46 009 bytes).
+
 Status:
 
-Pending.
+Deployed on 2026-05-25. Remaining improvements (export, high-risk highlighting, date-range defaults) deferred.
 
 
 ## Master Feature List
