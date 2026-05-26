@@ -55,6 +55,12 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Prevent content from hiding behind fixed header */
+main {
+  position: relative;
+  z-index: 1;
+}
+
 .kharon-h1 {
   font-size: clamp(2rem, 5vw, 3.25rem);
   font-weight: 700;
@@ -85,6 +91,13 @@ html {
 
 :where(body) * {
   overflow-wrap: break-word;
+}
+
+img,
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 .text-balance {
@@ -136,6 +149,7 @@ summary::-webkit-details-marker {
 .hero-cinematic {
   position: relative;
   min-height: min(840px, 85svh);
+  padding-top: var(--header-height);
   background:
     radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, var(--color-kharon-black) 100%),
     linear-gradient(180deg, var(--color-kharon-black) 0%, #0f172a 100%);
