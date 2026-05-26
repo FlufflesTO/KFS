@@ -1,3 +1,12 @@
+/**
+ * Project Sentinel - User Session Authentication API
+ * Purpose: Handles credentials verification, rate limiting, MFA validation, and session token generation
+ * Dependencies: ../../../lib/server/bindings.js, ../../../lib/server/audit.js, ../../../lib/server/auth.ts, ../../../lib/server/mfa.js, ../../../lib/server/rateLimit.js, ../../../lib/server/http.js
+ * Structural Role: User login endpoint
+ */
+
+import type { APIContext } from "astro";
+import type { D1Database } from "@cloudflare/workers-types";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { auditEvent, auditError } from "../../../lib/server/audit.js";
 import { createSessionToken, sessionCookie, verifyPassword } from "../../../lib/server/auth.js";
@@ -7,18 +16,42 @@ import { badRequest, json, methodNotAllowed, serverError, tooManyRequests, unaut
 
 export const prerender = false;
 
-const roleDestinations = {
+interface LoginCredentials {
+  email?: unknown;
+  password?: unknown;
+  mfaCode?: unknown;
+}
+
+interface DbUserQueryResult {
+  id: string;
+  name: string;
+  email: string;
+  password_hash: string;
+  role: "tech" | "admin" | "client" | "finance";
+  site_id: string | null;
+  force_password_change: number | boolean;
+  mfa_required: number | boolean;
+  mfa_enabled: number | boolean;
+  mfa_secret_encrypted: string | null;
+}
+
+const roleDestinations: Record<string, string> = {
   tech: "/portal/tech/dashboard",
   admin: "/portal/admin/dashboard",
   client: "/portal/client/dashboard",
   finance: "/portal/finance/dashboard"
 };
 
-async function readCredentials(request) {
+async function readCredentials(request: Request): Promise<LoginCredentials> {
   const contentType = request.headers.get("content-type") || "";
 
   if (contentType.includes("application/json")) {
-    return request.json();
+    const parsedBody = await request.json() as Record<string, unknown>;
+    return {
+      email: parsedBody?.email,
+      password: parsedBody?.password,
+      mfaCode: parsedBody?.mfaCode
+    };
   }
 
   if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
@@ -33,13 +66,15 @@ async function readCredentials(request) {
   return {};
 }
 
-export async function POST({ request }) {
+export async function POST({ request }: APIContext): Promise<Response> {
+  let db: D1Database | null = null;
   try {
     const body = await readCredentials(request);
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "");
     const mfaCode = String(body.mfaCode || "");
-    const db = getDatabase();
+    
+    db = getDatabase();
 
     if (!email || !password) {
       return badRequest("Email and password are required.");
@@ -73,7 +108,7 @@ export async function POST({ request }) {
          LIMIT 1`
       )
       .bind(email)
-      .first();
+      .first<DbUserQueryResult>();
 
     if (!user) {
       await auditEvent(db, request, {
@@ -94,7 +129,13 @@ export async function POST({ request }) {
         entityType: "user",
         entityId: user.id,
         outcome: "failure",
-        user,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          siteId: user.site_id
+        },
         subject: email,
         metadata: { reason: "bad_password" }
       });
@@ -102,7 +143,7 @@ export async function POST({ request }) {
     }
 
     if (user.mfa_enabled) {
-      const mfaSecret = await decryptMfaSecret(user.mfa_secret_encrypted);
+      const mfaSecret = user.mfa_secret_encrypted ? await decryptMfaSecret(user.mfa_secret_encrypted) : null;
       const mfaValid = mfaSecret && (await verifyTotpCode(mfaSecret, mfaCode));
       if (!mfaValid) {
         await auditEvent(db, request, {
@@ -110,7 +151,13 @@ export async function POST({ request }) {
           entityType: "user",
           entityId: user.id,
           outcome: "failure",
-          user,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            siteId: user.site_id
+          },
           subject: email,
           metadata: { reason: mfaCode ? "bad_code" : "missing_code" }
         });
@@ -118,7 +165,17 @@ export async function POST({ request }) {
       }
     }
 
-    const token = await createSessionToken(user);
+    const token = await createSessionToken({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      siteId: user.site_id,
+      forcePasswordChange: Boolean(user.force_password_change),
+      mfaRequired: Boolean(user.mfa_required),
+      mfaEnabled: Boolean(user.mfa_enabled)
+    });
+    
     const destination = user.force_password_change
       ? "/portal/account/password"
       : user.mfa_required && !user.mfa_enabled
@@ -132,7 +189,13 @@ export async function POST({ request }) {
       entityType: "user",
       entityId: user.id,
       outcome: "success",
-      user,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        siteId: user.site_id
+      },
       subject: email,
       metadata: { redirectTo: destination }
     });
@@ -160,14 +223,18 @@ export async function POST({ request }) {
       }
     );
   } catch (error) {
-    await auditError(db, request, error, {
-      entityType: "portal_api",
-      entityId: "auth_login"
-    });
+    if (db) {
+      await auditError(db, request, error, {
+        entityType: "portal_api",
+        entityId: "auth_login"
+      });
+    } else {
+      console.error("Database connection was not established for error auditing:", error);
+    }
     return serverError("Authentication could not be completed.");
   }
 }
 
-export function ALL() {
+export function ALL(): Response {
   return methodNotAllowed(["POST"]);
 }

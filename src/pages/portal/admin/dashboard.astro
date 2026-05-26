@@ -179,7 +179,7 @@ try {
      LIMIT 8`
   ).all()).results || [];
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "admin dashboard failed" } });
+  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "admin dashboard failed" } });
   loadError = "Admin matrix data could not be loaded.";
 }
 

@@ -97,7 +97,7 @@ try {
   const stmt = db.prepare(sql);
   events = ((await (params.length > 0 ? stmt.bind(...params) : stmt).all()).results || []) as Array<Record<string, unknown>>;
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "audit console load failed" } });
+  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "audit console load failed" } });
   loadError = "Audit data could not be loaded.";
 }
 ---

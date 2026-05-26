@@ -36,13 +36,13 @@ const { children } = Astro.props;
     }, observerOptions);
 
     // Observe all animated elements
-    document.querySelectorAll('.animate-drift, .titan-drift, .linework-drift').forEach(element => {
+    document.querySelectorAll('.hero-cinematic__titan, .hero-cinematic__linework').forEach(element => {
       animationObserver.observe(element);
     });
 
     // Handle page visibility changes
     const handleVisibilityChange = () => {
-      const animatedElements = document.querySelectorAll('.animate-drift, .titan-drift, .linework-drift');
+      const animatedElements = document.querySelectorAll('.hero-cinematic__titan, .hero-cinematic__linework');
       
       if (document.hidden) {
         // Tab is hidden, pause all animations
@@ -81,34 +81,6 @@ const { children } = Astro.props;
   /* Add animation paused state */
   .animation-paused {
     animation-play-state: paused !important;
-  }
-  
-  /* Define drift animations with optimized performance */
-  @keyframes titanDrift {
-    0%, 100% { transform: translate(0, 0); }
-    25% { transform: translate(5px, 5px); }
-    50% { transform: translate(0, 10px); }
-    75% { transform: translate(-5px, 5px); }
-  }
-  
-  @keyframes lineworkDrift {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(3px, -3px); }
-  }
-  
-  .titan-drift {
-    animation: titanDrift 8s ease-in-out infinite;
-    will-change: transform;
-  }
-  
-  .linework-drift {
-    animation: lineworkDrift 6s ease-in-out infinite;
-    will-change: transform;
-  }
-  
-  /* Smooth transitions for performance */
-  .animate-drift {
-    will-change: transform;
   }
 </style>
 

@@ -43,10 +43,10 @@ function walk(dir) {
   });
 }
 
-const astroFiles = walk(srcDir).filter(f => f.endsWith('.astro'));
+const srcFiles = walk(srcDir).filter(f => f.endsWith('.astro'));
 const usedWords = new Set();
 
-for (const file of astroFiles) {
+for (const file of srcFiles) {
   const content = fs.readFileSync(file, 'utf8');
   // Extract words inside class/class:list attributes
   const classMatches = content.match(/class(?::list)?\s*=\s*(?:["']([\s\S]*?)["']|\{[\s\S]*?\})/g) || [];
@@ -61,80 +61,6 @@ for (const file of astroFiles) {
 }
 
 console.log('Total unique classes in Astro templates (precise):', usedWords.size);
-
-let i = 0;
-const containerStack = [];
-let output = '';
-
-while (i < css.length) {
-  const char = css[i];
-  if (char === '@') {
-    let directive = '';
-    while (i < css.length && css[i] !== '{' && css[i] !== ';') {
-      directive += css[i];
-      i++;
-    }
-    if (css[i] === ';') {
-      directive += ';';
-      i++;
-      if (containerStack.length === 0) {
-        output += directive;
-      } else {
-        containerStack[containerStack.length - 1].body += directive;
-      }
-    } else if (css[i] === '{') {
-      i++;
-      containerStack.push({
-        header: directive.trim(),
-        body: ''
-      });
-    }
-  } else if (char === '}') {
-    i++;
-    if (containerStack.length > 0) {
-      const container = containerStack.pop();
-      if (container.body.trim().length > 0) {
-        const block = container.header + '{' + container.body + '}';
-        if (containerStack.length === 0) {
-          output += block;
-        } else {
-          containerStack[containerStack.length - 1].body += block;
-        }
-      }
-    }
-  } else if (char === '{') {
-    i++;
-  } else if (/\s/.test(char)) {
-    i++;
-  } else {
-    let selector = '';
-    while (i < css.length && css[i] !== '{') {
-      selector += css[i];
-      i++;
-    }
-    if (css[i] === '{') {
-      i++;
-      let body = '';
-      let braceCount = 1;
-      while (i < css.length && braceCount > 0) {
-        const bodyChar = css[i];
-        if (bodyChar === '{') braceCount++;
-        else if (bodyChar === '}') braceCount--;
-        if (braceCount > 0) body += bodyChar;
-        i++;
-      }
-      
-      if (isSelectorUsed(selector.trim())) {
-        const rule = selector.trim() + '{' + body + '}';
-        if (containerStack.length === 0) {
-          output += rule;
-        } else {
-          containerStack[containerStack.length - 1].body += rule;
-        }
-      }
-    }
-  }
-}
 
 function isSelectorUsed(sel) {
   if (!sel.includes('.')) {
@@ -153,6 +79,90 @@ function isSelectorUsed(sel) {
   }
   return matchesFound > 0;
 }
+
+function purgeCssBlock(cssContent) {
+  let i = 0;
+  let output = '';
+  
+  while (i < cssContent.length) {
+    const char = cssContent[i];
+    
+    if (/\s/.test(char)) {
+      i++;
+      continue;
+    }
+    
+    if (char === '@') {
+      let directive = '';
+      while (i < cssContent.length && cssContent[i] !== '{' && cssContent[i] !== ';') {
+        directive += cssContent[i];
+        i++;
+      }
+      if (cssContent[i] === ';') {
+        directive += ';';
+        i++;
+        const trimmedDir = directive.trim();
+        if (trimmedDir.startsWith('@property')) {
+          // Discard
+        } else {
+          output += directive;
+        }
+      } else if (cssContent[i] === '{') {
+        i++;
+        let body = '';
+        let braceCount = 1;
+        while (i < cssContent.length && braceCount > 0) {
+          const bodyChar = cssContent[i];
+          if (bodyChar === '{') braceCount++;
+          else if (bodyChar === '}') braceCount--;
+          if (braceCount > 0) body += bodyChar;
+          i++;
+        }
+        
+        const trimmedDir = directive.trim();
+        if (trimmedDir.startsWith('@property')) {
+          // Discard @property rule block completely
+        } else if (trimmedDir.startsWith('@media') || trimmedDir.startsWith('@supports') || trimmedDir.startsWith('@layer')) {
+          const purgedBody = purgeCssBlock(body);
+          if (purgedBody.trim().length > 0) {
+            output += trimmedDir + '{' + purgedBody + '}';
+          }
+        } else {
+          output += trimmedDir + '{' + body + '}';
+        }
+      }
+    } else {
+      let selector = '';
+      while (i < cssContent.length && cssContent[i] !== '{') {
+        selector += cssContent[i];
+        i++;
+      }
+      if (cssContent[i] === '{') {
+        i++;
+        let body = '';
+        let braceCount = 1;
+        while (i < cssContent.length && braceCount > 0) {
+          const bodyChar = cssContent[i];
+          if (bodyChar === '{') braceCount++;
+          else if (bodyChar === '}') braceCount--;
+          if (braceCount > 0) body += bodyChar;
+          i++;
+        }
+        
+        if (isSelectorUsed(selector.trim())) {
+          output += selector.trim() + '{' + body + '}';
+        }
+      }
+    }
+  }
+  
+  return output;
+}
+
+// Remove any block comments first to prevent brace matching issues
+css = css.replace(/\/\*[\s\S]*?\*\//g, '');
+
+let output = purgeCssBlock(css);
 console.log('Purged CSS size before variable pruning:', output.length, 'bytes');
 
 // Collect all used variables
@@ -162,7 +172,7 @@ const varRefRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
 while ((refMatch = varRefRegex.exec(output)) !== null) {
   usedVarNames.add(refMatch[1]);
 }
-for (const file of astroFiles) {
+for (const file of walk(srcDir).filter(f => f.endsWith('.astro'))) {
   const content = fs.readFileSync(file, 'utf8');
   let astroMatch;
   const astroVarRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
@@ -188,19 +198,19 @@ for (const v of uniqueVars) {
 }
 console.log('Unused CSS variables to prune:', unusedVars.length);
 
-
 for (const v of unusedVars) {
   const escaped = v.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   const defRegex = new RegExp(escaped + '\\s*:[^;]+;', 'g');
   output = output.replace(defRegex, '');
 }
+
 // Simple CSS minifier to strip whitespace and comments
 output = output
-  .replace(/\/\*[\s\S]*?\*\//g, '') // remove comments
   .replace(/\s+/g, ' ')             // collapse multiple spaces
   .replace(/\s*([{};:,])\s*/g, '$1') // remove space around separators
   .replace(/;}/g, '}')              // remove trailing semicolons
   .replace(/([: ,\(])0(?:px|em|rem|%|vw|vh)/g, '$10') // remove zero units
+  .replace(/#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3/g, '#$1$2$3') // Shorten hex colors
   .trim();
 
 console.log('Purged CSS size after variable pruning & minification:', output.length, 'bytes');

@@ -238,7 +238,7 @@ try {
   scheduledTotal = Number((scheduleCountResult.results[0] as { total: number } | undefined)?.total ?? 0);
   lifecycleTotal = Number((lifecycleCountResult.results[0] as { total: number } | undefined)?.total ?? 0);
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "admin planning failed" } });
+  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "admin planning failed" } });
   loadError = "Planning data could not be loaded.";
 }
 

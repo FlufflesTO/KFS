@@ -6,8 +6,20 @@
  */
 
 import { requestFingerprint } from "./request.js";
+import type { D1Database } from "@cloudflare/workers-types";
+import type { SessionUser } from "./auth.js";
 
-export async function auditEvent(db, request, options = {}) {
+export interface AuditOptions {
+  user?: SessionUser | null;
+  subject?: string;
+  metadata?: Record<string, unknown> | null;
+  eventType?: string;
+  entityType?: string;
+  entityId?: string;
+  outcome?: string;
+}
+
+export async function auditEvent(db: D1Database, request: Request, options: AuditOptions = {}): Promise<void> {
   try {
     const user = options.user || null;
     const fingerprint = await requestFingerprint(request, options.subject || user?.email || "");
@@ -37,7 +49,8 @@ export async function auditEvent(db, request, options = {}) {
     console.error("audit event write failed", error);
   }
 }
-export async function auditError(db, request, error, options = {}) {
+
+export async function auditError(db: D1Database, request: Request, error: unknown, options: AuditOptions = {}): Promise<void> {
   try {
     const user = options.user || null;
     const fingerprint = await requestFingerprint(request, user?.email || "");
@@ -45,7 +58,7 @@ export async function auditError(db, request, error, options = {}) {
       message: error instanceof Error ? error.message : String(error),
       name: error instanceof Error ? error.name : 'UnknownError',
       path: new URL(request.url).pathname,
-      ...options.metadata
+      ...(options.metadata || {})
     };
     
     // Log securely to database, never exposing stack traces to the client

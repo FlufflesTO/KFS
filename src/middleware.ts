@@ -44,14 +44,14 @@ function securityHeaders(nonce: string): Record<string, string> {
   };
 }
 
-function withSecurityHeaders(response: Response, nonce = createCspNonce()): Response {
+function withSecurityHeaders(response: Response, nonce: string = createCspNonce()): Response {
   for (const [name, value] of Object.entries(securityHeaders(nonce))) {
     response.headers.set(name, value);
   }
   return response;
 }
 
-async function withHtmlSecurityHeaders(response: Response, nonce: string): Promise<Response> {
+async function withHtmlSecurityHeaders(response: Response, nonce: string = createCspNonce()): Promise<Response> {
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("text/html")) return withSecurityHeaders(response, nonce);
 
@@ -66,13 +66,13 @@ async function withHtmlSecurityHeaders(response: Response, nonce: string): Promi
   }), nonce);
 }
 
-function redirectToLogin(context: any, nonce: string): Response {
+function redirectToLogin(context: any, nonce: string = createCspNonce()): Response {
   const loginUrl = new URL(loginPath, context.url);
   loginUrl.searchParams.set("next", context.url.pathname);
   return withSecurityHeaders(context.redirect(loginUrl.toString(), 302), nonce);
 }
 
-function redirectToRoleDashboard(context: any, role: string, nonce: string): Response {
+function redirectToRoleDashboard(context: any, role: string, nonce: string = createCspNonce()): Response {
   const destinations: Record<string, string> = {
     tech: "/portal/tech/dashboard",
     admin: "/portal/admin/dashboard",
@@ -113,7 +113,7 @@ function isStateChangingPortalApi(request: Request, pathname: string): boolean {
     && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
 }
 
-function rateLimitResponse(retryAfter: number, nonce: string): Response {
+function rateLimitResponse(retryAfter: number, nonce: string = createCspNonce()): Response {
   return withSecurityHeaders(new Response(JSON.stringify({ ok: false, error: "rate_limited", message: "Too many portal write requests. Try again shortly.", retryAfter }), {
     status: 429,
     headers: {

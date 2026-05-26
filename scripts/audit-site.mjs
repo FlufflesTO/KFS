@@ -36,7 +36,7 @@ if (!fs.existsSync(dist)) {
   fail("dist directory is missing. Run npm run build:staging first.");
 }
 
-const sourceFiles = walk(src).filter((file) => /\.(astro|js|css)$/.test(file));
+const sourceFiles = walk(src).filter((file) => /\.(astro|js|ts|css)$/.test(file));
 const distFiles = walk(dist);
 const textDistFiles = distFiles.filter((file) => /\.(html|mjs|js|css|txt|xml|json)$/.test(file));
 const repoTextFiles = walk(root).filter((file) => {
@@ -177,7 +177,7 @@ const expectedSourceRoutes = [
   "portal/client/dashboard.astro",
   "portal/client/quotes.astro",
   "portal/finance/dashboard.astro",
-  "portal/api/auth.js",
+  "portal/api/auth.ts",
   "portal/api/admin/export.js",
   "portal/api/admin/import.js",
   "portal/api/admin/client-site-access.js",
@@ -200,7 +200,7 @@ for (const route of expectedSourceRoutes) {
 
 const requiredSourceTerms = new Map([
   ["src/middleware.ts", ["sessionCookieName", "/portal/tech/", "/portal/finance/", "/portal/client/", "context.locals.user"]],
-  ["src/pages/portal/api/auth.js", ["verifyPassword", "verifyTotpCode", "Set-Cookie", "redirectTo"]],
+  ["src/pages/portal/api/auth.ts", ["verifyPassword", "verifyTotpCode", "Set-Cookie", "redirectTo"]],
   ["src/pages/portal/api/admin/users.js", ["reset-link", "password_reset_tokens", "resetUrl", "mfa_required"]],
   ["src/pages/portal/api/admin/export.js", ["admin.export", "text/csv", "content-disposition"]],
   ["src/pages/portal/api/admin/import.js", ["admin.import", "csvObjects", "250 rows"]],
@@ -304,13 +304,13 @@ for (const term of ["backups/", "monitor-results/", "retention-reports/"]) {
   if (!gitignore.includes(term)) fail(`.gitignore missing local operational export path: ${term}`);
 }
 
-const csrfPath = path.join(root, "src", "lib", "server", "csrf.js");
+const csrfPath = path.join(root, "src", "lib", "server", "csrf.ts");
 if (!fs.existsSync(csrfPath)) {
-  fail("src/lib/server/csrf.js is missing.");
+  fail("src/lib/server/csrf.ts is missing.");
 } else {
   const text = read(csrfPath);
   for (const term of ["createCsrfToken", "verifyCsrfRequest", "csrfHiddenInput", "csrfMetaTag", "Security token is missing or invalid."]) {
-    if (!text.includes(term)) fail(`csrf.js missing required marker: ${term}`);
+    if (!text.includes(term)) fail(`csrf.ts missing required marker: ${term}`);
   }
 }
 

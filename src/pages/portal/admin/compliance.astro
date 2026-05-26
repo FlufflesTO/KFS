@@ -108,7 +108,7 @@ try {
      LIMIT 20`
   ).all()).results || [];
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "compliance dashboard failed" } });
+  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "compliance dashboard failed" } });
   loadError = "Compliance data could not be loaded.";
 }
 ---

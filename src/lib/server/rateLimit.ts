@@ -6,12 +6,27 @@
  */
 
 import { requestFingerprint } from "./request.js";
+import type { D1Database } from "@cloudflare/workers-types";
 
-export async function consumeRateLimit(db, request, options = {}) {
+export interface RateLimitOptions {
+  scope?: string;
+  subject?: string;
+  maxAttempts?: number;
+  windowSeconds?: number;
+}
+
+export interface RateLimitResult {
+  allowed: boolean;
+  attempts: number;
+  maxAttempts: number;
+  retryAfter: number;
+}
+
+export async function consumeRateLimit(db: D1Database, request: Request, options: RateLimitOptions = {}): Promise<RateLimitResult> {
   const scope = String(options.scope || "portal").slice(0, 80);
   const subject = String(options.subject || "anonymous").toLowerCase();
-  const maxAttempts = Number.isInteger(options.maxAttempts) ? options.maxAttempts : 8;
-  const windowSeconds = Number.isInteger(options.windowSeconds) ? options.windowSeconds : 15 * 60;
+  const maxAttempts = Number.isInteger(options.maxAttempts) ? (options.maxAttempts as number) : 8;
+  const windowSeconds = Number.isInteger(options.windowSeconds) ? (options.windowSeconds as number) : 15 * 60;
   const nowSeconds = Math.floor(Date.now() / 1000);
   const windowStart = Math.floor(nowSeconds / windowSeconds) * windowSeconds;
   const fingerprint = await requestFingerprint(request, subject);
@@ -38,7 +53,7 @@ export async function consumeRateLimit(db, request, options = {}) {
   const record = await db
     .prepare(`SELECT attempts, window_start FROM portal_rate_limits WHERE rate_key = ?1 LIMIT 1`)
     .bind(key)
-    .first();
+    .first<{ attempts: number; window_start: number }>();
 
   const attempts = Number(record?.attempts || 0);
   const activeWindowStart = Number(record?.window_start || windowStart);
@@ -58,7 +73,7 @@ export async function consumeRateLimit(db, request, options = {}) {
   };
 }
 
-export async function resetRateLimit(db, request, options = {}) {
+export async function resetRateLimit(db: D1Database, request: Request, options: RateLimitOptions = {}): Promise<void> {
   const scope = String(options.scope || "portal").slice(0, 80);
   const subject = String(options.subject || "anonymous").toLowerCase();
   const fingerprint = await requestFingerprint(request, subject);

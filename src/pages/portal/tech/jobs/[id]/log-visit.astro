@@ -47,7 +47,7 @@ if (jobId && user) {
       loadError = "Job not found or not assigned to you.";
     }
   } catch (error) {
-    await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "job visit logging failed" } });
+    await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "job visit logging failed" } });
     loadError = "Could not load job details.";
   }
 }

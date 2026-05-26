@@ -50,7 +50,7 @@ try {
     : await db.prepare(query).bind(user.id).all();
   jobs = result.results || [];
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "technician dashboard failed" } });
+  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "technician dashboard failed" } });
   loadError = "Assigned dispatches could not be loaded.";
 }
 

@@ -65,7 +65,7 @@ try {
     visits = visitResult.results || [];
   }
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "technician job detail failed" } });
+  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "technician job detail failed" } });
   loadError = "Dispatch details could not be loaded.";
 }
 

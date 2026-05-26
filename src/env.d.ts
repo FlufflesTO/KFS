@@ -8,9 +8,12 @@
 /// <reference path="../.astro/types.d.ts" />
 declare namespace App {
   interface Locals {
-    user?: import("@sentinel/types").CurrentUser;
+    user?: import("./lib/server/auth").SessionUser;
     nonce?: string;
     csrfToken?: string;
+    shouldSetCsrfCookie?: boolean;
+    variant?: string;
+    needsVariantCookie?: boolean;
   }
 }
 

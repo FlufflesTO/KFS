@@ -11,28 +11,7 @@
 @source "!../**/*.ts";
 @source "../**/*.astro";
 
-:root {
-  --kharon-purple: #4B2E83;
-  --kharon-blue: #1F4E79;
-  --kharon-black: #0B0D0F;
-  --kharon-charcoal: #15191D;
-  --kharon-grey: #2B3138;
-  --surface-light: #F3F5F7;
-  --border-grey: #D6D9DD;
-  --white: #FFFFFF;
-  --accent-amber: #F59E0B;
-  --accent-cyan: #00C2FF;
-  --critical-red: #C4332F;
-  
-  /* Modernized Spacing & Radius */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  
-  --shadow-subtle: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-}
+/* Custom variables registered via @theme layer below. Unused :root variables deleted to optimize bundle. */
 
 @theme {
   --color-kharon-purple: #4B2E83;
@@ -61,9 +40,8 @@ html {
 :where(body) {
   margin: 0;
   background: white;
-  color: var(--kharon-black);
+  color: var(--color-kharon-black);
   font-family: "Century Gothic", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  text-rendering: optimizeLegibility;
   overflow-x: hidden;
   line-height: 1.5;
 }
@@ -101,21 +79,8 @@ html {
   .kharon-h3 { font-size: 1.75rem; }
 }
 
-p,
-li,
-dd,
-dt,
-span,
-a,
-button,
-input,
-select,
-textarea {
+:where(body) * {
   overflow-wrap: break-word;
-}
-
-.text-balance {
-  text-wrap: balance;
 }
 
 input,
@@ -125,7 +90,7 @@ textarea {
 }
 
 ::selection {
-  background: var(--kharon-purple);
+  background: var(--color-kharon-purple);
   color: white;
 }
 
@@ -135,12 +100,7 @@ input,
 select,
 textarea,
 summary {
-  transition:
-    background-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    color 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 summary::-webkit-details-marker {
@@ -156,7 +116,7 @@ summary::-webkit-details-marker {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent-cyan);
+  outline: 2px solid var(--color-kharon-cyan);
   outline-offset: 4px;
 }
 
@@ -174,8 +134,8 @@ summary::-webkit-details-marker {
   position: relative;
   min-height: min(840px, 90svh);
   background:
-    radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, var(--kharon-black) 100%),
-    linear-gradient(180deg, var(--kharon-black) 0%, #0f172a 100%);
+    radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, var(--color-kharon-black) 100%),
+    linear-gradient(180deg, var(--color-kharon-black) 0%, #0f172a 100%);
   display: flex;
   align-items: center;
 }
@@ -191,10 +151,10 @@ summary::-webkit-details-marker {
 
 .portal-panel {
   min-width: 0;
-  background: var(--white);
-  border: 1px solid var(--border-grey);
+  background: #fff;
+  border: 1px solid var(--color-kharon-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-subtle);
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
 }
 
 .portal-scroll-x {
@@ -207,14 +167,14 @@ summary::-webkit-details-marker {
   min-width: 0;
   width: 100%;
   padding: 0.625rem 0.875rem;
-  border: 1px solid var(--border-grey);
+  border: 1px solid var(--color-kharon-border);
   border-radius: var(--radius-md);
-  background: var(--surface-light);
+  background: var(--color-kharon-light);
 }
 
 .portal-field:focus {
   outline: none;
-  border-color: var(--kharon-purple);
+  border-color: var(--color-kharon-purple);
   box-shadow: 0 0 0 3px rgba(75, 46, 131, 0.1);
 }
 

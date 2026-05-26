@@ -128,7 +128,7 @@ try {
          LIMIT 200`
       ).bind(user.id, user.siteId || null).all()).results as ClientSystem[] || [];
     } catch (error) {
-      await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client systems load failed" } });
+      await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client systems load failed" } });
       sectionErrors.push("System records could not be loaded.");
     }
 
@@ -153,7 +153,7 @@ try {
          LIMIT 200`
       ).bind(user.id, user.siteId || null).all()).results as Defect[] || [];
     } catch (error) {
-      await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client defects load failed" } });
+      await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client defects load failed" } });
       sectionErrors.push("Defect register could not be loaded.");
     }
 
@@ -178,7 +178,7 @@ try {
          LIMIT 200`
       ).bind(user.id, user.siteId || null).all()).results as Certificate[] || [];
     } catch (error) {
-      await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client certificates load failed" } });
+      await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client certificates load failed" } });
       sectionErrors.push("Certificate register could not be loaded.");
     }
 
@@ -206,7 +206,7 @@ try {
     };
   }
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client compliance dashboard failed" } });
+  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client compliance dashboard failed" } });
   loadError = "Client compliance data could not be loaded.";
 }
 ---

@@ -23,7 +23,7 @@ try {
      LIMIT 100`
   ).all()).results || []) as DbUserFeedback[];
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "feedback console load failed" } });
+  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "feedback console load failed" } });
   loadError = "Feedback data could not be loaded.";
 }
 ---
