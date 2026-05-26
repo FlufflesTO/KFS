@@ -1,0 +1,155 @@
+---
+import type { DbSite, DbLinkableJob } from "../../../lib/types/sentinel.ts";
+
+interface Props {
+  sites: Pick<DbSite, "id" | "owner_company_name">[];
+  linkableJobs: DbLinkableJob[];
+}
+
+const { sites, linkableJobs } = Astro.props;
+---
+
+<details class="rounded-xl border border-kharon-border bg-white shadow-sm">
+  <summary class="flex cursor-pointer list-none items-center justify-between px-4 py-4 sm:px-5">
+    <span class="text-sm font-bold uppercase text-kharon-purple">Create financial record</span>
+    <span class="text-xs text-kharon-grey">Quote or invoice</span>
+  </summary>
+  <div class="border-t border-kharon-border p-4 sm:p-5">
+    <form id="finance-create-form" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        Item type
+        <select name="itemType" class="rounded-md border border-kharon-border px-3 py-2 font-normal">
+          <option value="Quote">Quote</option>
+          <option value="Invoice">Invoice</option>
+        </select>
+      </label>
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        Client site
+        <select id="finance-site-id" name="siteId" class="rounded-md border border-kharon-border px-3 py-2 font-normal" required>
+          <option value="">Select client site</option>
+          {sites.map((s) => (
+            <option value={s.id}>{s.owner_company_name}</option>
+          ))}
+        </select>
+      </label>
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        Link to job <span class="font-normal text-kharon-grey">(optional)</span>
+        <select id="finance-job-id" name="jobId" class="rounded-md border border-kharon-border px-3 py-2 font-normal" disabled>
+          <option value="">Select site first</option>
+        </select>
+      </label>
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        Amount ex VAT (ZAR)
+        <input type="number" name="amountExVat" class="rounded-md border border-kharon-border px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" required />
+      </label>
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        VAT amount (ZAR) <span class="font-normal text-kharon-grey">(auto 15%)</span>
+        <input id="finance-vat-amount" type="number" name="vatAmount" class="rounded-md border border-kharon-border px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" />
+      </label>
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        Amount inc VAT (ZAR)
+        <input id="finance-amount-inc-vat" type="number" name="amountIncVat" class="rounded-md border border-kharon-border px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" />
+      </label>
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        Distribution date
+        <input id="finance-dist-date" type="date" name="distributionDate" class="rounded-md border border-kharon-border px-3 py-2 font-normal" required />
+      </label>
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        Sage document date <span class="font-normal text-kharon-grey">(optional)</span>
+        <input type="date" name="sageDocumentDate" class="rounded-md border border-kharon-border px-3 py-2 font-normal" />
+      </label>
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        Due date <span class="font-normal text-kharon-grey">(optional)</span>
+        <input type="date" name="sageDueDate" class="rounded-md border border-kharon-border px-3 py-2 font-normal" />
+      </label>
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+        Reference <span class="font-normal text-kharon-grey">(optional)</span>
+        <input type="text" name="reference" class="rounded-md border border-kharon-border px-3 py-2 font-normal" maxlength="120" placeholder="PO number, quote ref…" />
+      </label>
+      <label class="grid gap-2 text-sm font-semibold text-kharon-black lg:col-span-2">
+        Finance notes <span class="font-normal text-kharon-grey">(optional)</span>
+        <input type="text" name="financeNotes" class="rounded-md border border-kharon-border px-3 py-2 font-normal" maxlength="500" placeholder="Internal finance notes…" />
+      </label>
+      <div class="flex flex-wrap items-center gap-3 lg:col-span-3">
+        <button id="finance-create-submit" type="submit" class="rounded-md bg-kharon-purple px-5 py-3 text-sm font-semibold text-white hover:bg-kharon-blue" data-label="Create record">
+          Create record
+        </button>
+        <p id="finance-create-result" class="hidden text-sm font-semibold" aria-live="polite"></p>
+      </div>
+    </form>
+  </div>
+</details>
+
+<div id="finance-jobs-data" hidden aria-hidden="true" data-jobs={JSON.stringify(linkableJobs)}></div>
+
+<script>
+  import { portalPost, setResult } from "../../../lib/client/portalApi.ts";
+
+  const distDate     = document.getElementById("finance-dist-date") as HTMLInputElement | null;
+  const siteSelect   = document.getElementById("finance-site-id")   as HTMLSelectElement | null;
+  const jobSelect    = document.getElementById("finance-job-id")    as HTMLSelectElement | null;
+  const vatInput     = document.getElementById("finance-vat-amount")    as HTMLInputElement | null;
+  const incVatInput  = document.getElementById("finance-amount-inc-vat") as HTMLInputElement | null;
+  const createForm   = document.getElementById("finance-create-form")   as HTMLFormElement | null;
+  const createResult = document.getElementById("finance-create-result") as HTMLElement | null;
+  const createSubmit = document.getElementById("finance-create-submit") as HTMLButtonElement | null;
+  const jobsData: Array<{ id: string; site_id: string; coverage_area: string; status: string; scheduled_date: string | null }> =
+    JSON.parse(document.getElementById("finance-jobs-data")?.getAttribute("data-jobs") ?? "[]");
+
+  if (distDate && !distDate.value) distDate.value = new Date().toISOString().split("T")[0];
+
+  const exVatInput = createForm?.querySelector<HTMLInputElement>("[name='amountExVat']");
+  exVatInput?.addEventListener("input", () => {
+    const ex  = parseFloat(exVatInput.value) || 0;
+    const vat = +(ex * 0.15).toFixed(2);
+    if (vatInput)    vatInput.value    = vat > 0 ? String(vat) : "";
+    if (incVatInput) incVatInput.value = vat > 0 ? String(+(ex + vat).toFixed(2)) : "";
+  });
+
+  siteSelect?.addEventListener("change", () => {
+    if (!jobSelect) return;
+    const siteId   = siteSelect.value;
+    const siteJobs = jobsData.filter((j) => j.site_id === siteId);
+    const defaultOpt = Object.assign(document.createElement("option"), { value: "", textContent: siteId ? "No job (standalone record)" : "Select site first" });
+    jobSelect.replaceChildren(defaultOpt);
+    for (const job of siteJobs) {
+      const opt = Object.assign(document.createElement("option"), {
+        value: job.id,
+        textContent: `${job.coverage_area} / ${job.status} / ${job.scheduled_date ?? ""}`,
+      });
+      jobSelect.appendChild(opt);
+    }
+    jobSelect.disabled = !siteId;
+  });
+
+  createForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!createSubmit || !createResult) return;
+    createSubmit.disabled = true;
+    createSubmit.textContent = "Creating…";
+    if (createResult.classList) createResult.className = "hidden text-sm font-semibold";
+
+    const data = new FormData(createForm);
+    const jobId     = data.get("jobId");
+    const reference = data.get("reference");
+    const { response, body } = await portalPost("/portal/api/finance/records", {
+      itemType:         data.get("itemType"),
+      siteId:           data.get("siteId"),
+      amountExVat:      data.get("amountExVat"),
+      vatAmount:        data.get("vatAmount") || null,
+      amountIncVat:     data.get("amountIncVat") || null,
+      distributionDate: data.get("distributionDate"),
+      sageDocumentDate: data.get("sageDocumentDate") || null,
+      sageDueDate:      data.get("sageDueDate") || null,
+      reference:        reference ? String(reference).trim() || null : null,
+      jobId:            jobId ? String(jobId) || null : null,
+      financeNotes:     data.get("financeNotes") || null,
+    });
+
+    const ok = response.ok && body.ok;
+    setResult(createResult, ok ? "Record created. Refreshing…" : (body.message ?? "Creation failed."), ok ? "success" : "error");
+    createResult.classList.remove("hidden");
+    if (ok) setTimeout(() => window.location.reload(), 600);
+    else { createSubmit.disabled = false; createSubmit.textContent = "Create record"; }
+  });
+</script>

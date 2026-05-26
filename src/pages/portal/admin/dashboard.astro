@@ -128,11 +128,11 @@ try {
   ).all()).results || [];
 
   technicians = (await db.prepare(
-    `SELECT id, name FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name`
+    `SELECT id, name FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name LIMIT 100`
   ).all()).results || [];
 
   requestSystems = (await db.prepare(
-    `SELECT id, site_id, system_type, coverage_area FROM systems WHERE deleted_at IS NULL ORDER BY coverage_area`
+    `SELECT id, site_id, system_type, coverage_area FROM systems WHERE deleted_at IS NULL ORDER BY coverage_area LIMIT 200`
   ).all()).results || [];
 
   overdue = (await db.prepare(

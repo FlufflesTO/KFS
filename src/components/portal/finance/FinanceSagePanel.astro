@@ -1,0 +1,91 @@
+---
+import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
+import type { DbFinancialRecord } from "../../../lib/types/sentinel.ts";
+
+interface SageStatusGroup {
+  status: string;
+  count: number;
+  records: DbFinancialRecord[];
+}
+
+interface Props {
+  sageStatuses: SageStatusGroup[];
+  stats: {
+    totalSageAmountExVat: number;
+    totalSageVatAmount: number;
+    totalSageAmountIncVat: number;
+  };
+}
+
+const { sageStatuses, stats } = Astro.props;
+---
+
+<div class="space-y-6">
+  <!-- Sage Task Status Tracking -->
+  <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+    <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Sage Pipeline</p>
+        <h2 class="text-lg font-bold text-kharon-black">Task Status Tracking</h2>
+      </div>
+    </div>
+    <div class="space-y-3 max-h-96 overflow-y-auto">
+      {sageStatuses.length === 0 ? (
+        <p class="text-sm text-kharon-grey italic py-2">No records to track.</p>
+      ) : (
+        sageStatuses.map((group) => (
+          <details class="group">
+            <summary class="flex items-center justify-between cursor-pointer p-3 rounded-lg border border-kharon-border bg-white hover:bg-kharon-light transition-colors">
+              <span class="font-semibold text-kharon-black group-open:font-bold">{group.status}</span>
+              <span class="rounded-full bg-kharon-purple px-2 py-0.5 text-xs font-bold text-white">{group.count}</span>
+            </summary>
+            <div class="mt-2 pl-4 border-l-2 border-kharon-border space-y-2">
+              {group.records.slice(0, 5).map((record) => (
+                <div class="flex items-center justify-between p-2 bg-kharon-light/30 rounded">
+                  <div>
+                    <p class="text-xs font-semibold text-kharon-black truncate">{record.owner_company_name}</p>
+                    <p class="text-[10px] text-kharon-grey">{record.item_type} • {formatCurrency(record.amount)}</p>
+                  </div>
+                  <span class="text-[10px] text-kharon-grey">{record.sage_invoice_number || record.sage_quote_number || "No Sage ref"}</span>
+                </div>
+              ))}
+              {group.records.length > 5 && (
+                <p class="text-xs text-kharon-grey pl-2">+{group.records.length - 5} more records</p>
+              )}
+            </div>
+          </details>
+        ))
+      )}
+    </div>
+  </div>
+
+  <!-- VAT Compliance Summary -->
+  <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+    <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">VAT Compliance</p>
+        <h2 class="text-lg font-bold text-kharon-black">Tax Reporting Summary</h2>
+      </div>
+    </div>
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="rounded-lg border border-kharon-border p-3">
+          <p class="text-xs font-bold text-kharon-grey uppercase">Excl VAT</p>
+          <p class="mt-1 text-sm font-bold text-kharon-black">{formatCurrency(stats.totalSageAmountExVat)}</p>
+        </div>
+        <div class="rounded-lg border border-kharon-border p-3">
+          <p class="text-xs font-bold text-kharon-grey uppercase">VAT Amount</p>
+          <p class="mt-1 text-sm font-bold text-kharon-black">{formatCurrency(stats.totalSageVatAmount)}</p>
+        </div>
+      </div>
+      <div class="rounded-lg border border-kharon-border p-3">
+        <p class="text-xs font-bold text-kharon-grey uppercase">Incl VAT</p>
+        <p class="mt-1 text-sm font-bold text-kharon-black">{formatCurrency(stats.totalSageAmountIncVat)}</p>
+      </div>
+      <div class="pt-3 border-t border-kharon-border/60">
+        <p class="text-xs text-kharon-grey">VAT Rate: 15%</p>
+        <p class="text-[10px] text-kharon-grey/70 mt-1">All amounts are in ZAR and comply with South African tax regulations.</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,116 @@
+---
+import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
+import type { DbFinancialRecord, DbInvoiceRequiredJob } from "../../../lib/types/sentinel.ts";
+
+interface Props {
+  pendingApproval: DbFinancialRecord[];
+  overduePayments: DbFinancialRecord[];
+  invoiceRequired: DbInvoiceRequiredJob[];
+  stats: { totalPending: number; totalOverdue: number };
+}
+
+const { pendingApproval, overduePayments, invoiceRequired, stats } = Astro.props;
+---
+
+<div class="space-y-6">
+  <!-- Pending Approvals -->
+  <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+    <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-amber-600">Finance Review</p>
+        <h2 class="text-lg font-bold text-kharon-black">Pending Approvals</h2>
+      </div>
+      <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-amber-800">{stats.totalPending}</span>
+    </div>
+    <div class="space-y-3">
+      {pendingApproval.length === 0 ? (
+        <p class="text-sm text-kharon-grey italic py-2">No pending approvals.</p>
+      ) : (
+        pendingApproval.map((record) => (
+          <article class="flex items-start justify-between gap-4 p-4 rounded-lg border border-amber-200 bg-amber-50/30">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-kharon-black">{record.owner_company_name}</span>
+                <span class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-800">Quote</span>
+              </div>
+              <p class="text-sm text-kharon-grey mt-0.5">{record.item_type} / {record.reference || "No ref"}</p>
+              <p class="mt-2 text-xs text-kharon-black font-semibold">{formatCurrency(record.amount)}</p>
+              {record.distribution_date && (
+                <p class="mt-1 text-[10px] text-kharon-grey">Distributed: {record.distribution_date}</p>
+              )}
+            </div>
+            <a href={`/portal/api/file/${record.id}`} class="rounded border border-kharon-blue bg-white px-3 py-1.5 text-[10px] font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
+              View
+            </a>
+          </article>
+        ))
+      )}
+    </div>
+  </div>
+
+  <!-- Overdue Payments -->
+  <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+    <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-kharon-red">Collections</p>
+        <h2 class="text-lg font-bold text-kharon-black">Overdue Payments</h2>
+      </div>
+      <span class="rounded-full bg-red-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-red-800">{stats.totalOverdue}</span>
+    </div>
+    <div class="space-y-3">
+      {overduePayments.length === 0 ? (
+        <p class="text-sm text-kharon-grey italic py-2">No overdue payments.</p>
+      ) : (
+        overduePayments.map((record) => (
+          <article class="flex items-start justify-between gap-4 p-4 rounded-lg border border-red-200 bg-red-50/30">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-kharon-black">{record.owner_company_name}</span>
+                <span class="rounded bg-red-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-red-800">Overdue</span>
+              </div>
+              <p class="text-sm text-kharon-grey mt-0.5">Invoice #{record.sage_invoice_number || "N/A"}</p>
+              <p class="mt-2 text-xs text-kharon-black font-semibold">{formatCurrency(record.amount)}</p>
+              <p class="mt-1 text-[10px] text-kharon-red">Due: {record.sage_due_date}</p>
+            </div>
+            <a href={`/portal/api/file/${record.id}`} class="rounded border border-kharon-blue bg-white px-3 py-1.5 text-[10px] font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
+              Send Reminder
+            </a>
+          </article>
+        ))
+      )}
+    </div>
+  </div>
+
+  <!-- Exception Queue -->
+  <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+    <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Exception Queue</p>
+        <h2 class="text-lg font-bold text-kharon-black">Completed Jobs Awaiting Sage Invoice</h2>
+      </div>
+      <span class="rounded-full bg-kharon-purple px-2.5 py-0.5 text-[10px] font-bold uppercase text-white">{invoiceRequired.length}</span>
+    </div>
+    <div class="space-y-3">
+      {invoiceRequired.length === 0 ? (
+        <p class="text-sm text-kharon-grey italic py-2">All completed jobs have been invoiced.</p>
+      ) : (
+        invoiceRequired.map((job) => (
+          <article class="flex items-start justify-between gap-4 p-4 rounded-lg border border-kharon-border bg-kharon-light/30">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-kharon-black">{job.owner_company_name}</span>
+                <span class="rounded bg-kharon-light px-1.5 py-0.5 text-[9px] font-bold uppercase text-kharon-grey">Missing</span>
+              </div>
+              <p class="text-sm text-kharon-grey mt-0.5">{job.system_type} / {job.coverage_area}</p>
+              <p class="mt-2 text-xs text-kharon-grey font-semibold">Completed: {job.completed_at || "N/A"}</p>
+              <p class="mt-1 text-[10px] text-kharon-grey">Tech: {job.assigned_technician_name || "Unknown"}</p>
+            </div>
+            <a href={`/portal/api/file/${job.id}`} class="rounded border border-kharon-purple bg-white px-3 py-1.5 text-[10px] font-bold text-kharon-purple hover:bg-kharon-purple hover:text-white transition-colors text-center">
+              View Jobcard
+            </a>
+          </article>
+        ))
+      )}
+    </div>
+  </div>
+</div>

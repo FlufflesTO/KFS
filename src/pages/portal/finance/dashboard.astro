@@ -1,13 +1,11 @@
 ---
-/**
- * Project Sentinel - Portal Finance Dashboard
- * Purpose: Provides finance control panel for managing invoices, payments, and Sage integration
- * Dependencies: PortalLayout, bindings, financial-utils
- * Structural Role: Finance control view
- */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
-import { formatCurrency, formatCurrencyCompact } from "../../../lib/utils/financial-utils.ts";
+import FinanceCreateForm from "../../../components/portal/finance/FinanceCreateForm.astro";
+import FinanceStatsPanel from "../../../components/portal/finance/FinanceStatsPanel.astro";
+import FinanceExceptionPanel from "../../../components/portal/finance/FinanceExceptionPanel.astro";
+import FinanceSagePanel from "../../../components/portal/finance/FinanceSagePanel.astro";
+import FinanceLedgerTable from "../../../components/portal/finance/FinanceLedgerTable.astro";
 import type {
   DbFinancialRecord,
   DbInvoiceRequiredJob,
@@ -17,45 +15,37 @@ import type {
 
 export const prerender = false;
 
-// Local aliases kept for backward compatibility with existing template references.
-type FinancialRecord    = DbFinancialRecord;
-type InvoiceRequiredJob = DbInvoiceRequiredJob;
-
 const user = Astro.locals.user;
-const searchParams = Astro.url.searchParams;
-const page = parseInt(searchParams.get("page") || "1", 10);
+const page = Math.max(1, parseInt(Astro.url.searchParams.get("page") ?? "1", 10));
 const limit = 50;
 const offset = (page - 1) * limit;
 
-let records:        FinancialRecord[]    = [];
-let payments:       FinancialRecord[]    = [];
-let pendingApproval: FinancialRecord[]   = [];
-let overduePayments: FinancialRecord[]   = [];
-let sageStatuses:   { status: string; count: number; records: FinancialRecord[] }[] = [];
-let sites:          Pick<DbSite, "id" | "owner_company_name">[] = [];
-let linkableJobs:   DbLinkableJob[] = [];
-let invoiceRequired: InvoiceRequiredJob[] = [];
+let records: DbFinancialRecord[] = [];
+let pendingApproval: DbFinancialRecord[] = [];
+let overduePayments: DbFinancialRecord[] = [];
+let sageStatuses: { status: string; count: number; records: DbFinancialRecord[] }[] = [];
+let sites: Pick<DbSite, "id" | "owner_company_name">[] = [];
+let linkableJobs: DbLinkableJob[] = [];
+let invoiceRequired: DbInvoiceRequiredJob[] = [];
+let paymentsCount = 0;
 
 let stats = {
-  totalPending: 0,
-  totalOverdue: 0,
-  totalAmount: 0,
-  pendingAmount: 0,
-  overdueAmount: 0,
-  totalPayments: 0,
-  totalRecords: 0,
-  totalSageAmountExVat: 0,
-  totalSageVatAmount: 0,
-  totalSageAmountIncVat: 0
+  totalPending: 0, totalOverdue: 0, totalAmount: 0,
+  pendingAmount: 0, overdueAmount: 0, totalRecords: 0,
+  totalSageAmountExVat: 0, totalSageVatAmount: 0, totalSageAmountIncVat: 0,
 };
 let totalPages = 1;
 let loadError = "";
-const today = new Date().toISOString().slice(0, 10);
 
 try {
   const db = getDatabase();
 
-  const [recordsQuery, statsQuery, statusCountsQuery, recentRecordsQuery, sitesQuery, linkableJobsQuery, invoiceRequiredQuery] = await db.batch([
+  const [
+    recordsResult, statsResult, statusCountsResult,
+    pendingResult, overdueResult, paymentsCountResult, sagePipelineResult,
+    sitesResult, linkableJobsResult, invoiceRequiredResult,
+  ] = await db.batch([
+    // 1. Paginated ledger
     db.prepare(`
       SELECT financial_records.*, sites.owner_company_name,
              CAST(julianday('now') - julianday(COALESCE(financial_records.distribution_date, financial_records.created_at)) AS INTEGER) AS age_days
@@ -64,36 +54,60 @@ try {
       ORDER BY financial_records.distribution_date DESC
       LIMIT ? OFFSET ?
     `).bind(limit, offset),
+    // 2. Aggregate stats
     db.prepare(`
-      SELECT 
-        COUNT(CASE WHEN payment_status = 'Pending Approval' THEN 1 END) as totalPending,
-        SUM(CASE WHEN payment_status = 'Pending Approval' THEN amount ELSE 0 END) as pendingAmount,
-        COUNT(CASE WHEN payment_status = 'Unpaid' AND sage_due_date < date('now') THEN 1 END) as totalOverdue,
-        SUM(CASE WHEN payment_status = 'Unpaid' AND sage_due_date < date('now') THEN amount ELSE 0 END) as overdueAmount,
-        SUM(amount) as totalAmount,
-        COUNT(CASE WHEN item_type = 'Payment' THEN 1 END) as totalPayments,
-        SUM(sage_amount_ex_vat) as totalSageAmountExVat,
-        SUM(sage_vat_amount) as totalSageVatAmount,
-        SUM(sage_amount_inc_vat) as totalSageAmountIncVat,
-        COUNT(*) as totalRecords
+      SELECT
+        COUNT(CASE WHEN payment_status = 'Pending Approval' THEN 1 END) AS totalPending,
+        SUM(CASE WHEN payment_status = 'Pending Approval' THEN amount ELSE 0 END) AS pendingAmount,
+        COUNT(CASE WHEN payment_status = 'Unpaid' AND sage_due_date < date('now') THEN 1 END) AS totalOverdue,
+        SUM(CASE WHEN payment_status = 'Unpaid' AND sage_due_date < date('now') THEN amount ELSE 0 END) AS overdueAmount,
+        SUM(amount) AS totalAmount,
+        SUM(sage_amount_ex_vat) AS totalSageAmountExVat,
+        SUM(sage_vat_amount) AS totalSageVatAmount,
+        SUM(sage_amount_inc_vat) AS totalSageAmountIncVat,
+        COUNT(*) AS totalRecords
       FROM financial_records
     `),
+    // 3. Sage task status counts
     db.prepare(`
-      SELECT COALESCE(finance_task_status, 'No Status') as status, COUNT(*) as count
+      SELECT COALESCE(finance_task_status, 'No Status') AS status, COUNT(*) AS count
       FROM financial_records
       GROUP BY finance_task_status
     `),
+    // 4. Pending approval records (targeted — replaces LIMIT 200 scan)
     db.prepare(`
       SELECT financial_records.*, sites.owner_company_name
       FROM financial_records
       INNER JOIN sites ON sites.id = financial_records.site_id
-      ORDER BY financial_records.created_at DESC
-      LIMIT 200
+      WHERE financial_records.payment_status = 'Pending Approval'
+      ORDER BY financial_records.distribution_date DESC
+      LIMIT 50
     `),
-    db.prepare(`SELECT id, owner_company_name FROM sites ORDER BY owner_company_name`),
+    // 5. Overdue payments (targeted)
     db.prepare(`
-      SELECT jobs.id, sites.id AS site_id, jobs.status, jobs.scheduled_date,
-             systems.coverage_area
+      SELECT financial_records.*, sites.owner_company_name
+      FROM financial_records
+      INNER JOIN sites ON sites.id = financial_records.site_id
+      WHERE financial_records.payment_status = 'Unpaid' AND financial_records.sage_due_date < date('now')
+      ORDER BY financial_records.sage_due_date ASC
+      LIMIT 50
+    `),
+    // 6. Payment count (scalar — no row fetch needed)
+    db.prepare(`SELECT COUNT(*) AS cnt FROM financial_records WHERE item_type = 'Payment'`),
+    // 7. Sage pipeline records for task status panel
+    db.prepare(`
+      SELECT financial_records.*, sites.owner_company_name
+      FROM financial_records
+      INNER JOIN sites ON sites.id = financial_records.site_id
+      WHERE financial_records.finance_task_status IS NOT NULL
+      ORDER BY financial_records.distribution_date DESC
+      LIMIT 100
+    `),
+    // 8. Sites for create form
+    db.prepare(`SELECT id, owner_company_name FROM sites ORDER BY owner_company_name`),
+    // 9. Linkable jobs for create form
+    db.prepare(`
+      SELECT jobs.id, sites.id AS site_id, jobs.status, jobs.scheduled_date, systems.coverage_area
       FROM jobs
       INNER JOIN systems ON systems.id = jobs.system_id
       INNER JOIN sites   ON sites.id   = systems.site_id
@@ -102,52 +116,58 @@ try {
       ORDER BY jobs.completed_at DESC
       LIMIT 500
     `),
+    // 10. Completed jobs awaiting Sage invoice
     db.prepare(`
-      SELECT jobs.id, jobs.completed_at, sites.owner_company_name, systems.system_type, systems.coverage_area,
+      SELECT jobs.id, jobs.completed_at, sites.owner_company_name,
+             systems.system_type, systems.coverage_area,
              users.name AS assigned_technician_name
       FROM jobs
       INNER JOIN systems ON systems.id = jobs.system_id
-      INNER JOIN sites ON sites.id = systems.site_id
-      LEFT JOIN users ON users.id = jobs.assigned_technician_id
+      INNER JOIN sites   ON sites.id   = systems.site_id
+      LEFT JOIN  users   ON users.id   = jobs.assigned_technician_id
       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
         AND jobs.status = 'Completed' AND jobs.documentation_path IS NOT NULL
       ORDER BY jobs.completed_at DESC
-    `)
+      LIMIT 100
+    `),
   ]);
 
-  records = (recordsQuery.results || []) as FinancialRecord[];
-  
-  type StatsRow = { totalPending: number; totalOverdue: number; pendingAmount: number; overdueAmount: number; totalAmount: number; totalPayments: number; totalSageAmountExVat: number; totalSageVatAmount: number; totalSageAmountIncVat: number; totalRecords: number };
-  const statsRes = ((statsQuery.results?.[0] as StatsRow | undefined) ?? {}) as Partial<StatsRow>;
+  records = (recordsResult.results ?? []) as DbFinancialRecord[];
+
+  type StatsRow = {
+    totalPending: number; totalOverdue: number; pendingAmount: number; overdueAmount: number;
+    totalAmount: number; totalSageAmountExVat: number; totalSageVatAmount: number;
+    totalSageAmountIncVat: number; totalRecords: number;
+  };
+  const sr = ((statsResult.results?.[0] as StatsRow | undefined) ?? {}) as Partial<StatsRow>;
   stats = {
-    totalPending: Number(statsRes.totalPending || 0),
-    totalOverdue: Number(statsRes.totalOverdue || 0),
-    totalAmount: Number(statsRes.totalAmount || 0),
-    pendingAmount: Number(statsRes.pendingAmount || 0),
-    overdueAmount: Number(statsRes.overdueAmount || 0),
-    totalPayments: Number(statsRes.totalPayments || 0),
-    totalRecords: Number(statsRes.totalRecords || 0),
-    totalSageAmountExVat: Number(statsRes.totalSageAmountExVat || 0),
-    totalSageVatAmount: Number(statsRes.totalSageVatAmount || 0),
-    totalSageAmountIncVat: Number(statsRes.totalSageAmountIncVat || 0)
+    totalPending:          Number(sr.totalPending          ?? 0),
+    totalOverdue:          Number(sr.totalOverdue          ?? 0),
+    totalAmount:           Number(sr.totalAmount           ?? 0),
+    pendingAmount:         Number(sr.pendingAmount         ?? 0),
+    overdueAmount:         Number(sr.overdueAmount         ?? 0),
+    totalRecords:          Number(sr.totalRecords          ?? 0),
+    totalSageAmountExVat:  Number(sr.totalSageAmountExVat  ?? 0),
+    totalSageVatAmount:    Number(sr.totalSageVatAmount    ?? 0),
+    totalSageAmountIncVat: Number(sr.totalSageAmountIncVat ?? 0),
   };
   totalPages = Math.max(1, Math.ceil(stats.totalRecords / limit));
 
-  sites        = (sitesQuery.results        ?? []) as Pick<DbSite, "id" | "owner_company_name">[];
-  linkableJobs = (linkableJobsQuery.results ?? []) as DbLinkableJob[];
-  invoiceRequired = (invoiceRequiredQuery.results ?? []) as InvoiceRequiredJob[];
+  pendingApproval = (pendingResult.results    ?? []) as DbFinancialRecord[];
+  overduePayments = (overdueResult.results    ?? []) as DbFinancialRecord[];
+  paymentsCount   = Number((paymentsCountResult.results?.[0] as { cnt: number } | undefined)?.cnt ?? 0);
 
-  const allRecent = (recentRecordsQuery.results || []) as FinancialRecord[];
-  pendingApproval = allRecent.filter(r => r.payment_status === 'Pending Approval');
-  overduePayments = allRecent.filter(r => r.payment_status === 'Unpaid' && r.sage_due_date !== null && r.sage_due_date.localeCompare(today) === -1);
-  payments = allRecent.filter(r => r.item_type === 'Payment');
-
-  const statusCounts = (statusCountsQuery.results ?? []) as { status: string; count: number }[];
+  const sagePipelineRecords = (sagePipelineResult.results ?? []) as DbFinancialRecord[];
+  const statusCounts = (statusCountsResult.results ?? []) as { status: string; count: number }[];
   sageStatuses = statusCounts.map((sc) => ({
-    status: sc.status,
-    count: sc.count,
-    records: allRecent.filter((r) => (r.finance_task_status ?? "No Status") === sc.status),
+    status:  sc.status,
+    count:   sc.count,
+    records: sagePipelineRecords.filter((r) => (r.finance_task_status ?? "No Status") === sc.status),
   }));
+
+  sites           = (sitesResult.results          ?? []) as Pick<DbSite, "id" | "owner_company_name">[];
+  linkableJobs    = (linkableJobsResult.results   ?? []) as DbLinkableJob[];
+  invoiceRequired = (invoiceRequiredResult.results ?? []) as DbInvoiceRequiredJob[];
 
 } catch (error) {
   console.error("finance dashboard failed", error);
@@ -165,806 +185,31 @@ try {
   </section>
 
   <section class="px-4 py-6 sm:px-6 sm:py-8">
-    <div class="mx-auto grid max-w-7xl gap-6">
-      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+    <div class="mx-auto max-w-7xl space-y-6">
+      {loadError && <p class="rounded border border-red-300 bg-red-50 p-4 text-sm text-red-800">{loadError}</p>}
 
-      <div id="finance-jobs-data" hidden aria-hidden="true" data-jobs={JSON.stringify(linkableJobs)}></div>
+      <FinanceCreateForm {sites} {linkableJobs} />
 
-      <details class="rounded-xl border border-kharon-border bg-white shadow-sm">
-        <summary class="flex cursor-pointer list-none items-center justify-between px-4 py-4 sm:px-5">
-          <span class="text-sm font-bold uppercase text-kharon-purple">Create financial record</span>
-          <span class="text-xs text-kharon-grey">Quote or invoice</span>
-        </summary>
-        <div class="border-t border-kharon-border p-4 sm:p-5">
-          <form id="finance-create-form" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Item type
-              <select name="itemType" class="rounded-md border border-kharon-border px-3 py-2 font-normal">
-                <option value="Quote">Quote</option>
-                <option value="Invoice">Invoice</option>
-              </select>
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Client site
-              <select id="finance-site-id" name="siteId" class="rounded-md border border-kharon-border px-3 py-2 font-normal" required>
-                <option value="">Select client site</option>
-                {sites.map((s) => (
-                  <option value={s.id}>{s.owner_company_name}</option>
-                ))}
-              </select>
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Link to job <span class="font-normal text-kharon-grey">(optional)</span>
-              <select id="finance-job-id" name="jobId" class="rounded-md border border-kharon-border px-3 py-2 font-normal" disabled>
-                <option value="">Select site first</option>
-              </select>
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Amount ex VAT (ZAR)
-              <input type="number" name="amountExVat" class="rounded-md border border-kharon-border px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" required />
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              VAT amount (ZAR) <span class="font-normal text-kharon-grey">(auto 15%)</span>
-              <input id="finance-vat-amount" type="number" name="vatAmount" class="rounded-md border border-kharon-border px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" />
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Amount inc VAT (ZAR)
-              <input id="finance-amount-inc-vat" type="number" name="amountIncVat" class="rounded-md border border-kharon-border px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" />
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Distribution date
-              <input id="finance-dist-date" type="date" name="distributionDate" class="rounded-md border border-kharon-border px-3 py-2 font-normal" required />
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Sage document date <span class="font-normal text-kharon-grey">(optional)</span>
-              <input type="date" name="sageDocumentDate" class="rounded-md border border-kharon-border px-3 py-2 font-normal" />
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Due date <span class="font-normal text-kharon-grey">(optional)</span>
-              <input type="date" name="sageDueDate" class="rounded-md border border-kharon-border px-3 py-2 font-normal" />
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-              Reference <span class="font-normal text-kharon-grey">(optional)</span>
-              <input type="text" name="reference" class="rounded-md border border-kharon-border px-3 py-2 font-normal" maxlength="120" placeholder="PO number, quote ref…" />
-            </label>
-            <label class="grid gap-2 text-sm font-semibold text-kharon-black lg:col-span-2">
-              Finance notes <span class="font-normal text-kharon-grey">(optional)</span>
-              <input type="text" name="financeNotes" class="rounded-md border border-kharon-border px-3 py-2 font-normal" maxlength="500" placeholder="Internal finance notes…" />
-            </label>
-            <div class="flex flex-wrap items-center gap-3 lg:col-span-3">
-              <button id="finance-create-submit" class="rounded-md bg-kharon-purple px-5 py-3 text-sm font-semibold text-white hover:bg-kharon-blue">
-                Create record
-              </button>
-              <p id="finance-create-result" class="hidden text-sm font-semibold" aria-live="polite"></p>
-            </div>
-          </form>
-        </div>
-      </details>
-
-      {/* Quick Stats Row */}
-      <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
-        <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
-          <div>
-            <p class="text-xs font-bold uppercase text-kharon-purple">Total Records</p>
-            <p class="mt-2 text-2xl font-bold text-kharon-black">{records.length}</p>
-          </div>
-        </div>
-        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${stats.totalPending > 0 ? "border-amber-200 bg-amber-50/50" : "border-kharon-border bg-white"}`}>
-          <div>
-            <p class={`text-xs font-bold uppercase ${stats.totalPending > 0 ? "text-amber-600" : "text-kharon-grey"}`}>Pending Approval</p>
-            <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.totalPending}</p>
-            <p class="mt-1 text-xs text-kharon-grey">{formatCurrency(stats.pendingAmount)}</p>
-          </div>
-        </div>
-        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${stats.totalOverdue > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-border bg-white"}`}>
-          <div>
-            <p class={`text-xs font-bold uppercase ${stats.totalOverdue > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue Payments</p>
-            <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.totalOverdue}</p>
-            <p class="mt-1 text-xs text-kharon-red">{formatCurrency(stats.overdueAmount)}</p>
-          </div>
-        </div>
-        <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
-          <div>
-            <p class="text-xs font-bold uppercase text-kharon-blue">Total Value</p>
-            <p class="mt-2 text-2xl font-bold text-kharon-black">{formatCurrencyCompact(stats.totalAmount)}</p>
-          </div>
-        </div>
-        <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
-          <div>
-            <p class="text-xs font-bold uppercase text-kharon-cyan">Recent Payments</p>
-            <p class="mt-2 text-2xl font-bold text-kharon-black">{payments.length}</p>
-          </div>
-        </div>
-      </div>
+      <FinanceStatsPanel {stats} paymentsCount={paymentsCount} />
 
       <div class="grid gap-6 lg:grid-cols-2">
-        {/* Left Column - Pending Approvals and Overdue Items */}
-        <div class="space-y-6">
-          {/* Pending Approvals */}
-          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
-              <div>
-                <p class="text-xs font-bold uppercase tracking-wider text-amber-600">Finance Review</p>
-                <h2 class="text-lg font-bold text-kharon-black">Pending Approvals</h2>
-              </div>
-              <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-amber-800">{stats.totalPending}</span>
-            </div>
-
-            <div class="space-y-3">
-              {pendingApproval.length === 0 ? (
-                <p class="text-sm text-kharon-grey italic py-2">No pending approvals.</p>
-              ) : (
-                pendingApproval.map((record) => (
-                  <article class="flex items-start justify-between gap-4 p-4 rounded-lg border border-amber-200 bg-amber-50/30">
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center justify-between">
-                        <span class="font-semibold text-kharon-black">{record.owner_company_name}</span>
-                        <span class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-800">Quote</span>
-                      </div>
-                      <p class="text-sm text-kharon-grey mt-0.5">{record.item_type} / {record.reference || "No ref"}</p>
-                      <p class="mt-2 text-xs text-kharon-black font-semibold">{formatCurrency(record.amount)}</p>
-                      {record.distribution_date && (
-                        <p class="mt-1 text-[10px] text-kharon-grey">Distributed: {record.distribution_date}</p>
-                      )}
-                    </div>
-                    <div class="flex flex-col gap-2">
-                      <a href={`/portal/api/file/${record.id}`} class="rounded border border-kharon-blue bg-white px-3 py-1.5 text-[10px] font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
-                        View
-                      </a>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Overdue Payments */}
-          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
-              <div>
-                <p class="text-xs font-bold uppercase tracking-wider text-kharon-red">Collections</p>
-                <h2 class="text-lg font-bold text-kharon-black">Overdue Payments</h2>
-              </div>
-              <span class="rounded-full bg-red-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-red-800">{stats.totalOverdue}</span>
-            </div>
-
-            <div class="space-y-3">
-              {overduePayments.length === 0 ? (
-                <p class="text-sm text-kharon-grey italic py-2">No overdue payments.</p>
-              ) : (
-                overduePayments.map((record) => (
-                  <article class="flex items-start justify-between gap-4 p-4 rounded-lg border border-red-200 bg-red-50/30">
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center justify-between">
-                        <span class="font-semibold text-kharon-black">{record.owner_company_name}</span>
-                        <span class="rounded bg-red-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-red-800">Overdue</span>
-                      </div>
-                      <p class="text-sm text-kharon-grey mt-0.5">Invoice #{record.sage_invoice_number || "N/A"}</p>
-                      <p class="mt-2 text-xs text-kharon-black font-semibold">{formatCurrency(record.amount)}</p>
-                      <p class="mt-1 text-[10px] text-kharon-red">Due: {record.sage_due_date}</p>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                      <a href={`/portal/api/file/${record.id}`} class="rounded border border-kharon-blue bg-white px-3 py-1.5 text-[10px] font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
-                        Send Reminder
-                      </a>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-            </div>
-          </div>
-
-          {/* Finance Exception Queue: Missing Sage Invoices */}
-          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
-              <div>
-                <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Exception Queue</p>
-                <h2 class="text-lg font-bold text-kharon-black">Completed Jobs Awaiting Sage Invoice</h2>
-              </div>
-              <span class="rounded-full bg-kharon-purple px-2.5 py-0.5 text-[10px] font-bold uppercase text-white">{invoiceRequired.length}</span>
-            </div>
-
-            <div class="space-y-3">
-              {invoiceRequired.length === 0 ? (
-                <p class="text-sm text-kharon-grey italic py-2">All completed jobs have been invoiced.</p>
-              ) : (
-                invoiceRequired.map((job) => (
-                  <article class="flex items-start justify-between gap-4 p-4 rounded-lg border border-kharon-border bg-kharon-light/30">
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center justify-between">
-                        <span class="font-semibold text-kharon-black">{job.owner_company_name}</span>
-                        <span class="rounded bg-kharon-light px-1.5 py-0.5 text-[9px] font-bold uppercase text-kharon-grey">Missing</span>
-                      </div>
-                      <p class="text-sm text-kharon-grey mt-0.5">{job.system_type} / {job.coverage_area}</p>
-                      <p class="mt-2 text-xs text-kharon-grey font-semibold">Completed: {job.completed_at || "N/A"}</p>
-                      <p class="mt-1 text-[10px] text-kharon-grey">Tech: {job.assigned_technician_name || "Unknown"}</p>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                      <a href={`/portal/api/file/${job.id}`} class="rounded border border-kharon-purple bg-white px-3 py-1.5 text-[10px] font-bold text-kharon-purple hover:bg-kharon-purple hover:text-white transition-colors text-center">
-                        View Jobcard
-                      </a>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Sage Status Tracking and Recent Activity */}
-        <div class="space-y-6">
-          {/* Sage Status Tracking */}
-          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
-              <div>
-                <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Sage Pipeline</p>
-                <h2 class="text-lg font-bold text-kharon-black">Task Status Tracking</h2>
-              </div>
-            </div>
-
-            <div class="space-y-3 max-h-96 overflow-y-auto">
-              {sageStatuses.length === 0 ? (
-                <p class="text-sm text-kharon-grey italic py-2">No records to track.</p>
-              ) : (
-                sageStatuses.map((statusGroup) => (
-                  <details class="group">
-                    <summary class="flex items-center justify-between cursor-pointer p-3 rounded-lg border border-kharon-border bg-white hover:bg-kharon-light transition-colors">
-                      <span class="font-semibold text-kharon-black group-open:font-bold">{statusGroup.status}</span>
-                      <span class="rounded-full bg-kharon-purple px-2 py-0.5 text-xs font-bold text-white">{statusGroup.count}</span>
-                    </summary>
-                    <div class="mt-2 pl-4 border-l-2 border-kharon-border space-y-2">
-                      {statusGroup.records.slice(0, 5).map((record) => (
-                        <div class="flex items-center justify-between p-2 bg-kharon-light/30 rounded">
-                          <div>
-                            <p class="text-xs font-semibold text-kharon-black truncate">{record.owner_company_name}</p>
-                            <p class="text-[10px] text-kharon-grey">{record.item_type} • {formatCurrency(record.amount)}</p>
-                          </div>
-                          <span class="text-[10px] text-kharon-grey">{record.sage_invoice_number || record.sage_quote_number || "No Sage ref"}</span>
-                        </div>
-                      ))}
-                      {statusGroup.records.length > 5 && (
-                        <p class="text-xs text-kharon-grey pl-2">+{statusGroup.records.length - 5} more records</p>
-                      )}
-                    </div>
-                  </details>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* VAT Compliance Summary */}
-          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
-              <div>
-                <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">VAT Compliance</p>
-                <h2 class="text-lg font-bold text-kharon-black">Tax Reporting Summary</h2>
-              </div>
-            </div>
-
-            <div class="space-y-4">
-              <div class="grid grid-cols-2 gap-4">
-                <div class="rounded-lg border border-kharon-border p-3">
-                  <p class="text-xs font-bold text-kharon-grey uppercase">Excl VAT</p>
-                  <p class="mt-1 text-sm font-bold text-kharon-black">
-                    {formatCurrency(stats.totalSageAmountExVat)}
-                  </p>
-                </div>
-                <div class="rounded-lg border border-kharon-border p-3">
-                  <p class="text-xs font-bold text-kharon-grey uppercase">VAT Amount</p>
-                  <p class="mt-1 text-sm font-bold text-kharon-black">
-                    {formatCurrency(stats.totalSageVatAmount)}
-                  </p>
-                </div>
-              </div>
-              
-              <div class="rounded-lg border border-kharon-border p-3">
-                <p class="text-xs font-bold text-kharon-grey uppercase">Incl VAT</p>
-                <p class="mt-1 text-sm font-bold text-kharon-black">
-                  {formatCurrency(stats.totalSageAmountIncVat)}
-                </p>
-              </div>
-
-              <div class="pt-3 border-t border-kharon-border/60">
-                <p class="text-xs text-kharon-grey">VAT Rate: 15%</p>
-                <p class="text-[10px] text-kharon-grey/70 mt-1">All amounts are in ZAR and comply with South African tax regulations.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <FinanceExceptionPanel
+          {pendingApproval}
+          {overduePayments}
+          {invoiceRequired}
+          stats={{ totalPending: stats.totalPending, totalOverdue: stats.totalOverdue }}
+        />
+        <FinanceSagePanel
+          {sageStatuses}
+          stats={{
+            totalSageAmountExVat:  stats.totalSageAmountExVat,
+            totalSageVatAmount:    stats.totalSageVatAmount,
+            totalSageAmountIncVat: stats.totalSageAmountIncVat,
+          }}
+        />
       </div>
+
+      <FinanceLedgerTable {records} {page} {totalPages} />
     </div>
   </section>
-  
-  <script>
-    // Handle finance actions
-    async function postJson(url, payload) {
-      const response = await window.kharonPortalFetch(url, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const body = await response.json();
-      if (!response.ok || !body.ok) throw new Error(body.message || "Request failed.");
-      return body;
-    }
-
-    // Add functionality for handling finance tasks
-    document.querySelectorAll('.finance-task-btn').forEach(button => {
-      button.addEventListener('click', async function() {
-        const recordId = this.dataset.recordId;
-        const action = this.dataset.action;
-        
-        if (!confirm(`Are you sure you want to ${action} this record?`)) return;
-        
-        try {
-          const result = await postJson('/portal/api/finance/records', {
-            action,
-            id: recordId
-          });
-          
-          // Refresh the page or update UI accordingly
-          location.reload();
-        } catch (error) {
-          alert(`Error: ${error.message}`);
-        }
-      });
-    });
-  </script>
-
-      <div class="sticky top-0 z-10 bg-kharon-light pb-2 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex flex-wrap items-center gap-3">
-          <input
-            id="finance-search"
-            type="search"
-            class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
-            placeholder="Search client or reference…"
-            size="26"
-          />
-          <select id="finance-status-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
-            <option value="">All statuses</option>
-            <option value="Unpaid">Unpaid</option>
-            <option value="Pending Approval">Pending Approval</option>
-            <option value="Settled">Paid in Sage</option>
-          </select>
-          <select id="finance-type-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
-            <option value="">All types</option>
-            <option value="Quote">Quote</option>
-            <option value="Invoice">Invoice</option>
-          </select>
-        </div>
-        <a href="/portal/api/finance/export" class="rounded-md border border-kharon-border bg-white px-4 py-2 text-sm font-bold text-kharon-black hover:bg-kharon-light transition-colors">
-          Export ledger CSV
-        </a>
-      </div>
-      <p id="finance-no-results" class="hidden py-3 text-sm text-kharon-grey">No records match your filter.</p>
-
-      <div class="portal-scroll-x rounded-xl border border-kharon-border bg-white shadow-sm overflow-hidden">
-        <table class="w-full min-w-[1200px] border-collapse text-left text-sm">
-          <thead class="bg-kharon-charcoal text-white">
-            <tr>
-              <th class="p-4">Client</th>
-              <th class="p-4">Type</th>
-              <th class="p-4">Status</th>
-              <th class="p-4">Ex VAT</th>
-              <th class="p-4">VAT</th>
-              <th class="p-4">Inc VAT</th>
-              <th class="p-4">Doc Date</th>
-              <th class="p-4">Due Date</th>
-              <th class="p-4">Age</th>
-              <th class="p-4">Portal Ref</th>
-              <th class="p-4">Sage Ref</th>
-              <th class="p-4">Action</th>
-            </tr>
-          </thead>
-          <tbody id="finance-tbody">
-            {records.map((record) => (
-              <tr
-                class="border-t border-kharon-border"
-                data-search={`${record.owner_company_name} ${record.reference || ""} ${record.item_type} ${record.sage_invoice_number || ""} ${record.sage_quote_number || ""}`}
-                data-status={record.payment_status}
-                data-type={record.item_type}
-              >
-                <td class="p-4 font-semibold">{record.owner_company_name}</td>
-                <td class="p-4">
-                  {record.item_type}
-                  {record.credit_note_for_id && <span class="ml-1 text-xs text-kharon-red">(CN)</span>}
-                </td>
-                <td class="p-4">
-                  <div>{record.payment_status === "Settled" ? "Paid in Sage" : record.payment_status}</div>
-                  {record.finance_task_status && (
-                    <div class="mt-1 text-xs font-semibold text-kharon-purple">{record.finance_task_status}</div>
-                  )}
-                </td>
-                <td class="p-4">{formatCurrency(Number(record.sage_amount_ex_vat ?? record.amount))}</td>
-                <td class="p-4">{formatCurrency(Number(record.sage_vat_amount ?? 0))}</td>
-                <td class="p-4 font-semibold">{formatCurrency(Number(record.sage_amount_inc_vat ?? record.amount ?? 0))}</td>
-                <td class="p-4 whitespace-nowrap">{record.sage_document_date || record.distribution_date}</td>
-                <td class="p-4 whitespace-nowrap">{record.sage_due_date || "—"}</td>
-                <td class="p-4">{record.payment_status === "Settled" ? "—" : `${record.age_days}d`}</td>
-                <td class="p-4 text-xs text-kharon-grey">{record.reference || <span class="text-kharon-grey/40">—</span>}</td>
-                <td class="p-4">
-                  {record.payment_status === "Settled" ? (
-                    <span class="text-xs text-kharon-grey/60">
-                      {(record.item_type === "Invoice" ? record.sage_invoice_number : record.sage_quote_number) || "—"}
-                    </span>
-                  ) : (record.item_type === "Invoice" ? record.sage_invoice_number : record.item_type === "Quote" ? record.sage_quote_number : null) ? (
-                    <span class="font-mono text-xs text-kharon-grey">
-                      {record.item_type === "Invoice" ? record.sage_invoice_number : record.sage_quote_number}
-                    </span>
-                  ) : record.item_type !== "Payment" ? (
-                    <span class="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold uppercase text-amber-700">Missing</span>
-                  ) : (
-                    <span class="text-xs text-kharon-grey/40">—</span>
-                  )}
-                </td>
-                <td class="p-4">
-                  {record.payment_status === "Settled" ? (
-                    <span class="text-xs uppercase text-kharon-grey/40">—</span>
-                  ) : (
-                    <div class="flex min-w-52 flex-col gap-2">
-                      {record.item_type !== "Payment" && (
-                        <form class="sage-ref-form grid gap-1.5" data-record-id={record.id} data-item-type={record.item_type}>
-                          <input
-                            class="rounded border border-kharon-border px-2 py-1.5 text-xs"
-                            name="sageNumber"
-                            maxlength="60"
-                            placeholder={record.item_type === "Quote" ? "Sage quote number" : "Sage invoice number"}
-                            value={record.item_type === "Invoice" ? (record.sage_invoice_number || "") : (record.sage_quote_number || "")}
-                          />
-                          <input
-                            class="rounded border border-kharon-border px-2 py-1.5 text-xs"
-                            name="sageCustomerCode"
-                            maxlength="40"
-                            placeholder="Sage customer code (optional)"
-                            value={record.sage_customer_code || ""}
-                          />
-                          <div class="grid grid-cols-3 gap-1.5">
-                            <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="sageAmountExVat" type="number" step="0.01" placeholder="Ex VAT" value={record.sage_amount_ex_vat ? Number(record.sage_amount_ex_vat).toFixed(2) : ""} />
-                            <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="sageVatAmount" type="number" step="0.01" placeholder="VAT" value={record.sage_vat_amount ? Number(record.sage_vat_amount).toFixed(2) : ""} />
-                            <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="sageAmountIncVat" type="number" step="0.01" placeholder="Inc VAT" value={record.sage_amount_inc_vat ? Number(record.sage_amount_inc_vat).toFixed(2) : ""} />
-                          </div>
-                          <div class="grid grid-cols-2 gap-1.5">
-                            <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="sageDocumentDate" type="date" placeholder="Doc date" value={record.sage_document_date || ""} />
-                            <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="sageDueDate" type="date" placeholder="Due date" value={record.sage_due_date || ""} />
-                          </div>
-                          <input
-                            class="rounded border border-kharon-border px-2 py-1.5 text-xs"
-                            name="financeNotes"
-                            maxlength="500"
-                            placeholder="Finance notes (optional)"
-                            value={record.finance_notes || ""}
-                          />
-                          <select class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="financeTaskStatus">
-                            <option value="">Task status…</option>
-                            {[
-                              "Finance Review Required",
-                              "Quote Required",
-                              "Sage Quote Created",
-                              "Sage Quote Sent",
-                              "Awaiting Client Approval",
-                              "Quote Approved",
-                              "Approved - Sage Invoice Required",
-                              "Invoice Required",
-                              "Sage Invoice Created",
-                              "Sage Invoice Sent",
-                              "Payment Pending in Sage",
-                              "Paid in Sage",
-                              "Sage Reference Missing",
-                              "Awaiting Payment",
-                              "Complete",
-                              "On Hold",
-                              "Cancelled",
-                              "No Charge",
-                              "Closed"
-                            ].map((s) => (
-                              <option value={s} selected={record.finance_task_status === s}>{s}</option>
-                            ))}
-                          </select>
-                          <button class="rounded bg-kharon-grey px-2 py-1.5 text-xs font-semibold text-white hover:bg-kharon-black">
-                            {(record.item_type === "Invoice" ? record.sage_invoice_number : record.sage_quote_number) ? "Update Sage ref" : "Save Sage ref"}
-                          </button>
-                          <p class="sage-ref-result text-xs text-kharon-grey" aria-live="polite"></p>
-                        </form>
-                      )}
-                      {record.item_type === "Invoice" && record.payment_status === "Unpaid" && (
-                        <form class="payment-form grid gap-1.5" data-record-id={record.id}>
-                          <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="paymentReference" maxlength="80" placeholder="Sage payment reference" />
-                          <button class="rounded bg-kharon-purple px-2 py-1.5 text-xs font-semibold text-white hover:bg-kharon-blue">Record Paid in Sage</button>
-                          <p class="payment-result text-xs text-kharon-grey" aria-live="polite"></p>
-                        </form>
-                      )}
-                      {record.item_type !== "Payment" && !["No Charge","On Hold","Complete","Closed","Cancelled"].includes(record.finance_task_status || "") && (
-                        <div class="mt-1 flex gap-1.5">
-                          <button
-                            class="finance-quick-status rounded border border-kharon-border px-2 py-1 text-xs font-semibold text-kharon-grey hover:bg-kharon-light"
-                            data-record-id={record.id}
-                            data-status="No Charge"
-                            type="button"
-                          >No Charge</button>
-                          <button
-                            class="finance-quick-status rounded border border-kharon-border px-2 py-1 text-xs font-semibold text-kharon-grey hover:bg-kharon-light"
-                            data-record-id={record.id}
-                            data-status="On Hold"
-                            type="button"
-                          >On Hold</button>
-                          {["Invoice", "Quote"].includes(record.item_type) && !record.credit_note_for_id && (
-                            <button
-                              class="credit-note-btn rounded border border-red-300 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
-                              data-record-id={record.id}
-                              data-item-type={record.item_type}
-                              type="button"
-                            >Credit Note</button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {records.length > 0 && (
-        <nav class="flex items-center justify-between mt-6 pt-4 border-t border-kharon-border">
-          {page > 1 ? (
-            <a href={`?page=${page - 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Previous</a>
-          ) : (
-            <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Previous</span>
-          )}
-          <span class="text-sm text-kharon-grey">Page {page} of {totalPages}</span>
-          {page < totalPages ? (
-            <a href={`?page=${page + 1}`} class="px-4 py-2 text-sm font-medium rounded border border-kharon-border hover:bg-kharon-light text-kharon-black">Next</a>
-          ) : (
-            <span class="px-4 py-2 text-sm font-medium rounded border border-kharon-border text-kharon-grey/50 cursor-not-allowed">Next</span>
-          )}
-        </nav>
-      )}
-    </div>
-  </section>
-  <script>
-    // ── Ledger search / filter ──────────────────────────────────────────────
-    const financeSearch       = document.getElementById("finance-search") as HTMLInputElement | null;
-    const financeStatusFilter = document.getElementById("finance-status-filter") as HTMLSelectElement | null;
-    const financeTypeFilter   = document.getElementById("finance-type-filter") as HTMLSelectElement | null;
-    const financeTbody        = document.getElementById("finance-tbody");
-    const financeNoResults    = document.getElementById("finance-no-results");
-
-    function applyFinanceFilter() {
-      if (!financeTbody) return;
-      const q  = (financeSearch?.value  || "").toLowerCase().trim();
-      const sv = financeStatusFilter?.value || "";
-      const tv = financeTypeFilter?.value   || "";
-      const rows = financeTbody.querySelectorAll<HTMLTableRowElement>("tr[data-search]");
-      let visible = 0;
-      for (const row of rows) {
-        const text = (row.dataset.search ?? "").toLowerCase();
-        const show =
-          (!q  || text.includes(q)) &&
-          (!sv || (row.dataset.status ?? "") === sv) &&
-          (!tv || (row.dataset.type   ?? "") === tv);
-        row.style.display = show ? "" : "none";
-        if (show) visible++;
-      }
-      if (financeNoResults) financeNoResults.style.display = visible === 0 ? "" : "none";
-    }
-
-    financeSearch?.addEventListener("input",  applyFinanceFilter);
-    financeStatusFilter?.addEventListener("change", applyFinanceFilter);
-    financeTypeFilter?.addEventListener("change",   applyFinanceFilter);
-
-    // ── Sage reference forms ────────────────────────────────────────────────
-    for (const form of document.querySelectorAll(".sage-ref-form")) {
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const result        = form.querySelector(".sage-ref-result");
-        const recordId      = form.dataset.recordId;
-        const itemType      = form.dataset.itemType;
-        const sageNumber        = (form.querySelector("[name='sageNumber']")?.value        ?? "").trim();
-        const sageCustomerCode  = (form.querySelector("[name='sageCustomerCode']")?.value  ?? "").trim();
-        const sageAmountExVat   = (form.querySelector("[name='sageAmountExVat']")?.value   ?? "").trim();
-        const sageVatAmount     = (form.querySelector("[name='sageVatAmount']")?.value     ?? "").trim();
-        const sageAmountIncVat  = (form.querySelector("[name='sageAmountIncVat']")?.value  ?? "").trim();
-        const sageDocumentDate  = (form.querySelector("[name='sageDocumentDate']")?.value  ?? "").trim();
-        const sageDueDate       = (form.querySelector("[name='sageDueDate']")?.value       ?? "").trim();
-        const financeNotes      = (form.querySelector("[name='financeNotes']")?.value      ?? "").trim();
-        const financeTaskStatus = (form.querySelector("[name='financeTaskStatus']")?.value ?? "").trim();
-
-        const payload = { recordId };
-        if (itemType === "Invoice") { payload.sageInvoiceNumber = sageNumber || null; }
-        else                        { payload.sageQuoteNumber   = sageNumber || null; }
-        if (sageCustomerCode)  payload.sageCustomerCode  = sageCustomerCode;
-        if (sageAmountExVat)   payload.sageAmountExVat   = parseFloat(sageAmountExVat);
-        if (sageVatAmount)     payload.sageVatAmount     = parseFloat(sageVatAmount);
-        if (sageAmountIncVat)  payload.sageAmountIncVat  = parseFloat(sageAmountIncVat);
-        if (sageDocumentDate)  payload.sageDocumentDate  = sageDocumentDate;
-        if (sageDueDate)       payload.sageDueDate       = sageDueDate;
-        if (financeNotes)      payload.financeNotes      = financeNotes;
-        if (financeTaskStatus) payload.financeTaskStatus = financeTaskStatus;
-
-        if (result) result.textContent = "Saving…";
-        const response = await window.kharonPortalFetch("/portal/api/finance/sage-reference", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        const body = await response.json().catch(() => ({ ok: false, message: "Save failed." }));
-        if (result) result.textContent = body.ok ? "Saved." : (body.message || "Save failed.");
-        if (body.ok) setTimeout(() => window.location.reload(), 700);
-      });
-    }
-
-    // ── Finance quick-status buttons (No Charge / On Hold) ─────────────────
-    for (const btn of document.querySelectorAll(".finance-quick-status")) {
-      btn.addEventListener("click", async () => {
-        const recordId = (btn as HTMLElement).dataset.recordId;
-        const status   = (btn as HTMLElement).dataset.status;
-        if (!recordId || !status) return;
-        if (!window.confirm(`Mark this record as "${status}"? You can change it later.`)) return;
-        (btn as HTMLButtonElement).disabled = true;
-        const response = await window.kharonPortalFetch("/portal/api/finance/sage-reference", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ recordId, financeTaskStatus: status })
-        });
-        const body = await response.json().catch(() => ({ ok: false }));
-        if (body.ok) {
-          window.location.reload();
-        } else {
-          alert(body.message || "Status update failed.");
-          (btn as HTMLButtonElement).disabled = false;
-        }
-      });
-    }
-
-    // ── Credit Note buttons ────────────────────────────────────────────────
-    for (const btn of document.querySelectorAll(".credit-note-btn")) {
-      btn.addEventListener("click", async () => {
-        const recordId = (btn as HTMLElement).dataset.recordId;
-        const itemType = (btn as HTMLElement).dataset.itemType;
-        if (!recordId) return;
-        const reason = window.prompt(`Enter reason for credit note (${itemType} reversal):`);
-        if (!reason || !reason.trim()) return;
-        (btn as HTMLButtonElement).disabled = true;
-        const response = await window.kharonPortalFetch("/portal/api/finance/credit-note", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ originalRecordId: recordId, reason: reason.trim() })
-        });
-        const body = await response.json().catch(() => ({ ok: false }));
-        if (body.ok) {
-          window.location.reload();
-        } else {
-          alert(body.message || "Credit note creation failed.");
-          (btn as HTMLButtonElement).disabled = false;
-        }
-      });
-    }
-
-    // ── Payment forms ───────────────────────────────────────────────────────
-    for (const form of document.querySelectorAll(".payment-form")) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const result = form.querySelector(".payment-result");
-        const refInput = form.querySelector("[name='paymentReference']");
-        const ref = refInput?.value?.trim() || "";
-        const confirmed = window.confirm(
-          `Record this payment in Sage?\n\nSage payment reference: ${ref || "(none entered)"}\n\nThis action cannot be undone.`
-        );
-        if (!confirmed) return;
-        const payload = Object.fromEntries(new FormData(form).entries());
-        payload.recordId = form.dataset.recordId;
-        result.textContent = "Recording in Sage...";
-
-        const response = await window.kharonPortalFetch("/portal/api/finance/payments", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        const body = await response.json().catch(() => ({ ok: false, message: "Payment capture failed." }));
-        result.textContent = body.ok ? `Recorded in Sage: ${body.paymentReference}` : body.message || "Payment capture failed.";
-        if (body.ok) window.location.reload();
-      });
-    }
-
-    // Create financial record form
-    const financeSiteSelect = document.getElementById("finance-site-id");
-    const financeJobSelect = document.getElementById("finance-job-id");
-    const financeCreateForm = document.getElementById("finance-create-form");
-    const financeCreateResult = document.getElementById("finance-create-result");
-    const financeCreateSubmit = document.getElementById("finance-create-submit");
-    const financeDistDate = document.getElementById("finance-dist-date");
-    const financeVatAmount = document.getElementById("finance-vat-amount");
-    const financeAmountIncVat = document.getElementById("finance-amount-inc-vat");
-    const financeJobsData = JSON.parse(document.getElementById("finance-jobs-data")?.getAttribute("data-jobs") || "[]");
-
-    // Auto-calculate VAT (15%) and amount inc VAT when amount ex VAT changes
-    const amountExVatInput = document.querySelector("[name='amountExVat']");
-    amountExVatInput?.addEventListener("input", () => {
-      const exVat = parseFloat((amountExVatInput as HTMLInputElement).value) || 0;
-      const vat = +(exVat * 0.15).toFixed(2);
-      const incVat = +(exVat + vat).toFixed(2);
-      if (financeVatAmount) (financeVatAmount as HTMLInputElement).value = vat > 0 ? String(vat) : "";
-      if (financeAmountIncVat) (financeAmountIncVat as HTMLInputElement).value = incVat > 0 ? String(incVat) : "";
-    });
-
-    if (financeDistDate && !financeDistDate.value) {
-      financeDistDate.value = new Date().toISOString().split("T")[0];
-    }
-
-    financeSiteSelect?.addEventListener("change", () => {
-      const siteId = financeSiteSelect.value;
-      if (siteId) {
-        const siteJobs = financeJobsData.filter((j) => j.site_id === siteId);
-        const defaultOpt = document.createElement("option");
-        defaultOpt.value = "";
-        defaultOpt.textContent = "No job (standalone record)";
-        financeJobSelect.replaceChildren(defaultOpt);
-        for (const job of siteJobs) {
-          const opt = document.createElement("option");
-          opt.value = job.id;
-          opt.textContent = `${job.coverage_area} / ${job.status} / ${job.scheduled_date || ""}`;
-          financeJobSelect.appendChild(opt);
-        }
-        financeJobSelect.disabled = false;
-      } else {
-        financeJobSelect.disabled = true;
-        const defaultOpt = document.createElement("option");
-        defaultOpt.value = "";
-        defaultOpt.textContent = "Select site first";
-        financeJobSelect.replaceChildren(defaultOpt);
-      }
-    });
-
-    financeCreateForm?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      financeCreateSubmit.disabled = true;
-      financeCreateSubmit.textContent = "Creating…";
-      financeCreateResult.className = "hidden text-sm font-semibold";
-
-      const data = new FormData(financeCreateForm);
-      const jobId = data.get("jobId");
-      const reference = data.get("reference");
-      const payload = {
-        itemType: data.get("itemType"),
-        siteId: data.get("siteId"),
-        amountExVat: data.get("amountExVat"),
-        vatAmount: data.get("vatAmount") || null,
-        amountIncVat: data.get("amountIncVat") || null,
-        distributionDate: data.get("distributionDate"),
-        sageDocumentDate: data.get("sageDocumentDate") || null,
-        sageDueDate: data.get("sageDueDate") || null,
-        ...(jobId && { jobId }),
-        ...(reference && { reference }),
-        ...(data.get("financeNotes") && { financeNotes: data.get("financeNotes") })
-      };
-
-      const response = await window.kharonPortalFetch("/portal/api/finance/records", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const body = await response.json().catch(() => ({ ok: false, message: "Request failed." }));
-
-      if (body.ok) {
-        financeCreateResult.textContent = `${body.itemType} created — ${body.paymentStatus} / R ${(Number(body.amount) / 100).toFixed(2)}`;
-        financeCreateResult.className = "text-sm font-semibold text-kharon-blue";
-        financeCreateForm.reset();
-        financeJobSelect.disabled = true;
-        const defaultOpt = document.createElement("option");
-        defaultOpt.value = "";
-        defaultOpt.textContent = "Select site first";
-        financeJobSelect.replaceChildren(defaultOpt);
-        if (financeDistDate) financeDistDate.value = new Date().toISOString().split("T")[0];
-        setTimeout(() => window.location.reload(), 2000);
-      } else {
-        financeCreateResult.textContent = body.message || "Record could not be created.";
-        financeCreateResult.className = "text-sm font-semibold text-red-700";
-        financeCreateSubmit.disabled = false;
-        financeCreateSubmit.textContent = "Create record";
-      }
-    });
-  </script>
 </PortalLayout>

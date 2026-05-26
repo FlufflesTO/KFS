@@ -1,0 +1,46 @@
+---
+import { formatCurrency, formatCurrencyCompact } from "../../../lib/utils/financial-utils.ts";
+
+interface Props {
+  stats: {
+    totalRecords: number;
+    totalPending: number;
+    pendingAmount: number;
+    totalOverdue: number;
+    overdueAmount: number;
+    totalAmount: number;
+  };
+  paymentsCount: number;
+}
+
+const { stats, paymentsCount } = Astro.props;
+---
+
+<div class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
+  <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
+    <p class="text-xs font-bold uppercase text-kharon-purple">Total Records</p>
+    <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.totalRecords}</p>
+  </div>
+
+  <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${stats.totalPending > 0 ? "border-amber-200 bg-amber-50/50" : "border-kharon-border bg-white"}`}>
+    <p class={`text-xs font-bold uppercase ${stats.totalPending > 0 ? "text-amber-600" : "text-kharon-grey"}`}>Pending Approval</p>
+    <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.totalPending}</p>
+    <p class="mt-1 text-xs text-kharon-grey">{formatCurrency(stats.pendingAmount)}</p>
+  </div>
+
+  <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${stats.totalOverdue > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-border bg-white"}`}>
+    <p class={`text-xs font-bold uppercase ${stats.totalOverdue > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue Payments</p>
+    <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.totalOverdue}</p>
+    <p class="mt-1 text-xs text-kharon-red">{formatCurrency(stats.overdueAmount)}</p>
+  </div>
+
+  <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
+    <p class="text-xs font-bold uppercase text-kharon-blue">Total Value</p>
+    <p class="mt-2 text-2xl font-bold text-kharon-black">{formatCurrencyCompact(stats.totalAmount)}</p>
+  </div>
+
+  <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
+    <p class="text-xs font-bold uppercase text-kharon-cyan">Recent Payments</p>
+    <p class="mt-2 text-2xl font-bold text-kharon-black">{paymentsCount}</p>
+  </div>
+</div>
