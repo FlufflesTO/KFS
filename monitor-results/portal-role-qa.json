@@ -1,0 +1,158 @@
+﻿{
+    "ok":  true,
+    "infoCount":  0,
+    "baseUrl":  "https://portal.tequit.co.za",
+    "generatedAt":  "2026-05-26T15:32:22Z",
+    "results":  [
+                    {
+                        "name":  "login route reachable",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "unauthenticated redirect: /portal/tech/dashboard",
+                        "status":  "PASS",
+                        "detail":  "HTTP 302 to login"
+                    },
+                    {
+                        "name":  "unauthenticated redirect: /portal/admin/dashboard",
+                        "status":  "PASS",
+                        "detail":  "HTTP 302 to login"
+                    },
+                    {
+                        "name":  "unauthenticated redirect: /portal/finance/dashboard",
+                        "status":  "PASS",
+                        "detail":  "HTTP 302 to login"
+                    },
+                    {
+                        "name":  "unauthenticated redirect: /portal/client/dashboard",
+                        "status":  "PASS",
+                        "detail":  "HTTP 302 to login"
+                    },
+                    {
+                        "name":  "encoded traversal handling",
+                        "status":  "PASS",
+                        "detail":  "HTTP 404"
+                    },
+                    {
+                        "name":  "login: admin",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "role redirect: admin",
+                        "status":  "PASS",
+                        "detail":  "redirectTo=/portal/admin/dashboard"
+                    },
+                    {
+                        "name":  "allowed dashboard: admin",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "CSRF token exposure: admin",
+                        "status":  "PASS",
+                        "detail":  "Token present in authenticated portal layout."
+                    },
+                    {
+                        "name":  "missing CSRF blocked: admin",
+                        "status":  "PASS",
+                        "detail":  "HTTP 403"
+                    },
+                    {
+                        "name":  "valid CSRF logout: admin",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "login: tech",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "role redirect: tech",
+                        "status":  "PASS",
+                        "detail":  "redirectTo=/portal/tech/dashboard"
+                    },
+                    {
+                        "name":  "allowed dashboard: tech",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "CSRF token exposure: tech",
+                        "status":  "PASS",
+                        "detail":  "Token present in authenticated portal layout."
+                    },
+                    {
+                        "name":  "missing CSRF blocked: tech",
+                        "status":  "PASS",
+                        "detail":  "HTTP 403"
+                    },
+                    {
+                        "name":  "valid CSRF logout: tech",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "login: finance",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "role redirect: finance",
+                        "status":  "PASS",
+                        "detail":  "redirectTo=/portal/finance/dashboard"
+                    },
+                    {
+                        "name":  "allowed dashboard: finance",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "CSRF token exposure: finance",
+                        "status":  "PASS",
+                        "detail":  "Token present in authenticated portal layout."
+                    },
+                    {
+                        "name":  "missing CSRF blocked: finance",
+                        "status":  "PASS",
+                        "detail":  "HTTP 403"
+                    },
+                    {
+                        "name":  "valid CSRF logout: finance",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "login: client",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "role redirect: client",
+                        "status":  "PASS",
+                        "detail":  "redirectTo=/portal/client/dashboard"
+                    },
+                    {
+                        "name":  "allowed dashboard: client",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    },
+                    {
+                        "name":  "CSRF token exposure: client",
+                        "status":  "PASS",
+                        "detail":  "Token present in authenticated portal layout."
+                    },
+                    {
+                        "name":  "missing CSRF blocked: client",
+                        "status":  "PASS",
+                        "detail":  "HTTP 403"
+                    },
+                    {
+                        "name":  "valid CSRF logout: client",
+                        "status":  "PASS",
+                        "detail":  "HTTP 200"
+                    }
+                ]
+}
