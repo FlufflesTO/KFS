@@ -241,14 +241,67 @@ summary::-webkit-details-marker {
 
 .hero-cinematic__titan {
   position: absolute;
-  right: -5%;
-  top: 10%;
-  width: min(35rem, 45vw);
+  right: clamp(-9rem, -7vw, -3rem);
+  top: clamp(0.75rem, 3vw, 3.5rem);
+  width: min(30rem, 40vw);
   height: auto;
-  opacity: 0.15;
-  filter: blur(1px);
-  transform: perspective(1200px) rotateY(-15deg) rotateX(5deg);
-  animation: titan-drift 30s ease-in-out infinite alternate;
+  opacity: 0.2;
+  filter:
+    drop-shadow(-2px 0 0 rgba(255, 255, 255, 0.035))
+    drop-shadow(-70px 90px 100px rgba(0, 0, 0, 0.72));
+  transform: perspective(1000px) rotateY(-21deg) rotateX(5deg) skewY(-2deg);
+  transform-origin: center;
+  mask-image: linear-gradient(90deg, transparent 0%, black 18%, black 74%, transparent 100%);
+  animation: titan-drift 22s ease-in-out infinite alternate;
+}
+
+.hero-cinematic__structure {
+  position: absolute;
+  right: 7%;
+  bottom: 7%;
+  width: min(34rem, 42vw);
+  height: min(32rem, 58vh);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(0, 194, 255, 0.09);
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012) 42%, rgba(0, 194, 255, 0.05)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 62%);
+  box-shadow:
+    inset 30px 0 80px rgba(255, 255, 255, 0.025),
+    -90px 80px 140px rgba(0, 0, 0, 0.55);
+  clip-path: polygon(24% 0, 100% 0, 78% 100%, 0 100%);
+  transform: perspective(850px) rotateY(-18deg) rotateX(3deg);
+}
+
+.hero-cinematic__linework {
+  position: absolute;
+  right: -4%;
+  bottom: 4%;
+  width: min(70rem, 78vw);
+  height: auto;
+  opacity: 0.38;
+  transform: perspective(900px) rotateX(1deg) rotateY(-5deg);
+  animation: linework-drift 18s ease-in-out infinite alternate;
+}
+
+.hero-cinematic__linework path {
+  fill: none;
+  stroke: url("#hero-linework-primary");
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.hero-cinematic__linework .secondary {
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 1;
+}
+
+.hero-cinematic__linework circle {
+  fill: rgba(0, 194, 255, 0.46);
+}
+
+.hero-cinematic__linework .critical {
+  fill: rgba(196, 51, 47, 0.58);
 }
 
 .hero-cinematic__floor {
@@ -293,9 +346,46 @@ summary::-webkit-details-marker {
 
 @keyframes titan-drift {
   from {
-    transform: perspective(1200px) rotateY(-15deg) rotateX(5deg) translate3d(0, 0, 0);
+    transform: perspective(1000px) rotateY(-21deg) rotateX(5deg) skewY(-2deg) translate3d(0, 0, 0);
   }
   to {
-    transform: perspective(1200px) rotateY(-12deg) rotateX(8deg) translate3d(-1rem, 0.5rem, 0);
+    transform: perspective(1000px) rotateY(-20deg) rotateX(5deg) skewY(-2deg) translate3d(-0.8rem, 0.35rem, 0);
   }
 }
+
+@keyframes linework-drift {
+  from {
+    opacity: 0.32;
+    transform: perspective(900px) rotateX(1deg) rotateY(-5deg) translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0.42;
+    transform: perspective(900px) rotateX(1deg) rotateY(-5deg) translate3d(-0.9rem, -0.35rem, 0);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-cinematic__titan {
+    right: -9rem;
+    top: 6rem;
+    width: 18rem;
+    opacity: 0.17;
+  }
+  .hero-cinematic__linework {
+    right: -18rem;
+    bottom: -2rem;
+    width: 42rem;
+    opacity: 0.16;
+  }
+  .hero-cinematic__floor,
+  .hero-cinematic__structure {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-cinematic__titan {
+    width: min(39rem, 42vw);
+  }
+}
+

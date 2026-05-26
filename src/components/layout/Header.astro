@@ -19,8 +19,6 @@ function normalizePath(pathname) {
 const activePath = normalizePath(currentPath);
 const isLinkActive = (href) => href.includes("#") ? false : normalizePath(href) === activePath;
 const isSolutionsActive = solutionLinks.some((item) => isLinkActive(item.href));
-const desktopLinkClass = (active) =>
-  `whitespace-nowrap text-sm font-semibold ${active ? "text-white" : "text-white/75 hover:text-white"}`;
 
 const solutionHrefs = new Set(solutionLinks.map((l) => l.href));
 const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
@@ -45,8 +43,8 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
       </div>
     </a>
 
-    <nav class="hidden items-center gap-8 lg:flex" aria-label="Primary navigation">
-      <a href="/" class={desktopLinkClass(isLinkActive("/"))} aria-current={isLinkActive("/") ? "page" : undefined}>
+    <nav class="hidden items-center gap-6 xl:gap-8 lg:flex" aria-label="Primary navigation">
+      <a href="/" class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-cyan" : "text-white/70 hover:text-white"}`} aria-current={isLinkActive("/") ? "page" : undefined}>
         Home
       </a>
 
@@ -88,7 +86,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
         mainLinks.slice(1).map((link) => {
           const active = isLinkActive(link.href);
           return (
-            <a href={link.href} class={desktopLinkClass(active)} aria-current={active ? "page" : undefined}>
+            <a href={link.href} class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${active ? "text-kharon-cyan" : "text-white/70 hover:text-white"}`} aria-current={active ? "page" : undefined}>
               {link.label}
             </a>
           );
