@@ -56,15 +56,15 @@ try {
 
   const [cntActive, cntUnassigned, cntOverdue, cntRequests, cntMissingDocs,
          cntOpenDefects, cntCriticalDefects, cntBlockedCerts, cntValidCerts] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE date(next_due_date) < date('now')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
+    db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
     db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status = 'Open'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status = 'Open' AND severity = 'Critical'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Blocked'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Valid'`)
+    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
   ]);
   interface CountResult {
     n: number;
@@ -86,7 +86,7 @@ try {
      FROM jobs
      INNER JOIN systems ON systems.id = jobs.system_id
      INNER JOIN sites ON sites.id = systems.site_id
-     WHERE jobs.status IN ('Completed', 'Invoiced')
+     WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND jobs.status IN ('Completed', 'Invoiced')
      ORDER BY jobs.completed_at DESC
      LIMIT 12`
   ).all()).results || [];
@@ -97,7 +97,7 @@ try {
      LEFT JOIN users ON users.id = jobs.assigned_technician_id
      INNER JOIN systems ON systems.id = jobs.system_id
      INNER JOIN sites ON sites.id = systems.site_id
-     WHERE jobs.status IN ('Scheduled', 'In Progress')
+     WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress')
      ORDER BY jobs.scheduled_date ASC
      LIMIT 12`
   ).all()).results || [];
@@ -106,6 +106,7 @@ try {
     `SELECT systems.id, systems.system_type, systems.coverage_area, systems.next_due_date, sites.owner_company_name
      FROM systems
      INNER JOIN sites ON sites.id = systems.site_id
+     WHERE systems.deleted_at IS NULL
      ORDER BY systems.next_due_date ASC
      LIMIT 12`
   ).all()).results || [];
@@ -118,7 +119,7 @@ try {
             sites.owner_company_name, systems.coverage_area
      FROM maintenance_requests
      INNER JOIN sites ON sites.id = maintenance_requests.site_id
-     LEFT JOIN systems ON systems.id = maintenance_requests.system_id
+     LEFT JOIN systems ON systems.id = maintenance_requests.system_id AND systems.deleted_at IS NULL
      WHERE maintenance_requests.status IN ('New', 'Reviewing', 'Scheduled')
      ORDER BY
        CASE maintenance_requests.priority WHEN 'Critical' THEN 1 WHEN 'Urgent' THEN 2 ELSE 3 END,
@@ -131,14 +132,14 @@ try {
   ).all()).results || [];
 
   requestSystems = (await db.prepare(
-    `SELECT id, site_id, system_type, coverage_area FROM systems ORDER BY coverage_area`
+    `SELECT id, site_id, system_type, coverage_area FROM systems WHERE deleted_at IS NULL ORDER BY coverage_area`
   ).all()).results || [];
 
   overdue = (await db.prepare(
     `SELECT systems.id, systems.system_type, systems.coverage_area, systems.next_due_date, sites.owner_company_name
      FROM systems
      INNER JOIN sites ON sites.id = systems.site_id
-     WHERE date(systems.next_due_date) < date('now')
+     WHERE systems.deleted_at IS NULL AND date(systems.next_due_date) < date('now')
      ORDER BY systems.next_due_date ASC
      LIMIT 12`
   ).all()).results || [];
@@ -148,7 +149,8 @@ try {
      FROM jobs
      INNER JOIN systems ON systems.id = jobs.system_id
      INNER JOIN sites ON sites.id = systems.site_id
-     WHERE jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL
+     WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+       AND jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL
      ORDER BY jobs.completed_at DESC
      LIMIT 12`
   ).all()).results || [];
@@ -160,7 +162,7 @@ try {
      FROM defects
      INNER JOIN systems ON systems.id = defects.system_id
      INNER JOIN sites ON sites.id = systems.site_id
-     WHERE defects.status = 'Open'
+     WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND defects.status = 'Open'
      ORDER BY CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 ELSE 3 END,
               defects.created_at ASC
      LIMIT 12`

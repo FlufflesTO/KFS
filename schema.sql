@@ -135,8 +135,8 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
 
 CREATE TABLE IF NOT EXISTS job_evidence_files (
   id TEXT PRIMARY KEY,
-  job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
-  system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE CASCADE,
+  job_id TEXT NOT NULL REFERENCES jobs(id),
+  system_id TEXT NOT NULL REFERENCES systems(id),
   uploaded_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
   evidence_type TEXT NOT NULL CHECK (evidence_type IN ('Photo')),
   storage_path TEXT NOT NULL UNIQUE CHECK (storage_path LIKE 'job-evidence/%'),
@@ -339,6 +339,7 @@ CREATE INDEX IF NOT EXISTS idx_clients_company ON clients(company_name);
 CREATE INDEX IF NOT EXISTS idx_clients_email ON clients(contact_email);
 CREATE INDEX IF NOT EXISTS idx_job_visits_job ON job_visits(job_id, visit_date);
 CREATE INDEX IF NOT EXISTS idx_job_visits_tech ON job_visits(technician_id, visit_date);
+CREATE INDEX IF NOT EXISTS idx_systems_deleted_at ON systems(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_jobs_deleted_at ON jobs(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_defects_system ON defects(system_id, status);
 CREATE INDEX IF NOT EXISTS idx_defects_job ON defects(job_id);

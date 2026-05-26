@@ -1,0 +1,47 @@
+---
+/**
+ * WebP Image Component
+ * Purpose: Provides WebP fallbacks with proper accessibility
+ * Dependencies: None
+ * Structural Role: Optimized image delivery component
+ */
+export interface Props {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  className?: string;
+  loading?: 'eager' | 'lazy';
+  role?: 'img' | 'presentation';
+  decorative?: boolean;
+}
+
+const { 
+  src, 
+  alt, 
+  width, 
+  height, 
+  className = '',
+  loading = 'lazy',
+  role = 'img',
+  decorative = false
+} = Astro.props;
+
+// Generate WebP version by replacing extension
+const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+const finalAlt = decorative ? '' : alt;
+const finalRole = decorative ? 'presentation' : role;
+---
+
+<picture>
+  <source srcset={webpSrc} type="image/webp" />
+  <img 
+    src={src}
+    alt={finalAlt}
+    width={width}
+    height={height}
+    loading={loading}
+    role={finalRole}
+    class={className}
+  />
+</picture>

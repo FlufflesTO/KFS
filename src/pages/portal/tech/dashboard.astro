@@ -27,7 +27,8 @@ try {
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
-       WHERE jobs.status IN ('Scheduled', 'In Progress')
+       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+         AND jobs.status IN ('Scheduled', 'In Progress')
        ORDER BY jobs.scheduled_date ASC`
     : `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
               jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
@@ -36,7 +37,8 @@ try {
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
-       WHERE jobs.assigned_technician_id = ?1 AND jobs.status IN ('Scheduled', 'In Progress')
+       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+         AND jobs.assigned_technician_id = ?1 AND jobs.status IN ('Scheduled', 'In Progress')
        ORDER BY jobs.scheduled_date ASC`;
 
   const result = user.role === "admin"

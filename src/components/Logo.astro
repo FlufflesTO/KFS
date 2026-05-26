@@ -8,12 +8,13 @@
 export interface Props {
   className?: string;
   ariaLabel?: string;
+  decorative?: boolean;
 }
 
-const { className = "", ariaLabel = "Kharon Fire and Security Solutions" } = Astro.props;
+const { className = "", ariaLabel = "Kharon Fire and Security Solutions", decorative = false } = Astro.props;
 ---
 
-{Astro.props.ariaLabel ? (
+{decorative ? (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
     viewBox="0 0 147.62 50.63" 
@@ -39,7 +40,8 @@ const { className = "", ariaLabel = "Kharon Fire and Security Solutions" } = Ast
     xmlns="http://www.w3.org/2000/svg" 
     viewBox="0 0 147.62 50.63" 
     class={`w-36 h-12 ${className}`}
-    aria-hidden="true"
+    aria-label={ariaLabel}
+    role="img"
   >
     <defs>
       <style>{`.cls-1{fill:#2563eb;}.cls-2{fill:#7c3aed;}.cls-3{fill:#fff;}`}</style>

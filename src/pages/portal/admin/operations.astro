@@ -47,7 +47,7 @@ let loadError    = "";
 try {
   const db = getDatabase();
 
-  jobsTotal     = ((await db.prepare(`SELECT COUNT(*) as total FROM jobs`).first()) as { total: number } | null)?.total ?? 0;
+  jobsTotal     = ((await db.prepare(`SELECT COUNT(*) as total FROM jobs WHERE deleted_at IS NULL`).first()) as { total: number } | null)?.total ?? 0;
   contactsTotal = ((await db.prepare(`SELECT COUNT(*) as total FROM contact_submissions`).first()) as { total: number } | null)?.total ?? 0;
 
   // LIMIT 1000 prevents unbounded edge-memory growth if datasets grow unexpectedly.
@@ -73,6 +73,7 @@ try {
             systems.service_interval_months, sites.owner_company_name
      FROM systems
      INNER JOIN sites ON sites.id = systems.site_id
+     WHERE systems.deleted_at IS NULL
      ORDER BY sites.owner_company_name, systems.coverage_area
      LIMIT 1000`
   ).all()).results ?? []) as DbSystem[];
@@ -85,6 +86,7 @@ try {
      FROM jobs
      INNER JOIN systems ON systems.id = jobs.system_id
      INNER JOIN sites   ON sites.id   = systems.site_id
+     WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
      ORDER BY jobs.scheduled_date DESC
      LIMIT ? OFFSET ?`
   ).bind(perPage, offset).all()).results ?? []) as DbJob[];
@@ -118,7 +120,8 @@ try {
      FROM defects
      INNER JOIN systems ON systems.id = defects.system_id
      INNER JOIN sites   ON sites.id   = systems.site_id
-     LEFT  JOIN jobs    ON jobs.id    = defects.job_id
+     LEFT  JOIN jobs    ON jobs.id    = defects.job_id AND jobs.deleted_at IS NULL
+     WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL
      ORDER BY
        CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 WHEN 'Minor' THEN 3 ELSE 4 END,
        defects.created_at DESC
@@ -136,8 +139,9 @@ try {
      FROM certificates
      INNER JOIN systems  ON systems.id  = certificates.system_id
      INNER JOIN sites    ON sites.id    = systems.site_id
-     LEFT  JOIN jobs     ON jobs.id     = certificates.job_id
-     LEFT  JOIN defects  AS blocking_defect ON blocking_defect.id = certificates.blocked_by_defect_id
+     LEFT  JOIN jobs     ON jobs.id     = certificates.job_id AND jobs.deleted_at IS NULL
+     LEFT  JOIN defects  AS blocking_defect ON blocking_defect.id = certificates.blocked_by_defect_id AND blocking_defect.deleted_at IS NULL
+     WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL
      ORDER BY
        CASE certificates.status WHEN 'Blocked' THEN 1 WHEN 'Expired' THEN 2 WHEN 'Revoked' THEN 3 ELSE 4 END,
        certificates.expiry_date ASC

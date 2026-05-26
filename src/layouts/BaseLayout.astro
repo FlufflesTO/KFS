@@ -1,116 +1,161 @@
 ---
-import "../styles/global.css";
-import Header from "../components/layout/Header.astro";
-import { site } from "../data/site.js";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import { SITE_CONFIG } from "../config/site-config";
+import AnimationController from "../components/animations/AnimationController.astro";
 
-const {
-  title = site.title,
-  description = site.description,
-  ogImage = site.ogImage,
-  noindex = false,
-  canonicalPath = Astro.url?.pathname || "/"
-} = Astro.props;
+export interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  children: any;
+  noindex?: boolean;
+}
 
-const canonicalUrl = new URL(canonicalPath, site.url).toString();
-const ogImageUrl = new URL(ogImage, site.url).toString();
-const structuredData = [
-  {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "@id": `${site.url}/#business`,
-    "name": site.name,
-    "url": site.url,
-    "email": site.email,
-    "telephone": site.phone,
-    "logo": new URL("/brand/kharon-full-logo.svg", site.url).toString(),
-    "image": new URL(site.ogImage, site.url).toString(),
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd",
-      "addressLocality": "Ndabeni, Maitland",
-      "addressRegion": "Western Cape",
-      "postalCode": "7405",
-      "addressCountry": "ZA"
-    },
-    "areaServed": {
-      "@type": "Country",
-      "name": "South Africa"
-    },
-    "knowsAbout": [
-      "Gas suppression systems",
-      "Fire detection systems",
-      "SANS 10139 aligned fire detection",
-      "SANS 14520 aligned gaseous suppression",
-      "Commercial fire protection maintenance",
-      "Critical infrastructure protection"
-    ],
-    "sameAs": []
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": site.shortName,
-    "url": site.url,
-    "inLanguage": "en-ZA"
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "Commercial fire detection and gaseous suppression",
-    "provider": {
-      "@type": "LocalBusiness",
-      "@id": `${site.url}/#business`
-    },
-    "areaServed": "South Africa",
-    "serviceType": [
-      "Gas Suppression Systems",
-      "Fire Detection Systems",
-      "Compliance and Maintenance",
-      "Integrated Infrastructure Security"
-    ],
-    "audience": {
-      "@type": "BusinessAudience",
-      "audienceType": "Commercial and industrial facilities"
-    }
-  }
-];
+const { title, description, canonical, children, noindex = false } = Astro.props;
+const fullCanonical = canonical ? `${SITE_CONFIG.url}${canonical}` : `${SITE_CONFIG.url}${Astro.url.pathname}`;
+
+// Only load analytics on non-portal pages
+const shouldLoadAnalytics = !Astro.url.pathname.startsWith('/portal');
 ---
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en-ZA">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
-    <meta name="theme-color" content="#0B0D0F" />
-    <meta name="format-detection" content="address=no" />
-    <link rel="canonical" href={canonicalUrl} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:site_name" content={site.name} />
-    <meta property="og:image" content={ogImageUrl} />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:alt" content="Kharon Fire and Security Solutions commercial fire detection and gas suppression branding" />
-    <meta property="og:locale" content="en_ZA" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImageUrl} />
-
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
-  </head>
-
-  <body>
-    <Header currentPath={canonicalPath} />
-
-    <main id="main-content">
-      <slot />
-    </main>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  {noindex && <meta name="robots" content="noindex" />}
+  <meta name="description" content={description || SITE_CONFIG.description} />
+  <meta name="theme-color" content="#1a1f26" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={fullCanonical} />
+  <meta property="og:title" content={title || SITE_CONFIG.title} />
+  <meta property="og:description" content={description || SITE_CONFIG.description} />
+  <meta property="og:image" content={`${SITE_CONFIG.url}/og-image.jpg`} />
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content={fullCanonical} />
+  <meta property="twitter:title" content={title || SITE_CONFIG.title} />
+  <meta property="twitter:description" content={description || SITE_CONFIG.description} />
+  <meta property="twitter:image" content={`${SITE_CONFIG.url}/og-twitter.jpg`} />
+  
+  <title>{title ? `${title} | ${SITE_CONFIG.title}` : SITE_CONFIG.title}</title>
+  
+  <link rel="canonical" href={fullCanonical} />
+  
+  <!-- Print stylesheet -->
+  <link rel="stylesheet" media="print" href="/src/styles/print.css" />
+  
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json" suppressHydrationWarning>
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": SITE_CONFIG.title,
+      "legalName": "Kharon Fire and Security Solutions",
+      "url": SITE_CONFIG.url,
+      "logo": `${SITE_CONFIG.url}/logo.svg`,
+      "description": SITE_CONFIG.description,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Commercial Premises",
+        "addressLocality": "Johannesburg",
+        "addressRegion": "Gauteng",
+        "postalCode": "2000",
+        "addressCountry": "ZA"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+27 11 000 0000",
+        "contactType": "customer service",
+        "areaServed": "ZA",
+        "availableLanguage": "en"
+      },
+      "sameAs": [
+        `${SITE_CONFIG.url}/contact`
+      ],
+      "foundingDate": "2016",
+      "identifier": "2016/313076/07",
+      "knowsAbout": [
+        "Fire Detection Systems",
+        "Gas Suppression Systems",
+        "Security Systems",
+        "SANS 10139",
+        "SANS 14520"
+      ]
+    })}
+  </script>
+  
+  <!-- POPIA-Compliant Analytics - Only load on non-portal pages -->
+  {shouldLoadAnalytics && (
+    <>
+      {/* Plausible Analytics - Privacy-friendly */}
+      <script 
+        defer 
+        src="https://plausible.io/js/script.js" 
+        data-domain={SITE_CONFIG.url.replace('https://', '')}
+      ></script>
+      
+      {/* Alternative: Fathom Analytics - uncomment if using instead of Plausible */}
+      {/* 
+      <script 
+        src="https://cdn.usefathom.com/script.js" 
+        data-site="YOUR_FATHOM_SITE_ID" 
+        defer
+      ></script>
+      */}
+    </>
+  )}
+  
+  <script 
+    type="module" 
+    src="https://cdn.skypack.dev/@supabase/supabase-js" 
+    async 
+    defer
+  ></script>
+  
+  <script 
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" 
+    async 
+    defer
+  ></script>
+  
+  <script type="module" dangerouslySetInnerHTML={{__html: `
+    import { initKharonPortal } from '/kharon-portal-fetch.js';
+    initKharonPortal();
+  `}}></script>
+  
+  <style>
+    :root {
+      --kharon-blue: #2563eb;
+      --kharon-purple: #7c3aed;
+      --kharon-red: #dc2626;
+      --kharon-amber: #f59e0b;
+      --kharon-cyan: #0891b2;
+      --kharon-green: #16a34a;
+      --kharon-black: #0f172a;
+      --kharon-grey: #64748b;
+      --kharon-light: #f8fafc;
+      --kharon-border: #e2e8f0;
+    }
+  </style>
+</head>
+<body class="bg-white text-gray-900">
+  <AnimationController>
+    <Header />
+    <main>{children}</main>
+    <Footer />
+  </AnimationController>
+  
+  <!-- Skip link for accessibility -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:border focus:rounded focus:text-gray-900">
+    Skip to main content
+  </a>
+</body>
 </html>

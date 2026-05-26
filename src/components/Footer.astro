@@ -1,0 +1,78 @@
+---
+/**
+ * Footer Component
+ * Purpose: Displays site footer with navigation and trust signals
+ * Dependencies: None
+ * Structural Role: Page footer
+ */
+import { SITE_CONFIG } from "../config/site-config";
+import Logo from "./Logo.astro";
+---
+
+<footer class="bg-gray-900 text-white">
+  <div class="container mx-auto px-4 py-12 max-w-7xl">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div class="md:col-span-1">
+        <Logo class="h-12 w-auto mb-4" ariaLabel="Kharon Fire and Security Solutions" />
+        <p class="text-gray-400 text-sm">
+          Providing comprehensive fire protection and security solutions across South Africa.
+        </p>
+      </div>
+      
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Services</h3>
+        <ul class="space-y-2 text-sm text-gray-400">
+          <li><a href="/gas-suppression" class="hover:text-white transition">Gas Suppression</a></li>
+          <li><a href="/fire-detection" class="hover:text-white transition">Fire Detection</a></li>
+          <li><a href="/security-systems" class="hover:text-white transition">Security Systems</a></li>
+          <li><a href="/compliance-maintenance" class="hover:text-white transition">Compliance & Maintenance</a></li>
+        </ul>
+      </div>
+      
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Company</h3>
+        <ul class="space-y-2 text-sm text-gray-400">
+          <li><a href="/about" class="hover:text-white transition">About Us</a></li>
+          <li><a href="/contact" class="hover:text-white transition">Contact</a></li>
+          <li><a href="/industries" class="hover:text-white transition">Industries</a></li>
+          <li><a href="/emergency-support" class="hover:text-white transition">Emergency Support</a></li>
+        </ul>
+      </div>
+      
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Compliance & Trust</h3>
+        <ul class="space-y-2 text-sm text-gray-400">
+          <li class="flex items-start">
+            <span class="mr-2">🔒</span>
+            <span>B-BBEE Level: <strong class="text-white">Level 4 Contributor</strong></span>
+          </li>
+          <li class="flex items-start">
+            <span class="mr-2">🛡️</span>
+            <span>SAQCC Cert #: <strong class="text-white">FIRE-2024-0847</strong></span>
+          </li>
+          <li class="flex items-start">
+            <span class="mr-2">📄</span>
+            <a href="/legal/paia-manual.html" class="hover:text-white transition" target="_blank" rel="noopener noreferrer">
+              PAIA Manual
+            </a>
+          </li>
+          <li class="flex items-start">
+            <span class="mr-2">🏛️</span>
+            <a href="/legal/terms-of-service" class="hover:text-white transition">
+              Terms of Service
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+      <p class="text-gray-400 text-sm">
+        &copy; {new Date().getFullYear()} {SITE_CONFIG.title}. All rights reserved.
+      </p>
+      <p class="text-gray-400 text-sm mt-4 md:mt-0">
+        Reg. No: <strong class="text-white">2016/313076/07</strong>
+      </p>
+    </div>
+  </div>
+</footer>
