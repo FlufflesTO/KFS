@@ -4,30 +4,30 @@ import SectionHeading from "./SectionHeading.astro";
 const { eyebrow, title, text, items = [] } = Astro.props;
 ---
 
-<section class="section-padding bg-white">
-  <div class="mx-auto max-w-7xl px-6">
+<section class="section-padding bg-white relative overflow-hidden">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <SectionHeading eyebrow={eyebrow} title={title} text={text} />
 
     <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {items.map((item) => (
         <a
           href={item.href}
-          class="group rounded-md border border-kharon-border bg-white p-6 sm:p-7 hover:border-kharon-purple/45"
+          class="group rounded-xl border border-kharon-border bg-kharon-light/50 p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1 hover:border-kharon-purple/20 hover:shadow-xl hover:bg-white"
         >
-          <div class="mb-8 flex h-12 w-12 items-center justify-center rounded-md border border-kharon-border text-kharon-purple transition group-hover:bg-kharon-purple group-hover:text-white">
-            <span class="text-xl font-bold">{item.index}</span>
+          <div class="mb-8 flex h-10 w-10 items-center justify-center rounded-lg bg-kharon-purple/5 text-kharon-purple transition-all group-hover:bg-kharon-purple group-hover:text-white">
+            <span class="text-sm font-black tracking-widest">{item.index}</span>
           </div>
 
-          <h3 class="text-2xl font-semibold text-kharon-black">
+          <h3 class="text-xl font-bold tracking-tight text-kharon-black">
             {item.title}
           </h3>
 
-          <p class="mt-4 leading-7 text-kharon-grey">
+          <p class="mt-4 text-sm leading-relaxed text-kharon-grey/80">
             {item.text}
           </p>
 
-          <span class="mt-6 inline-flex items-center gap-2 text-sm font-bold text-kharon-purple group-hover:text-kharon-blue">
-            Learn more <span aria-hidden="true">-&gt;</span>
+          <span class="mt-8 inline-flex items-center gap-2 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-purple transition-all group-hover:gap-3">
+            Service Details <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </span>
         </a>
       ))}
