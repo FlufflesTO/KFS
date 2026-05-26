@@ -5,11 +5,11 @@
  * Structural Role: API Endpoint Handler
  */
 
-import { getBindings } from "../../../../lib/server/bindings.js";
+import { getBindings } from "../../../../lib/server/bindings.ts";
 import { getSageConnectionStatus, disconnectSage } from "../../../../lib/server/sage.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { verifyCsrfRequest, csrfErrorResponse } from "../../../../lib/server/csrf.js";
-import { forbidden, json, methodNotAllowed, unauthorized } from "../../../../lib/server/http.js";
+import { forbidden, json, methodNotAllowed, unauthorized } from "../../../../lib/server/http.ts";
 
 export const prerender = false;
 

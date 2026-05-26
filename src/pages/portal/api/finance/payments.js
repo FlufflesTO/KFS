@@ -1,7 +1,7 @@
 import { getDatabase } from "../../../../lib/server/bindings";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { requireAdminOrFinance } from "../../../../lib/server/finance.js";
-import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
+import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.ts";
 import { FinanceService } from "../../../../lib/server/services/finance-service";
 
 // Implementation marker: finance.payment

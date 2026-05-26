@@ -5,10 +5,10 @@
  * Structural Role: API Endpoint Handler
  */
 
-import { getBindings } from "../../../../lib/server/bindings.js";
+import { getBindings } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { verifyCsrfRequest, csrfErrorResponse } from "../../../../lib/server/csrf.js";
-import { forbidden, json, methodNotAllowed, unauthorized } from "../../../../lib/server/http.js";
+import { forbidden, json, methodNotAllowed, unauthorized } from "../../../../lib/server/http.ts";
 import { FinanceService } from "../../../../lib/server/services/finance-service.js";
 
 export const prerender = false;

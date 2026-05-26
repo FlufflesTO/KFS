@@ -1,7 +1,7 @@
 /**
  * Project Sentinel - Jobcard Submission API
  * Purpose: Handles technician signature, evidence collection, and final job closure
- * Dependencies: ../../../lib/server/bindings.js, ../../../lib/server/audit.js, ../../../lib/server/jobcardPdf.js, ../../../lib/server/http.js, ../../../lib/server/services/finance-service
+ * Dependencies: ../../../lib/server/bindings.ts, ../../../lib/server/audit.js, ../../../lib/server/jobcardPdf.js, ../../../lib/server/http.ts, ../../../lib/server/services/finance-service
  * Structural Role: Mutating REST API endpoint for jobcard completion
  */
 
@@ -10,9 +10,9 @@ import type { D1Database, R2Bucket, D1PreparedStatement } from "@cloudflare/work
 import { auditError, auditEvent } from "../../../lib/server/audit.js";
 import { verifyCsrfRequest } from "../../../lib/server/csrf.js";
 import { FinanceService } from "../../../lib/server/services/finance-service";
-import { getBindings, getStandardServiceFee } from "../../../lib/server/bindings.js";
+import { getBindings, getStandardServiceFee } from "../../../lib/server/bindings.ts";
 import { buildJobcardPdf } from "../../../lib/server/jobcardPdf.js";
-import { badRequest, forbidden, methodNotAllowed, serverError } from "../../../lib/server/http.js";
+import { badRequest, forbidden, methodNotAllowed, serverError } from "../../../lib/server/http.ts";
 
 export const prerender = false;
 

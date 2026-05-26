@@ -1,4 +1,4 @@
-import { forbidden } from "./http.js";
+import { forbidden } from "./http.ts";
 
 export function requireAdmin(user) {
   if (!user || user.role !== "admin") {

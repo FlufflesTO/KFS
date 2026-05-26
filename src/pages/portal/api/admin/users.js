@@ -1,9 +1,9 @@
 import { auditError } from "../../../../lib/server/audit.js";
-import { getDatabase } from "../../../../lib/server/bindings.js";
+import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { hashPassword } from "../../../../lib/server/auth.js";
 import { createResetToken, resetTokenExpiry, sha256Hex } from "../../../../lib/server/resetToken.js";
-import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
+import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.ts";
 import { cleanBoolean, cleanChoice, cleanEmail, cleanId, cleanText, readJson, requireAdmin } from "../../../../lib/server/admin.js";
 
 export const prerender = false;

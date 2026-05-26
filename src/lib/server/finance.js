@@ -1,4 +1,4 @@
-import { forbidden } from "./http.js";
+import { forbidden } from "./http.ts";
 
 export function requireFinance(user) {
   if (!user || (user.role !== "finance" && user.role !== "admin")) {

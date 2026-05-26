@@ -1,7 +1,6 @@
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ESNext", "WebWorker"],
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -37,7 +36,7 @@
     "allowJs": true,
     "checkJs": false,
     "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
-    "types": ["astro/env", "vite/client"]
+    "types": ["astro/env", "vite/cloudflare"]
   },
   "include": [
     "src/**/*",

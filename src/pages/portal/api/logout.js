@@ -1,8 +1,8 @@
-import { getDatabase } from "../../../lib/server/bindings.js";
+import { getDatabase } from "../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../lib/server/audit.js";
 import { expiredSessionCookie, revokeSessionToken, sessionCookieName } from "../../../lib/server/auth.js";
 import { expiredCsrfCookie } from "../../../lib/server/csrf.js";
-import { json, methodNotAllowed } from "../../../lib/server/http.js";
+import { json, methodNotAllowed } from "../../../lib/server/http.ts";
 
 export const prerender = false;
 

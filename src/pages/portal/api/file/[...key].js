@@ -1,9 +1,9 @@
 import { auditError } from "../../../../lib/server/audit.js";
-import { getBindings } from "../../../../lib/server/bindings.js";
+import { getBindings } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { clientCanAccessSite } from "../../../../lib/server/clientAccess.js";
 import { documentAccessLog } from "../../../../lib/server/documentAccess.js";
-import { forbidden, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
+import { forbidden, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.ts";
 
 export const prerender = false;
 

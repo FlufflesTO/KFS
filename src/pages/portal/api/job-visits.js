@@ -1,5 +1,5 @@
 import { auditError } from "../../../lib/server/audit.js";
-import { getDatabase } from "../../../lib/server/bindings.js";
+import { getDatabase } from "../../../lib/server/bindings.ts";
 export const prerender = false;
 
 const visitStatuses = ["Travelling", "Arrived", "In Progress", "Completed", "Unable To Complete", "Follow-up Required", "Quote Required"];

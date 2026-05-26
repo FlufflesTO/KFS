@@ -1,7 +1,7 @@
 /**
  * Project Sentinel - Portal Middleware
  * Purpose: Enforces security headers, session verification, rate limits, and CSRF protection across all /portal paths
- * Dependencies: astro:middleware, ./lib/server/auth.js, ./lib/server/csrf.js, ./lib/server/bindings.js, ./lib/server/rateLimit.js, ./lib/server/audit.js
+ * Dependencies: astro:middleware, ./lib/server/auth.js, ./lib/server/csrf.js, ./lib/server/bindings.ts, ./lib/server/rateLimit.js, ./lib/server/audit.js
  * Structural Role: Central request interception and security enforcement layer
  */
 
@@ -10,7 +10,7 @@ import { sequence } from "astro:middleware";
 import type { MiddlewareHandler } from "astro";
 import { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } from "./lib/server/auth.js";
 import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
-import { getDatabase } from "./lib/server/bindings.js";
+import { getDatabase } from "./lib/server/bindings.ts";
 import { consumeRateLimit } from "./lib/server/rateLimit.js";
 import { auditEvent } from "./lib/server/audit.js";
 

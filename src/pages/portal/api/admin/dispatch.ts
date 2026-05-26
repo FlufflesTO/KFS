@@ -4,9 +4,9 @@
  * Dependencies: @sentinel/types, bindings, audit
  * Structural Role: Job administration endpoint
  */
-import { getDatabase } from "../../../../lib/server/bindings.js";
+import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent, auditError } from "../../../../lib/server/audit.js";
-import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
+import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.ts";
 import { readJson, requireAdmin } from "../../../../lib/server/admin.js";
 import { JobAssignSchema, JobSetDispatchSchema } from "@sentinel/types";
 
