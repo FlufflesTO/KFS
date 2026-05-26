@@ -14,6 +14,15 @@ export async function GET() {
     dbStatus = 'error';
   }
 
+  const version =
+    typeof process !== "undefined" && process.env?.npm_package_version
+      ? process.env.npm_package_version
+      : "development";
+  const uptime =
+    typeof process !== "undefined" && typeof process.uptime === "function"
+      ? process.uptime()
+      : "N/A (Cloudflare Workers)";
+
   const healthStatus = {
     status: dbStatus === 'connected' ? 'healthy' : 'unhealthy',
     timestamp: new Date().toISOString(),
@@ -23,8 +32,8 @@ export async function GET() {
       cache: 'not_implemented', // Would connect to Redis/Memcached if implemented
       storage: 'not_implemented' // Would check R2 connection if implemented
     },
-    version: process.env.npm_package_version || 'development',
-    uptime: process.uptime ? process.uptime() : 'unknown'
+    version,
+    uptime
   };
 
   return new Response(JSON.stringify(healthStatus, null, 2), {
