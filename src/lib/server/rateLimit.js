@@ -44,6 +44,12 @@ export async function consumeRateLimit(db, request, options = {}) {
   const activeWindowStart = Number(record?.window_start || windowStart);
   const retryAfter = Math.max(1, activeWindowStart + windowSeconds - nowSeconds);
 
+  // Asynchronously prune rate limit records older than 24 hours to prevent table bloat
+  db.prepare("DELETE FROM portal_rate_limits WHERE window_start < ?1")
+    .bind(nowSeconds - 86400)
+    .run()
+    .catch((error) => console.error("failed to prune portal_rate_limits", error));
+
   return {
     allowed: attempts <= maxAttempts,
     attempts,

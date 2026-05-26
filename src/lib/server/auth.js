@@ -138,6 +138,13 @@ export async function isTokenRevoked(db, token) {
   try {
     const fp = await tokenFingerprint(token);
     const now = Math.floor(Date.now() / 1000);
+
+    // Asynchronously prune expired revoked sessions to prevent table bloat
+    db.prepare("DELETE FROM revoked_sessions WHERE expires_at < ?1")
+      .bind(now)
+      .run()
+      .catch((error) => console.error("failed to prune revoked_sessions", error));
+
     const row = await db.prepare(
       "SELECT 1 FROM revoked_sessions WHERE fingerprint = ? AND expires_at > ?"
     ).bind(fp, now).first();

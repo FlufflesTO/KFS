@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-26
 
+### Database Maintenance & Hygiene
+- **Rate Limit Auto-Pruning**: Implemented inline asynchronous deletion of rate-limit records older than 24 hours in `rateLimit.js`.
+- **Revoked Session Auto-Pruning**: Implemented inline asynchronous deletion of expired revoked session fingerprints in `auth.js`.
+
 ### Site Audit & CSS Budget Compliance
 - **Glow Shadow utility**: Removed banned inline `shadow-[0_0` styling in `Header.astro` and `CinematicHero.astro`, replacing it with a custom component-level CSS class.
 - **Hover Lift animation**: Removed banned `hover:-translate-y-1` from cards in `RouteMatrix.astro`.
