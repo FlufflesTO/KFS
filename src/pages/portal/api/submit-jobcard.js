@@ -1,3 +1,4 @@
+import { auditError } from "../../../lib/server/audit.js";
 /**
  * Project Sentinel - Jobcard Submission API
  * Purpose: Handles technician signature, evidence collection, and final job closure
@@ -371,7 +372,7 @@ export async function POST({ request, locals }) {
       return badRequest(error.message);
     }
 
-    console.error("submit jobcard failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "submit jobcard failed" } });
     return serverError("The jobcard could not be submitted.");
   }
 }

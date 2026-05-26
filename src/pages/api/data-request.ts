@@ -24,7 +24,7 @@ export async function POST({ request }: { request: Request }) {
 
     const parsed = DataRequestSchema.safeParse(data);
     if (!parsed.success) {
-      return badRequest(parsed.error.errors[0]?.message || "Invalid payload.");
+      return badRequest((parsed.error as any).errors[0]?.message || "Invalid payload.");
     }
 
     const db = getDatabase();

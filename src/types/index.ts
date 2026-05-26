@@ -22,4 +22,4 @@ export type {
   ApiOk,
   ApiFail,
   ApiResponse,
-} from "../lib/types/sentinel.ts";
+} from "@sentinel/types";

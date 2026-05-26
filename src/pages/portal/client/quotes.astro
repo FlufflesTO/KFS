@@ -1,4 +1,5 @@
 ---
+import { auditError } from "../../../lib/server/audit.js";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { clientSites, inClause } from "../../../lib/server/clientAccess.js";
@@ -73,7 +74,7 @@ try {
     records = (recordsResult.results || []) as ClientQuoteRecord[];
   }
 } catch (error) {
-  console.error("client quote history failed", error);
+  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client quote history failed" } });
   loadError = "Client quote history could not be loaded.";
 }
 ---

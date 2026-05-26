@@ -1,12 +1,13 @@
 ---
 import Footer from "../components/layout/Footer.astro";
 import Header from "../components/layout/Header.astro";
+import AnimationController from "../components/animations/AnimationController.astro";
+
 const SITE_CONFIG = {
   title: "Kharon Fire & Security",
   description: "Specialist Fire and Security Solutions",
-  url: "https://kharon.co.za"
+  url: import.meta.env.PUBLIC_SITE_URL || "https://www.tequit.co.za"
 };
-import AnimationController from "../components/animations/AnimationController.astro";
 
 export interface Props {
   title?: string;
@@ -18,6 +19,8 @@ export interface Props {
 
 const { title, description, canonical, children, noindex = false } = Astro.props;
 const fullCanonical = canonical ? `${SITE_CONFIG.url}${canonical}` : `${SITE_CONFIG.url}${Astro.url.pathname}`;
+const isStagingDomain = new URL(SITE_CONFIG.url).hostname.endsWith("tequit.co.za");
+const robotsContent = noindex || isStagingDomain ? "noindex, nofollow" : "index, follow";
 
 // Only load analytics on non-portal pages
 const shouldLoadAnalytics = !Astro.url.pathname.startsWith('/portal');
@@ -31,7 +34,7 @@ const shouldLoadAnalytics = !Astro.url.pathname.startsWith('/portal');
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  {noindex && <meta name="robots" content="noindex" />}
+  <meta name="robots" content={robotsContent} />
   <meta name="description" content={description || SITE_CONFIG.description} />
   <meta name="theme-color" content="#1a1f26" />
   

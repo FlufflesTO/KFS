@@ -1,3 +1,4 @@
+import { auditError } from "../../../../lib/server/audit.js";
 /**
  * Project Sentinel - Credit Note API
  * Purpose: Creates non-destructive credit notes linked to original finance records
@@ -114,7 +115,7 @@ export async function POST({ request, locals }) {
 
     return json({ ok: true, creditNoteId, amountIncVat });
   } catch (error) {
-    console.error("credit note creation failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "credit note creation failed" } });
     return serverError("The credit note could not be created.");
   }
 }

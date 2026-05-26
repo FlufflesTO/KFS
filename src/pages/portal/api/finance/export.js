@@ -1,3 +1,4 @@
+import { auditError } from "../../../../lib/server/audit.js";
 /**
  * Project Sentinel - Finance Export API
  * Purpose: Exports the finance operational queue ledger to CSV format
@@ -95,7 +96,7 @@ export async function GET({ request, locals }) {
       }
     });
   } catch (error) {
-    console.error("finance export failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "finance export failed" } });
     return serverError("Finance export could not be completed.");
   }
 }

@@ -1,3 +1,4 @@
+import { auditError } from "../../../../lib/server/audit.js";
 /**
  * Project Sentinel - Finance Records API
  * Purpose: Handles creation of quotes and invoices manually in the portal
@@ -144,7 +145,7 @@ export async function POST({ request, locals }) {
 
     return json({ ok: true, recordId, itemType, paymentStatus, financeTaskStatus, amountExVat, vatAmount, amountIncVat, distributionDate });
   } catch (error) {
-    console.error("finance record creation failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "finance record creation failed" } });
     return serverError("The financial record could not be created.");
   }
 }

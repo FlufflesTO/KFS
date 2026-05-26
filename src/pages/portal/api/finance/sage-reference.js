@@ -1,3 +1,4 @@
+import { auditError } from "../../../../lib/server/audit.js";
 import { getDatabase } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
@@ -115,7 +116,7 @@ export async function POST({ request, locals }) {
     if (error instanceof SyntaxError) {
       return badRequest("Request body must be valid JSON.");
     }
-    console.error("sage reference update failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "sage reference update failed" } });
     return serverError("Sage reference update could not be completed.");
   }
 }

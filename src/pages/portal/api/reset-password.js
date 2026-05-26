@@ -1,3 +1,4 @@
+import { auditError } from "../../../lib/server/audit.js";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { auditEvent } from "../../../lib/server/audit.js";
 import { hashPassword } from "../../../lib/server/auth.js";
@@ -83,7 +84,7 @@ export async function POST({ request }) {
   } catch (error) {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     if (error.message) return badRequest(error.message);
-    console.error("password reset failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "password reset failed" } });
     return serverError("Password reset could not be completed.");
   }
 }

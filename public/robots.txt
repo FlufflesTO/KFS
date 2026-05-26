@@ -1,6 +1,2 @@
 User-agent: *
-Allow: /
-Disallow: /portal/
-Disallow: /api/
-
-Sitemap: https://www.tequit.co.za/sitemap.xml
+Disallow: /

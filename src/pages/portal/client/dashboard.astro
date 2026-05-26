@@ -1,4 +1,5 @@
 ---
+import { auditError } from "../../../lib/server/audit.js";
 /**
  * Project Sentinel - Portal Client Dashboard
  * Purpose: Provides gateway dashboard for clients to view systems, defects, certs, and request support
@@ -75,7 +76,7 @@ try {
          ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC`
       ).bind(...siteIds).all()).results as ClientSystem[] || [];
     } catch (error) {
-      console.error("client systems load failed", error);
+      await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client systems load failed" } });
       sectionErrors.push("System records could not be loaded.");
     }
 
@@ -93,7 +94,7 @@ try {
          ORDER BY financial_records.distribution_date ASC`
       ).bind(...siteIds).all()).results as ClientQuote[] || [];
     } catch (error) {
-      console.error("client quotes load failed", error);
+      await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client quotes load failed" } });
       sectionErrors.push("Quote approvals could not be loaded.");
     }
 
@@ -111,7 +112,7 @@ try {
          LIMIT 8`
       ).bind(...siteIds).all()).results || [];
     } catch (error) {
-      console.error("client requests load failed", error);
+      await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client requests load failed" } });
       sectionErrors.push("Recent service requests could not be loaded.");
     }
 
@@ -130,7 +131,7 @@ try {
          LIMIT 10`
       ).bind(...siteIds).all()).results || [];
     } catch (error) {
-      console.error("client defects load failed", error);
+      await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client defects load failed" } });
       sectionErrors.push("Defect register could not be loaded.");
     }
 
@@ -149,12 +150,12 @@ try {
          LIMIT 10`
       ).bind(...siteIds).all()).results || [];
     } catch (error) {
-      console.error("client certificates load failed", error);
+      await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client certificates load failed" } });
       sectionErrors.push("Certificate register could not be loaded.");
     }
   }
 } catch (error) {
-  console.error("client dashboard failed", error);
+  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client dashboard failed" } });
   loadError = "Client system records could not be loaded.";
 }
 

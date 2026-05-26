@@ -1,3 +1,4 @@
+import { auditError } from "../../../lib/server/audit.js";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { auditEvent } from "../../../lib/server/audit.js";
 import { createSessionToken, hashPassword, sessionCookie, verifyPassword } from "../../../lib/server/auth.js";
@@ -103,7 +104,7 @@ export async function POST({ request, locals }) {
       return badRequest("Request body must be valid JSON.");
     }
 
-    console.error("password change failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "password change failed" } });
     return serverError("Password could not be changed.");
   }
 }

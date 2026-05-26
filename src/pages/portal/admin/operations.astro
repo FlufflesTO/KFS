@@ -1,4 +1,5 @@
 ---
+import { auditError } from "../../../lib/server/audit.js";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import type {
@@ -10,7 +11,7 @@ import type {
   DbDefect,
   DbCertificate,
   DbClientSiteAccess,
-} from "../../../lib/types/sentinel.ts";
+} from "@sentinel/types";
 import EnquiriesPanel   from "../../../components/portal/admin/EnquiriesPanel.astro";
 import JobsPanel        from "../../../components/portal/admin/JobsPanel.astro";
 import UsersPanel       from "../../../components/portal/admin/UsersPanel.astro";
@@ -149,7 +150,7 @@ try {
   ).all()).results ?? []) as DbCertificate[];
 
 } catch (error) {
-  console.error("admin operations failed", error);
+  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "admin operations failed" } });
   loadError = "Administration data could not be loaded.";
 }
 

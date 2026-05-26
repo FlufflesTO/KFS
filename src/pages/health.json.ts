@@ -15,8 +15,8 @@ export async function GET() {
   }
 
   const version =
-    typeof process !== "undefined" && process.env?.npm_package_version
-      ? process.env.npm_package_version
+    typeof process !== "undefined" && import.meta.env?.npm_package_version
+      ? import.meta.env.npm_package_version
       : "development";
   const uptime =
     typeof process !== "undefined" && typeof process.uptime === "function"

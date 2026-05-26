@@ -33,7 +33,7 @@ function securityHeaders(nonce) {
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Content-Security-Policy":
-      `default-src 'none'; script-src 'strict-dynamic' 'nonce-${nonce}' https://static.cloudflareinsights.com https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; frame-src https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests; manifest-src 'self'`,
+      `default-src 'none'; script-src 'strict-dynamic' 'nonce-${nonce}' https://static.cloudflareinsights.com https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'self' 'nonce-${nonce}'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; frame-src https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests; manifest-src 'self'`,
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Cross-Origin-Opener-Policy": "same-origin",
     "Cross-Origin-Resource-Policy": "same-origin",
@@ -57,7 +57,7 @@ async function withHtmlSecurityHeaders(response, nonce) {
   const html = await response.text();
   const headers = new Headers(response.headers);
   headers.delete("content-length");
-  const rewritten = html.replace(/<script\b(?![^>]*\bnonce=)/gi, `<script nonce="${nonce}"`);
+  const rewritten = html.replace(/<script\b(?![^>]*\bnonce=)/gi, `<script nonce="${nonce}"`).replace(/<style\b(?![^>]*\bnonce=)/gi, `<style nonce="${nonce}"`);
   return withSecurityHeaders(new Response(rewritten, {
     status: response.status,
     statusText: response.statusText,
@@ -150,6 +150,7 @@ function rateLimitConfig(pathname) {
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
   const nonce = createCspNonce();
+  context.locals.nonce = nonce;
 
   if (!pathname.startsWith("/portal")) {
     return withHtmlSecurityHeaders(await next(), nonce);

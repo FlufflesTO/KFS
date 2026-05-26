@@ -1,3 +1,4 @@
+import { auditError } from "../../../lib/server/audit.js";
 export const prerender = false;
 
 const visitStatuses = ["Travelling", "Arrived", "In Progress", "Completed", "Unable To Complete", "Follow-up Required", "Quote Required"];
@@ -117,7 +118,7 @@ export async function POST({ locals, request }) {
 
     return json({ ok: false, message: `Unknown action: ${action}` }, 400);
   } catch (error) {
-    console.error("job visit action failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "job visit action failed" } });
     return json({ ok: false, message: error.message || "Failed to update visit." }, error.message ? 400 : 500);
   }
 }

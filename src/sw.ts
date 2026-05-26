@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-declare const self: ServiceWorkerGlobalScope;
+
 
 // Define cache names
 const CACHE_NAME = 'kharon-v1';

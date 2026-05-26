@@ -1,3 +1,4 @@
+import { auditError } from "./audit.js";
 export async function clientSiteIds(db, user) {
   if (!user || user.role !== "client") return [];
 
@@ -15,7 +16,7 @@ export async function clientSiteIds(db, user) {
       .bind(user.id)
       .all()).results || [];
   } catch (error) {
-    console.error("client site access mapping load failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "client site access mapping load failed" } });
   }
 
   for (const row of rows) {

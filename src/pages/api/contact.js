@@ -1,3 +1,4 @@
+import { auditError } from "../../lib/server/audit.js";
 import { getDatabase } from "../../lib/server/bindings.js";
 import { cleanText, cleanEmail } from "../../lib/server/admin.js";
 import { consumeRateLimit } from "../../lib/server/rateLimit.js";
@@ -120,7 +121,7 @@ export async function POST({ request }) {
       .bind(id, name, email, requestType, message, ipHash)
       .run();
   } catch (error) {
-    console.error("contact submission failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "contact submission failed" } });
     return json(
       { ok: false, message: "Submission could not be saved. Email admin@kharon.co.za directly." },
       500

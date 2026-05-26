@@ -1,4 +1,5 @@
 ---
+import { auditError } from "../../../lib/server/audit.js";
 /**
  * Project Sentinel - Portal Admin Dashboard
  * Purpose: Provides admin office control panel for completed works, active dispatches, lifecycle exposure, and exception queue
@@ -178,7 +179,7 @@ try {
      LIMIT 8`
   ).all()).results || [];
 } catch (error) {
-  console.error("admin dashboard failed", error);
+  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "admin dashboard failed" } });
   loadError = "Admin matrix data could not be loaded.";
 }
 

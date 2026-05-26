@@ -1,4 +1,5 @@
 ---
+import { auditError } from "../../../../../lib/server/audit.js";
 /**
  * Project Sentinel - Technician Job Visit Logging
  * Purpose: Allows technicians to log site arrival, departure, and outcomes for assigned jobs
@@ -46,7 +47,7 @@ if (jobId && user) {
       loadError = "Job not found or not assigned to you.";
     }
   } catch (error) {
-    console.error("job visit logging failed", error);
+    await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "job visit logging failed" } });
     loadError = "Could not load job details.";
   }
 }

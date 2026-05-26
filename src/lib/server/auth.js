@@ -1,3 +1,4 @@
+import { auditError } from "./audit.js";
 /**
  * Project Sentinel - Session Authentication Services
  * Purpose: Manages generation, verification, and revocation of HMAC signed session tokens
@@ -98,8 +99,13 @@ export async function verifySessionToken(token) {
   const payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload)));
   assertRole(payload.role);
 
-  if (!payload.sub || !payload.name || !payload.email || !payload.exp) return null;
-  if (Number(payload.exp) <= Math.floor(Date.now() / 1000)) return null;
+  if (!payload.sub || !payload.name || !payload.email || !payload.exp || !payload.iat) return null;
+  
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  if (Number(payload.exp) <= nowInSeconds) return null;
+  
+  // Enforce absolute 8-hour timeout from token creation
+  if (nowInSeconds - Number(payload.iat) > sessionDurationSeconds) return null;
 
   return {
     id: payload.sub,
@@ -138,7 +144,7 @@ export async function isTokenRevoked(db, token) {
     ).bind(fp, now).first();
     return row !== null;
   } catch (error) {
-    console.error(`[Security Telemetry] Token revocation check failed: ${error.message}`, error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: `[Security Telemetry] Token revocation check failed: ${error.message}` } });
     return false;
   }
 }
@@ -154,7 +160,7 @@ export async function revokeSessionToken(db, token) {
         const payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload)));
         if (payload.exp && Number.isInteger(payload.exp)) expiresAt = payload.exp;
       } catch (error) {
-        console.error("Failed to decode token payload during revocation", error);
+        await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "Failed to decode token payload during revocation" } });
       }
     }
     await db.batch([
@@ -162,7 +168,7 @@ export async function revokeSessionToken(db, token) {
       db.prepare("DELETE FROM revoked_sessions WHERE expires_at <= ?").bind(now)
     ]);
   } catch (error) {
-    console.error("revokeSessionToken failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "revokeSessionToken failed" } });
   }
 }
 

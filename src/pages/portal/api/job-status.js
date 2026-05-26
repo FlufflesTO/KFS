@@ -1,3 +1,4 @@
+import { auditError } from "../../../lib/server/audit.js";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { auditEvent } from "../../../lib/server/audit.js";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
@@ -65,7 +66,7 @@ export async function POST({ request, locals }) {
   } catch (error) {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     if (error.message) return badRequest(error.message);
-    console.error("job status update failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "job status update failed" } });
     return serverError("The job status could not be updated.");
   }
 }

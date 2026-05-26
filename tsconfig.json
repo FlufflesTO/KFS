@@ -1,6 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ESNext", "WebWorker"],
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -21,6 +22,7 @@
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["src/*"],
       "@components/*": ["src/components/*"],
@@ -34,7 +36,7 @@
     "incremental": true,
     "allowJs": true,
     "checkJs": false,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
     "types": ["astro/env", "vite/client"]
   },
   "include": [

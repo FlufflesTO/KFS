@@ -1,3 +1,4 @@
+import { auditError } from "../../../../lib/server/audit.js";
 import { getDatabase } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
@@ -145,7 +146,7 @@ export async function POST({ request, locals }) {
     return badRequest("Unknown certificate action.");
   } catch (error) {
     if (error.message) return badRequest(error.message);
-    console.error("admin certificates failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "admin certificates failed" } });
     return serverError("Certificate administration failed.");
   }
 }

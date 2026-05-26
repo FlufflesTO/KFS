@@ -25,7 +25,7 @@ export async function POST({ request, locals }: { request: Request, locals: App.
     // ── Assign / unassign technician ────────────────────────────────────────
     if (action === "assign") {
       const parsed = JobAssignSchema.safeParse(body);
-      if (!parsed.success) return badRequest(parsed.error.errors[0].message);
+      if (!parsed.success) return badRequest(parsed.error.errors[0]?.message || "Invalid payload.");
       
       const { jobId, technicianId } = parsed.data;
 
@@ -60,7 +60,7 @@ export async function POST({ request, locals }: { request: Request, locals: App.
     // ── Set dispatch priority / SLA / emergency fields ──────────────────────
     if (action === "setDispatch") {
       const parsed = JobSetDispatchSchema.safeParse(body);
-      if (!parsed.success) return badRequest(parsed.error.errors[0].message);
+      if (!parsed.success) return badRequest(parsed.error.errors[0]?.message || "Invalid payload.");
 
       const { jobId, priority, isEmergency, requiredByDate, estimatedDurationMinutes } = parsed.data;
 
@@ -105,7 +105,7 @@ export async function POST({ request, locals }: { request: Request, locals: App.
 
     return badRequest("Unknown dispatch action.");
   } catch (error: unknown) {
-    if (error.message) return badRequest(error.message);
+    if ((error as Error).message) return badRequest((error as Error).message);
     await auditError(db, request, error, {
       user: locals.user,
       entityType: "portal_api",

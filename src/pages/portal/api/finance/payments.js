@@ -1,3 +1,4 @@
+import { auditError } from "../../../../lib/server/audit.js";
 import { getDatabase } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
@@ -97,7 +98,7 @@ export async function POST({ request, locals }) {
       return badRequest("Request body must be valid JSON.");
     }
 
-    console.error("payment capture failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "payment capture failed" } });
     return serverError("Payment capture could not be completed.");
   }
 }

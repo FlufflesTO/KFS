@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-05-25
+## [Unreleased] - 2026-05-26
+
+### Phase 1 - Final Perimeter & Telemetry Closure (completed)
+- **Absolute Session Timeout**: Enforced strict 8-hour boundary on `verifySessionToken` (`src/lib/server/auth.js`) based on token's `iat` creation timestamp. Indefinite persistence of tokens is now blocked.
+- **Telemetry Logging Hook**: Eradicated native `console.error` logs across 44 SSR blocks and API endpoints. Replaced with the structured `auditError()` utility writing directly to the D1 `audit_events` forensic table without leaking stack traces.
 
 ### Phase 2 - South African Legal & Regulatory Compliance (completed)
 - **POPIA Consent Mechanism**: Verified explicit consent checkboxes in `ContactForm.astro` and `ContextualInquiry.astro`. Enforced server-side validation (`popiaConsent`) in `/api/contact.ts`.

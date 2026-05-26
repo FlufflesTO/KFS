@@ -123,7 +123,10 @@ const jsAssets = assets.filter((file) => file.endsWith(".js"));
 const allowedPortalJsPatterns = [
   /^dashboard\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^dashboard\.astro_astro_type_script_index_1_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^FinanceCreateForm\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^FinanceLedgerTable\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^operations\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^portalApi\.[A-Za-z0-9_-]+\.js$/,
   /^_id_\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/
 ];
 const unexpectedJsAssets = jsAssets.filter((file) => !allowedPortalJsPatterns.some((pattern) => pattern.test(file)));
@@ -205,7 +208,9 @@ const requiredSourceTerms = new Map([
   ["src/pages/portal/tech/jobs/[id].astro", ["/portal/api/submit-jobcard", "evidencePhotos", "/portal/api/job-visits", "Unable To Complete"]],
   ["src/pages/portal/client/dashboard.astro", ["/portal/api/file/", "/portal/api/approve-quote", "Mapped client sites"]],
   ["src/pages/portal/client/quotes.astro", ["Quote, invoice and payment history", "Commercial ledger", "/portal/api/approve-quote"]],
-  ["src/pages/portal/finance/dashboard.astro", ["financial_records", "payment_status", "/portal/api/finance/export", "/portal/api/finance/payments"]],
+  ["src/pages/portal/finance/dashboard.astro", ["financial_records", "payment_status", "FinanceCreateForm", "FinanceLedgerTable"]],
+  ["src/components/portal/finance/FinanceLedgerTable.astro", ["/portal/api/finance/export"]],
+  ["src/lib/forms/unifiedSubmit.ts", ["/portal/api/finance/payments"]],
   ["src/pages/portal/admin/planning.astro", ["Dispatch planner", "Lifecycle due calendar", "Technician load", "riskForDueDate"]],
   ["src/pages/portal/api/finance/payments.js", ["finance.payment", "Payment", "Settled"]],
   ["src/pages/portal/api/finance/export.js", ["finance.export", "text/csv", "content-disposition"]],

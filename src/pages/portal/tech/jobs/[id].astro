@@ -1,4 +1,5 @@
 ---
+import { auditError } from "../../../../lib/server/audit.js";
 /**
  * Project Sentinel - Portal Technician Job Detail
  * Purpose: Provides technician detail page for jobcards, logging visits, managing checklist, and signoff
@@ -64,7 +65,7 @@ try {
     visits = visitResult.results || [];
   }
 } catch (error) {
-  console.error("technician job detail failed", error);
+  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "technician job detail failed" } });
   loadError = "Dispatch details could not be loaded.";
 }
 

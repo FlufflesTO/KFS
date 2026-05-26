@@ -1,3 +1,4 @@
+import { auditError } from "../../../lib/server/audit.js";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { auditEvent } from "../../../lib/server/audit.js";
 import { createSessionToken, sessionCookie, revokeSessionToken, sessionCookieName } from "../../../lib/server/auth.js";
@@ -158,10 +159,10 @@ export async function POST({ request, locals }) {
   } catch (error) {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     if (error.message?.includes("MFA_SECRET") || error.name === "OperationError") {
-      console.error("mfa configuration failed", error);
+      await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "mfa configuration failed" } });
       return serverError("MFA could not be completed.");
     }
-    console.error("mfa action failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "mfa action failed" } });
     return serverError("MFA could not be completed.");
   }
 }

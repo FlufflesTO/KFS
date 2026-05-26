@@ -1,3 +1,4 @@
+import { auditError } from "../../../../lib/server/audit.js";
 import { getDatabase } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { rowsToCsv } from "../../../../lib/server/csv.js";
@@ -89,7 +90,7 @@ export async function GET({ request, locals }) {
       }
     });
   } catch (error) {
-    console.error("audit export failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "audit export failed" } });
     return serverError("Audit export could not be completed.");
   }
 }

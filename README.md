@@ -10,6 +10,7 @@ Comprehensive fire protection and security solutions portal for South African co
 - Emergency support and compliance information
 - SEO optimized with proper meta tags and structured data
 - Accessibility features including skip links and ARIA labels
+- Premium card-based layouts for enhanced user experience
 
 ### Field Service Management (FSM) Portal
 - Role-based access control (admin, tech, client, finance)
@@ -18,24 +19,25 @@ Comprehensive fire protection and security solutions portal for South African co
 - Client dashboard for compliance monitoring
 - Financial workflow integration with Sage
 - Document management with R2 storage
+- Modernized dashboards with consistent card components
 
 ### Security & Compliance
 - POPIA-compliant data handling
 - Multi-factor authentication (MFA)
 - Session management with CSRF protection
 - Rate limiting and IP-based security
-- Forensic audit logging and error telemetry
+- Audit logging for all actions
 - South African regulatory compliance (SANS standards)
-- Zero-tolerance type safety across backend middleware
+- Enhanced honeypot security with inline styling
 
 ### Performance & Optimization
 - Server-side rendering (SSR) with Astro
 - CSS purging for minimal bundle sizes
 - Image optimization with WebP fallbacks
 - Animation optimization with Intersection Observer
-- Print-optimized stylesheets
+- Print-optimized stylesheets for compliance documents
 - Mobile-first responsive design
-- IndexedDB offline telemetry queue with exponential backoff
+- CPU-efficient animations that pause when off-screen
 
 ## 🛠 Tech Stack
 
@@ -44,7 +46,7 @@ Comprehensive fire protection and security solutions portal for South African co
 - **Deployment**: Cloudflare Pages with D1 database and R2 storage
 - **Authentication**: Custom session management with CSRF protection
 - **Forms**: Anti-spam with honeypot fields and rate limiting
-- **Analytics**: POPIA-compliant (Plausible/Fathom)
+- **Analytics**: POPIA-compliant (Plausible/Fathom) - public pages only
 
 ## 📊 Corporate Compliance
 

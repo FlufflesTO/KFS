@@ -1,3 +1,4 @@
+import { auditError } from "../../../lib/server/audit.js";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import { auditEvent } from "../../../lib/server/audit.js";
 import { clientCanAccessSite } from "../../../lib/server/clientAccess.js";
@@ -92,7 +93,7 @@ export async function POST({ request, locals }) {
       return badRequest("Request body must be valid JSON.");
     }
 
-    console.error("quote approval failed", error);
+    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "quote approval failed" } });
     return serverError("Quote approval could not be completed.");
   }
 }

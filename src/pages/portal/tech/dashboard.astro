@@ -1,4 +1,5 @@
 ---
+import { auditError } from "../../../lib/server/audit.js";
 /**
  * Project Sentinel - Technician Dashboard
  * Purpose: Lists dispatches assigned to the currently authenticated technician, split by action items and upcoming dispatches.
@@ -48,7 +49,7 @@ try {
     : await db.prepare(query).bind(user.id).all();
   jobs = result.results || [];
 } catch (error) {
-  console.error("technician dashboard failed", error);
+  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "technician dashboard failed" } });
   loadError = "Assigned dispatches could not be loaded.";
 }
 
