@@ -66,6 +66,7 @@ try {
               AND date(required_by_date) <= date('now','+3 days')
               AND status IN ('Scheduled','In Progress') THEN 1 ELSE 0 END) AS sla_warning_count
       FROM jobs
+      WHERE deleted_at IS NULL
     `),
     db.prepare(`
       SELECT jobs.id, jobs.job_type, jobs.scheduled_date, jobs.priority, jobs.required_by_date,
@@ -76,7 +77,8 @@ try {
       FROM jobs
       INNER JOIN systems ON systems.id = jobs.system_id
       INNER JOIN sites   ON sites.id   = systems.site_id
-      WHERE jobs.assigned_technician_id IS NULL AND jobs.status = 'Scheduled'
+      WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+        AND jobs.assigned_technician_id IS NULL AND jobs.status = 'Scheduled'
       ORDER BY
         CASE jobs.priority WHEN 'Critical' THEN 1 WHEN 'High' THEN 2 WHEN 'Normal' THEN 3 ELSE 4 END,
         jobs.scheduled_date ASC
@@ -92,7 +94,8 @@ try {
       INNER JOIN systems ON systems.id = jobs.system_id
       INNER JOIN sites   ON sites.id   = systems.site_id
       LEFT JOIN  users   ON users.id   = jobs.assigned_technician_id
-      WHERE jobs.assigned_technician_id IS NOT NULL AND jobs.status IN ('Scheduled','In Progress')
+      WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+        AND jobs.assigned_technician_id IS NOT NULL AND jobs.status IN ('Scheduled','In Progress')
       ORDER BY
         CASE jobs.priority WHEN 'Critical' THEN 1 WHEN 'High' THEN 2 WHEN 'Normal' THEN 3 ELSE 4 END,
         jobs.scheduled_date ASC

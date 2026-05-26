@@ -129,15 +129,17 @@ try {
         SUM(CASE WHEN required_by_date IS NOT NULL AND date(required_by_date) < date('now') AND status IN ('Scheduled','In Progress') THEN 1 ELSE 0 END) AS sla_breach_count,
         SUM(CASE WHEN required_by_date IS NOT NULL AND date(required_by_date) >= date('now') AND date(required_by_date) <= date('now','+3 days') AND status IN ('Scheduled','In Progress') THEN 1 ELSE 0 END) AS sla_warning_count
       FROM jobs
+      WHERE deleted_at IS NULL
     `),
-    db.prepare(`SELECT COUNT(*) AS total FROM jobs WHERE status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS total FROM systems WHERE date(next_due_date) <= date(?1)`).bind(ninetyDaysFromNow),
+    db.prepare(`SELECT COUNT(*) AS total FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
+    db.prepare(`SELECT COUNT(*) AS total FROM systems WHERE deleted_at IS NULL AND date(next_due_date) <= date(?1)`).bind(ninetyDaysFromNow),
     // ── Full-dataset system counters ─────────────────────────────────────
     db.prepare(`
       SELECT
         SUM(CASE WHEN date(next_due_date) < date('now') THEN 1 ELSE 0 END) AS overdue_count,
         SUM(CASE WHEN date(next_due_date) >= date('now') AND date(next_due_date) <= date('now','+30 days') THEN 1 ELSE 0 END) AS due_soon_count
       FROM systems
+      WHERE deleted_at IS NULL
     `),
     // ── Full-dataset critical request counter ────────────────────────────
     db.prepare(`
@@ -155,7 +157,8 @@ try {
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
        LEFT JOIN users ON users.id = jobs.assigned_technician_id
-       WHERE jobs.status IN ('Scheduled', 'In Progress')
+       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+         AND jobs.status IN ('Scheduled', 'In Progress')
        ORDER BY
          CASE jobs.priority WHEN 'Critical' THEN 1 WHEN 'High' THEN 2 WHEN 'Normal' THEN 3 ELSE 4 END,
          jobs.scheduled_date ASC, sites.owner_company_name ASC
@@ -167,7 +170,7 @@ try {
               SUM(CASE WHEN jobs.status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress_count,
               MIN(jobs.scheduled_date) AS next_dispatch_date
        FROM users
-       LEFT JOIN jobs ON jobs.assigned_technician_id = users.id AND jobs.status IN ('Scheduled','In Progress')
+       LEFT JOIN jobs ON jobs.assigned_technician_id = users.id AND jobs.deleted_at IS NULL AND jobs.status IN ('Scheduled','In Progress')
        WHERE users.role = 'tech' AND users.is_active = 1
        GROUP BY users.id, users.name
        ORDER BY scheduled_count DESC, in_progress_count DESC, users.name ASC`
@@ -178,7 +181,7 @@ try {
               sites.owner_company_name, sites.physical_address
        FROM systems
        INNER JOIN sites ON sites.id = systems.site_id
-       WHERE date(systems.next_due_date) <= date(?1)
+       WHERE systems.deleted_at IS NULL AND date(systems.next_due_date) <= date(?1)
        ORDER BY systems.next_due_date ASC, sites.owner_company_name ASC
        LIMIT ?2 OFFSET ?3`
     ).bind(ninetyDaysFromNow, planningPageSize, lifecycleOffset),
@@ -188,7 +191,7 @@ try {
               sites.owner_company_name, systems.coverage_area
        FROM maintenance_requests
        INNER JOIN sites ON sites.id = maintenance_requests.site_id
-       LEFT JOIN systems ON systems.id = maintenance_requests.system_id
+       LEFT JOIN systems ON systems.id = maintenance_requests.system_id AND systems.deleted_at IS NULL
        WHERE maintenance_requests.status IN ('New', 'Reviewing')
        ORDER BY
          CASE maintenance_requests.priority WHEN 'Critical' THEN 1 WHEN 'Urgent' THEN 2 ELSE 3 END,

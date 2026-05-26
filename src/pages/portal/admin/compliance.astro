@@ -26,12 +26,12 @@ try {
   const db = getDatabase();
 
   const [cntCritical, cntOpen, cntBlocked, cntOverdue, cntDueSoon, cntAtRisk] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status = 'Open' AND severity = 'Critical'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status IN ('Open', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Blocked'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days')`),
-    db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE status IN ('Open', 'In Progress') AND severity = 'Critical'`)
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days')`),
+    db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND severity = 'Critical'`)
   ]);
 
   interface CountResult {
@@ -54,7 +54,8 @@ try {
      FROM defects
      INNER JOIN systems ON systems.id = defects.system_id
      INNER JOIN sites ON sites.id = systems.site_id
-     WHERE defects.status IN ('Open', 'In Progress') AND defects.severity = 'Critical'
+     WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL
+       AND defects.status IN ('Open', 'In Progress') AND defects.severity = 'Critical'
      ORDER BY defects.created_at ASC
      LIMIT 20`
   ).all()).results || [];
@@ -70,8 +71,9 @@ try {
      FROM certificates
      INNER JOIN systems ON systems.id = certificates.system_id
      INNER JOIN sites ON sites.id = systems.site_id
-     LEFT JOIN defects AS blocking_defect ON blocking_defect.id = certificates.blocked_by_defect_id
-     WHERE certificates.status = 'Blocked'
+     LEFT JOIN defects AS blocking_defect ON blocking_defect.id = certificates.blocked_by_defect_id AND blocking_defect.deleted_at IS NULL
+     WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL
+       AND certificates.status = 'Blocked'
      ORDER BY certificates.created_at DESC
      LIMIT 20`
   ).all()).results || [];
@@ -84,7 +86,8 @@ try {
      FROM certificates
      INNER JOIN systems ON systems.id = certificates.system_id
      INNER JOIN sites ON sites.id = systems.site_id
-     WHERE certificates.status = 'Valid' AND certificates.expiry_date IS NOT NULL
+     WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL
+       AND certificates.status = 'Valid' AND certificates.expiry_date IS NOT NULL
        AND certificates.expiry_date <= date('now', '+30 days')
      ORDER BY certificates.expiry_date ASC
      LIMIT 20`
@@ -97,7 +100,8 @@ try {
      FROM defects
      INNER JOIN systems ON systems.id = defects.system_id
      INNER JOIN sites ON sites.id = systems.site_id
-     WHERE defects.status IN ('Open', 'In Progress') AND defects.severity = 'Critical'
+     WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL
+       AND defects.status IN ('Open', 'In Progress') AND defects.severity = 'Critical'
      GROUP BY systems.id
      ORDER BY critical_count DESC
      LIMIT 20`

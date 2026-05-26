@@ -18,10 +18,12 @@ try {
   const countQuery = user.role === "admin"
     ? `SELECT COUNT(*) AS total
        FROM jobs
-       WHERE jobs.status IN ('Completed', 'Invoiced')`
+       WHERE jobs.deleted_at IS NULL
+         AND jobs.status IN ('Completed', 'Invoiced')`
     : `SELECT COUNT(*) AS total
        FROM jobs
-       WHERE jobs.assigned_technician_id = ?1
+       WHERE jobs.deleted_at IS NULL
+         AND jobs.assigned_technician_id = ?1
          AND jobs.status IN ('Completed', 'Invoiced')`;
 
   const query = user.role === "admin"
@@ -32,7 +34,8 @@ try {
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
-       WHERE jobs.status IN ('Completed', 'Invoiced')
+       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+         AND jobs.status IN ('Completed', 'Invoiced')
        ORDER BY jobs.completed_at DESC
        LIMIT ?1 OFFSET ?2`
     : `SELECT jobs.id, jobs.completed_at, jobs.status, jobs.job_type,
@@ -42,7 +45,8 @@ try {
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
-       WHERE jobs.assigned_technician_id = ?1
+       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+         AND jobs.assigned_technician_id = ?1
          AND jobs.status IN ('Completed', 'Invoiced')
        ORDER BY jobs.completed_at DESC
        LIMIT ?2 OFFSET ?3`;

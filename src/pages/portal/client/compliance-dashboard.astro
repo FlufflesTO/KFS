@@ -107,18 +107,18 @@ try {
                 systems.last_service_date, systems.next_due_date, systems.service_interval_months,
                 sites.owner_company_name,
                 latest_jobs.id AS latest_job_id, latest_jobs.documentation_path, latest_jobs.completed_at,
-                (SELECT COUNT(*) FROM defects WHERE defects.system_id = systems.id AND defects.status IN ('Open', 'In Progress')) AS open_defects_count,
-                (SELECT COUNT(*) FROM certificates WHERE certificates.system_id = systems.id AND certificates.status = 'Valid') AS valid_certificates_count,
-                (SELECT COUNT(*) FROM certificates WHERE certificates.system_id = systems.id AND certificates.status = 'Blocked') AS blocked_certificates_count
+                (SELECT COUNT(*) FROM defects WHERE defects.deleted_at IS NULL AND defects.system_id = systems.id AND defects.status IN ('Open', 'In Progress')) AS open_defects_count,
+                (SELECT COUNT(*) FROM certificates WHERE certificates.deleted_at IS NULL AND certificates.system_id = systems.id AND certificates.status = 'Valid') AS valid_certificates_count,
+                (SELECT COUNT(*) FROM certificates WHERE certificates.deleted_at IS NULL AND certificates.system_id = systems.id AND certificates.status = 'Blocked') AS blocked_certificates_count
          FROM systems
          INNER JOIN sites ON sites.id = systems.site_id
          LEFT JOIN jobs AS latest_jobs ON latest_jobs.id = (
            SELECT j.id FROM jobs j
-           WHERE j.system_id = systems.id AND j.documentation_path IS NOT NULL
+           WHERE j.deleted_at IS NULL AND j.system_id = systems.id AND j.documentation_path IS NOT NULL
            ORDER BY COALESCE(j.completed_at, j.updated_at, j.created_at) DESC
            LIMIT 1
          )
-         WHERE systems.site_id IN (
+         WHERE systems.deleted_at IS NULL AND systems.site_id IN (
            SELECT site_id FROM client_site_access WHERE user_id = ?1
            UNION
            SELECT ?2 WHERE ?2 IS NOT NULL
@@ -141,7 +141,8 @@ try {
          FROM defects
          INNER JOIN systems ON systems.id = defects.system_id
          INNER JOIN sites ON sites.id = systems.site_id
-         WHERE systems.site_id IN (
+         WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL
+           AND systems.site_id IN (
            SELECT site_id FROM client_site_access WHERE user_id = ?1
            UNION
            SELECT ?2 WHERE ?2 IS NOT NULL
@@ -162,11 +163,12 @@ try {
                 certificates.issued_date, certificates.expiry_date, certificates.blocked_by_defect_id,
                 systems.id AS system_id, systems.system_type, systems.coverage_area,
                 sites.owner_company_name,
-                (SELECT description FROM defects WHERE defects.id = certificates.blocked_by_defect_id) AS blocking_defect_description
+                (SELECT description FROM defects WHERE defects.deleted_at IS NULL AND defects.id = certificates.blocked_by_defect_id) AS blocking_defect_description
          FROM certificates
          INNER JOIN systems ON systems.id = certificates.system_id
          INNER JOIN sites ON sites.id = systems.site_id
-         WHERE systems.site_id IN (
+         WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL
+           AND systems.site_id IN (
            SELECT site_id FROM client_site_access WHERE user_id = ?1
            UNION
            SELECT ?2 WHERE ?2 IS NOT NULL
