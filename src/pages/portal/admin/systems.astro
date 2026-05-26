@@ -1,0 +1,83 @@
+---
+import { SITE_CONFIG } from "../../../config/site-config";
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings";
+import { requireAdmin } from "../../../lib/server/admin";
+
+export async function getStaticPaths() {
+  return [{ params: {} }];
+}
+
+const { user } = Astro.locals;
+
+// Verify admin access
+const adminError = requireAdmin(user);
+if (adminError) {
+  return {
+    redirect: {
+      destination: '/portal/login',
+      permanent: false,
+    },
+  };
+}
+
+// Fetch systems with pagination
+const db = getDatabase();
+const systems = await db.prepare(
+  `SELECT s.id, s.system_type, s.coverage_area, s.last_service_date, s.next_due_date, s.service_interval_months,
+           si.owner_company_name
+   FROM systems s
+   LEFT JOIN sites si ON si.id = s.site_id
+   WHERE s.deleted_at IS NULL
+   ORDER BY s.next_due_date ASC
+   LIMIT 50`
+).all();
+---
+
+<PortalLayout user={user}>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">System Management</h1>
+        <p class="mt-1 text-sm text-gray-500">Manage fire and security systems</p>
+      </div>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+      <ul class="divide-y divide-gray-200">
+        {systems.results?.map((system) => (
+          <li key={system.id}>
+            <div class="px-4 py-4 sm:px-6">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-kharon-blue truncate">{system.id}</p>
+                <div class="ml-2 flex-shrink-0 flex">
+                  <span class={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    new Date(system.next_due_date) < new Date() ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {new Date(system.next_due_date) < new Date() ? 'Overdue' : 'Current'}
+                  </span>
+                </div>
+              </div>
+              <div class="mt-2 sm:flex sm:justify-between">
+                <div class="sm:flex">
+                  <p class="flex items-center text-sm text-gray-500">
+                    <span class="font-medium">{system.system_type}</span> • {system.coverage_area}
+                  </p>
+                </div>
+                <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                  <p>Due: {new Date(system.next_due_date).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <div class="mt-2 text-sm text-gray-700">
+                <p>
+                  <span class="font-medium">{system.owner_company_name}</span> • 
+                  Last serviced: {system.last_service_date ? new Date(system.last_service_date).toLocaleDateString() : 'Never'}
+                </p>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</PortalLayout>

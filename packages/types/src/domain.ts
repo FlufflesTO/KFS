@@ -123,7 +123,7 @@ export interface DbFinancialRecord {
   id: string;
   site_id: string;
   amount: number | null;
-  item_type: string;
+  item_type: string; // "Task" | "Quote" | "Invoice" | "Credit Note"
   payment_status: string;
   distribution_date: string | null;
   reference: string | null;
@@ -137,6 +137,7 @@ export interface DbFinancialRecord {
   sage_due_date: string | null;
   finance_task_status: string | null;
   finance_notes: string | null;
+  sage_payment_reference: string | null;
   owner_company_name: string;
   age_days?: number;
   credit_note_for_id?: string | null;

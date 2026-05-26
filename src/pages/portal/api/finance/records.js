@@ -12,8 +12,8 @@ import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorize
 
 export const prerender = false;
 
-const ITEM_TYPES = new Set(["Quote", "Invoice"]);
-const INITIAL_STATUS = { Quote: "Pending Approval", Invoice: "Unpaid" };
+const ITEM_TYPES = new Set(["Task", "Quote", "Invoice"]);
+const INITIAL_STATUS = { Task: "Pending", Quote: "Pending Approval", Invoice: "Unpaid" };
 
 function cleanAmount(value) {
   const num = Number(value);
@@ -60,7 +60,7 @@ export async function POST({ request, locals }) {
     if (!/^[A-Za-z0-9_-]{3,80}$/.test(siteId)) return badRequest("siteId is invalid.");
 
     const itemType = String(body.itemType || "").trim();
-    if (!ITEM_TYPES.has(itemType)) return badRequest("itemType must be Quote or Invoice.");
+    if (!ITEM_TYPES.has(itemType)) return badRequest("itemType must be Task, Quote, or Invoice.");
 
     let amountExVat, vatAmount, amountIncVat, distributionDate, sageDocumentDate, sageDueDate;
     try {

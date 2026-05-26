@@ -16,7 +16,8 @@ export function bindFinanceForms(): void {
 
       const recordId     = form.dataset.recordId ?? "";
       const itemType     = form.dataset.itemType  ?? "";
-      const sageNumber   = (form.querySelector<HTMLInputElement>("[name='sageNumber']")?.value       ?? "").trim();
+      const sageInvoiceNumber = (form.querySelector<HTMLInputElement>("[name='sageInvoiceNumber']")?.value ?? "").trim();
+      const sageQuoteNumber = (form.querySelector<HTMLInputElement>("[name='sageQuoteNumber']")?.value ?? "").trim();
       const custCode     = (form.querySelector<HTMLInputElement>("[name='sageCustomerCode']")?.value ?? "").trim();
       const exVat        = (form.querySelector<HTMLInputElement>("[name='sageAmountExVat']")?.value  ?? "").trim();
       const vat          = (form.querySelector<HTMLInputElement>("[name='sageVatAmount']")?.value    ?? "").trim();
@@ -27,8 +28,8 @@ export function bindFinanceForms(): void {
       const taskStatus   = (form.querySelector<HTMLSelectElement>("[name='financeTaskStatus']")?.value ?? "").trim();
 
       const payload: Record<string, unknown> = { recordId };
-      if (itemType === "Invoice") payload.sageInvoiceNumber = sageNumber || null;
-      else                        payload.sageQuoteNumber   = sageNumber || null;
+      if (sageInvoiceNumber) payload.sageInvoiceNumber = sageInvoiceNumber;
+      if (sageQuoteNumber)   payload.sageQuoteNumber   = sageQuoteNumber;
       if (custCode)   payload.sageCustomerCode  = custCode;
       if (exVat)      payload.sageAmountExVat   = parseFloat(exVat);
       if (vat)        payload.sageVatAmount     = parseFloat(vat);

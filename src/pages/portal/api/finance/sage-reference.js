@@ -70,6 +70,19 @@ export async function POST({ request, locals }) {
 
     if (!record) return badRequest("Finance record was not found.");
 
+    let newItemType = record.item_type;
+    let newPaymentStatus = undefined; // Undefined means don't change
+
+    if (record.item_type === "Task") {
+      if (sageInvoiceNumber) {
+        newItemType = "Invoice";
+        newPaymentStatus = "Unpaid";
+      } else if (sageQuoteNumber) {
+        newItemType = "Quote";
+        newPaymentStatus = "Pending Approval";
+      }
+    }
+
     await db
       .prepare(
         `UPDATE financial_records
@@ -83,11 +96,14 @@ export async function POST({ request, locals }) {
              sage_document_date    = COALESCE(?9,  sage_document_date),
              sage_due_date         = COALESCE(?10, sage_due_date),
              finance_notes         = COALESCE(?11, finance_notes),
+             item_type             = COALESCE(?12, item_type),
+             payment_status        = COALESCE(?13, payment_status),
              updated_at            = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
          WHERE id = ?1`
       )
       .bind(recordId, sageInvoiceNumber, sageQuoteNumber, sageCustomerCode, financeTaskStatus,
-            sageAmountExVat, sageVatAmount, sageAmountIncVat, sageDocumentDate, sageDueDate, financeNotes)
+            sageAmountExVat, sageVatAmount, sageAmountIncVat, sageDocumentDate, sageDueDate, financeNotes,
+            newItemType, newPaymentStatus)
       .run();
 
     await auditEvent(db, request, {
@@ -97,7 +113,7 @@ export async function POST({ request, locals }) {
       outcome:    "success",
       user,
       metadata: {
-        itemType:           record.item_type,
+        itemType:           newItemType,
         sageInvoiceNumber,
         sageQuoteNumber,
         sageCustomerCode,

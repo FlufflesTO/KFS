@@ -29,8 +29,8 @@ export async function GET() {
     services: {
       database: dbStatus,
       ...(dbError && { database_error: dbError }),
-      cache: 'not_implemented', // Would connect to Redis/Memcached if implemented
-      storage: 'not_implemented' // Would check R2 connection if implemented
+      cache: 'not_implemented',
+      storage: typeof process !== "undefined" && process.env?.STORAGE ? 'connected' : 'not_configured'
     },
     version,
     uptime

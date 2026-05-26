@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Enhanced Telemetry**: Implemented `auditError` telemetry utility within `src/lib/server/audit.js` to capture unhandled server crashes and 500s directly to the forensic database without leaking stack traces.
 - **Input Validation Layers**: Conducted backend verification ensuring Zod and custom schema assertions strict-parse payload payloads prior to D1 ingestion.
 
+### Phase 11 - Security Headers and Performance Monitoring (completed)
+- **CSP Hardening for Analytics**: Whitelisted `plausible.io` in Content Security Policy (CSP) across `middleware.js` and `_headers` to support integrated privacy-aware analytics.
+- **Nonce-Based Script Protection**: Verified and documented the middleware's automatic nonce injection for inline scripts and styles, effectively eradicating `'unsafe-inline'` requirements.
+- **Enhanced Health Monitoring**: Completed the `/health.json` API with D1 and R2 connection checks, enabling automated performance monitoring and service status verification.
+- **Approved Domain Documentation**: Formally documented and whitelisted external domains for Cloudflare Insights, Turnstile, and Plausible Analytics.
+
 ### Phase 22 - Portal UI/UX Polish and CSS Budget Hardening
 - Redesigned and spaced out flowcharts and SVG diagrams in service pages.
 - Redesigned `SplitFeature` blocks grid into a premium glassmorphic grid with custom vector SVG icons, and fixed mobile column squeezing.

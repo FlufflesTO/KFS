@@ -43,7 +43,7 @@ try {
 
   const [
     recordsResult, statsResult, statusCountsResult,
-    pendingResult, overdueResult, paymentsCountResult, sagePipelineResult,
+    pendingResult, overdueResult, sagePipelineResult,
     sitesResult, linkableJobsResult, invoiceRequiredResult,
   ] = await db.batch([
     // 1. Paginated ledger
@@ -93,9 +93,7 @@ try {
       ORDER BY financial_records.sage_due_date ASC
       LIMIT 50
     `),
-    // 6. Payment count (scalar — no row fetch needed)
-    db.prepare(`SELECT COUNT(*) AS cnt FROM financial_records WHERE item_type = 'Payment'`),
-    // 7. Sage pipeline records for task status panel
+    // 6. Sage pipeline records for task status panel
     db.prepare(`
       SELECT financial_records.*, sites.owner_company_name
       FROM financial_records
@@ -104,9 +102,9 @@ try {
       ORDER BY financial_records.distribution_date DESC
       LIMIT 100
     `),
-    // 8. Sites for create form
+    // 7. Sites for create form
     db.prepare(`SELECT id, owner_company_name FROM sites ORDER BY owner_company_name`),
-    // 9. Linkable jobs for create form
+    // 8. Linkable jobs for create form
     db.prepare(`
       SELECT jobs.id, sites.id AS site_id, jobs.status, jobs.scheduled_date, systems.coverage_area
       FROM jobs
@@ -117,7 +115,7 @@ try {
       ORDER BY jobs.completed_at DESC
       LIMIT 500
     `),
-    // 10. Completed jobs awaiting Sage invoice
+    // 9. Completed jobs awaiting Sage invoice
     db.prepare(`
       SELECT jobs.id, jobs.completed_at, sites.owner_company_name,
              systems.system_type, systems.coverage_area,
@@ -156,7 +154,6 @@ try {
 
   pendingApproval = (pendingResult.results    ?? []) as DbFinancialRecord[];
   overduePayments = (overdueResult.results    ?? []) as DbFinancialRecord[];
-  paymentsCount   = Number((paymentsCountResult.results?.[0] as { cnt: number } | undefined)?.cnt ?? 0);
 
   const sagePipelineRecords = (sagePipelineResult.results ?? []) as DbFinancialRecord[];
   const statusCounts = (statusCountsResult.results ?? []) as { status: string; count: number }[];
@@ -191,7 +188,7 @@ try {
 
       <FinanceCreateForm {sites} {linkableJobs} />
 
-      <FinanceStatsPanel {stats} paymentsCount={paymentsCount} />
+      <FinanceStatsPanel {stats} />
 
       <div class="grid gap-6 lg:grid-cols-2">
         <FinanceExceptionPanel

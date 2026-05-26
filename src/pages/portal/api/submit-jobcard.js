@@ -276,7 +276,7 @@ export async function POST({ request, locals }) {
           `INSERT INTO financial_records
                (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference, finance_task_status)
              VALUES
-               (?1, ?2, ?3, ?4, 'Invoice', 'Unpaid', ?5, ?6, ?7)`
+               (?1, ?2, ?3, ?4, 'Task', 'Pending', ?5, ?6, ?7)`
           )
           .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, reference, financeTaskStatus)
       );
@@ -320,13 +320,13 @@ export async function POST({ request, locals }) {
         outcome: "success",
         user,
         metadata: {
-          itemType: "Invoice",
+          itemType: "Task",
           siteId: job.site_id,
           jobId,
           amountExVat: null,
           vatAmount: null,
           amountIncVat: amount,
-          paymentStatus: "Unpaid",
+          paymentStatus: "Pending",
           reference: hasBlockingDefects ? `Sage quote required for defect remediation on job ${jobId}` : `Sage invoice required for completed job ${jobId}`,
           financeTaskStatus: hasBlockingDefects ? "Quote Required" : "Invoice Required"
         }

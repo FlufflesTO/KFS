@@ -1,0 +1,137 @@
+---
+import { SITE_CONFIG } from "../../../config/site-config";
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { requireAdmin } from "../../../lib/server/admin";
+
+export async function getStaticPaths() {
+  return [{ params: {} }];
+}
+
+const { user } = Astro.locals;
+
+// Verify admin access
+const adminError = requireAdmin(user);
+if (adminError) {
+  return {
+    redirect: {
+      destination: '/portal/login',
+      permanent: false,
+    },
+  };
+}
+---
+
+<PortalLayout user={user}>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Data Exports</h1>
+        <p class="mt-1 text-sm text-gray-500">Export system data and reports</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Sites Export</h3>
+          <div class="mt-2 max-w-xl text-sm text-gray-500">
+            <p>Export all site information to CSV.</p>
+          </div>
+          <div class="mt-5">
+            <a 
+              href="/portal/api/admin/export?table=sites" 
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-kharon-blue hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue"
+            >
+              Export Sites
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Jobs Export</h3>
+          <div class="mt-2 max-w-xl text-sm text-gray-500">
+            <p>Export job information to CSV.</p>
+          </div>
+          <div class="mt-5">
+            <a 
+              href="/portal/api/admin/export?table=jobs" 
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-kharon-blue hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue"
+            >
+              Export Jobs
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Systems Export</h3>
+          <div class="mt-2 max-w-xl text-sm text-gray-500">
+            <p>Export system information to CSV.</p>
+          </div>
+          <div class="mt-5">
+            <a 
+              href="/portal/api/admin/export?table=systems" 
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-kharon-blue hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue"
+            >
+              Export Systems
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Financial Export</h3>
+          <div class="mt-2 max-w-xl text-sm text-gray-500">
+            <p>Export financial records to CSV.</p>
+          </div>
+          <div class="mt-5">
+            <a 
+              href="/portal/api/admin/export?table=financial_records" 
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-kharon-blue hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue"
+            >
+              Export Finance
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Clients Export</h3>
+          <div class="mt-2 max-w-xl text-sm text-gray-500">
+            <p>Export client information to CSV.</p>
+          </div>
+          <div class="mt-5">
+            <a 
+              href="/portal/api/admin/export?table=clients" 
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-kharon-blue hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue"
+            >
+              Export Clients
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Audit Logs Export</h3>
+          <div class="mt-2 max-w-xl text-sm text-gray-500">
+            <p>Export audit logs to CSV.</p>
+          </div>
+          <div class="mt-5">
+            <a 
+              href="/portal/api/admin/export?table=audit_events" 
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-kharon-blue hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue"
+            >
+              Export Audits
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</PortalLayout>

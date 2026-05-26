@@ -10,13 +10,12 @@ interface Props {
     overdueAmount: number;
     totalAmount: number;
   };
-  paymentsCount: number;
 }
 
-const { stats, paymentsCount } = Astro.props;
+const { stats } = Astro.props;
 ---
 
-<div class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
+<div class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 mb-6">
   <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
     <p class="text-xs font-bold uppercase text-kharon-purple">Total Records</p>
     <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.totalRecords}</p>
@@ -39,8 +38,4 @@ const { stats, paymentsCount } = Astro.props;
     <p class="mt-2 text-2xl font-bold text-kharon-black">{formatCurrencyCompact(stats.totalAmount)}</p>
   </div>
 
-  <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
-    <p class="text-xs font-bold uppercase text-kharon-cyan">Recent Payments</p>
-    <p class="mt-2 text-2xl font-bold text-kharon-black">{paymentsCount}</p>
-  </div>
 </div>

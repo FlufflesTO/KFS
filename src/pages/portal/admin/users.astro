@@ -1,0 +1,73 @@
+---
+import { SITE_CONFIG } from "../../../config/site-config";
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings";
+import { requireAdmin } from "../../../lib/server/admin";
+
+export async function getStaticPaths() {
+  return [{ params: {} }];
+}
+
+const { user } = Astro.locals;
+
+// Verify admin access
+const adminError = requireAdmin(user);
+if (adminError) {
+  return {
+    redirect: {
+      destination: '/portal/login',
+      permanent: false,
+    },
+  };
+}
+
+// Fetch users
+const db = getDatabase();
+const users = await db.prepare(
+  `SELECT id, name, email, role, is_active, created_at
+   FROM users
+   ORDER BY created_at DESC`
+).all();
+---
+
+<PortalLayout user={user}>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
+        <p class="mt-1 text-sm text-gray-500">Manage system users and access</p>
+      </div>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+      <ul class="divide-y divide-gray-200">
+        {users.results?.map((userItem) => (
+          <li key={userItem.id}>
+            <div class="px-4 py-4 sm:px-6">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-kharon-blue truncate">{userItem.name}</p>
+                <div class="ml-2 flex-shrink-0 flex">
+                  <span class={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    userItem.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {userItem.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+              </div>
+              <div class="mt-2 sm:flex sm:justify-between">
+                <div class="sm:flex">
+                  <p class="flex items-center text-sm text-gray-500">
+                    {userItem.email} • {userItem.role}
+                  </p>
+                </div>
+                <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                  <p>{new Date(userItem.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</PortalLayout>

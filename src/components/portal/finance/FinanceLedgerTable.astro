@@ -34,6 +34,7 @@ const { records, page, totalPages } = Astro.props;
         </select>
         <select id="finance-type-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
           <option value="">All types</option>
+          <option value="Task">Task</option>
           <option value="Quote">Quote</option>
           <option value="Invoice">Invoice</option>
         </select>
@@ -110,9 +111,16 @@ const { records, page, totalPages } = Astro.props;
                   <div class="flex min-w-52 flex-col gap-2">
                     {record.item_type !== "Payment" && (
                       <form class="sage-ref-form grid gap-1.5" data-record-id={record.id} data-item-type={record.item_type}>
-                        <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="sageNumber" maxlength="60"
-                          placeholder={record.item_type === "Quote" ? "Sage quote number" : "Sage invoice number"}
-                          value={record.item_type === "Invoice" ? (record.sage_invoice_number || "") : (record.sage_quote_number || "")} />
+                        {["Invoice", "Task"].includes(record.item_type) && (
+                          <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="sageInvoiceNumber" maxlength="60"
+                            placeholder="Sage invoice number"
+                            value={record.sage_invoice_number || ""} />
+                        )}
+                        {["Quote", "Task"].includes(record.item_type) && (
+                          <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="sageQuoteNumber" maxlength="60"
+                            placeholder="Sage quote number"
+                            value={record.sage_quote_number || ""} />
+                        )}
                         <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="sageCustomerCode" maxlength="40"
                           placeholder="Sage customer code (optional)" value={record.sage_customer_code || ""} />
                         <div class="grid grid-cols-3 gap-1.5">

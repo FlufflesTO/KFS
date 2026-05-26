@@ -60,28 +60,15 @@ export async function POST({ request, locals }) {
       return badRequest("Only unpaid invoice records can have a Sage payment recorded.");
     }
 
-    const paymentId = crypto.randomUUID();
     const paymentRef = paymentNote || paymentReference(recordId);
 
-    await db.batch([
-      db
-        .prepare(
-          `UPDATE financial_records
-           SET payment_status = 'Settled',
-               sage_payment_reference = ?2,
-               finance_task_status = 'Paid in Sage'
-           WHERE id = ?1`
-        )
-        .bind(recordId, paymentRef),
-      db
-        .prepare(
-          `INSERT INTO financial_records
-             (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference, sage_payment_reference, finance_task_status)
-           VALUES
-             (?1, ?2, ?3, ?4, 'Payment', 'Settled', date('now'), ?5, ?5, 'Paid in Sage')`
-        )
-        .bind(paymentId, invoice.site_id, invoice.job_id, invoice.amount, paymentRef)
-    ]);
+    await db.prepare(
+      `UPDATE financial_records
+       SET payment_status = 'Settled',
+           sage_payment_reference = ?2,
+           finance_task_status = 'Paid in Sage'
+       WHERE id = ?1`
+    ).bind(recordId, paymentRef).run();
 
     await auditEvent(db, request, {
       eventType: "finance.payment",
@@ -89,10 +76,10 @@ export async function POST({ request, locals }) {
       entityId: recordId,
       outcome: "success",
       user,
-      metadata: { paymentId, paymentReference: paymentRef, invoiceReference: invoice.reference || null }
+      metadata: { paymentReference: paymentRef, invoiceReference: invoice.reference || null }
     });
 
-    return json({ ok: true, recordId, paymentId, paymentStatus: "Settled", paymentReference: paymentRef });
+    return json({ ok: true, recordId, paymentStatus: "Settled", paymentReference: paymentRef });
   } catch (error) {
     if (error instanceof SyntaxError) {
       return badRequest("Request body must be valid JSON.");

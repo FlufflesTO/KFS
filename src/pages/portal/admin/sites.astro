@@ -1,0 +1,66 @@
+---
+import { SITE_CONFIG } from "../../../config/site-config";
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings";
+import { requireAdmin } from "../../../lib/server/admin";
+
+export async function getStaticPaths() {
+  return [{ params: {} }];
+}
+
+const { user } = Astro.locals;
+
+// Verify admin access
+const adminError = requireAdmin(user);
+if (adminError) {
+  return {
+    redirect: {
+      destination: '/portal/login',
+      permanent: false,
+    },
+  };
+}
+
+// Fetch sites
+const db = getDatabase();
+const sites = await db.prepare(
+  `SELECT id, owner_company_name, physical_address, site_contact_person, site_contact_email
+   FROM sites
+   ORDER BY owner_company_name ASC`
+).all();
+---
+
+<PortalLayout user={user}>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Site Management</h1>
+        <p class="mt-1 text-sm text-gray-500">Manage client sites and locations</p>
+      </div>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+      <ul class="divide-y divide-gray-200">
+        {sites.results?.map((site) => (
+          <li key={site.id}>
+            <div class="px-4 py-4 sm:px-6">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-kharon-blue truncate">{site.owner_company_name}</p>
+              </div>
+              <div class="mt-2 sm:flex sm:justify-between">
+                <div class="sm:flex">
+                  <p class="flex items-center text-sm text-gray-500">
+                    {site.physical_address}
+                  </p>
+                </div>
+                <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                  <p>{site.site_contact_person} • {site.site_contact_email}</p>
+                </div>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</PortalLayout>
