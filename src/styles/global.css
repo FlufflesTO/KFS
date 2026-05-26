@@ -80,6 +80,13 @@ main {
   overflow-wrap: break-word;
 }
 
+img,
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 .text-balance {
   text-wrap: balance;
 }
