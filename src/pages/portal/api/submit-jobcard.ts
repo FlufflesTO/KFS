@@ -1,21 +1,57 @@
-import { auditError } from "../../../lib/server/audit.js";
-import { verifyCsrfRequest } from "../../../lib/server/csrf.js";
-import { FinanceService } from "../../../lib/server/services/finance-service";
 /**
  * Project Sentinel - Jobcard Submission API
  * Purpose: Handles technician signature, evidence collection, and final job closure
- * Dependencies: ../../../lib/server/bindings.js, ../../../lib/server/audit.js, ../../../lib/server/jobcardPdf.js, ../../../lib/server/http.js
+ * Dependencies: ../../../lib/server/bindings.js, ../../../lib/server/audit.js, ../../../lib/server/jobcardPdf.js, ../../../lib/server/http.js, ../../../lib/server/services/finance-service
  * Structural Role: Mutating REST API endpoint for jobcard completion
  */
 
+import type { APIContext } from "astro";
+import type { D1Database, R2Bucket, D1PreparedStatement } from "@cloudflare/workers-types";
+import { auditError, auditEvent } from "../../../lib/server/audit.js";
+import { verifyCsrfRequest } from "../../../lib/server/csrf.js";
+import { FinanceService } from "../../../lib/server/services/finance-service";
 import { getBindings, getStandardServiceFee } from "../../../lib/server/bindings.js";
-import { auditEvent } from "../../../lib/server/audit.js";
 import { buildJobcardPdf } from "../../../lib/server/jobcardPdf.js";
-import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
+import { badRequest, forbidden, methodNotAllowed, serverError } from "../../../lib/server/http.js";
 
 export const prerender = false;
 
-function cleanId(value, fieldName) {
+interface JobQueryResult {
+  id: string;
+  system_id: string;
+  assigned_technician_id: string | null;
+  status: string;
+  scheduled_date: string;
+  job_type: string;
+  site_id: string;
+  system_type: string;
+  coverage_area: string;
+  service_interval_months: number | null;
+  owner_company_name: string;
+  physical_address: string;
+  existing_financial_record_id: string | null;
+}
+
+interface EvidencePhoto {
+  bytes: Uint8Array;
+  contentType: string;
+  caption: string;
+}
+
+interface EvidenceRecord extends EvidencePhoto {
+  id: string;
+  storagePath: string;
+  index: number;
+}
+
+interface DefectInput {
+  severity: string;
+  description: string;
+  sansClauseRef: string;
+  certificateBlocking: number;
+}
+
+function cleanId(value: unknown, fieldName: string): string {
   const normalized = String(value || "").trim();
   if (!/^[A-Za-z0-9_-]{3,80}$/.test(normalized)) {
     throw new Error(`${fieldName} is invalid.`);
@@ -23,15 +59,16 @@ function cleanId(value, fieldName) {
   return normalized;
 }
 
-function addMonths(date, months) {
+function addMonths(date: Date, months: number): string {
   const next = new Date(date.getTime());
   next.setUTCMonth(next.getUTCMonth() + months);
   return next.toISOString().slice(0, 10);
 }
 
-function imageDataUriToEvidence(value, index) {
-  const dataUri = String(value?.dataUri || "");
-  const caption = String(value?.caption || `Evidence photo ${index + 1}`).trim().slice(0, 160);
+function imageDataUriToEvidence(value: unknown, index: number): EvidencePhoto {
+  const obj = value as Record<string, unknown> | null | undefined;
+  const dataUri = String(obj?.dataUri || "");
+  const caption = String(obj?.caption || `Evidence photo ${index + 1}`).trim().slice(0, 160);
   const match = dataUri.match(/^data:(image\/(?:jpeg|png|webp));base64,(?<data>[A-Za-z0-9+/=]+)$/);
   if (!match?.groups?.data) {
     throw new Error(`Evidence photo ${index + 1} must be a JPEG, PNG or WebP image.`);
@@ -39,7 +76,9 @@ function imageDataUriToEvidence(value, index) {
 
   const binary = atob(match.groups.data);
   const bytes = new Uint8Array(binary.length);
-  for (let byteIndex = 0; byteIndex < binary.length; byteIndex += 1) bytes[byteIndex] = binary.charCodeAt(byteIndex);
+  for (let byteIndex = 0; byteIndex < binary.length; byteIndex += 1) {
+    bytes[byteIndex] = binary.charCodeAt(byteIndex);
+  }
 
   if (bytes.length < 128 || bytes.length > 1572864) {
     throw new Error(`Evidence photo ${index + 1} must be between 128 bytes and 1.5 MB.`);
@@ -47,43 +86,44 @@ function imageDataUriToEvidence(value, index) {
 
   return {
     bytes,
-    contentType: match[1],
+    contentType: match[1] || "image/jpeg",
     caption
   };
 }
 
-function normalizeEvidencePhotos(value) {
+function normalizeEvidencePhotos(value: unknown): EvidencePhoto[] {
   if (!Array.isArray(value)) return [];
   if (value.length > 3) throw new Error("A maximum of 3 evidence photos can be submitted per jobcard.");
-  return value.map(imageDataUriToEvidence);
+  return value.map((item: unknown, index: number) => imageDataUriToEvidence(item, index));
 }
 
 const defectSeverities = ["Critical", "Major", "Minor", "Observation"];
 
-function normalizeDefects(value) {
+function normalizeDefects(value: unknown): DefectInput[] {
   if (!value) return [];
   if (!Array.isArray(value)) throw new Error("Defects must be an array.");
   if (value.length > 20) throw new Error("A maximum of 20 defects can be captured per jobcard.");
 
-  return value.map((item, index) => {
-    const severity = String(item?.severity || "").trim();
+  return value.map((item: unknown, index: number) => {
+    const obj = item as Record<string, unknown> | null | undefined;
+    const severity = String(obj?.severity || "").trim();
     if (!defectSeverities.includes(severity)) {
       throw new Error(`Defect ${index + 1} severity must be one of: ${defectSeverities.join(", ")}.`);
     }
-    const description = String(item?.description || "").trim();
+    const description = String(obj?.description || "").trim();
     if (description.length < 5 || description.length > 2000) {
       throw new Error(`Defect ${index + 1} description must be between 5 and 2000 characters.`);
     }
-    const sansClauseRef = String(item?.sansClauseRef || "").trim().slice(0, 80);
-    const certificateBlocking = item?.certificateBlocking === true || item?.certificateBlocking === 1 || item?.certificateBlocking === "1" || item?.certificateBlocking === "true";
+    const sansClauseRef = String(obj?.sansClauseRef || "").trim().slice(0, 80);
+    const certificateBlocking = obj?.certificateBlocking === true || obj?.certificateBlocking === 1 || obj?.certificateBlocking === "1" || obj?.certificateBlocking === "true";
 
     return { severity, description, sansClauseRef, certificateBlocking: certificateBlocking ? 1 : 0 };
   });
 }
 
-export async function POST({ request, locals }) {
-  let db;
-  let user = locals.user;
+export async function POST({ request, locals }: APIContext): Promise<Response> {
+  let db: D1Database | undefined;
+  const user = locals.user;
   try {
     // Verify authentication
     if (!user) {
@@ -102,7 +142,7 @@ export async function POST({ request, locals }) {
       );
     }
 
-    const payload = await request.json();
+    const payload = (await request.json()) as Record<string, unknown>;
 
     const jobId = cleanId(payload.jobId, "jobId");
     const systemId = cleanId(payload.systemId, "systemId");
@@ -129,7 +169,7 @@ export async function POST({ request, locals }) {
       return badRequest("A captured signature is required.");
     }
 
-    const bindings = getBindings();
+    const bindings = getBindings() as { db: D1Database; storage: R2Bucket };
     db = bindings.db;
     const storage = bindings.storage;
     const financeService = new FinanceService(db);
@@ -152,7 +192,7 @@ export async function POST({ request, locals }) {
          LIMIT 1`
       )
       .bind(jobId, systemId)
-      .first();
+      .first<JobQueryResult>();
 
     if (!job) {
       await auditEvent(db, request, {
@@ -192,12 +232,12 @@ export async function POST({ request, locals }) {
 
     const completedAt = new Date();
     const serviceDate = completedAt.toISOString().slice(0, 10);
-    const serviceIntervalMonths = Number.isInteger(job.service_interval_months) && job.service_interval_months >= 1 ? job.service_interval_months : 6;
+    const serviceIntervalMonths = typeof job.service_interval_months === "number" && Number.isInteger(job.service_interval_months) && job.service_interval_months >= 1 ? job.service_interval_months : 6;
     const nextDueDate = addMonths(completedAt, serviceIntervalMonths);
     const documentationPath = `jobcards/job-${jobId}-completed.pdf`;
     const financialRecordId = job.existing_financial_record_id || crypto.randomUUID();
     const amount = getStandardServiceFee();
-    const evidenceRecords = evidencePhotos.map((photo, index) => {
+    const evidenceRecords: EvidenceRecord[] = evidencePhotos.map((photo, index) => {
       const id = crypto.randomUUID();
       const extension = photo.contentType === "image/png" ? "png" : photo.contentType === "image/webp" ? "webp" : "jpg";
       return {
@@ -208,7 +248,7 @@ export async function POST({ request, locals }) {
       };
     });
 
-    const { pdfBytes, signatureHash } = await buildJobcardPdf({
+    const { pdfBytes, signatureHash } = (await buildJobcardPdf({
       jobId,
       systemId,
       technician: user,
@@ -229,7 +269,7 @@ export async function POST({ request, locals }) {
         customerName,
         customerTitle
       }
-    });
+    })) as { pdfBytes: Uint8Array; signatureHash: string };
 
     await storage.put(documentationPath, pdfBytes, {
       httpMetadata: {
@@ -262,7 +302,7 @@ export async function POST({ request, locals }) {
       });
     }
 
-    const batchStatements = [
+    const batchStatements: D1PreparedStatement[] = [
       db
         .prepare(
           `UPDATE jobs
@@ -378,17 +418,19 @@ export async function POST({ request, locals }) {
       return badRequest("Request body must be valid JSON.");
     }
 
-    if (error.message) {
-      return badRequest(error.message);
+    const err = error as Error;
+    const msg = err.message || "";
+    if (msg) {
+      return badRequest(msg);
     }
 
     if (db) {
-      await auditError(db, request, error, { user, metadata: { message: "submit jobcard failed" } });
+      await auditError(db, request, err, { user, metadata: { message: "submit jobcard failed" } });
     }
     return serverError("The jobcard could not be submitted.");
   }
 }
 
-export function ALL() {
+export function ALL(): Response {
   return methodNotAllowed(["POST"]);
 }

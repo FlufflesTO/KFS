@@ -185,7 +185,7 @@ const expectedSourceRoutes = [
   "portal/api/mfa.js",
   "portal/reset.astro",
   "portal/api/reset-password.js",
-  "portal/api/submit-jobcard.js",
+  "portal/api/submit-jobcard.ts",
   "portal/api/approve-quote.js",
   "portal/api/finance/payments.js",
   "portal/api/finance/export.js",
@@ -199,7 +199,7 @@ for (const route of expectedSourceRoutes) {
 }
 
 const requiredSourceTerms = new Map([
-  ["src/middleware.js", ["sessionCookieName", "/portal/tech/", "/portal/finance/", "/portal/client/", "context.locals.user"]],
+  ["src/middleware.ts", ["sessionCookieName", "/portal/tech/", "/portal/finance/", "/portal/client/", "context.locals.user"]],
   ["src/pages/portal/api/auth.js", ["verifyPassword", "verifyTotpCode", "Set-Cookie", "redirectTo"]],
   ["src/pages/portal/api/admin/users.js", ["reset-link", "password_reset_tokens", "resetUrl", "mfa_required"]],
   ["src/pages/portal/api/admin/export.js", ["admin.export", "text/csv", "content-disposition"]],
@@ -209,7 +209,7 @@ const requiredSourceTerms = new Map([
   ["src/pages/portal/api/mfa.js", ["auth.mfa_enable", "encryptMfaSecret", "verifyTotpCode"]],
   ["src/pages/portal/api/reset-password.js", ["auth.password_reset", "password_reset_tokens", "hashPassword"]],
   ["src/pages/portal/reset.astro", ["/portal/api/reset-password", "Reset portal password"]],
-  ["src/pages/portal/api/submit-jobcard.js", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
+  ["src/pages/portal/api/submit-jobcard.ts", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
   ["src/pages/portal/api/file/[...key].js", ["job-evidence/", "job_evidence_files", "documentAccessLog"]],
   ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/tech/jobs/"]],
   ["src/pages/portal/tech/jobs/[id].astro", ["/portal/api/submit-jobcard", "evidencePhotos", "/portal/api/job-visits", "Unable To Complete"]],
@@ -314,7 +314,7 @@ if (!fs.existsSync(csrfPath)) {
   }
 }
 
-const middlewareText = fs.existsSync(path.join(root, "src", "middleware.js")) ? read(path.join(root, "src", "middleware.js")) : "";
+const middlewareText = fs.existsSync(path.join(root, "src", "middleware.ts")) ? read(path.join(root, "src", "middleware.ts")) : "";
 for (const term of ["verifyCsrfRequest", "portal.maintenance_request", "portal.admin.users", "portal.admin.import", "security.rate_limit"]) {
   if (!middlewareText.includes(term)) fail(`middleware missing portal write hardening marker: ${term}`);
 }

@@ -1,6 +1,10 @@
-// Central type re-export for all Kharon FSM domain types.
-// Import from "@types" or "src/types" in application code.
-// Source of truth: src/lib/types/sentinel.ts
+/**
+ * Project Sentinel - Central Type Re-exports
+ * Purpose: Re-exports domain and base types from the types package for application use
+ * Dependencies: @sentinel/types
+ * Structural Role: Centralized type re-export mapping
+ */
+
 export type {
   UserRole,
   DbUser,
@@ -18,8 +22,5 @@ export type {
   DefectSeverity,
   DefectStatus,
   CertStatus,
-  PortalUser,
-  ApiOk,
-  ApiFail,
-  ApiResponse,
+  CurrentUser,
 } from "@sentinel/types";

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-26
 
+### TypeScript Migration & Refactoring (Phase 10)
+- **Typings Realignment**: Realigned global namespace `App.Locals` and central type exports in `src/env.d.ts` and `src/types/index.ts` to utilize the canonical `CurrentUser` interface from `@sentinel/types` instead of the legacy non-existent `PortalUser`.
+- **Jobcard API Route**: Refactored the core mutated endpoint `submit-jobcard.js` to `submit-jobcard.ts`, enforcing strict types, explicit return signatures, zero-any compliance, and strongly-typed SQLite bindings.
+- **Site Audit Update**: Updated `scripts/audit-site.mjs` to check the TypeScript versions of `middleware` and the `submit-jobcard` API, resulting in a 100% green site audit.
+- **D1 User Password Reset**: Reset all local D1 user passwords to `Kharon-Temp-Portal2026!` and updated `seed-users.sql` accordingly to support verification/testing.
+
 ### Database Maintenance & Hygiene
 - **Rate Limit Auto-Pruning**: Implemented inline asynchronous deletion of rate-limit records older than 24 hours in `rateLimit.js`.
 - **Revoked Session Auto-Pruning**: Implemented inline asynchronous deletion of expired revoked session fingerprints in `auth.js`.
