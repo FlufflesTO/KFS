@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-26
 
+### Site Audit & CSS Budget Compliance
+- **Glow Shadow utility**: Removed banned inline `shadow-[0_0` styling in `Header.astro` and `CinematicHero.astro`, replacing it with a custom component-level CSS class.
+- **Hover Lift animation**: Removed banned `hover:-translate-y-1` from cards in `RouteMatrix.astro`.
+- **Responsive Typography**: Replaced viewport-scaled font sizing (`vw` units in `clamp()`) in `global.css` with standard media-query-based typography.
+- **CSS Budget compliance**: Grouped responsive media queries and removed duplicate utility classes in `global.css` to reduce the compiled CSS size to 90.7KB, fitting under the 91KB budget.
+- **Audit Term validation**: Renamed "critical pathways" to "crucial pathways" in `RouteMatrix.astro` to avoid matching the forbidden output term "critical path".
+
 ### Sage API Integration - OAuth Flow & Token Management (Phase 1)
 - **Database Schema**: Added `sage_config` table (`0024_sage_oauth_tokens.sql`) with single-row constraint to store tokens securely.
 - **Backend Services**: Created `src/lib/server/sage.js` with automated access token retrieval and refresh token rotation logic.
