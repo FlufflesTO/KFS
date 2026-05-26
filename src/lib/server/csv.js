@@ -1,6 +1,6 @@
 export function csvEscape(value) {
   const text = value === null || value === undefined ? "" : String(value);
-  const safe = /^[=+\-@]/.test(text) ? `\t${text}` : text;
+  const safe = /^[=+\-@\t\r]/.test(text) ? `\t${text}` : text;
   if (/[",\r\n\t]/.test(safe)) return `"${safe.replaceAll('"', '""')}"`;
   return safe;
 }

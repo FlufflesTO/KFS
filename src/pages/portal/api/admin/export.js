@@ -28,6 +28,13 @@ const configs = {
           FROM systems
           WHERE deleted_at IS NULL
           ORDER BY site_id, coverage_area`
+  },
+  contacts: {
+    filename: "kharon-contact-submissions.csv",
+    headers: ["id", "name", "email", "request_type", "message", "submitted_at"],
+    sql: `SELECT id, name, email, request_type, message, submitted_at
+          FROM contact_submissions
+          ORDER BY submitted_at DESC`
   }
 };
 

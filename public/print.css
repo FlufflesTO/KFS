@@ -1,0 +1,254 @@
+/* 
+ * Print Stylesheet for Kharon Fire and Security Solutions
+ * Purpose: Format compliance dashboards and jobcards for A4 printing
+ * Ensures optimal print output for physical documentation
+ */
+
+@media print {
+  /* Hide non-essential elements */
+  header,
+  nav,
+  footer,
+  .no-print,
+  .print-hidden,
+  button,
+  .btn,
+  .navigation,
+  .mobile-menu,
+  .social-links,
+  .related-content,
+  .advertisement,
+  .cookie-banner,
+  .chat-widget,
+  .back-to-top,
+  .share-buttons {
+    display: none !important;
+  }
+
+  /* Force display of print-specific elements */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Body and page setup */
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+    color: black;
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Page breaks and layout */
+  @page {
+    margin: 1cm;
+    size: A4;
+  }
+
+  /* Ensure content fits properly */
+  article,
+  section,
+  div {
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Tables - expand scrollable areas */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    page-break-inside: auto;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 6pt;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+  }
+
+  /* Images - ensure they scale properly */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid;
+  }
+
+  /* Adjust contrast for better print readability */
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Specific styles for portal dashboards */
+  .portal-dashboard,
+  .compliance-dashboard,
+  .jobcard-view {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dashboard-card,
+  .compliance-card,
+  .jobcard-section {
+    border: 1px solid #ccc;
+    margin-bottom: 1em;
+    padding: 1em;
+    page-break-inside: avoid;
+  }
+
+  /* Typography adjustments */
+  p, li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Specific styling for compliance reports */
+  .compliance-report {
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+  }
+
+  .compliance-header {
+    border-bottom: 2pt solid black;
+    padding-bottom: 0.5em;
+    margin-bottom: 1em;
+  }
+
+  .compliance-item {
+    margin-bottom: 1em;
+  }
+
+  /* Specific styling for jobcards */
+  .jobcard-container {
+    width: 100%;
+    border: 1pt solid black;
+  }
+
+  .jobcard-section-title {
+    background-color: #e0e0e0;
+    padding: 0.5em;
+    font-weight: bold;
+    border-bottom: 1pt solid black;
+  }
+
+  .jobcard-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1em;
+    margin: 1em 0;
+  }
+
+  /* Specific styling for certificates */
+  .certificate-container {
+    border: 2pt solid black;
+    padding: 2em;
+    text-align: center;
+  }
+
+  .certificate-title {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-bottom: 1em;
+  }
+
+  .certificate-body {
+    text-align: left;
+    margin: 2em 0;
+  }
+
+  /* Ensure proper spacing */
+  .space-y-1 { margin-top: 0.25em; margin-bottom: 0.25em; }
+  .space-y-2 { margin-top: 0.5em; margin-bottom: 0.5em; }
+  .space-y-3 { margin-top: 0.75em; margin-bottom: 0.75em; }
+  .space-y-4 { margin-top: 1em; margin-bottom: 1em; }
+  .space-y-6 { margin-top: 1.5em; margin-bottom: 1.5em; }
+  .space-y-8 { margin-top: 2em; margin-bottom: 2em; }
+
+  /* Grid adjustments */
+  .grid {
+    display: block;
+  }
+
+  .grid-cols-1,
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    display: block;
+  }
+
+  /* Flex adjustments */
+  .flex {
+    display: block;
+  }
+
+  .flex-col {
+    display: block;
+  }
+
+  /* Ensure links are visible in print */
+  a {
+    color: black !important;
+    text-decoration: underline !important;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    word-break: break-all;
+  }
+
+  /* Remove background images that might interfere */
+  *[style*="background-image"],
+  .bg-cover,
+  .bg-no-repeat {
+    background-image: none !important;
+  }
+
+  /* Ensure proper printing of form elements */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="date"],
+  textarea,
+  select {
+    border: 1px solid black !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Specific styling for signatures */
+  .signature-area {
+    border: 1px solid black;
+    min-height: 3em;
+    margin: 1em 0;
+  }
+
+  /* Page numbering */
+  @page :left {
+    @bottom-right {
+      content: counter(page);
+    }
+  }
+
+  @page :right {
+    @bottom-left {
+      content: counter(page);
+    }
+  }
+}

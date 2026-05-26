@@ -1,4 +1,3 @@
-import { auditError } from "./audit.js";
 const textEncoder = new TextEncoder();
 
 function base64UrlEncode(bytes) {
@@ -41,9 +40,8 @@ export async function fetchWithBackoff(url, options = {}, maxRetries = 3) {
       throw new Error(`HTTP ${response.status} ${response.statusText}`);
     } catch (error) {
       attempt++;
-      await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, `[Telemetry] External API fetch failed (attempt ${attempt}/${maxRetries}) - ${url}: ${error.message}`);
       if (attempt >= maxRetries) {
-        throw new Error(`External API request failed after ${maxRetries} attempts: ${error.message}`, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "Error occurred" } });
+        throw new Error(`External API request failed after ${maxRetries} attempts: ${error.message}`);
       }
       // Exponential backoff
       await new Promise(resolve => setTimeout(resolve, baseDelay * Math.pow(2, attempt - 1)));

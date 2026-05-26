@@ -54,6 +54,25 @@ const links = [
     <meta name="kharon-csrf-token" content={Astro.locals.csrfToken || ""} />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="KFS Portal" />
+    <script is:inline>
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js', { scope: '/portal/' })
+          .catch(function(err) { console.warn('SW registration failed:', err); });
+
+        // Listen for online event to trigger queue drain
+        window.addEventListener('online', function() {
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'DRAIN_QUEUE' });
+          }
+        });
+      }
+    </script>
     <script is:inline>
       window.kharonPortalFetch = async (input, init = {}) => {
         const token = document.querySelector('meta[name="kharon-csrf-token"]')?.content || "";

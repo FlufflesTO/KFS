@@ -1,0 +1,118 @@
+---
+/**
+ * Project Sentinel - Offline Banner Component
+ * Purpose: Displays a sticky banner when device is offline with queued items counter
+ * Dependencies: None
+ * Structural Role: UI indicator for offline status
+ */
+export interface Props {
+  initialQueueCount?: number;
+}
+
+const { initialQueueCount = 0 } = Astro.props;
+---
+
+<div data-offline-banner data-initial-queue-count={initialQueueCount} class:list={['fixed bottom-4 left-4 right-4 mx-auto z-50 transition-all duration-300 px-4 py-3 rounded-lg shadow-lg font-bold text-sm max-w-md w-full', {
+  'bg-emerald-100 text-emerald-800 border border-emerald-200 translate-y-0 opacity-100': initialQueueCount > 0,
+  'opacity-0 translate-y-4 pointer-events-none': initialQueueCount === 0
+}]}>
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <svg data-offline-icon="online" class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <svg data-offline-icon="offline" class="hidden w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <span data-offline-message>Online - Syncing {initialQueueCount} items</span>
+    </div>
+    
+    <span data-offline-count class:list={['bg-kharon-purple text-white rounded-full w-6 h-6 items-center justify-center text-xs font-bold', initialQueueCount > 0 ? 'flex' : 'hidden']}>
+        {initialQueueCount}
+    </span>
+  </div>
+  
+  <div data-offline-detail class="mt-2 hidden text-xs text-amber-700 items-center gap-1">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span>Your changes are saved locally and will sync when connection is restored</span>
+  </div>
+</div>
+
+<script>
+  const bannerEl = document.querySelector('[data-offline-banner]');
+  const messageEl = bannerEl?.querySelector('[data-offline-message]');
+  const countEl = bannerEl?.querySelector('[data-offline-count]');
+  const onlineIcon = bannerEl?.querySelector('[data-offline-icon="online"]');
+  const offlineIcon = bannerEl?.querySelector('[data-offline-icon="offline"]');
+  const detailEl = bannerEl?.querySelector('[data-offline-detail]');
+  let queueCount = Number(bannerEl?.getAttribute('data-initial-queue-count') || 0);
+  let isOffline = !navigator.onLine;
+  
+  // Function to update banner visibility
+  function updateBanner() {
+    if (!bannerEl) return;
+    bannerEl.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none', 'bg-amber-100', 'text-amber-800', 'border-amber-200', 'bg-emerald-100', 'text-emerald-800', 'border-emerald-200');
+    countEl?.classList.toggle('hidden', queueCount === 0);
+    countEl?.classList.toggle('flex', queueCount > 0);
+    if (countEl) countEl.textContent = String(queueCount);
+    
+    if (isOffline) {
+      bannerEl.classList.add('bg-amber-100', 'text-amber-800', 'border-amber-200', 'translate-y-0', 'opacity-100');
+      if (messageEl) messageEl.textContent = 'Offline Mode - Data queued for sync';
+      onlineIcon?.classList.add('hidden');
+      offlineIcon?.classList.remove('hidden');
+      detailEl?.classList.remove('hidden');
+      detailEl?.classList.add('flex');
+    } else if (queueCount > 0) {
+      bannerEl.classList.add('bg-emerald-100', 'text-emerald-800', 'border-emerald-200', 'translate-y-0', 'opacity-100');
+      if (messageEl) messageEl.textContent = `Online - Syncing ${queueCount} items`;
+      onlineIcon?.classList.remove('hidden');
+      offlineIcon?.classList.add('hidden');
+      detailEl?.classList.add('hidden');
+      detailEl?.classList.remove('flex');
+    } else {
+      bannerEl.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+      onlineIcon?.classList.remove('hidden');
+      offlineIcon?.classList.add('hidden');
+      detailEl?.classList.add('hidden');
+      detailEl?.classList.remove('flex');
+    }
+  }
+  
+  // Listen for online/offline events
+  window.addEventListener('online', () => {
+    isOffline = false;
+    updateBanner();
+  });
+  
+  window.addEventListener('offline', () => {
+    isOffline = true;
+    updateBanner();
+  });
+  
+  // Listen for custom service worker messages about queue status
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'REQUEST_QUEUED') {
+        queueCount = event.data.queueCount || 0;
+        updateBanner();
+      } else if (event.data && event.data.type === 'QUEUE_COUNT') {
+        queueCount = event.data.count || 0;
+        updateBanner();
+      } else if (event.data && event.data.type === 'OFFLINE_SYNC_COMPLETE') {
+        queueCount = event.data.remaining || 0;
+        isOffline = false; // Assume we're online when sync completes
+        updateBanner();
+      }
+    });
+  }
+  
+  // Request initial queue count
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'GET_QUEUE_COUNT' });
+  }
+
+  updateBanner();
+</script>

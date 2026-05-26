@@ -10,6 +10,7 @@ import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import KharonCard from "../../../components/ui/KharonCard.astro";
 import KharonButton from "../../../components/ui/KharonButton.astro";
+import OfflineBanner from "../../../components/portal/OfflineBanner.astro";
 
 export const prerender = false;
 
@@ -66,6 +67,7 @@ function priorityBadgeClass(priority) {
 ---
 
 <PortalLayout title="Technician Dispatches | Kharon Portal" active="tech" user={user}>
+  <OfflineBanner initialQueueCount={0} />
   <section class="relative overflow-hidden bg-gradient-to-r from-[#0B0D0F] to-[#161C24] px-4 py-12 text-white sm:px-6 shadow-2xl">
     <!-- Subtle tech background element -->
     <div class="absolute right-0 top-0 w-1/2 h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-kharon-cyan/10 via-transparent to-transparent opacity-80"></div>

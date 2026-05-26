@@ -1,6 +1,5 @@
 import { auditError } from "../../../lib/server/audit.js";
-import { getDatabase } from "../../../lib/server/bindings.js";
-import { verifyCsrfToken, verifyCsrfRequest } from "../../../lib/server/csrf.js";
+import { verifyCsrfRequest } from "../../../lib/server/csrf.js";
 import { FinanceService } from "../../../lib/server/services/finance-service";
 /**
  * Project Sentinel - Jobcard Submission API
@@ -83,9 +82,10 @@ function normalizeDefects(value) {
 }
 
 export async function POST({ request, locals }) {
+  let db;
+  let user = locals.user;
   try {
     // Verify authentication
-    const user = locals.user;
     if (!user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
@@ -129,7 +129,9 @@ export async function POST({ request, locals }) {
       return badRequest("A captured signature is required.");
     }
 
-    const db = getDatabase();
+    const bindings = getBindings();
+    db = bindings.db;
+    const storage = bindings.storage;
     const financeService = new FinanceService(db);
     const job = await db
       .prepare(
@@ -364,6 +366,7 @@ export async function POST({ request, locals }) {
 
     return new Response(
       JSON.stringify({ 
+        ok: true,
         success: true, 
         jobId,
         message: "Job card submitted successfully. An invoice task has been created for the finance team to process in Sage."
@@ -379,7 +382,9 @@ export async function POST({ request, locals }) {
       return badRequest(error.message);
     }
 
-    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "submit jobcard failed" } });
+    if (db) {
+      await auditError(db, request, error, { user, metadata: { message: "submit jobcard failed" } });
+    }
     return serverError("The jobcard could not be submitted.");
   }
 }

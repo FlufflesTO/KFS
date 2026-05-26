@@ -2,6 +2,7 @@
 import Footer from "../components/layout/Footer.astro";
 import Header from "../components/layout/Header.astro";
 import AnimationController from "../components/animations/AnimationController.astro";
+import "../styles/global.css";
 
 const SITE_CONFIG = {
   title: "Kharon Fire & Security",
@@ -13,17 +14,52 @@ export interface Props {
   title?: string;
   description?: string;
   canonical?: string;
-  children: any;
   noindex?: boolean;
 }
 
-const { title, description, canonical, children, noindex = false } = Astro.props;
+const { title, description, canonical, noindex = false } = Astro.props;
 const fullCanonical = canonical ? `${SITE_CONFIG.url}${canonical}` : `${SITE_CONFIG.url}${Astro.url.pathname}`;
 const isStagingDomain = new URL(SITE_CONFIG.url).hostname.endsWith("tequit.co.za");
 const robotsContent = noindex || isStagingDomain ? "noindex, nofollow" : "index, follow";
 
 // Only load analytics on non-portal pages
 const shouldLoadAnalytics = !Astro.url.pathname.startsWith('/portal');
+const organizationJsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": SITE_CONFIG.title,
+  "legalName": "Kharon Fire and Security Solutions",
+  "url": SITE_CONFIG.url,
+  "logo": `${SITE_CONFIG.url}/brand/kharon-full-logo.svg`,
+  "description": SITE_CONFIG.description,
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd",
+    "addressLocality": "Ndabeni, Maitland",
+    "addressRegion": "Western Cape",
+    "postalCode": "7405",
+    "addressCountry": "ZA"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+27 61 545 8830",
+    "contactType": "customer service",
+    "areaServed": "ZA",
+    "availableLanguage": "en"
+  },
+  "sameAs": [
+    `${SITE_CONFIG.url}/contact`
+  ],
+  "foundingDate": "2016",
+  "identifier": "2016/313076/07",
+  "knowsAbout": [
+    "Fire Detection Systems",
+    "Gas Suppression Systems",
+    "Security Systems",
+    "SANS 10139",
+    "SANS 14520"
+  ]
+});
 ---
 
 <!DOCTYPE html>
@@ -31,8 +67,7 @@ const shouldLoadAnalytics = !Astro.url.pathname.startsWith('/portal');
 <head>
   <meta charset="utf-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content={robotsContent} />
   <meta name="description" content={description || SITE_CONFIG.description} />
@@ -43,61 +78,22 @@ const shouldLoadAnalytics = !Astro.url.pathname.startsWith('/portal');
   <meta property="og:url" content={fullCanonical} />
   <meta property="og:title" content={title || SITE_CONFIG.title} />
   <meta property="og:description" content={description || SITE_CONFIG.description} />
-  <meta property="og:image" content={`${SITE_CONFIG.url}/og-image.jpg`} />
+  <meta property="og:image" content={`${SITE_CONFIG.url}/og/kharon-og.png`} />
   
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:url" content={fullCanonical} />
   <meta property="twitter:title" content={title || SITE_CONFIG.title} />
   <meta property="twitter:description" content={description || SITE_CONFIG.description} />
-  <meta property="twitter:image" content={`${SITE_CONFIG.url}/og-twitter.jpg`} />
+  <meta property="twitter:image" content={`${SITE_CONFIG.url}/og/kharon-og.png`} />
   
   <title>{title ? `${title} | ${SITE_CONFIG.title}` : SITE_CONFIG.title}</title>
   
   <link rel="canonical" href={fullCanonical} />
-  
-  <!-- Print stylesheet -->
-  <link rel="stylesheet" media="print" href="/src/styles/print.css" />
+  <link rel="stylesheet" media="print" href="/print.css" />
   
   <!-- Schema.org JSON-LD -->
-  <script type="application/ld+json" suppressHydrationWarning>
-    {JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": SITE_CONFIG.title,
-      "legalName": "Kharon Fire and Security Solutions",
-      "url": SITE_CONFIG.url,
-      "logo": `${SITE_CONFIG.url}/logo.svg`,
-      "description": SITE_CONFIG.description,
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Commercial Premises",
-        "addressLocality": "Johannesburg",
-        "addressRegion": "Gauteng",
-        "postalCode": "2000",
-        "addressCountry": "ZA"
-      },
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+27 11 000 0000",
-        "contactType": "customer service",
-        "areaServed": "ZA",
-        "availableLanguage": "en"
-      },
-      "sameAs": [
-        `${SITE_CONFIG.url}/contact`
-      ],
-      "foundingDate": "2016",
-      "identifier": "2016/313076/07",
-      "knowsAbout": [
-        "Fire Detection Systems",
-        "Gas Suppression Systems",
-        "Security Systems",
-        "SANS 10139",
-        "SANS 14520"
-      ]
-    })}
-  </script>
+  <script type="application/ld+json" set:html={organizationJsonLd}></script>
   
   <!-- POPIA-Compliant Analytics - Only load on non-portal pages -->
   {shouldLoadAnalytics && (
@@ -133,30 +129,13 @@ const shouldLoadAnalytics = !Astro.url.pathname.startsWith('/portal');
     defer
   ></script>
   
-  <script type="module" dangerouslySetInnerHTML={{__html: `
-    import { initKharonPortal } from '/kharon-portal-fetch.js';
-    initKharonPortal();
-  `}}></script>
-  
-  <style>
-    :root {
-      --kharon-blue: #2563eb;
-      --kharon-purple: #7c3aed;
-      --kharon-red: #dc2626;
-      --kharon-amber: #f59e0b;
-      --kharon-cyan: #0891b2;
-      --kharon-green: #16a34a;
-      --kharon-black: #0f172a;
-      --kharon-grey: #64748b;
-      --kharon-light: #f8fafc;
-      --kharon-border: #e2e8f0;
-    }
-  </style>
 </head>
 <body class="bg-white text-gray-900">
   <AnimationController>
     <Header />
-    <main>{children}</main>
+    <main id="main-content">
+      <slot />
+    </main>
     <Footer />
   </AnimationController>
   

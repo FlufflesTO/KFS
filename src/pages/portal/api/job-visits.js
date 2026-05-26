@@ -1,4 +1,5 @@
 import { auditError } from "../../../lib/server/audit.js";
+import { getDatabase } from "../../../lib/server/bindings.js";
 export const prerender = false;
 
 const visitStatuses = ["Travelling", "Arrived", "In Progress", "Completed", "Unable To Complete", "Follow-up Required", "Quote Required"];
@@ -59,11 +60,12 @@ export async function POST({ locals, request }) {
     return json({ ok: false, message: "Action and jobId are required." }, 400);
   }
 
+  let db;
   try {
-    const db = (await import("../../../lib/server/bindings.js")).getDatabase();
+    db = getDatabase();
     const jobCheck = await db.prepare(
       `SELECT id, assigned_technician_id, status FROM jobs WHERE deleted_at IS NULL AND id = ?1`
-    ).bind(jobId).get();
+    ).bind(jobId).first();
 
     if (!jobCheck) return json({ ok: false, message: "Job not found." }, 404);
     if (jobCheck.assigned_technician_id !== user.id) return json({ ok: false, message: "Not assigned to this job." }, 403);
@@ -118,7 +120,9 @@ export async function POST({ locals, request }) {
 
     return json({ ok: false, message: `Unknown action: ${action}` }, 400);
   } catch (error) {
-    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "job visit action failed" } });
+    if (db) {
+      await auditError(db, request, error, { user, metadata: { message: "job visit action failed" } });
+    }
     return json({ ok: false, message: error.message || "Failed to update visit." }, error.message ? 400 : 500);
   }
 }

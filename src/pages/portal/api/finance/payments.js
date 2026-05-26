@@ -1,6 +1,7 @@
 import { getDatabase } from "../../../../lib/server/bindings";
-import { verifyCsrfToken } from "../../../../lib/server/csrf";
+import { auditEvent } from "../../../../lib/server/audit.js";
 import { requireAdminOrFinance } from "../../../../lib/server/finance.js";
+import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
 import { FinanceService } from "../../../../lib/server/services/finance-service";
 
 // Implementation marker: finance.payment
@@ -9,32 +10,18 @@ export const prerender = false;
 
 export async function POST({ request, locals }) {
   try {
-    // Verify authentication and authorization
     const user = locals.user;
     const authError = requireAdminOrFinance(user);
     if (authError) {
       return authError;
     }
 
-    // Verify CSRF token
-    const formData = await request.formData();
-    const csrfToken = formData.get('_csrf');
-    if (!csrfToken || !verifyCsrfToken(csrfToken, user)) {
-      return new Response(
-        JSON.stringify({ error: "Invalid CSRF token" }),
-        { status: 403, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    // Extract form data
-    const financialRecordId = formData.get('financialRecordId');
-    const sagePaymentRef = formData.get('sagePaymentRef');
+    const body = await request.json();
+    const financialRecordId = String(body.recordId || body.financialRecordId || "").trim();
+    const sagePaymentRef = String(body.paymentReference || body.sagePaymentRef || "").trim();
 
     if (!financialRecordId || !sagePaymentRef) {
-      return new Response(
-        JSON.stringify({ error: "Financial record ID and Sage payment reference are required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return badRequest("Financial record ID and Sage payment reference are required.");
     }
 
     const db = getDatabase();
@@ -48,10 +35,7 @@ export async function POST({ request, locals }) {
     ).bind(financialRecordId).first();
 
     if (!financialRecord) {
-      return new Response(
-        JSON.stringify({ error: "Financial record not found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return badRequest("Financial record not found.");
     }
 
     // INSTEAD OF marking the record as 'Settled' in the portal,
@@ -75,29 +59,28 @@ export async function POST({ request, locals }) {
        WHERE id = ?2`
     ).bind(sagePaymentRef, financialRecordId).run();
 
-    // Log the event
-    await db.prepare(
-      `INSERT INTO audit_events (user_id, event_type, event_details, ip_address, user_agent)
-       VALUES (?1, 'Payment Processed', ?2, ?3, ?4)`
-    ).bind(
-      user.id,
-      `Recorded payment in Sage with reference ${sagePaymentRef} for financial record ${financialRecordId}`,
-      request.headers.get('CF-Connecting-IP') || '',
-      request.headers.get('User-Agent') || ''
-    ).run();
+    await auditEvent(db, request, {
+      eventType: "finance.payment",
+      entityType: "financial_record",
+      entityId: financialRecordId,
+      outcome: "success",
+      user,
+      metadata: { sagePaymentRef }
+    });
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Payment recorded in Sage with reference ${sagePaymentRef}. Finance task updated accordingly.`
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return json({ 
+      ok: true,
+      success: true,
+      paymentReference: sagePaymentRef,
+      message: `Payment recorded in Sage with reference ${sagePaymentRef}. Finance task updated accordingly.`
+    });
   } catch (error) {
     console.error("Payment processing failed:", error);
-    return new Response(
-      JSON.stringify({ error: "Payment processing failed" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
+    return serverError("Payment processing failed.");
   }
+}
+
+export function ALL() {
+  return methodNotAllowed(["POST"]);
 }

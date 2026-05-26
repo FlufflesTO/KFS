@@ -1,47 +1,22 @@
 import { getDatabase } from "../../../lib/server/bindings";
-import { verifyCsrfToken } from "../../../lib/server/csrf";
+import { auditEvent } from "../../../lib/server/audit.js";
+import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
 import { FinanceService } from "../../../lib/server/services/finance-service";
 
 export const prerender = false;
 
 export async function POST({ request, locals }) {
   try {
-    // Verify authentication
     const user = locals.user;
-    if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
-      );
-    }
+    if (!user) return unauthorized();
+    if (user.role !== "client" && user.role !== "admin") return forbidden("Only client or admin accounts can approve quotes.");
 
-    // Verify CSRF token
-    const formData = await request.formData();
-    const csrfToken = formData.get('_csrf');
-    if (!csrfToken || !verifyCsrfToken(csrfToken, user)) {
-      return new Response(
-        JSON.stringify({ error: "Invalid CSRF token" }),
-        { status: 403, headers: { "Content-Type": "application/json" } }
-      );
-    }
+    const body = await request.json();
+    const quoteId = String(body.recordId || body.quoteId || "").trim();
+    const status = String(body.status || "approved").trim();
 
-    // Extract form data
-    const quoteId = formData.get('quoteId');
-    const status = formData.get('status'); // 'approved' or 'rejected'
-
-    if (!quoteId || !status) {
-      return new Response(
-        JSON.stringify({ error: "Quote ID and status are required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!['approved', 'rejected'].includes(status)) {
-      return new Response(
-        JSON.stringify({ error: "Invalid status value" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
+    if (!quoteId) return badRequest("Quote ID is required.");
+    if (!["approved", "rejected"].includes(status)) return badRequest("Invalid status value.");
 
     const db = getDatabase();
     const financeService = new FinanceService(db);
@@ -54,10 +29,7 @@ export async function POST({ request, locals }) {
     ).bind(quoteId).first();
 
     if (!financialRecord) {
-      return new Response(
-        JSON.stringify({ error: "Quote not found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return badRequest("Quote not found.");
     }
 
     if (status === 'approved') {
@@ -89,29 +61,27 @@ export async function POST({ request, locals }) {
       ).bind(quoteId).run();
     }
 
-    // Log the event
-    await db.prepare(
-      `INSERT INTO audit_events (user_id, event_type, event_details, ip_address, user_agent)
-       VALUES (?1, 'Quote Status Updated', ?2, ?3, ?4)`
-    ).bind(
-      user.id,
-      `Updated quote ${quoteId} status to ${status}`,
-      request.headers.get('CF-Connecting-IP') || '',
-      request.headers.get('User-Agent') || ''
-    ).run();
+    await auditEvent(db, request, {
+      eventType: "finance.quote_status",
+      entityType: "financial_record",
+      entityId: quoteId,
+      outcome: "success",
+      user,
+      metadata: { status }
+    });
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Quote ${status}. A finance task has been created to track the next steps in Sage.`
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return json({ 
+      ok: true,
+      success: true, 
+      message: `Quote ${status}. A finance task has been created to track the next steps in Sage.`
+    });
   } catch (error) {
     console.error("Quote approval failed:", error);
-    return new Response(
-      JSON.stringify({ error: "Quote approval failed" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
+    return serverError("Quote approval failed.");
   }
+}
+
+export function ALL() {
+  return methodNotAllowed(["POST"]);
 }
