@@ -1,4 +1,10 @@
 ---
+/**
+ * Project Sentinel - Route Matrix Component
+ * Purpose: Section displaying cards with routes to different solution paths
+ * Dependencies: None
+ * Structural Role: Navigational grid on marketing pages
+ */
 const routes = [
   {
     title: "Gas Suppression",
@@ -39,27 +45,43 @@ const routes = [
 ];
 ---
 
-<section class="bg-white py-14">
-  <div class="mx-auto max-w-7xl px-6">
-    <div class="flex flex-wrap items-end justify-between gap-6">
-      <div class="max-w-3xl">
-        <p class="mb-3 text-sm font-bold uppercase text-kharon-purple">Operational Routing</p>
-        <h2 class="text-3xl font-bold leading-tight text-kharon-black sm:text-4xl">
-          Move directly to the system, risk or response path.
+<section class="bg-kharon-light py-20 lg:py-32">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+      <div class="max-w-2xl">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="h-1 w-8 bg-kharon-purple"></div>
+          <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Operational Routing</p>
+        </div>
+        <h2 class="kharon-h2 text-kharon-black">
+          Navigate crucial pathways.
         </h2>
+        <p class="mt-4 text-lg text-kharon-grey leading-relaxed">
+          Move directly to the system, risk profile, or response path relevant to your operational environment.
+        </p>
       </div>
-      <a href="/contact?intent=site-assessment" class="rounded-md border border-kharon-border px-5 py-3 text-sm font-bold text-kharon-grey hover:border-kharon-purple hover:text-kharon-purple">
-        Assessment Intake
+      <a href="/contact?intent=site-assessment" class="inline-flex items-center gap-2 rounded-md border-2 border-kharon-purple/10 bg-white px-6 py-3 text-xs font-black uppercase tracking-widest text-kharon-purple transition-all hover:border-kharon-purple hover:bg-kharon-purple hover:text-white">
+        New Site Intake
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
       </a>
     </div>
 
-    <div class="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {routes.map((route) => (
-        <a href={route.href} class="group rounded-md border border-kharon-border bg-kharon-light p-6 hover:border-kharon-purple/45 hover:bg-white">
-          <p class="text-xs font-bold uppercase text-kharon-purple">{route.label}</p>
-          <h3 class="mt-3 text-xl font-bold text-kharon-black">{route.title}</h3>
-          <p class="mt-3 text-sm leading-7 text-kharon-grey">{route.text}</p>
-          <span class="mt-5 inline-flex text-sm font-bold text-kharon-purple">Open pathway -&gt;</span>
+        <a href={route.href} class="group relative flex flex-col rounded-xl border border-kharon-border bg-white p-8 transition-all duration-300 hover:border-kharon-purple/30 hover:shadow-xl">
+          <div class="mb-6 inline-flex self-start rounded-lg bg-kharon-purple/5 p-3 text-kharon-purple transition-colors group-hover:bg-kharon-purple group-hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m9 18 6-6-6-6"></path>
+            </svg>
+          </div>
+          <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple/60">{route.label}</p>
+          <h3 class="mt-2 text-xl font-extrabold tracking-tight text-kharon-black">{route.title}</h3>
+          <p class="mt-4 text-sm leading-relaxed text-kharon-grey/80">{route.text}</p>
+          
+          <div class="mt-8 flex items-center gap-2 text-[0.625rem] font-black uppercase tracking-widest text-kharon-purple transition-all group-hover:gap-3">
+            Open Pathway
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+          </div>
         </a>
       ))}
     </div>

@@ -25,29 +25,33 @@ const {
 } = Astro.props;
 
 const variantClasses = {
-  primary: 'bg-kharon-purple text-white border-transparent hover:bg-kharon-blue',
-  secondary: 'bg-white text-kharon-purple border-kharon-purple hover:bg-kharon-purple hover:text-white',
-  danger: 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200',
-  success: 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200',
-  warning: 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200',
-  ghost: 'bg-transparent text-kharon-purple border-transparent hover:bg-kharon-light'
+  primary: 'bg-kharon-purple text-white border-transparent hover:bg-kharon-blue shadow-sm',
+  secondary: 'bg-white text-kharon-purple border-kharon-border hover:border-kharon-purple hover:bg-kharon-purple/5 shadow-sm',
+  danger: 'bg-kharon-red text-white border-transparent hover:bg-red-700 shadow-sm',
+  success: 'bg-green-600 text-white border-transparent hover:bg-green-700 shadow-sm',
+  warning: 'bg-kharon-amber text-kharon-black border-transparent hover:bg-amber-600 shadow-sm',
+  ghost: 'bg-transparent text-kharon-purple border-transparent hover:bg-kharon-purple/5'
 };
 
 const sizeClasses = {
-  sm: 'px-3 py-1.5 text-xs',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-5 py-3 text-base'
+  sm: 'px-3.5 py-2 text-xs',
+  md: 'px-5 py-2.5 text-sm',
+  lg: 'px-7 py-3.5 text-base'
 };
 
 const baseClasses = [
-  'rounded',
+  'inline-flex',
+  'items-center',
+  'justify-center',
+  'rounded-md',
   'border',
   'font-bold',
   'uppercase',
-  'tracking-wider',
-  'transition-colors',
+  'tracking-wide',
+  'transition-all',
   'duration-200',
-  disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90',
+  'active:scale-[0.98]',
+  'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
   sizeClasses[size],
   variantClasses[variant],
   className

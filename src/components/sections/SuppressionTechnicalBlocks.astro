@@ -4,325 +4,152 @@
  * Dependencies: Astro section layout, SVG.
  * Structural Role: Presentation component for suppression page.
  */
-<section class="section-padding bg-white">
-  <div class="mx-auto max-w-7xl px-6">
+<section class="section-padding bg-kharon-light relative overflow-hidden">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
     <!-- Block 1: Protected Room Readiness Checklist -->
-    <div>
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Room Readiness</span>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Protected room readiness checklist</h2>
-      <p class="mt-5 text-lg leading-8 text-kharon-grey max-w-3xl">
+    <div class="reveal">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-1 w-8 bg-kharon-purple"></div>
+        <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Room Readiness</p>
+      </div>
+      <h2 class="kharon-h2 text-kharon-black">Protected enclosure integrity standards.</h2>
+      <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
         Before a gas suppression system can be commissioned, the protected enclosure must meet strict integrity standards. Every item below must be verified.
       </p>
 
-      <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="rounded-lg border border-kharon-border p-5 bg-white flex items-start gap-4">
-          <svg class="mt-0.5 h-5 w-5 shrink-0 text-kharon-purple" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-          </svg>
-          <div>
-            <p class="font-semibold text-kharon-black">Sealed cable/pipe penetrations</p>
-            <p class="mt-1 text-sm text-kharon-grey">All cable trays, conduits and pipework sealed with rated fire-stopping to maintain room integrity.</p>
+      <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {[
+          { title: "Sealed penetrations", text: "All cable trays, conduits and pipework sealed with rated fire-stopping." },
+          { title: "Automatic door closers", text: "Every access door must be self-closing to prevent agent loss." },
+          { title: "Drop seals on doors", text: "Threshold gaps sealed with automatic drop-down seals for retention." },
+          { title: "Warning signage", text: "Bilingual warning signs at every entrance indicating gas hazard." },
+          { title: "Abort switches", text: "Manual abort stations positioned at each exit for emergency cancellation." },
+          { title: "Dedicated dampers", text: "HVAC dampers must close on activation and reopen for purge." }
+        ].map(item => (
+          <div class="group rounded-xl border border-kharon-border p-6 bg-white transition-all hover:border-kharon-purple/20 hover:shadow-md">
+            <div class="flex items-start gap-4">
+              <div class="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-kharon-purple/10 text-kharon-purple transition-colors group-hover:bg-kharon-purple group-hover:text-white">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+              </div>
+              <div>
+                <p class="font-extrabold text-sm uppercase tracking-wider text-kharon-black">{item.title}</p>
+                <p class="mt-2 text-xs leading-relaxed text-kharon-grey/80">{item.text}</p>
+              </div>
+            </div>
           </div>
-        </div>
-
-        <div class="rounded-lg border border-kharon-border p-5 bg-white flex items-start gap-4">
-          <svg class="mt-0.5 h-5 w-5 shrink-0 text-kharon-purple" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-          </svg>
-          <div>
-            <p class="font-semibold text-kharon-black">Automatic door closers fitted</p>
-            <p class="mt-1 text-sm text-kharon-grey">Every access door must be self-closing to prevent agent loss during discharge.</p>
-          </div>
-        </div>
-
-        <div class="rounded-lg border border-kharon-border p-5 bg-white flex items-start gap-4">
-          <svg class="mt-0.5 h-5 w-5 shrink-0 text-kharon-purple" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-          </svg>
-          <div>
-            <p class="font-semibold text-kharon-black">Drop seals on all doors</p>
-            <p class="mt-1 text-sm text-kharon-grey">Threshold gaps sealed with automatic drop-down seals to stop agent escaping under doors.</p>
-          </div>
-        </div>
-
-        <div class="rounded-lg border border-kharon-border p-5 bg-white flex items-start gap-4">
-          <svg class="mt-0.5 h-5 w-5 shrink-0 text-kharon-purple" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-          </svg>
-          <div>
-            <p class="font-semibold text-kharon-black">Warning signage at all entry points</p>
-            <p class="mt-1 text-sm text-kharon-grey">Bilingual warning signs installed at every entrance indicating gas suppression hazard.</p>
-          </div>
-        </div>
-
-        <div class="rounded-lg border border-kharon-border p-5 bg-white flex items-start gap-4">
-          <svg class="mt-0.5 h-5 w-5 shrink-0 text-kharon-purple" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-          </svg>
-          <div>
-            <p class="font-semibold text-kharon-black">Abort switches accessible</p>
-            <p class="mt-1 text-sm text-kharon-grey">Manual abort stations positioned at each exit for emergency cancellation of discharge.</p>
-          </div>
-        </div>
-
-        <div class="rounded-lg border border-kharon-border p-5 bg-white flex items-start gap-4">
-          <svg class="mt-0.5 h-5 w-5 shrink-0 text-kharon-purple" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-          </svg>
-          <div>
-            <p class="font-semibold text-kharon-black">Dedicated ventilation dampers</p>
-            <p class="mt-1 text-sm text-kharon-grey">HVAC dampers must close on activation and reopen for post-discharge purge.</p>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
 
     <!-- Block 2: Agent Selection Matrix -->
-    <div class="mt-16">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Agent Comparison</span>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Agent selection matrix</h2>
-      <p class="mt-5 text-lg leading-8 text-kharon-grey max-w-3xl">
-        Each suppression agent carries different environmental, spatial, safety and cost profiles. Kharon selects the right agent based on the protected risk, not stock preference.
+    <div class="mt-24 reveal reveal-delayed">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-1 w-8 bg-kharon-purple"></div>
+        <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Agent Selection</p>
+      </div>
+      <h2 class="kharon-h2 text-kharon-black">Agent performance comparison matrix.</h2>
+      <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
+        Agents carry different environmental, spatial, and safety profiles. Kharon selects based on the specific risk, not inventory preference.
       </p>
 
-      <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-        <!-- FM-200 -->
-        <article class="rounded-lg border border-kharon-border p-6 bg-white">
-          <p class="text-xs font-bold uppercase text-kharon-purple">Chemical Clean Agent</p>
-          <h3 class="mt-3 text-xl font-bold text-kharon-black">FM-200</h3>
-          <p class="text-sm text-kharon-grey">HFC-227ea</p>
-          <dl class="mt-5 space-y-3">
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">ODP</dt>
-              <dd class="font-semibold text-kharon-black">0</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">GWP</dt>
-              <dd class="font-semibold text-kharon-black">High</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Space Required</dt>
-              <dd class="font-semibold text-kharon-black">Low</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Personnel Safety</dt>
-              <dd class="font-semibold text-kharon-black">Safe at design conc.</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Cost Tier</dt>
-              <dd class="font-semibold text-kharon-black">$$</dd>
-            </div>
-          </dl>
-          <p class="mt-5 text-sm leading-6 text-kharon-grey border-t border-kharon-border pt-4">
-            <span class="font-semibold text-kharon-black">Typical use:</span> IT rooms, telecommunications spaces, small server enclosures.
-          </p>
-        </article>
-
-        <!-- Inergen -->
-        <article class="rounded-lg border border-kharon-border p-6 bg-white">
-          <p class="text-xs font-bold uppercase text-kharon-purple">Inert Gas Blend</p>
-          <h3 class="mt-3 text-xl font-bold text-kharon-black">Inergen</h3>
-          <p class="text-sm text-kharon-grey">IG-541</p>
-          <dl class="mt-5 space-y-3">
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">ODP</dt>
-              <dd class="font-semibold text-kharon-black">0</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">GWP</dt>
-              <dd class="font-semibold text-kharon-black">0</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Space Required</dt>
-              <dd class="font-semibold text-kharon-black">High</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Personnel Safety</dt>
-              <dd class="font-semibold text-kharon-black">Safe (inert)</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Cost Tier</dt>
-              <dd class="font-semibold text-kharon-black">$$$</dd>
-            </div>
-          </dl>
-          <p class="mt-5 text-sm leading-6 text-kharon-grey border-t border-kharon-border pt-4">
-            <span class="font-semibold text-kharon-black">Typical use:</span> Archives, heritage buildings, museums, long-term storage.
-          </p>
-        </article>
-
-        <!-- Novec 1230 -->
-        <article class="rounded-lg border border-kharon-border p-6 bg-white">
-          <p class="text-xs font-bold uppercase text-kharon-purple">Fluoroketone</p>
-          <h3 class="mt-3 text-xl font-bold text-kharon-black">Novec 1230</h3>
-          <p class="text-sm text-kharon-grey">FK-5-1-12</p>
-          <dl class="mt-5 space-y-3">
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">ODP</dt>
-              <dd class="font-semibold text-kharon-black">0</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">GWP</dt>
-              <dd class="font-semibold text-kharon-black">1</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Space Required</dt>
-              <dd class="font-semibold text-kharon-black">Low</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Personnel Safety</dt>
-              <dd class="font-semibold text-kharon-black">Safe</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Cost Tier</dt>
-              <dd class="font-semibold text-kharon-black">$$$</dd>
-            </div>
-          </dl>
-          <p class="mt-5 text-sm leading-6 text-kharon-grey border-t border-kharon-border pt-4">
-            <span class="font-semibold text-kharon-black">Typical use:</span> Data centres, clean rooms, high-value electronic environments.
-          </p>
-        </article>
-
-        <!-- CO2 -->
-        <article class="rounded-lg border border-kharon-red/30 p-6 bg-red-50">
-          <p class="text-xs font-bold uppercase text-kharon-red">High Pressure Gas</p>
-          <h3 class="mt-3 text-xl font-bold text-kharon-black">CO<span class="text-base">2</span></h3>
-          <p class="text-sm text-kharon-grey">Carbon Dioxide</p>
-          <dl class="mt-5 space-y-3">
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">ODP</dt>
-              <dd class="font-semibold text-kharon-black">0</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">GWP</dt>
-              <dd class="font-semibold text-kharon-black">0</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Space Required</dt>
-              <dd class="font-semibold text-kharon-black">Moderate</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Personnel Safety</dt>
-              <dd class="font-bold text-kharon-red">LETHAL</dd>
-            </div>
-            <div class="flex justify-between text-sm">
-              <dt class="text-kharon-grey">Cost Tier</dt>
-              <dd class="font-semibold text-kharon-black">$</dd>
-            </div>
-          </dl>
-          <p class="mt-5 text-sm leading-6 text-kharon-grey border-t border-kharon-red/20 pt-4">
-            <span class="font-semibold text-kharon-black">Typical use:</span> Unmanned plant rooms, machinery spaces, areas with no personnel risk.
-          </p>
-        </article>
+      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {[
+          { name: "FM-200", type: "Chemical Clean Agent", code: "HFC-227ea", gwp: "High", space: "Low", safety: "Design Conc.", cost: "$$", use: "IT & Server Rooms" },
+          { name: "Inergen", type: "Inert Gas Blend", code: "IG-541", gwp: "0", space: "High", safety: "Safe (Inert)", cost: "$$$", use: "Archives & Heritage" },
+          { name: "Novec 1230", type: "Fluoroketone", code: "FK-5-1-12", gwp: "1", space: "Low", safety: "Safe", cost: "$$$", use: "Data Centres" },
+          { name: "CO2", type: "High Pressure Gas", code: "Carbon Dioxide", gwp: "0", space: "Moderate", safety: "LETHAL", cost: "$", use: "Plant Rooms (Unmanned)", lethal: true }
+        ].map(agent => (
+          <article class={`rounded-xl border ${agent.lethal ? 'border-kharon-red/30 bg-red-50/30' : 'border-kharon-border bg-white'} p-8 transition-all hover:shadow-xl`}>
+            <p class={`text-[0.625rem] font-black uppercase tracking-widest ${agent.lethal ? 'text-kharon-red' : 'text-kharon-purple'}`}>{agent.type}</p>
+            <h3 class="mt-4 text-2xl font-black tracking-tight text-kharon-black">{agent.name}</h3>
+            <p class="text-[0.625rem] font-bold text-kharon-grey/60 uppercase tracking-widest">{agent.code}</p>
+            
+            <dl class="mt-8 space-y-4">
+              {[['GWP', agent.gwp], ['Space', agent.space], ['Safety', agent.safety], ['Cost', agent.cost]].map(([label, val]) => (
+                <div class="flex items-center justify-between border-b border-kharon-border/30 pb-2">
+                  <dt class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">{label}</dt>
+                  <dd class={`text-[0.625rem] font-black uppercase tracking-widest ${val === 'LETHAL' ? 'text-kharon-red' : 'text-kharon-black'}`}>{val}</dd>
+                </div>
+              ))}
+            </dl>
+            
+            <p class="mt-8 text-[0.625rem] font-bold leading-relaxed text-kharon-grey/70 uppercase tracking-widest">
+              <span class="block text-kharon-black/40 mb-1">Typical use:</span>
+              {agent.use}
+            </p>
+          </article>
+        ))}
       </div>
     </div>
 
     <!-- Block 3: Discharge Sequence Diagram -->
-    <div class="mt-16">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">System Sequence</span>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Discharge sequence diagram</h2>
-      <p class="mt-5 text-lg leading-8 text-kharon-grey max-w-3xl">
-        From first detection to post-discharge ventilation, every stage is timed, audibly signalled and logged for compliance traceability.
+    <div class="mt-24 reveal reveal-delayed">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-1 w-8 bg-kharon-purple"></div>
+        <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">System Sequence</p>
+      </div>
+      <h2 class="kharon-h2 text-kharon-black">Automated discharge timeline.</h2>
+      <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
+        From first detection to post-discharge ventilation, every stage is timed and logged for compliance traceability.
       </p>
 
-      <div class="mt-10 w-full max-w-4xl mx-auto overflow-x-auto">
-        <svg class="w-full min-w-[44rem]" viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Discharge sequence timeline" font-family="system-ui, -apple-system, sans-serif">
-          <defs>
-            <marker id="arrow-cyan" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L8,4 L0,8 z" fill="#00C2FF"/>
-            </marker>
-          </defs>
-
-          <!-- Connecting lines -->
-          <line x1="75" y1="80" x2="165" y2="80" stroke="#00C2FF" stroke-width="2" marker-end="url(#arrow-cyan)"/>
-          <line x1="225" y1="80" x2="315" y2="80" stroke="#00C2FF" stroke-width="2" marker-end="url(#arrow-cyan)"/>
-          <line x1="375" y1="80" x2="465" y2="80" stroke="#00C2FF" stroke-width="2" marker-end="url(#arrow-cyan)"/>
-          <line x1="525" y1="80" x2="615" y2="80" stroke="#00C2FF" stroke-width="2" marker-end="url(#arrow-cyan)"/>
-          <line x1="675" y1="80" x2="765" y2="80" stroke="#00C2FF" stroke-width="2" marker-end="url(#arrow-cyan)"/>
-
-          <!-- Node 1: Detection Trigger -->
-          <circle cx="50" cy="80" r="22" fill="#4B2E83"/>
-          <text x="50" y="84" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">01</text>
-          <text x="50" y="125" text-anchor="middle" fill="#0B0D0F" font-size="11" font-weight="600">Detection</text>
-          <text x="50" y="142" text-anchor="middle" fill="#2B3138" font-size="10">Trigger</text>
-
-          <!-- Node 2: Stage 1 Pre-alarm -->
-          <circle cx="200" cy="80" r="22" fill="#4B2E83"/>
-          <text x="200" y="84" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">02</text>
-          <text x="200" y="125" text-anchor="middle" fill="#0B0D0F" font-size="11" font-weight="600">Stage 1</text>
-          <text x="200" y="142" text-anchor="middle" fill="#2B3138" font-size="10">Pre-alarm</text>
-
-          <!-- Node 3: Countdown Timer -->
-          <circle cx="350" cy="80" r="22" fill="#4B2E83"/>
-          <text x="350" y="84" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">03</text>
-          <text x="350" y="125" text-anchor="middle" fill="#0B0D0F" font-size="11" font-weight="600">Countdown</text>
-          <text x="350" y="142" text-anchor="middle" fill="#2B3138" font-size="10">30-60s</text>
-
-          <!-- Node 4: Agent Release -->
-          <circle cx="500" cy="80" r="22" fill="#4B2E83"/>
-          <text x="500" y="84" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">04</text>
-          <text x="500" y="125" text-anchor="middle" fill="#0B0D0F" font-size="11" font-weight="600">Agent</text>
-          <text x="500" y="142" text-anchor="middle" fill="#2B3138" font-size="10">Release</text>
-
-          <!-- Node 5: Hold Period -->
-          <circle cx="650" cy="80" r="22" fill="#4B2E83"/>
-          <text x="650" y="84" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">05</text>
-          <text x="650" y="125" text-anchor="middle" fill="#0B0D0F" font-size="11" font-weight="600">Hold</text>
-          <text x="650" y="142" text-anchor="middle" fill="#2B3138" font-size="10">Period</text>
-
-          <!-- Node 6: Post-discharge Ventilation -->
-          <circle cx="800" cy="80" r="22" fill="#4B2E83"/>
-          <text x="800" y="84" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">06</text>
-          <text x="800" y="125" text-anchor="middle" fill="#0B0D0F" font-size="11" font-weight="600">Post-discharge</text>
-          <text x="800" y="142" text-anchor="middle" fill="#2B3138" font-size="10">Ventilation</text>
-
-          <!-- Top labels -->
-          <text x="200" y="35" text-anchor="middle" fill="#00C2FF" font-size="10" font-weight="600">Visual / Audible</text>
-          <text x="350" y="35" text-anchor="middle" fill="#00C2FF" font-size="10" font-weight="600">Abort window</text>
-          <text x="500" y="35" text-anchor="middle" fill="#00C2FF" font-size="10" font-weight="600">Damper close</text>
-          <text x="650" y="35" text-anchor="middle" fill="#00C2FF" font-size="10" font-weight="600">Concentration hold</text>
-        </svg>
+      <div class="mt-16 w-full max-w-5xl mx-auto overflow-hidden rounded-2xl border border-kharon-border bg-white p-8 lg:p-12 shadow-sm">
+        <div class="overflow-x-auto pb-6">
+          <div class="min-w-[55rem]">
+            <div class="relative">
+              <div class="absolute top-1/2 left-0 w-full h-0.5 bg-kharon-border/50 -translate-y-1/2" aria-hidden="true"></div>
+              <div class="relative z-10 flex justify-between">
+                {[
+                  { id: "01", label: "Detection", sub: "Logic Trigger" },
+                  { id: "02", label: "Stage 1", sub: "Pre-alarm" },
+                  { id: "03", label: "Countdown", sub: "30-60s Delay" },
+                  { id: "04", label: "Agent", sub: "Discharge" },
+                  { id: "05", label: "Hold", sub: "Retention" },
+                  { id: "06", label: "Vent", sub: "Post-purge" }
+                ].map((step, idx) => (
+                  <div class="flex flex-col items-center text-center">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-kharon-purple text-white font-black text-sm ring-8 ring-white">
+                      {step.id}
+                    </div>
+                    <div class="mt-6">
+                      <p class="text-xs font-black uppercase tracking-widest text-kharon-black">{step.label}</p>
+                      <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">{step.sub}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Block 4: Pre-Quote Data Capture Summary -->
-    <div class="mt-16">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Pre-Quote Requirements</span>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Pre-quote data capture summary</h2>
-      <p class="mt-5 text-lg leading-8 text-kharon-grey max-w-3xl">
-        Accurate quoting requires precise room data. Providing these details upfront avoids site revisits and ensures the design is sized correctly from day one.
+    <!-- Block 4: Pre-Quote Data Capture -->
+    <div class="mt-24 reveal reveal-delayed">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-1 w-8 bg-kharon-purple"></div>
+        <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Pre-Quote Requirements</p>
+      </div>
+      <h2 class="kharon-h2 text-kharon-black">Data capture summary.</h2>
+      <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
+        Accurate quoting requires precise room data. Providing these details upfront avoids site revisits and ensures correct sizing.
       </p>
 
-      <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        <div class="rounded-lg border border-kharon-border p-6 bg-white">
-          <p class="font-semibold text-kharon-black">Protected room dimensions</p>
-          <p class="mt-2 text-sm leading-6 text-kharon-grey">Length, width and clear height to the underside of the slab. Used to calculate agent volume and cylinder count.</p>
-        </div>
-
-        <div class="rounded-lg border border-kharon-border p-6 bg-white">
-          <p class="font-semibold text-kharon-black">Number of doors and openable windows</p>
-          <p class="mt-2 text-sm leading-6 text-kharon-grey">Every opening affects retention time calculations and determines sealing, damper and abort-switch requirements.</p>
-        </div>
-
-        <div class="rounded-lg border border-kharon-border p-6 bg-white">
-          <p class="font-semibold text-kharon-black">Cable / pipe penetration count</p>
-          <p class="mt-2 text-sm leading-6 text-kharon-grey">Unsealed penetrations are the most common cause of integrity test failure. A count informs fire-stopping scope.</p>
-        </div>
-
-        <div class="rounded-lg border border-kharon-border p-6 bg-white">
-          <p class="font-semibold text-kharon-black">Floor construction</p>
-          <p class="mt-2 text-sm leading-6 text-kharon-grey">Raised access, solid slab or void beneath the room. Determines pipe routing, nozzle placement and sub-floor detection.</p>
-        </div>
-
-        <div class="rounded-lg border border-kharon-border p-6 bg-white">
-          <p class="font-semibold text-kharon-black">Existing detection system</p>
-          <p class="mt-2 text-sm leading-6 text-kharon-grey">Is detection already present? What type (smoke, heat, aspiration)? Compatibility with suppression release panels varies.</p>
-        </div>
-
-        <div class="rounded-lg border border-kharon-border p-6 bg-white">
-          <p class="font-semibold text-kharon-black">24/7 occupancy status</p>
-          <p class="mt-2 text-sm leading-6 text-kharon-grey">Continuously occupied rooms require safer agents, longer countdown timers and additional abort logic.</p>
-        </div>
+      <div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {[
+          { title: "Room Dimensions", text: "Length, width and clear height to underside of slab for volume calculations." },
+          { title: "Opening Count", text: "Doors and windows affect retention time and determine sealing requirements." },
+          { title: "Penetrations", text: "Unsealed penetrations cause integrity failures. Count informs fire-stopping scope." },
+          { title: "Construction", text: "Raised floor or solid slab? Determines nozzle placement and routing." },
+          { title: "Existing Systems", text: "Current detection types (smoke, heat, aspiration) for interface logic." },
+          { title: "Occupancy", text: "Occupied rooms require safer agents and extended countdown logic." }
+        ].map(item => (
+          <div class="group rounded-xl border border-kharon-border bg-white p-8 transition-all hover:border-kharon-purple/20 hover:shadow-md">
+            <h3 class="text-sm font-black uppercase tracking-widest text-kharon-black group-hover:text-kharon-purple transition-colors">{item.title}</h3>
+            <p class="mt-4 text-xs leading-relaxed text-kharon-grey/80">{item.text}</p>
+          </div>
+        ))}
       </div>
     </div>
 

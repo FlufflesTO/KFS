@@ -1,4 +1,10 @@
 ---
+/**
+ * Project Sentinel - Cinematic Hero Component
+ * Purpose: Hero section for landing page with animated SVGs and trust signals
+ * Dependencies: None
+ * Structural Role: Main landing page visual intro section
+ */
 const trustSignals = ["SAQCC", "SANS 10139", "SANS 14520", "Commercial & Industrial Only"];
 ---
 
@@ -26,38 +32,49 @@ const trustSignals = ["SAQCC", "SANS 10139", "SANS 14520", "Commercial & Industr
     <circle class="critical" cx="810" cy="214" r="6" />
   </svg>
 
-  <div class="relative z-10 mx-auto grid min-h-[auto] max-w-7xl items-center gap-8 px-4 py-28 sm:px-6 md:min-h-[min(680px,calc(82svh-5rem))] md:py-14 lg:grid-cols-[1.05fr_0.95fr] lg:py-16">
-    <div class="max-w-4xl">
-      <p class="mb-4 text-xs font-bold uppercase text-kharon-cyan">
-        Commercial Fire Detection & Gaseous Suppression Specialists
-      </p>
+  <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl py-20 lg:py-32">
+      <div class="reveal inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 mb-8">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-kharon-cyan opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-kharon-cyan"></span>
+        </span>
+        <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-cyan">
+          Commercial & Industrial Specialization
+        </p>
+      </div>
 
-      <h1 class="kharon-h1">
-        Engineering-led fire detection and gaseous suppression for critical infrastructure.
+      <h1 class="kharon-h1 reveal reveal-delayed text-white">
+        Engineering fire <span class="text-kharon-cyan">detection</span> and <span class="text-kharon-red">suppression</span> for critical infrastructure.
       </h1>
 
-      <p class="mt-4 max-w-2xl text-base leading-7 text-white/72">
-        Commercial and industrial systems designed, installed, serviced and maintained for lifecycle support, compliance alignment and operational continuity.
+      <p class="mt-8 reveal reveal-delayed text-lg leading-relaxed text-white/80 max-w-2xl">
+        High-consequence systems designed, installed, and maintained for operational continuity, life safety, and regulatory compliance.
       </p>
 
-      <div class="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+      <div class="mt-10 flex flex-wrap gap-2 reveal reveal-delayed">
         {trustSignals.map((item) => (
-          <span class="border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-bold uppercase leading-5 text-white/72">
+          <span class="rounded border border-white/5 bg-white/5 px-2.5 py-1 text-[0.625rem] font-bold uppercase tracking-widest text-white/60">
             {item}
           </span>
         ))}
       </div>
 
-      <div class="mt-6 grid gap-3 sm:flex sm:flex-wrap">
-        <a href="/contact?intent=site-assessment" class="rounded-md bg-kharon-purple px-5 py-4 text-center font-semibold text-white hover:bg-kharon-blue sm:px-6">
+      <div class="mt-12 flex flex-col sm:flex-row gap-4 reveal reveal-delayed">
+        <a href="/contact?intent=site-assessment" class="group relative flex items-center justify-center gap-2 overflow-hidden rounded-md bg-kharon-purple px-8 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:bg-kharon-blue hero-cta-button">
           Request Site Assessment
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
         </a>
-        <a href="/emergency-support" class="rounded-md border border-red-400/50 px-5 py-4 text-center font-semibold text-white hover:bg-red-500/15 sm:px-6">
+        <a href="/emergency-support" class="flex items-center justify-center rounded-md border border-white/20 bg-transparent px-8 py-4 text-sm font-black uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/10">
           Emergency Support
         </a>
       </div>
     </div>
-
-    <div class="hero-cinematic__void hidden lg:block" aria-hidden="true"></div>
   </div>
 </section>
+
+<style>
+  .hero-cta-button:hover {
+    box-shadow: 0 0 20px rgba(75, 46, 131, 0.3);
+  }
+</style>
