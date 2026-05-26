@@ -11,7 +11,21 @@ import { badRequest, forbidden, unauthorized } from "../../../../lib/server/http
 
 export const prerender = false;
 
-export async function GET({ request, locals, url }) {
+function clearStateCookie() {
+  return "kharon_sage_oauth_state=; Path=/portal/api/finance; HttpOnly; Secure; SameSite=Strict; Max-Age=0";
+}
+
+function redirectToFinance(location) {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: location,
+      "Set-Cookie": clearStateCookie()
+    }
+  });
+}
+
+export async function GET({ request, locals, url, cookies }) {
   const user = locals.user;
   if (!user) return unauthorized();
   if (!["finance", "admin"].includes(user.role)) {
@@ -29,6 +43,8 @@ export async function GET({ request, locals, url }) {
 
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
+  const state = url.searchParams.get("state");
+  const expectedState = cookies.get("kharon_sage_oauth_state")?.value || "";
 
   if (error) {
     await auditEvent(db, request, {
@@ -39,12 +55,19 @@ export async function GET({ request, locals, url }) {
       user,
       metadata: { reason: "user_denied_or_error", error }
     });
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: "/portal/finance/dashboard?error=" + encodeURIComponent("Sage authorization failed: " + error)
-      }
+    return redirectToFinance("/portal/finance/dashboard?error=" + encodeURIComponent("Sage authorization failed."));
+  }
+
+  if (!state || !expectedState || state !== expectedState) {
+    await auditEvent(db, request, {
+      eventType: "finance.sage_connect",
+      entityType: "integration",
+      entityId: "sage",
+      outcome: "blocked",
+      user,
+      metadata: { reason: "invalid_oauth_state" }
     });
+    return badRequest("Invalid Sage authorization state.");
   }
 
   if (!code) {
@@ -106,12 +129,7 @@ export async function GET({ request, locals, url }) {
       metadata: { expiresAt: new Date(expiresAt * 1000).toISOString() }
     });
 
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: "/portal/finance/dashboard?success=sage_connected"
-      }
-    });
+    return redirectToFinance("/portal/finance/dashboard?success=sage_connected");
 
   } catch (err) {
     await auditEvent(db, request, {
@@ -120,14 +138,9 @@ export async function GET({ request, locals, url }) {
       entityId: "sage",
       outcome: "failure",
       user,
-      metadata: { reason: "token_exchange_exception", error: err.message }
+      metadata: { reason: "token_exchange_exception", error: err.name || "Error" }
     });
 
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: "/portal/finance/dashboard?error=" + encodeURIComponent("Token exchange exception: " + err.message)
-      }
-    });
+    return redirectToFinance("/portal/finance/dashboard?error=" + encodeURIComponent("Sage token exchange failed."));
   }
 }

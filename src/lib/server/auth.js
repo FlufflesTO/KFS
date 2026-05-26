@@ -63,7 +63,7 @@ export async function createSessionToken(user) {
     role: user.role,
     siteId: user.site_id || null,
     forcePasswordChange: Boolean(user.force_password_change),
-    mfaRequired: Boolean(user.mfa_required) || user.role === "tech" || user.role === "admin" || user.role === "finance",
+    mfaRequired: Boolean(user.mfa_required),
     mfaEnabled: Boolean(user.mfa_enabled),
     iat: issuedAt,
     exp: issuedAt + sessionDurationSeconds

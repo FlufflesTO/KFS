@@ -216,7 +216,7 @@ try {
               <p class={`text-xs font-bold uppercase ${stats.unassignedJobs > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Unassigned</p>
               <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.unassignedJobs}</p>
             </div>
-            <KharonButton href="/portal/admin/operations#jobs" variant="ghost" size="sm">Assign →</KharonButton>
+            <KharonButton href="/portal/admin/jobs" variant="ghost" size="sm">Assign →</KharonButton>
           </div>
         </KharonCard>
         
@@ -237,7 +237,7 @@ try {
               <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.openDefects}</p>
               {stats.criticalDefects > 0 && <p class="mt-1 text-xs font-bold text-kharon-red">{stats.criticalDefects} critical</p>}
             </div>
-            <KharonButton href="/portal/admin/operations" variant="ghost" size="sm">Audits →</KharonButton>
+            <KharonButton href="/portal/admin/compliance" variant="ghost" size="sm">Audits →</KharonButton>
           </div>
         </KharonCard>
         
@@ -268,7 +268,7 @@ try {
               <p class={`text-xs font-bold uppercase ${stats.missingDocuments > 0 ? "text-kharon-purple" : "text-kharon-grey"}`}>Missing docs</p>
               <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.missingDocuments}</p>
             </div>
-            <KharonButton href="/portal/admin/operations#jobs" variant="ghost" size="sm">Review jobs →</KharonButton>
+            <KharonButton href="/portal/admin/jobs" variant="ghost" size="sm">Review jobs →</KharonButton>
           </div>
         </KharonCard>
       </div>
@@ -437,7 +437,7 @@ try {
               <div class="mt-3 grid gap-2">
                 {openDefects.length === 0 && <p class="text-sm text-kharon-grey italic py-1">No open defects require attention.</p>}
                 {openDefects.map((item) => (
-                  <a href={`/portal/admin/operations?system_id=${item.system_id}`} class="block border border-kharon-border border-l-4 p-3 text-xs rounded-lg hover:bg-kharon-light/50 transition-colors" class:list={[
+                  <a href={`/portal/admin/systems?q=${encodeURIComponent(item.system_id)}`} class="block border border-kharon-border border-l-4 p-3 text-xs rounded-lg hover:bg-kharon-light/50 transition-colors" class:list={[
                     item.severity === "Critical" ? "border-l-kharon-red bg-red-50/20" : item.severity === "Major" ? "border-l-kharon-amber bg-amber-50/20" : "border-l-kharon-grey bg-kharon-light/20"
                   ]}>
                     <div class="flex items-center justify-between">

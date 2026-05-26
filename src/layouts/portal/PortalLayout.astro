@@ -23,8 +23,15 @@ const roleLinks = {
     { label: "Planning", href: "/portal/admin/planning", key: "planning" },
     { label: "Dispatch", href: "/portal/admin/dispatch", key: "dispatch" },
     { label: "Operations", href: "/portal/admin/operations", key: "operations" },
+    { label: "Jobs", href: "/portal/admin/jobs", key: "jobs" },
+    { label: "Sites", href: "/portal/admin/sites", key: "sites" },
+    { label: "Systems", href: "/portal/admin/systems", key: "systems" },
+    { label: "Users", href: "/portal/admin/users", key: "users" },
+    { label: "Data", href: "/portal/admin/exports", key: "exports" },
     { label: "Compliance", href: "/portal/admin/compliance", key: "compliance" },
     { label: "Audit", href: "/portal/admin/audit", key: "audit" },
+    { label: "Clients", href: "/portal/admin/multi-client", key: "multi-client" },
+    { label: "Reports", href: "/portal/admin/advanced-reporting", key: "advanced-reporting" },
     { label: "Feedback", href: "/portal/admin/feedback", key: "feedback" },
     { label: "Technician View", href: "/portal/tech/dashboard", key: "tech" },
     { label: "Job History", href: "/portal/tech/history", key: "tech-history" },
@@ -145,7 +152,7 @@ const links = [
             {active === link.key && (
               <span class="absolute inset-0 bg-gradient-to-r from-kharon-purple/80 to-kharon-blue/80 opacity-100"></span>
             )}
-            {!active && (
+            {active !== link.key && (
               <span class="absolute inset-0 bg-white/5 opacity-0 transition-opacity duration-300 hover:opacity-100"></span>
             )}
             <span class="relative z-10">{link.label}</span>

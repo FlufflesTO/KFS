@@ -10,6 +10,10 @@ import { forbidden, unauthorized } from "../../../../lib/server/http.js";
 
 export const prerender = false;
 
+function stateCookie(value) {
+  return `kharon_sage_oauth_state=${encodeURIComponent(value)}; Path=/portal/api/finance; HttpOnly; Secure; SameSite=Strict; Max-Age=600`;
+}
+
 export async function GET({ request, locals, url }) {
   const user = locals.user;
   if (!user) return unauthorized();
@@ -32,6 +36,7 @@ export async function GET({ request, locals, url }) {
 
   // Determine redirect URI: use env variable or derive from request host
   const redirectUri = String(env.SAGE_REDIRECT_URI || `${url.origin}/portal/api/finance/sage-callback`);
+  const state = crypto.randomUUID();
 
   // Redirect to Sage Centralized Authorization
   const sageAuthUrl = new URL("https://www.sageone.com/oauth2/auth/central");
@@ -39,12 +44,13 @@ export async function GET({ request, locals, url }) {
   sageAuthUrl.searchParams.set("response_type", "code");
   sageAuthUrl.searchParams.set("redirect_uri", redirectUri);
   sageAuthUrl.searchParams.set("scope", "full_access");
-  sageAuthUrl.searchParams.set("state", "sage-oauth-init"); // simple state validation token
+  sageAuthUrl.searchParams.set("state", state);
 
   return new Response(null, {
     status: 302,
     headers: {
       Location: sageAuthUrl.toString(),
+      "Set-Cookie": stateCookie(state)
     },
   });
 }

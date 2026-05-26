@@ -108,7 +108,8 @@ function pathContainsTraversal(pathname) {
 }
 
 function isStateChangingPortalApi(request, pathname) {
-  return pathname.startsWith("/portal/api/") && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
+  return (pathname.startsWith("/portal/api/") || pathname.startsWith("/portal/admin/api/"))
+    && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
 }
 
 function rateLimitResponse(retryAfter, nonce) {
@@ -141,7 +142,8 @@ function rateLimitConfig(pathname) {
     "/portal/api/admin/jobs": { scope: "portal.admin.jobs", maxAttempts: 60, windowSeconds: 900 },
     "/portal/api/admin/client-site-access": { scope: "portal.admin.client_site_access", maxAttempts: 60, windowSeconds: 900 },
     "/portal/api/admin/import": { scope: "portal.admin.import", maxAttempts: 20, windowSeconds: 900 },
-    "/portal/api/admin/maintenance-requests": { scope: "portal.admin.maintenance_requests", maxAttempts: 60, windowSeconds: 900 }
+    "/portal/api/admin/maintenance-requests": { scope: "portal.admin.maintenance_requests", maxAttempts: 60, windowSeconds: 900 },
+    "/portal/admin/api/multi-client": { scope: "portal.admin.multi_client", maxAttempts: 40, windowSeconds: 900 }
   };
 
   return configs[pathname] || { scope: `portal.write.${pathname.replaceAll("/", ".")}`.slice(0, 80), maxAttempts: 20, windowSeconds: 900 };

@@ -138,7 +138,7 @@ try {
         <article class={`border p-4 ${stats.openDefects > 0 ? "border-amber-300 bg-amber-50" : "border-kharon-border bg-white"}`}>
           <p class={`text-xs font-bold uppercase ${stats.openDefects > 0 ? "text-amber-700" : "text-kharon-grey"}`}>Open defects</p>
           <p class="mt-2 text-2xl font-bold">{stats.openDefects}</p>
-          <a href="/portal/admin/operations?tab=defects" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Manage -></a>
+          <a href="/portal/admin/operations#defects" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Manage -></a>
         </article>
         <article class={`border p-4 ${stats.blockedCertificates > 0 ? "border-amber-300 bg-amber-50" : "border-kharon-border bg-white"}`}>
           <p class={`text-xs font-bold uppercase ${stats.blockedCertificates > 0 ? "text-amber-700" : "text-kharon-grey"}`}>Blocked certs</p>
@@ -168,7 +168,7 @@ try {
         <div class="mt-4 grid gap-3">
           {criticalDefects.length === 0 && <p class="text-sm text-kharon-grey">No critical defects require attention.</p>}
           {criticalDefects.map((item) => (
-            <a href={`/portal/admin/operations?tab=defects`} class="block border-l-4 border-kharon-red bg-kharon-light p-4 hover:bg-white">
+            <a href="/portal/admin/operations#defects" class="block border-l-4 border-kharon-red bg-kharon-light p-4 hover:bg-white">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Critical</span>
                 <span class="font-semibold">{item.owner_company_name}</span>

@@ -24,6 +24,7 @@ yarn-error.log*
 backups/
 monitor-results/
 retention-reports/
+scratch/
 memory/
 portal_test.html
 .claude/

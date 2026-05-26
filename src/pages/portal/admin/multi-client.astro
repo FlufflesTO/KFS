@@ -1,12 +1,9 @@
 ---
-import { SITE_CONFIG } from "../../../config/site-config";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
 import { requireAdmin } from "../../../lib/server/admin";
 
-export async function getStaticPaths() {
-  return [{ params: {} }];
-}
+export const prerender = false;
 
 const { user } = Astro.locals;
 
@@ -47,7 +44,7 @@ const clients = await db.prepare(`
 `).all();
 ---
 
-<PortalLayout user={user}>
+<PortalLayout title="Multi-Client Management | Kharon Portal" active="multi-client" user={user}>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
@@ -56,9 +53,9 @@ const clients = await db.prepare(`
       </div>
       <div class="mt-3 sm:mt-0 sm:ml-4">
         <button 
+          id="add-client-btn"
           type="button"
           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-kharon-blue hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue"
-          onclick="openAddClientModal()"
         >
           Add Client
         </button>
@@ -74,14 +71,15 @@ const clients = await db.prepare(`
                 <p class="text-sm font-medium text-kharon-blue truncate">{client.company_name}</p>
                 <div class="ml-2 flex-shrink-0 flex">
                   <button 
-                    class="text-indigo-600 hover:text-indigo-900 mr-4"
-                    onclick="openEditClientModal({JSON.stringify(client)})"
+                    class="edit-client text-indigo-600 hover:text-indigo-900 mr-4"
+                    data-client={JSON.stringify(client)}
                   >
                     Edit
                   </button>
                   <button 
-                    class="text-red-600 hover:text-red-900"
-                    onclick="confirmDeleteClient('{client.id}', '{client.company_name}')"
+                    class="delete-client text-red-600 hover:text-red-900"
+                    data-client-id={client.id}
+                    data-client-name={client.company_name}
                   >
                     Delete
                   </button>
@@ -204,14 +202,13 @@ const clients = await db.prepare(`
             type="button"
             id="save-client-btn"
             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-kharon-blue text-base font-medium text-white hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue sm:col-start-2 sm:text-sm"
-            onclick="saveClient()"
           >
             Save Client
           </button>
           <button
             type="button"
+            id="cancel-client-btn"
             class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue sm:mt-0 sm:col-start-1 sm:text-sm"
-            onclick="closeModal()"
           >
             Cancel
           </button>
@@ -256,8 +253,8 @@ const clients = await db.prepare(`
           </button>
           <button
             type="button"
+            id="cancel-delete-btn"
             class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:w-auto sm:text-sm"
-            onclick="closeDeleteModal()"
           >
             Cancel
           </button>
@@ -306,16 +303,17 @@ const clients = await db.prepare(`
       const form = document.getElementById('client-form');
       const formData = new FormData(form);
       const clientData = Object.fromEntries(formData);
+      clientData.clientId = clientData.id;
       
       const method = clientData.id ? 'PUT' : 'POST';
-      const url = '/portal/api/admin/multi-client';
+      const url = '/portal/admin/api/multi-client';
       
       try {
         const response = await fetch(url, {
           method: method,
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+            'X-CSRF-Token': document.querySelector('meta[name="kharon-csrf-token"]')?.content || ''
           },
           body: JSON.stringify(clientData)
         });
@@ -340,10 +338,10 @@ const clients = await db.prepare(`
       if (!currentClientId) return;
       
       try {
-        const response = await fetch(`/portal/api/admin/multi-client?id=${encodeURIComponent(currentClientId)}`, {
+        const response = await fetch(`/portal/admin/api/multi-client?id=${encodeURIComponent(currentClientId)}`, {
           method: 'DELETE',
           headers: {
-            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+            'X-CSRF-Token': document.querySelector('meta[name="kharon-csrf-token"]')?.content || ''
           }
         });
         
@@ -363,9 +361,24 @@ const clients = await db.prepare(`
       }
     }
     
-    // Attach the delete function to the confirm button
     document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('confirm-delete-btn').addEventListener('click', deleteClient);
+      document.getElementById('add-client-btn')?.addEventListener('click', openAddClientModal);
+      document.getElementById('save-client-btn')?.addEventListener('click', saveClient);
+      document.getElementById('cancel-client-btn')?.addEventListener('click', closeModal);
+      document.getElementById('cancel-delete-btn')?.addEventListener('click', closeDeleteModal);
+      document.getElementById('confirm-delete-btn')?.addEventListener('click', deleteClient);
+
+      for (const button of document.querySelectorAll('.edit-client')) {
+        button.addEventListener('click', () => {
+          openEditClientModal(JSON.parse(button.dataset.client || '{}'));
+        });
+      }
+
+      for (const button of document.querySelectorAll('.delete-client')) {
+        button.addEventListener('click', () => {
+          confirmDeleteClient(button.dataset.clientId || '', button.dataset.clientName || 'this client');
+        });
+      }
     });
   </script>
 </PortalLayout>

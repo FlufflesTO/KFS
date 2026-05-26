@@ -1,0 +1,145 @@
+---
+/**
+ * Project Sentinel - Admin Operations Hub
+ * Purpose: Preserves the legacy operations entrypoint and routes admins to the focused operational workspaces.
+ * Dependencies: PortalLayout, getDatabase, requireAdmin
+ * Structural Role: Compatibility gateway for split admin operations.
+ */
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings";
+import { requireAdmin } from "../../../lib/server/admin";
+
+export const prerender = false;
+
+const { user } = Astro.locals;
+const adminError = requireAdmin(user);
+if (adminError) return adminError;
+
+let stats = {
+  jobs: 0,
+  unassigned: 0,
+  users: 0,
+  sites: 0,
+  systems: 0,
+  openDefects: 0,
+  blockedCertificates: 0,
+  pendingRequests: 0
+};
+let loadError = "";
+
+try {
+  const db = getDatabase();
+  const [
+    jobs,
+    unassigned,
+    users,
+    sites,
+    systems,
+    openDefects,
+    blockedCertificates,
+    pendingRequests
+  ] = await db.batch([
+    db.prepare("SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL"),
+    db.prepare("SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL"),
+    db.prepare("SELECT COUNT(*) AS n FROM users WHERE is_active = 1"),
+    db.prepare("SELECT COUNT(*) AS n FROM sites WHERE deleted_at IS NULL"),
+    db.prepare("SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL"),
+    db.prepare("SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')"),
+    db.prepare("SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'"),
+    db.prepare("SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')")
+  ]);
+
+  stats = {
+    jobs: jobs.results?.[0]?.n ?? 0,
+    unassigned: unassigned.results?.[0]?.n ?? 0,
+    users: users.results?.[0]?.n ?? 0,
+    sites: sites.results?.[0]?.n ?? 0,
+    systems: systems.results?.[0]?.n ?? 0,
+    openDefects: openDefects.results?.[0]?.n ?? 0,
+    blockedCertificates: blockedCertificates.results?.[0]?.n ?? 0,
+    pendingRequests: pendingRequests.results?.[0]?.n ?? 0
+  };
+} catch {
+  loadError = "Operations status could not be loaded.";
+}
+
+const groups = [
+  {
+    title: "Field Operations",
+    description: "Dispatch, assignment, active work and technician visibility.",
+    links: [
+      { label: "Dispatch Board", href: "/portal/admin/dispatch", metric: `${stats.unassigned} unassigned` },
+      { label: "Job Management", href: "/portal/admin/jobs", metric: `${stats.jobs} jobs` },
+      { label: "Planning", href: "/portal/admin/planning", metric: `${stats.pendingRequests} requests` },
+      { label: "Technician View", href: "/portal/tech/dashboard", metric: "role view" }
+    ]
+  },
+  {
+    title: "Asset Register",
+    description: "Client sites, protected systems and lifecycle ownership.",
+    links: [
+      { label: "Sites", href: "/portal/admin/sites", metric: `${stats.sites} sites` },
+      { label: "Systems", href: "/portal/admin/systems", metric: `${stats.systems} systems` },
+      { label: "Clients", href: "/portal/admin/multi-client", metric: "client map" }
+    ]
+  },
+  {
+    title: "Controls",
+    description: "Identity, compliance, audit and data operations.",
+    links: [
+      { label: "Users", href: "/portal/admin/users", metric: `${stats.users} active` },
+      { label: "Compliance", href: "/portal/admin/compliance", metric: `${stats.openDefects} defects` },
+      { label: "Audit", href: "/portal/admin/audit", metric: "events" },
+      { label: "Data Import and Export", href: "/portal/admin/exports", metric: "CSV" },
+      { label: "Reports", href: "/portal/admin/advanced-reporting", metric: `${stats.blockedCertificates} blocked certs` }
+    ]
+  }
+];
+---
+
+<PortalLayout title="Operations Hub | Kharon Portal" active="operations" user={user}>
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Admin operations</p>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Operations hub</h1>
+      <p class="mt-4 max-w-3xl text-sm leading-6 text-white/65">
+        The original operations workspace has been split into focused admin pages. This hub keeps the operational entrypoint stable while routing each task to the right surface.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-4 py-8 sm:px-6">
+    <div class="mx-auto grid max-w-7xl gap-6">
+      {loadError && <p class="rounded-md border border-red-300 bg-red-50 p-4 text-sm font-semibold text-red-800">{loadError}</p>}
+
+      <div class="grid gap-5 lg:grid-cols-3">
+        {groups.map((group) => (
+          <article class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-bold text-kharon-black">{group.title}</h2>
+            <p class="mt-2 min-h-12 text-sm leading-6 text-kharon-grey">{group.description}</p>
+            <div class="mt-5 grid gap-3">
+              {group.links.map((link) => (
+                <a class="flex items-center justify-between rounded-lg border border-kharon-border px-4 py-3 text-sm font-semibold text-kharon-black transition hover:border-kharon-purple hover:bg-kharon-light" href={link.href}>
+                  <span>{link.label}</span>
+                  <span class="rounded bg-kharon-light px-2 py-1 text-xs uppercase tracking-wide text-kharon-grey">{link.metric}</span>
+                </a>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <article id="defects" class="rounded-xl border border-amber-200 bg-amber-50 p-5">
+        <h2 class="text-lg font-bold text-kharon-black">Defect and certificate actions</h2>
+        <p class="mt-2 text-sm leading-6 text-kharon-grey">
+          Use Compliance for defect and blocked-certificate visibility, then use Jobs or Systems to manage the operational record behind each exception.
+        </p>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <a href="/portal/admin/compliance" class="rounded-md bg-kharon-purple px-4 py-2 text-sm font-semibold text-white">Open compliance</a>
+          <a href="/portal/admin/jobs" class="rounded-md border border-kharon-border bg-white px-4 py-2 text-sm font-semibold text-kharon-grey">Open jobs</a>
+          <a href="/portal/admin/systems" class="rounded-md border border-kharon-border bg-white px-4 py-2 text-sm font-semibold text-kharon-grey">Open systems</a>
+        </div>
+      </article>
+    </div>
+  </section>
+</PortalLayout>

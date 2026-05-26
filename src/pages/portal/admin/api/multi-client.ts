@@ -29,6 +29,7 @@ export async function GET({ request, locals }: { request: Request, locals: App.L
       LEFT JOIN systems s ON s.site_id = si.id
       LEFT JOIN jobs j ON j.system_id = s.id
       LEFT JOIN financial_records fr ON fr.site_id = si.id
+      WHERE c.deleted_at IS NULL
       GROUP BY c.id, c.company_name
       ORDER BY c.company_name ASC
     `).all();
@@ -91,7 +92,8 @@ export async function PUT({ request, locals }: { request: Request, locals: App.L
   
   try {
     const body = await request.json();
-    const { clientId, ...updates } = body;
+    const clientId = body.clientId || body.id;
+    const updates = body;
     
     if (!clientId) {
       return badRequest("Client ID is required");

@@ -49,7 +49,7 @@ html {
   box-sizing: border-box;
 }
 
-body {
+:where(body) {
   margin: 0;
   background: white;
   color: var(--kharon-black);
@@ -57,6 +57,20 @@ body {
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
+
+/* Durable brand utility fallbacks for post-build CSS pruning. */
+.bg-kharon-black { background-color: var(--kharon-black); }
+.bg-kharon-charcoal { background-color: var(--kharon-charcoal); }
+.bg-kharon-purple { background-color: var(--kharon-purple); }
+.bg-kharon-blue { background-color: var(--kharon-blue); }
+.bg-kharon-red { background-color: var(--critical-red); }
+.text-white { color: var(--white); }
+.text-kharon-black { color: var(--kharon-black); }
+.text-kharon-grey { color: var(--kharon-grey); }
+.text-kharon-purple { color: var(--kharon-purple); }
+.text-kharon-blue { color: var(--kharon-blue); }
+.text-kharon-cyan { color: var(--accent-cyan); }
+.border-kharon-border { border-color: var(--border-grey); }
 
 .kharon-h1 {
   font-size: 2.75rem;

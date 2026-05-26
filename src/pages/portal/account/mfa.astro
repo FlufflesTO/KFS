@@ -6,7 +6,7 @@ import { getDatabase } from "../../../lib/server/bindings.js";
 export const prerender = false;
 
 const user = Astro.locals.user;
-let mfa = { required: Boolean(user?.mfaRequired), enabled: Boolean(user?.mfaEnabled), eligible: ["admin", "finance"].includes(user?.role) };
+let mfa = { required: Boolean(user?.mfaRequired), enabled: Boolean(user?.mfaEnabled), eligible: ["admin", "finance", "tech"].includes(user?.role) };
 let loadError = "";
 
 try {
@@ -19,7 +19,7 @@ try {
     mfa = {
       required: Boolean(record.mfa_required),
       enabled: Boolean(record.mfa_enabled),
-      eligible: ["admin", "finance"].includes(user?.role)
+      eligible: ["admin", "finance", "tech"].includes(user?.role)
     };
   }
 } catch (error) {
@@ -34,7 +34,7 @@ try {
       <p class="text-xs font-bold uppercase text-kharon-cyan">Account control</p>
       <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Multi-factor authentication</h1>
       <p class="mt-4 max-w-2xl text-white/65">
-        Admin and finance accounts can enrol an authenticator app before accessing sensitive operational and ledger workflows.
+        Admin, finance and technician accounts can enrol an authenticator app before accessing sensitive operational, ledger and field workflows.
       </p>
     </div>
   </section>
@@ -47,7 +47,7 @@ try {
         <article class="border border-kharon-border bg-white p-4 sm:p-6">
           <h2 class="text-xl font-bold">Not required for this role</h2>
           <p class="mt-3 leading-7 text-kharon-muted">
-            MFA enrolment is currently limited to admin and finance accounts. Technician and client account controls remain password, session and RBAC protected.
+            MFA enrolment is currently limited to staff accounts. Client account controls remain password, session and RBAC protected.
           </p>
         </article>
       )}

@@ -25,6 +25,11 @@ export const pageMeta = {
     description:
       "Kharon designs, installs, services and maintains fire detection and gas suppression systems for commercial, industrial and mission-critical environments."
   },
+  services: {
+    title: "Fire Protection Services | Kharon",
+    description:
+      "Commercial fire detection, clean-agent gas suppression, compliance maintenance, critical infrastructure protection and integrated security services."
+  },
   gasSuppression: {
     title: "Gas Suppression Systems | Kharon",
     description:
@@ -121,6 +126,7 @@ export const mainLinks = [
 
 export const sitemapPages = [
   "",
+  "services",
   "gas-suppression",
   "fire-detection",
   "compliance-maintenance",
