@@ -1,5 +1,5 @@
 /**
- * Project Sentinel - global.css
+ * Project Kharon - global.css
  * Purpose: Global stylesheet defining themes, base styles, and utility sources for Tailwind v4
  * Dependencies: TailwindCSS
  * Structural Role: Main styling entrypoint
@@ -10,8 +10,6 @@
 @source "!../**/*.js";
 @source "!../**/*.ts";
 @source "../**/*.astro";
-
-/* Custom variables registered via @theme layer below. Unused :root variables deleted to optimize bundle. */
 
 @theme {
   --color-kharon-purple: #4B2E83;
@@ -31,12 +29,6 @@ html {
   color-scheme: light;
 }
 
-*,
-::before,
-::after {
-  box-sizing: border-box;
-}
-
 :where(body) {
   margin: 0;
   background: white;
@@ -48,21 +40,21 @@ html {
 
 .kharon-h1 {
   font-size: 2.25rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
 .kharon-h2 {
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.01em;
   text-wrap: balance;
 }
 .kharon-h3 {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.3;
 }
 
@@ -196,6 +188,7 @@ summary::-webkit-details-marker {
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 80px 80px;
   opacity: 0.25;
+  -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
   mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
 }
 
@@ -211,6 +204,7 @@ summary::-webkit-details-marker {
     drop-shadow(-70px 90px 100px rgba(0, 0, 0, 0.72));
   transform: perspective(1000px) rotateY(-21deg) rotateX(5deg) skewY(-2deg);
   transform-origin: center;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 18%, black 74%, transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0%, black 18%, black 74%, transparent 100%);
   animation: titan-drift 22s ease-in-out infinite alternate;
 }
@@ -274,7 +268,73 @@ summary::-webkit-details-marker {
   background-size: 80px 80px;
   transform: perspective(1000px) rotateX(75deg);
   transform-origin: bottom;
+  -webkit-mask-image: linear-gradient(to top, black, transparent);
   mask-image: linear-gradient(to top, black, transparent);
+}
+
+.hero-page-depth {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-page-depth__mark {
+  position: absolute;
+  inset: 1% 0 auto auto;
+  width: min(22rem, 58%);
+  height: auto;
+  opacity: 0.18;
+  filter: drop-shadow(-50px 70px 90px rgba(0, 0, 0, 0.72));
+  transform: perspective(820px) rotateY(-20deg) rotateX(4deg);
+  transform-origin: center;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 24%, black 78%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, black 24%, black 78%, transparent 100%);
+}
+
+.hero-page-depth__floor {
+  position: absolute;
+  inset: auto -4rem -8rem 6rem;
+  height: 54%;
+  background-image:
+    linear-gradient(rgba(0, 194, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 194, 255, 0.075) 1px, transparent 1px);
+  background-size: 52px 52px;
+  opacity: 0.34;
+  transform: perspective(650px) rotateX(68deg);
+  transform-origin: bottom;
+  -webkit-mask-image: linear-gradient(to top, black, transparent 82%);
+  mask-image: linear-gradient(to top, black, transparent 82%);
+}
+
+.hero-page-depth__linework {
+  position: absolute;
+  inset: 14% 0 auto auto;
+  width: min(33rem, 100%);
+  opacity: 0.46;
+}
+
+.hero-page-depth__linework path {
+  fill: none;
+  stroke: url("#hero-architecture-line");
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.hero-page-depth__linework .secondary {
+  stroke: rgba(0, 194, 255, 0.26);
+  stroke-dasharray: 8 10;
+}
+
+.hero-page-depth__linework .gridline {
+  stroke: rgba(255, 255, 255, 0.11);
+  stroke-width: 1;
+}
+
+.hero-page-depth__linework circle {
+  fill: rgba(0, 194, 255, 0.4);
+}
+
+.hero-page-depth__linework .critical {
+  fill: rgba(196, 51, 47, 0.52);
 }
 
 .reveal {
@@ -341,11 +401,18 @@ summary::-webkit-details-marker {
   .hero-cinematic__structure {
     display: none;
   }
+  .hero-page-depth__mark,
+  .hero-page-depth__floor,
+  .hero-page-depth__linework {
+    display: none;
+  }
 }
 
 @media (min-width: 1280px) {
   .hero-cinematic__titan {
     width: min(39rem, 42vw);
   }
+  .hero-page-depth__mark {
+    width: min(28rem, 60%);
+  }
 }
-
