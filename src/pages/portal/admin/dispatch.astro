@@ -360,7 +360,7 @@ const slaAlert        = stats.slaWarning > 0;
                     <input
                       type="number"
                       name="estimatedDurationMinutes"
-                      value={job.estimated_duration_minutes || ""}
+                      value={job.estimated_duration_minutes ?? ""}
                       min="1"
                       max="480"
                       class="w-full border border-kharon-border px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
@@ -385,11 +385,11 @@ const slaAlert        = stats.slaWarning > 0;
       </article>
 
       <!-- Technician workload board -->
-      <article class="border border-kharon-border bg-white">
-        <header class="flex items-center justify-between border-b border-kharon-border px-4 py-3 sm:px-5">
-          <h2 class="text-lg font-bold">Technician workload</h2>
-          <span class="rounded bg-kharon-light px-2 py-0.5 text-xs font-bold text-kharon-grey">
-            {dispatched.length} job{dispatched.length !== 1 ? "s" : ""}
+      <article class="rounded-xl border border-kharon-border bg-white shadow-sm overflow-hidden">
+        <header class="flex items-center justify-between border-b border-kharon-border bg-kharon-light/30 px-5 py-4">
+          <h2 class="text-lg font-bold tracking-tight text-kharon-black">Technician workload</h2>
+          <span class="rounded-full border border-kharon-border bg-kharon-light px-2.5 py-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">
+            {dispatched.length} Dispatch{dispatched.length !== 1 ? "es" : ""}
           </span>
         </header>
         <div>

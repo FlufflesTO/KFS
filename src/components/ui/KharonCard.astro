@@ -39,7 +39,7 @@ const paddingClasses = {
 };
 
 const classes = [
-  'rounded-lg',
+  'rounded-md',
   'overflow-hidden',
   border ? 'border' : '',
   variantClasses[variant],
@@ -50,13 +50,13 @@ const classes = [
 
 <div class={classes}>
   {title && (
-    <div class="mb-4 sm:mb-5">
-      {subtitle && <p class="mb-1.5 text-xs font-bold uppercase tracking-wider text-kharon-purple">{subtitle}</p>}
-      <h2 class="text-base sm:text-lg font-bold tracking-tight text-kharon-black">{title}</h2>
-      <div class="mt-2.5 sm:mt-3 h-[1px] w-8 bg-kharon-border"></div>
+    <div class="mb-5">
+      {subtitle && <p class="mb-1.5 text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple/70">{subtitle}</p>}
+      <h2 class="text-lg font-bold tracking-tight text-kharon-black">{title}</h2>
+      <div class="mt-4 h-[1px] w-6 bg-kharon-purple/30"></div>
     </div>
   )}
-  <div class="text-kharon-grey text-sm leading-relaxed">
+  <div class="text-kharon-grey text-[0.875rem] leading-relaxed">
     <slot />
   </div>
 </div>

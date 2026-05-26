@@ -2,26 +2,29 @@
 import { industries } from "../../data/site.js";
 ---
 
-<section id="sectors" class="section-padding bg-white">
-  <div class="mx-auto max-w-7xl px-6">
-    <div class="max-w-4xl">
-      <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">
-        Sectors Served
-      </p>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black sm:text-4xl lg:text-5xl">
+<section id="sectors" class="section-padding bg-white relative overflow-hidden">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl reveal">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-1 w-8 bg-kharon-purple"></div>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">
+          Sectors Served
+        </p>
+      </div>
+      <h2 class="kharon-h2 text-kharon-black">
         Commercial and industrial environments with high operational consequence.
       </h2>
-      <p class="mt-5 text-lg leading-8 text-kharon-grey">
+      <p class="mt-6 text-lg leading-relaxed text-kharon-grey max-w-3xl">
         The risk profile changes by facility type. Kharon frames each environment around protected assets, detection reliability, suppression readiness, evacuation logic and service evidence.
       </p>
     </div>
 
-    <div class="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+    <div class="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4 reveal reveal-delayed">
       {industries.map((industry) => (
-        <article class="rounded-lg border border-kharon-border bg-kharon-light p-5">
-          <p class="text-xs font-bold uppercase text-kharon-purple">{industry.priority}</p>
-          <h3 class="mt-3 text-lg font-bold leading-snug text-kharon-black">{industry.title}</h3>
-          <p class="mt-3 text-sm leading-7 text-kharon-grey">{industry.risk}</p>
+        <article class="group flex flex-col rounded-md border border-kharon-border bg-kharon-light/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-kharon-purple/20 hover:shadow-md hover:bg-white">
+          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple/50 group-hover:text-kharon-purple transition-colors">{industry.priority}</p>
+          <h3 class="mt-4 text-lg font-bold tracking-tight text-kharon-black">{industry.title}</h3>
+          <p class="mt-3 text-[0.875rem] leading-relaxed text-kharon-grey/70">{industry.risk}</p>
         </article>
       ))}
     </div>

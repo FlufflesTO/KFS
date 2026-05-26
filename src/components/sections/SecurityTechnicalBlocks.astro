@@ -293,15 +293,15 @@ const integrationEvents = [
     </div>
 
     <div class="lg:col-span-5 space-y-6">
-      <h3 class="text-sm font-bold uppercase tracking-wider text-[#4B2E83] text-xs">Integration Scenarios</h3>
+      <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Integration Scenarios</p>
       <div class="grid gap-4">
         {integrationEvents.map((evt) => (
-          <div class="rounded-lg border border-kharon-border p-4 bg-kharon-light/50 transition-all hover:bg-kharon-light">
+          <div class="rounded-xl border border-kharon-border p-5 bg-kharon-light/80 transition-all hover:bg-white hover:shadow-sm">
             <div class="flex items-center gap-2">
               <span class="h-2 w-2 rounded-full" style={`background-color: ${evt.color}`}></span>
-              <h4 class="font-bold text-kharon-black text-sm">{evt.label}</h4>
+              <h4 class="font-bold tracking-tight text-kharon-black">{evt.label}</h4>
             </div>
-            <p class="mt-2 text-xs font-semibold text-kharon-purple">{evt.detail}</p>
+            <p class="mt-2 text-xs font-semibold leading-relaxed text-kharon-grey/80">{evt.detail}</p>
           </div>
         ))}
       </div>
@@ -309,9 +309,31 @@ const integrationEvents = [
     </div>
 
     <!-- Integration event legend -->
-    <div class="mx-auto mt-8 flex max-w-3xl flex-wrap items-center gap-6 text-sm text-kharon-grey">
+    <div class="mx-auto mt-12 flex max-w-3xl flex-wrap items-center gap-6 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">
       <span class="flex items-center gap-2">
         <span class="inline-block h-3 w-6 rounded-sm bg-[#4B2E83]"></span>
+        Central BMS
+      </span>
+      <span class="flex items-center gap-2">
+        <span class="inline-block h-3 w-6 rounded-sm bg-[#1F4E79]"></span>
+        Subsystem
+      </span>
+      <span class="flex items-center gap-2">
+        <span class="inline-block h-0.5 w-6 bg-[#C4332F]"></span>
+        Alert path
+      </span>
+      <span class="flex items-center gap-2">
+        <span class="inline-block h-0.5 w-6 bg-[#00C2FF]"></span>
+        Status path
+      </span>
+    </div>
+  </div>
+</section>
+    </span>
+    </div>
+  </div>
+</section>
+lock h-3 w-6 rounded-sm bg-[#4B2E83]"></span>
         Central BMS
       </span>
       <span class="flex items-center gap-2">

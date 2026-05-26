@@ -18,8 +18,8 @@
         Each protection system follows a defined inspection and service cycle aligned to its operational risk and regulatory requirement.
       </p>
 
-      <div class="mt-8 overflow-x-auto">
-        <table class="w-full min-w-[540px] border-collapse text-sm">
+      <div class="mt-8 overflow-x-auto scrollbar-hide">
+        <table class="w-full min-w-[480px] border-collapse text-sm">
           <thead>
             <tr class="border-b border-kharon-border">
               <th class="py-3 pr-4 text-left font-semibold text-kharon-black">System</th>
@@ -176,8 +176,9 @@
         Decision logic governing whether a Certificate of Compliance can be issued, or whether an Advisory Notice is required pending defect resolution.
       </p>
 
-      <div class="mt-8 w-full max-w-3xl mx-auto">
-        <svg viewBox="0 0 600 820" class="w-full h-auto" role="img" aria-label="Certificate readiness decision flowchart">
+      <div class="mt-8 w-full max-w-3xl mx-auto overflow-x-auto">
+        <div class="min-w-[320px] px-2">
+        <svg viewBox="0 0 600 820" class="w-full h-auto" role="img" aria-label="Certificate readiness decision flowchart" style="overflow: visible;">
           <!-- Connectors (drawn first so nodes overlay junctions) -->
           <!-- Start -> Decision 1 -->
           <line x1="300" y1="56" x2="300" y2="100" stroke="#00C2FF" stroke-width="2.5"/>
@@ -287,50 +288,76 @@
           <path d="M280,730 L320,730 L320,748 L280,748" fill="none" stroke="#00C2FF" stroke-width="2" stroke-dasharray="4 3"/>
           <text x="332" y="740" fill="#0B0D0F" font-size="9.5">Loop-back path</text>
         </svg>
+        </div>
       </div>
     </div>
 
     <!-- ─── Block 4: Sample Service Report Structure ─── -->
-    <div class="mt-16">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Reporting Standard</span>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Service Report Structure</h2>
-      <p class="mt-4 max-w-3xl leading-7 text-kharon-grey">
+    <div class="mt-24 reveal reveal-delayed">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-1 w-8 bg-kharon-purple"></div>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Reporting Standard</p>
+      </div>
+      <h2 class="kharon-h2 text-kharon-black">Service Report Structure</h2>
+      <p class="mt-4 max-w-3xl text-lg leading-relaxed text-kharon-grey">
         Every Kharon service engagement produces a structured report capturing site conditions, test outcomes, defects and forward recommendations.
       </p>
 
-      <div class="mt-8 max-w-2xl">
-        <div class="rounded-lg border border-kharon-border bg-white p-6">
+      <div class="mt-12 max-w-3xl">
+        <div class="rounded-xl border border-kharon-border bg-white p-6 sm:p-10 shadow-sm">
 
-          <ol class="space-y-5 border-l-2 border-kharon-purple/30 pl-6">
+          <ol class="space-y-8 border-l-2 border-kharon-purple/20 pl-8 ml-2">
 
             <li class="relative">
-              <span class="absolute -left-[1.85rem] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white">1</span>
-              <h3 class="text-lg font-semibold text-kharon-black">Site Information</h3>
-              <p class="mt-1 leading-6 text-sm text-kharon-grey">Client name, site address, building type, contact details and service order reference.</p>
+              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">1</span>
+              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Site Information</h3>
+              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Client name, site address, building type, contact details and service order reference.</p>
             </li>
 
             <li class="relative">
-              <span class="absolute -left-[1.85rem] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white">2</span>
-              <h3 class="text-lg font-semibold text-kharon-black">System Inventory</h3>
-              <p class="mt-1 leading-6 text-sm text-kharon-grey">Full listing of installed protection systems, zones, device types and quantities under scope.</p>
+              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">2</span>
+              <h3 class="text-lg font-bold tracking-tight text-kharon-black">System Inventory</h3>
+              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Full listing of installed protection systems, zones, device types and quantities under scope.</p>
             </li>
 
             <li class="relative">
-              <span class="absolute -left-[1.85rem] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white">3</span>
-              <h3 class="text-lg font-semibold text-kharon-black">Test Results (per zone)</h3>
-              <p class="mt-1 leading-6 text-sm text-kharon-grey">Individual zone test outcomes  -  detector responses, alarm activations, suppression readiness  -  recorded per area.</p>
+              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">3</span>
+              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Test Results (per zone)</h3>
+              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Individual zone test outcomes  -  detector responses, alarm activations, suppression readiness  -  recorded per area.</p>
             </li>
 
             <li class="relative">
-              <span class="absolute -left-[1.85rem] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white">4</span>
-              <h3 class="text-lg font-semibold text-kharon-black">Defect Register</h3>
-              <p class="mt-1 leading-6 text-sm text-kharon-grey">All faults and deficiencies classified by severity category with required rectification timeframe.</p>
+              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">4</span>
+              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Defect Register</h3>
+              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">All faults and deficiencies classified by severity category with required rectification timeframe.</p>
             </li>
 
             <li class="relative">
-              <span class="absolute -left-[1.85rem] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white">5</span>
-              <h3 class="text-lg font-semibold text-kharon-black">Recommendations</h3>
-              <p class="mt-1 leading-6 text-sm text-kharon-grey">Forward-looking guidance covering system improvements, lifecycle planning and compliance positioning.</p>
+              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">5</span>
+              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Recommendations</h3>
+              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Forward-looking guidance covering system improvements, lifecycle planning and compliance positioning.</p>
+            </li>
+
+            <li class="relative">
+              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">6</span>
+              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Client Sign-off</h3>
+              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Client acknowledgment of service completion, defect awareness and acceptance of the report content.</p>
+            </li>
+
+            <li class="relative">
+              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">7</span>
+              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Next Service Date</h3>
+              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Calculated next inspection or service due date based on system type, interval schedule and current completion.</p>
+            </li>
+
+          </ol>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>sitioning.</p>
             </li>
 
             <li class="relative">

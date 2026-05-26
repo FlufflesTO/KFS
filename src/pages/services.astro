@@ -1,13 +1,12 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Footer from "../components/layout/Footer.astro";
 import { pageMeta, solutionLinks } from "../data/site.js";
 ---
 
 <BaseLayout title={pageMeta.services.title} description={pageMeta.services.description}>
   <main>
     <section class="bg-kharon-black text-white">
-      <div class="mx-auto grid max-w-7xl gap-6 sm:p-7 px-6 py-16 lg:grid-cols-2 lg:px-8">
+      <div class="mx-auto grid max-w-7xl gap-6 lg:gap-10 px-6 py-16 lg:grid-cols-2 lg:px-8">
         <div>
           <p class="text-sm font-bold uppercase tracking-widest text-kharon-cyan">Services</p>
           <h1 class="mt-5 max-w-3xl text-4xl font-bold">
@@ -30,8 +29,8 @@ import { pageMeta, solutionLinks } from "../data/site.js";
       </div>
     </section>
 
-    <section class="bg-white py-16">
-      <div class="mx-auto grid max-w-7xl gap-6 sm:p-7 px-6 lg:grid-cols-3 lg:px-8">
+    <section class="section-padding bg-white">
+      <div class="mx-auto grid max-w-7xl gap-6 px-6 lg:grid-cols-3 lg:px-8">
         <article class="border border-kharon-border p-6">
           <p class="text-sm font-bold uppercase tracking-widest text-kharon-purple">Design</p>
           <h2 class="mt-3 text-2xl font-bold text-kharon-black">Risk-led system architecture</h2>
@@ -50,5 +49,5 @@ import { pageMeta, solutionLinks } from "../data/site.js";
       </div>
     </section>
   </main>
-  <Footer />
+  
 </BaseLayout>

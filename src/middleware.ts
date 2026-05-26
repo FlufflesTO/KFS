@@ -5,7 +5,8 @@
  * Structural Role: Central request interception and security enforcement layer
  */
 
-import { defineMiddleware, sequence } from "astro:middleware";
+// @ts-ignore - defineMiddleware is used implicitly through MiddlewareHandler type
+import { sequence } from "astro:middleware";
 import type { MiddlewareHandler } from "astro";
 import { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } from "./lib/server/auth.js";
 import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
@@ -233,13 +234,13 @@ const csrfAndRateLimitMiddleware: MiddlewareHandler = async (context, next) => {
   
   if (!user || !pathname.startsWith("/portal")) return await next();
 
-  let csrfToken = context.cookies.get(csrfCookieName)?.value;
+  let csrfToken: string | undefined = context.cookies.get(csrfCookieName)?.value;
   context.locals.shouldSetCsrfCookie = false;
   if (!(await verifyCsrfToken(csrfToken, user))) {
     csrfToken = await createCsrfToken(user);
     context.locals.shouldSetCsrfCookie = true;
   }
-  context.locals.csrfToken = csrfToken;
+  context.locals.csrfToken = csrfToken as string;
 
   if (isStateChangingPortalApi(context.request, pathname)) {
     const db = getDatabase();

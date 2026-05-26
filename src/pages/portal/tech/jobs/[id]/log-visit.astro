@@ -250,7 +250,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
   </section>
   
   <script>
-    async function postJson(url, payload) {
+    async function postJson(url: string, payload: any) {
       const response = await window.kharonPortalFetch(url, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -267,7 +267,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
     
     if (outcomeSelect) {
       outcomeSelect.addEventListener('change', function() {
-        if (this.value === 'Unable To Complete') {
+        if ((this as HTMLSelectElement).value === 'Unable To Complete') {
           unableReasonSection.classList.remove('hidden');
         } else {
           unableReasonSection.classList.add('hidden');
@@ -283,8 +283,8 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
     if (arrivalForm) {
       arrivalForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const formData = new FormData(arrivalForm);
-        const jobId = arrivalForm.dataset.jobId;
+        const formData = new FormData(arrivalForm as HTMLFormElement);
+        const jobId = (arrivalForm as HTMLFormElement).dataset.jobId;
         
         try {
           const result = await postJson('/portal/api/job-visits', {
@@ -299,17 +299,21 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
             notes: formData.get('notes') || null
           });
           
-          visitResult.textContent = result.message;
-          visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-green-200 bg-green-50 text-sm font-semibold text-green-800';
-          visitResult.classList.remove('hidden');
+      if (visitResult) {
+        visitResult.textContent = result.message;
+        visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-green-200 bg-green-50 text-sm font-semibold text-green-800';
+        visitResult.classList.remove('hidden');
+      }
           
           // Hide arrival form and show outcome form
-          arrivalForm.classList.add('hidden');
-          outcomeForm.classList.remove('hidden');
+          if (arrivalForm) arrivalForm.classList.add('hidden');
+          if (outcomeForm) outcomeForm.classList.remove('hidden');
         } catch (error) {
-          visitResult.textContent = error.message;
-          visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-red-200 bg-red-50 text-sm font-semibold text-red-800';
-          visitResult.classList.remove('hidden');
+          if (visitResult) {
+            visitResult.textContent = (error as Error).message;
+            visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-red-200 bg-red-50 text-sm font-semibold text-red-800';
+            visitResult.classList.remove('hidden');
+          }
         }
       });
     }
@@ -317,30 +321,34 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
     if (outcomeForm) {
       outcomeForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const formData = new FormData(outcomeForm);
-        const jobId = outcomeForm.dataset.jobId;
+        const formData = new FormData(outcomeForm as HTMLFormElement);
+        const jobId = (outcomeForm as HTMLFormElement).dataset.jobId;
         
         try {
           const result = await postJson('/portal/api/job-visits', {
             action: 'logOutcome',
             jobId,
-            visitDate: document.querySelector('.log-arrival-form [name="visitDate"]').value, // Use the same date as arrival
+            visitDate: (document.querySelector('.log-arrival-form [name="visitDate"]') as HTMLInputElement)?.value, // Use the same date as arrival
             departureTime: formData.get('departureTime'),
             visitStatus: formData.get('visitStatus'),
             unableReason: formData.get('unableReason') || null,
             notes: formData.get('notes') || null
           });
           
-          visitResult.textContent = result.message;
-          visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-green-200 bg-green-50 text-sm font-semibold text-green-800';
-          visitResult.classList.remove('hidden');
+          if (visitResult) {
+            visitResult.textContent = result.message;
+            visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-green-200 bg-green-50 text-sm font-semibold text-green-800';
+            visitResult.classList.remove('hidden');
+          }
           
           // Disable form after successful submission
-          outcomeForm.querySelectorAll('input, select, textarea, button').forEach(el => el.disabled = true);
+          outcomeForm.querySelectorAll('input, select, textarea, button').forEach((el: Element) => (el as HTMLInputElement).disabled = true);
         } catch (error) {
-          visitResult.textContent = error.message;
-          visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-red-200 bg-red-50 text-sm font-semibold text-red-800';
-          visitResult.classList.remove('hidden');
+          if (visitResult) {
+            visitResult.textContent = (error as Error).message;
+            visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-red-200 bg-red-50 text-sm font-semibold text-red-800';
+            visitResult.classList.remove('hidden');
+          }
         }
       });
       
