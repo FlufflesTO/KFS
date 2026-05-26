@@ -25,10 +25,10 @@ ON CONFLICT(id) DO UPDATE SET
 
 INSERT INTO users (id, name, email, password_hash, role, site_id, is_active)
 VALUES
-  ('usr_admin_001', 'Kharon Admin', 'admin@kharon.co.za', 'pbkdf2_sha256$100000$OGUxNDI5N2MtMzA2Mi00MDE2LWJjNWYtYjk2MTlkY2MyNjc3$WCZGErOVsgQWdBeKpnjApKT6L3srzO80-NtnKlz37ys', 'admin', NULL, 1),
-  ('usr_tech_001', 'Kharon Technician', 'tech@kharon.co.za', 'pbkdf2_sha256$100000$OGUxNDI5N2MtMzA2Mi00MDE2LWJjNWYtYjk2MTlkY2MyNjc3$WCZGErOVsgQWdBeKpnjApKT6L3srzO80-NtnKlz37ys', 'tech', NULL, 1),
-  ('usr_finance_001', 'Kharon Finance', 'finance@kharon.co.za', 'pbkdf2_sha256$100000$OGUxNDI5N2MtMzA2Mi00MDE2LWJjNWYtYjk2MTlkY2MyNjc3$WCZGErOVsgQWdBeKpnjApKT6L3srzO80-NtnKlz37ys', 'finance', NULL, 1),
-  ('usr_client_001', 'Client Portal User', 'client@example.com', 'pbkdf2_sha256$100000$OGUxNDI5N2MtMzA2Mi00MDE2LWJjNWYtYjk2MTlkY2MyNjc3$WCZGErOVsgQWdBeKpnjApKT6L3srzO80-NtnKlz37ys', 'client', 'site_tequit_staging', 1)
+  ('usr_admin_001', 'Kharon Admin', 'admin@kharon.co.za', 'pbkdf2_sha256$100000$ZGE0OGNjODAtNzU0ZC00NzQ5LWIyODQtODBjMDRiNWJiMGEy$5VRtPYcyy7NpUC0lho-8xpix25lCAJ7pe8mxtKl7W-E', 'admin', NULL, 1),
+  ('usr_tech_001', 'Kharon Technician', 'tech@kharon.co.za', 'pbkdf2_sha256$100000$ZGE0OGNjODAtNzU0ZC00NzQ5LWIyODQtODBjMDRiNWJiMGEy$5VRtPYcyy7NpUC0lho-8xpix25lCAJ7pe8mxtKl7W-E', 'tech', NULL, 1),
+  ('usr_finance_001', 'Kharon Finance', 'finance@kharon.co.za', 'pbkdf2_sha256$100000$ZGE0OGNjODAtNzU0ZC00NzQ5LWIyODQtODBjMDRiNWJiMGEy$5VRtPYcyy7NpUC0lho-8xpix25lCAJ7pe8mxtKl7W-E', 'finance', NULL, 1),
+  ('usr_client_001', 'Client Portal User', 'client@example.com', 'pbkdf2_sha256$100000$ZGE0OGNjODAtNzU0ZC00NzQ5LWIyODQtODBjMDRiNWJiMGEy$5VRtPYcyy7NpUC0lho-8xpix25lCAJ7pe8mxtKl7W-E', 'client', 'site_tequit_staging', 1)
 ON CONFLICT(email) DO UPDATE SET
   name = excluded.name,
   password_hash = excluded.password_hash,
