@@ -126,6 +126,11 @@ const allowedPortalJsPatterns = [
   /^FinanceCreateForm\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^FinanceLedgerTable\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^operations\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^exports\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^jobs\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^sites\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^systems\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^users\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^portalApi\.[A-Za-z0-9_-]+\.js$/,
   /^_id_\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/
 ];

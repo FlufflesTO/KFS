@@ -1,36 +1,42 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/sections/Hero.astro";
-import SectorRiskGrid from "../components/sections/SectorRiskGrid.astro";
+import SplitFeature from "../components/sections/SplitFeature.astro";
+import ProofGrid from "../components/sections/ProofGrid.astro";
 import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
-import InfrastructureTechnicalBlocks from "../components/sections/InfrastructureTechnicalBlocks.astro";
+import EngineeringSystems from "../components/sections/EngineeringSystems.astro";
 import Footer from "../components/layout/Footer.astro";
+import { pageMeta } from "../data/site.js";
 ---
 
-<BaseLayout
-  title="Critical Infrastructure Protection | Kharon"
-  description="Fire detection, gaseous suppression and lifecycle support for data centres, electrical rooms, control rooms and operationally sensitive commercial infrastructure."
->
-  <Hero
-    title="Critical infrastructure fire protection for continuity-sensitive environments."
-    text="Kharon supports commercial and industrial spaces where system failure, fire events or poor documentation create operational consequence."
+<BaseLayout title={pageMeta.criticalInfrastructure.title} description={pageMeta.criticalInfrastructure.description}>
+  <Hero 
+    title="Critical Infrastructure" 
+    subtitle="Engineered safety protocols for data centers, telecommunications, and essential services."
+    systemType="suppression"
   />
 
-  <SectorRiskGrid />
+  <EngineeringSystems />
 
-  <InfrastructureTechnicalBlocks />
+  <SplitFeature 
+    title="Zero Downtime Objective"
+    description="In critical environments, fire protection is about more than just safety—it's about continuity. Our gaseous suppression systems are designed to extinguish fires without damaging sensitive electronics or requiring clean-up."
+    reversed={false}
+  />
 
-  <ContextualInquiry
-    eyebrow="Critical Infrastructure"
-    title="Discuss critical infrastructure protection."
-    text="Provide uptime sensitivity, redundancy requirements, suppression concerns and operational constraints."
-    requestType="Critical infrastructure protection discussion"
-    fields={[
-      { label: "Infrastructure Type", name: "infrastructure_type", options: ["Data centre", "Telecoms room", "Control room", "Electrical room", "Utilities site", "Healthcare infrastructure", "Other"] },
-      { label: "Uptime Sensitivity", name: "uptime_sensitivity", options: ["24/7 critical", "Business critical", "Operationally important", "Planned maintenance window available", "Unknown"] },
-      { label: "Suppression Requirement", name: "suppression_requirement", options: ["Existing gas suppression", "New suppression requirement", "Agent review", "Room integrity concern", "Unknown"] },
-      { label: "Operational Constraint", name: "operational_constraint", options: ["No downtime", "Limited access window", "Compliance deadline", "Insurance requirement", "Expansion or refurbishment"] }
+  <ProofGrid 
+    title="Infrastructure Resilience"
+    items={[
+      { title: "Non-Conductive", description: "Clean agents that won't short-circuit your critical server racks." },
+      { title: "Rapid Discharge", description: "Reach design concentration in seconds to suppress fire at its inception." },
+      { title: "Oxygen Safe", description: "Breathable atmospheres for occupied spaces during discharge." },
+      { title: "Environmentally Conscious", description: "Zero ozone depletion potential and low global warming impact." }
     ]}
+  />
+
+  <ContextualInquiry 
+    title="Protect Your Infrastructure"
+    requestType="Critical Infrastructure"
   />
 
   <Footer />

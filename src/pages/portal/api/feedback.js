@@ -1,0 +1,46 @@
+import { getDatabase } from "../../../lib/server/bindings.js";
+import { auditEvent } from "../../../lib/server/audit.js";
+import { badRequest, json, methodNotAllowed, serverError } from "../../../lib/server/http.js";
+
+export const prerender = false;
+
+export async function POST({ request, locals, cookies }) {
+  if (!locals.user) return json({ ok: false, message: "Unauthorized" }, { status: 401 });
+
+  const db = getDatabase();
+
+  try {
+    const body = await request.json();
+    const { category, message } = body;
+    const { pathname } = new URL(request.url);
+    const variant = cookies.get("kharon_ui_variant")?.value || "unknown";
+
+    if (!category || !message) {
+      return badRequest("Category and message are required.");
+    }
+
+    const id = crypto.randomUUID();
+    await db.prepare(
+      `INSERT INTO user_feedback (id, user_id, variant, page_path, category, message)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    ).bind(id, locals.user.id, variant, body.path || pathname, category, message).run();
+
+    await auditEvent(db, request, {
+      eventType: "user.feedback.submitted",
+      entityType: "feedback",
+      entityId: id,
+      outcome: "success",
+      user: locals.user,
+      metadata: { category, variant }
+    });
+
+    return json({ ok: true, message: "Feedback submitted successfully." });
+  } catch (error) {
+    console.error("Feedback submission error:", error);
+    return serverError("Failed to submit feedback.");
+  }
+}
+
+export function ALL() {
+  return methodNotAllowed(["POST"]);
+}

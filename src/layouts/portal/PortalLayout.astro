@@ -25,6 +25,7 @@ const roleLinks = {
     { label: "Operations", href: "/portal/admin/operations", key: "operations" },
     { label: "Compliance", href: "/portal/admin/compliance", key: "compliance" },
     { label: "Audit", href: "/portal/admin/audit", key: "audit" },
+    { label: "Feedback", href: "/portal/admin/feedback", key: "feedback" },
     { label: "Technician View", href: "/portal/tech/dashboard", key: "tech" },
     { label: "Job History", href: "/portal/tech/history", key: "tech-history" },
     { label: "Finance", href: "/portal/finance/dashboard", key: "finance" }
@@ -138,9 +139,12 @@ const links = [
           <p class="font-bold text-white/95 truncate">{user?.name}</p>
           <div class="mt-1 flex items-center justify-end gap-1.5">
             <span class="h-1.5 w-1.5 rounded-full bg-kharon-green animate-pulse"></span>
-            <p class="uppercase text-kharon-cyan font-bold tracking-widest text-[9px]">{user?.role}</p>
+            <p class="uppercase text-kharon-cyan font-bold tracking-widest text-[9px]">{user?.role} (Variant {Astro.locals.variant})</p>
           </div>
         </div>
+        <button id="open-feedback" class="hidden sm:flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-white/60 hover:text-white hover:border-white/30 transition-all duration-300">
+          <span class="text-kharon-purple text-base leading-none">★</span> Feedback
+        </button>
         <form id="portal-logout-form">
           <button class="group relative flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white/80 transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white hover:shadow-md hover:shadow-white/5" type="submit">
             Logout
@@ -153,6 +157,35 @@ const links = [
   <main class="min-h-[calc(100vh-5rem)] relative">
     <slot />
   </main>
+
+  <div id="feedback-modal" class="fixed inset-0 z-[100] hidden items-center justify-center px-4 bg-[#0B0D0F]/60 backdrop-blur-sm transition-all duration-300 opacity-0">
+    <div class="w-full max-w-md scale-95 transition-transform duration-300 bg-white rounded-xl shadow-2xl shadow-black/40 overflow-hidden">
+      <div class="bg-gradient-to-r from-kharon-purple to-kharon-blue px-6 py-4 flex items-center justify-between">
+        <h3 class="text-white font-bold uppercase tracking-widest text-sm">Provide Feedback</h3>
+        <button id="close-feedback" class="text-white/60 hover:text-white transition-colors text-xl font-bold">×</button>
+      </div>
+      <form id="feedback-form" class="p-6 space-y-4">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Category</label>
+          <select name="category" required class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-kharon-purple focus:ring-1 focus:ring-kharon-purple outline-none transition-all">
+            <option value="ui">UI / Layout</option>
+            <option value="performance">Performance / Speed</option>
+            <option value="bug">Bug / Error</option>
+            <option value="suggestion">General Suggestion</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Your Message</label>
+          <textarea name="message" required rows="4" placeholder="How can we improve this page?" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-kharon-purple focus:ring-1 focus:ring-kharon-purple outline-none transition-all resize-none"></textarea>
+        </div>
+        <div id="feedback-result" class="hidden text-xs font-bold p-3 rounded-lg"></div>
+        <button type="submit" class="w-full rounded-lg bg-gradient-to-r from-kharon-purple to-kharon-blue py-3 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-kharon-purple/20 hover:shadow-kharon-purple/40 transition-all duration-300">
+          Send Feedback
+        </button>
+      </form>
+    </div>
+  </div>
+
   <script>
     const logoutForm = document.querySelector("#portal-logout-form");
     logoutForm?.addEventListener("submit", async (event) => {
@@ -160,6 +193,83 @@ const links = [
       const response = await window.kharonPortalFetch("/portal/api/logout", { method: "POST" });
       const body = await response.json().catch(() => ({ redirectTo: "/portal/login" }));
       window.location.href = body.redirectTo || "/portal/login";
+    });
+
+    const openBtn = document.getElementById("open-feedback");
+    const closeBtn = document.getElementById("close-feedback");
+    const modal = document.getElementById("feedback-modal");
+    const form = document.getElementById("feedback-form") as HTMLFormElement;
+    const result = document.getElementById("feedback-result");
+
+    function openModal() {
+      modal?.classList.remove("hidden");
+      modal?.classList.add("flex");
+      requestAnimationFrame(() => {
+        modal?.classList.add("opacity-100");
+        modal?.querySelector(".max-w-md")?.classList.add("scale-100");
+      });
+    }
+
+    function closeModal() {
+      modal?.classList.remove("opacity-100");
+      modal?.querySelector(".max-w-md")?.classList.remove("scale-100");
+      setTimeout(() => {
+        modal?.classList.remove("flex");
+        modal?.classList.add("hidden");
+        form.reset();
+        if (result) {
+          result.className = "hidden text-xs font-bold p-3 rounded-lg";
+          result.textContent = "";
+        }
+      }, 300);
+    }
+
+    openBtn?.addEventListener("click", openModal);
+    closeBtn?.addEventListener("click", closeModal);
+    modal?.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        category: formData.get("category"),
+        message: formData.get("message"),
+        path: window.location.pathname
+      };
+
+      const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending...";
+
+      try {
+        const response = await window.kharonPortalFetch("/portal/api/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const body = await response.json();
+        if (result) {
+          result.classList.remove("hidden");
+          if (response.ok && body.ok) {
+            result.className = "text-emerald-700 bg-emerald-50 border border-emerald-100 p-3 rounded-lg text-xs font-bold";
+            result.textContent = body.message;
+            setTimeout(closeModal, 2000);
+          } else {
+            result.className = "text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg text-xs font-bold";
+            result.textContent = body.message || "Feedback could not be sent.";
+          }
+        }
+      } catch (err) {
+        if (result) {
+          result.classList.remove("hidden");
+          result.className = "text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg text-xs font-bold";
+          result.textContent = "Network error occurred.";
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Send Feedback";
+      }
     });
   </script>
 </body>

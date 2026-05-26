@@ -316,8 +316,9 @@ const checklist = job?.system_type === "Gas Suppression"
                     <input type="hidden" name="signatureStrokes" />
                   </label>
                   <button type="button" class="clear-signature rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey hover:bg-white">Clear signature</button>
-                  <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue">Submit completed jobcard</button>
+                  <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue" id="submit-jobcard-btn">Submit completed jobcard</button>
                   <p class="jobcard-result hidden text-sm font-semibold"></p>
+                  <p class="draft-status text-xs text-kharon-grey italic"></p>
                 </form>
               ) : (
                 <p class="mt-4 border border-kharon-border bg-kharon-light p-4 text-sm text-kharon-grey">Jobcard closure is unavailable for this account or job status.</p>
@@ -484,8 +485,52 @@ const checklist = job?.system_type === "Gas Suppression"
       const addBtn = form.querySelector(".add-defect-btn");
       const saveBtn = form.querySelector(".save-defect");
       const cancelBtn = form.querySelector(".cancel-defect");
-      const defectCountEl = form.querySelector(".defect-count");
+      const draftStatusEl = form.querySelector(".draft-status");
+      const submitBtn = form.querySelector("#submit-jobcard-btn");
       const defects = [];
+      const jobId = form.querySelector('input[name="jobId"]').value;
+      const draftKey = `kharon_jobcard_draft_${jobId}`;
+      let saveTimeout;
+
+      function saveDraft() {
+        const data = {
+          faultCategory: form.querySelector('[name="faultCategory"]')?.value || "",
+          techComments: form.querySelector('[name="techComments"]')?.value || "",
+          partsUsed: form.querySelector('[name="partsUsed"]')?.value || "",
+          followUpActions: form.querySelector('[name="followUpActions"]')?.value || "",
+          customerName: form.querySelector('[name="customerName"]')?.value || "",
+          customerTitle: form.querySelector('[name="customerTitle"]')?.value || "",
+          defects: defects
+        };
+        localStorage.setItem(draftKey, JSON.stringify(data));
+        if (draftStatusEl) draftStatusEl.textContent = `Draft saved locally at ${new Date().toLocaleTimeString()}`;
+      }
+
+      function loadDraft() {
+        const draftData = localStorage.getItem(draftKey);
+        if (draftData) {
+          try {
+            const parsed = JSON.parse(draftData);
+            if (parsed.faultCategory) form.querySelector('[name="faultCategory"]').value = parsed.faultCategory;
+            if (parsed.techComments) form.querySelector('[name="techComments"]').value = parsed.techComments;
+            if (parsed.partsUsed) form.querySelector('[name="partsUsed"]').value = parsed.partsUsed;
+            if (parsed.followUpActions) form.querySelector('[name="followUpActions"]').value = parsed.followUpActions;
+            if (parsed.customerName) form.querySelector('[name="customerName"]').value = parsed.customerName;
+            if (parsed.customerTitle) form.querySelector('[name="customerTitle"]').value = parsed.customerTitle;
+            if (parsed.defects && Array.isArray(parsed.defects)) {
+              defects.push(...parsed.defects);
+            }
+            if (draftStatusEl) draftStatusEl.textContent = "Draft loaded from local storage.";
+          } catch (e) {
+            console.error("Failed to load draft", e);
+          }
+        }
+      }
+
+      form.addEventListener('input', () => {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(saveDraft, 1000);
+      });
 
       function renderDefects() {
         if (!defectList) return;
@@ -533,6 +578,7 @@ const checklist = job?.system_type === "Gas Suppression"
           rm.addEventListener("click", () => {
             defects.splice(Number(rm.dataset.index), 1);
             renderDefects();
+            saveDraft();
           });
         }
       }
@@ -550,8 +596,10 @@ const checklist = job?.system_type === "Gas Suppression"
         }
         defects.push({ severity, sansClauseRef, description, certificateBlocking });
         renderDefects();
+        saveDraft();
         defectFormEl?.classList.add("hidden");
       });
+      loadDraft();
       renderDefects();
 
       form.addEventListener("submit", async (event) => {
@@ -587,27 +635,63 @@ const checklist = job?.system_type === "Gas Suppression"
           result.className = "jobcard-result text-sm font-semibold text-red-700";
           return;
         }
-        const response = await window.kharonPortalFetch("/portal/api/submit-jobcard", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            jobId: data.get("jobId"),
-            systemId: data.get("systemId"),
-            techComments: data.get("techComments"),
-            faultCategory: data.get("faultCategory"),
-            partsUsed: data.get("partsUsed"),
-            followUpActions: data.get("followUpActions"),
-            signatureBase64: data.get("signatureBase64"),
-            signatureStrokes: JSON.parse(data.get("signatureStrokes") || "[]"),
-            customerName: data.get("customerName"),
-            customerTitle: data.get("customerTitle"),
-            evidencePhotos,
-            defects: defects.map((defect) => ({ ...defect }))
-          })
-        });
-        const body = await response.json();
-        result.textContent = body.ok ? `Completed. Document: ${body.documentationPath}` : body.message || "Submission failed.";
-        result.className = `jobcard-result text-sm font-semibold ${body.ok ? "text-kharon-blue" : "text-red-700"}`;
+
+        const payload = {
+          jobId: data.get("jobId"),
+          systemId: data.get("systemId"),
+          techComments: data.get("techComments"),
+          faultCategory: data.get("faultCategory"),
+          partsUsed: data.get("partsUsed"),
+          followUpActions: data.get("followUpActions"),
+          signatureBase64: data.get("signatureBase64"),
+          signatureStrokes: JSON.parse(data.get("signatureStrokes") || "[]"),
+          customerName: data.get("customerName"),
+          customerTitle: data.get("customerTitle"),
+          evidencePhotos,
+          defects: defects.map((defect) => ({ ...defect }))
+        };
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Submitting... (do not close)";
+        }
+
+        async function submitWithRetry(payload, maxRetries = 3) {
+          for (let i = 0; i < maxRetries; i++) {
+            try {
+              if (i > 0) {
+                result.textContent = `Submission failed. Retrying... (${i}/${maxRetries - 1})`;
+                result.classList.remove("hidden");
+              }
+              const response = await window.kharonPortalFetch("/portal/api/submit-jobcard", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(payload)
+              });
+              const body = await response.json();
+              if (!response.ok || !body.ok) throw new Error(body.message || "Submission failed.");
+              return body;
+            } catch (err) {
+              if (i === maxRetries - 1) throw err;
+              await new Promise(r => setTimeout(r, 2000 * (i + 1))); // exponential backoff
+            }
+          }
+        }
+
+        try {
+          const body = await submitWithRetry(payload);
+          result.textContent = `Completed. Document: ${body.documentationPath}`;
+          result.className = "jobcard-result text-sm font-semibold text-kharon-blue";
+          localStorage.removeItem(draftKey);
+          if (draftStatusEl) draftStatusEl.textContent = "";
+        } catch (error) {
+          result.textContent = error.message || "Submission failed after multiple attempts. Please check connection and try again.";
+          result.className = "jobcard-result text-sm font-semibold text-red-700";
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit completed jobcard";
+          }
+        }
       });
     }
   </script>

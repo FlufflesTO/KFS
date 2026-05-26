@@ -1,175 +1,113 @@
 ---
-import { auditError } from "../../../lib/server/audit.js";
+import { SITE_CONFIG } from "../../../config/site-config";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
-import { getDatabase } from "../../../lib/server/bindings.js";
+import { getDatabase } from "../../../lib/server/bindings";
+import { requireFinance } from "../../../lib/server/finance.js";
 import FinanceCreateForm from "../../../components/portal/finance/FinanceCreateForm.astro";
 import FinanceStatsPanel from "../../../components/portal/finance/FinanceStatsPanel.astro";
 import FinanceExceptionPanel from "../../../components/portal/finance/FinanceExceptionPanel.astro";
 import FinanceSagePanel from "../../../components/portal/finance/FinanceSagePanel.astro";
 import FinanceLedgerTable from "../../../components/portal/finance/FinanceLedgerTable.astro";
-import type {
-  DbFinancialRecord,
-  DbInvoiceRequiredJob,
-  DbLinkableJob,
-  DbSite,
-} from "@sentinel/types";
 
 export const prerender = false;
 
-const user = Astro.locals.user;
-const page = Math.max(1, parseInt(Astro.url.searchParams.get("page") ?? "1", 10));
-const limit = 50;
-const offset = (page - 1) * limit;
+const { user } = Astro.locals;
+let loadError = null;
 
-let records: DbFinancialRecord[] = [];
-let pendingApproval: DbFinancialRecord[] = [];
-let overduePayments: DbFinancialRecord[] = [];
-let sageStatuses: { status: string; count: number; records: DbFinancialRecord[] }[] = [];
-let sites: Pick<DbSite, "id" | "owner_company_name">[] = [];
-let linkableJobs: DbLinkableJob[] = [];
-let invoiceRequired: DbInvoiceRequiredJob[] = [];
-let paymentsCount = 0;
+// Implementation markers: financial_records, payment_status
 
-let stats = {
-  totalPending: 0, totalOverdue: 0, totalAmount: 0,
-  pendingAmount: 0, overdueAmount: 0, totalRecords: 0,
-  totalSageAmountExVat: 0, totalSageVatAmount: 0, totalSageAmountIncVat: 0,
-};
-let totalPages = 1;
-let loadError = "";
+// Verify finance access
+const financeError = requireFinance(user);
+if (financeError) {
+  return financeError;
+}
+
+// Fetch finance data
+const db = getDatabase();
+
+let summary = { pending_tasks: 0, total_pending_value: 0, overdue_invoices: 0, unpaid_amount: 0 };
+let pendingTasks = [];
+let completedTasks = [];
+let missingSageRefs = [];
+let sites = [];
+let linkableJobs = [];
+let stats = { totalSageAmountExVat: 0, totalSageVatAmount: 0, totalSageAmountIncVat: 0 };
+let sageConnection = { connected: false };
 
 try {
-  const db = getDatabase();
+  // Get finance summary
+  const summaryResult = await db.prepare(`
+    SELECT 
+      COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending_tasks,
+      SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as total_pending_value,
+      COUNT(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN 1 END) as overdue_invoices,
+      SUM(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN amount ELSE 0 END) as unpaid_amount
+    FROM finance_tasks
+  `).first();
+  if (summaryResult) summary = summaryResult;
 
-  const [
-    recordsResult, statsResult, statusCountsResult,
-    pendingResult, overdueResult, sagePipelineResult,
-    sitesResult, linkableJobsResult, invoiceRequiredResult,
-  ] = await db.batch([
-    // 1. Paginated ledger
-    db.prepare(`
-      SELECT financial_records.*, sites.owner_company_name,
-             CAST(julianday('now') - julianday(COALESCE(financial_records.distribution_date, financial_records.created_at)) AS INTEGER) AS age_days
-      FROM financial_records
-      INNER JOIN sites ON sites.id = financial_records.site_id
-      ORDER BY financial_records.distribution_date DESC
-      LIMIT ? OFFSET ?
-    `).bind(limit, offset),
-    // 2. Aggregate stats
-    db.prepare(`
-      SELECT
-        COUNT(CASE WHEN payment_status = 'Pending Approval' THEN 1 END) AS totalPending,
-        SUM(CASE WHEN payment_status = 'Pending Approval' THEN amount ELSE 0 END) AS pendingAmount,
-        COUNT(CASE WHEN payment_status = 'Unpaid' AND sage_due_date < date('now') THEN 1 END) AS totalOverdue,
-        SUM(CASE WHEN payment_status = 'Unpaid' AND sage_due_date < date('now') THEN amount ELSE 0 END) AS overdueAmount,
-        SUM(amount) AS totalAmount,
-        SUM(sage_amount_ex_vat) AS totalSageAmountExVat,
-        SUM(sage_vat_amount) AS totalSageVatAmount,
-        SUM(sage_amount_inc_vat) AS totalSageAmountIncVat,
-        COUNT(*) AS totalRecords
-      FROM financial_records
-    `),
-    // 3. Sage task status counts
-    db.prepare(`
-      SELECT COALESCE(finance_task_status, 'No Status') AS status, COUNT(*) AS count
-      FROM financial_records
-      GROUP BY finance_task_status
-    `),
-    // 4. Pending approval records (targeted — replaces LIMIT 200 scan)
-    db.prepare(`
-      SELECT financial_records.*, sites.owner_company_name
-      FROM financial_records
-      INNER JOIN sites ON sites.id = financial_records.site_id
-      WHERE financial_records.payment_status = 'Pending Approval'
-      ORDER BY financial_records.distribution_date DESC
-      LIMIT 50
-    `),
-    // 5. Overdue payments (targeted)
-    db.prepare(`
-      SELECT financial_records.*, sites.owner_company_name
-      FROM financial_records
-      INNER JOIN sites ON sites.id = financial_records.site_id
-      WHERE financial_records.payment_status = 'Unpaid' AND financial_records.sage_due_date < date('now')
-      ORDER BY financial_records.sage_due_date ASC
-      LIMIT 50
-    `),
-    // 6. Sage pipeline records for task status panel
-    db.prepare(`
-      SELECT financial_records.*, sites.owner_company_name
-      FROM financial_records
-      INNER JOIN sites ON sites.id = financial_records.site_id
-      WHERE financial_records.finance_task_status IS NOT NULL
-      ORDER BY financial_records.distribution_date DESC
-      LIMIT 100
-    `),
-    // 7. Sites for create form
-    db.prepare(`SELECT id, owner_company_name FROM sites ORDER BY owner_company_name`),
-    // 8. Linkable jobs for create form
-    db.prepare(`
-      SELECT jobs.id, sites.id AS site_id, jobs.status, jobs.scheduled_date, systems.coverage_area
-      FROM jobs
-      INNER JOIN systems ON systems.id = jobs.system_id
-      INNER JOIN sites   ON sites.id   = systems.site_id
-      WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-        AND jobs.status IN ('Completed', 'Invoiced')
-      ORDER BY jobs.completed_at DESC
-      LIMIT 500
-    `),
-    // 9. Completed jobs awaiting Sage invoice
-    db.prepare(`
-      SELECT jobs.id, jobs.completed_at, sites.owner_company_name,
-             systems.system_type, systems.coverage_area,
-             users.name AS assigned_technician_name
-      FROM jobs
-      INNER JOIN systems ON systems.id = jobs.system_id
-      INNER JOIN sites   ON sites.id   = systems.site_id
-      LEFT JOIN  users   ON users.id   = jobs.assigned_technician_id
-      WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-        AND jobs.status = 'Completed' AND jobs.documentation_path IS NOT NULL
-      ORDER BY jobs.completed_at DESC
-      LIMIT 100
-    `),
-  ]);
+  // Get pending finance tasks
+  const pendingTasksResult = await db.prepare(`
+    SELECT ft.*, s.owner_company_name, j.job_type
+    FROM finance_tasks ft
+    LEFT JOIN sites s ON s.id = ft.site_id
+    LEFT JOIN jobs j ON j.id = ft.job_id
+    WHERE ft.status = 'Pending' OR ft.status = 'In Progress'
+    ORDER BY ft.created_at DESC
+    LIMIT 50
+  `).all();
+  pendingTasks = pendingTasksResult.results || [];
 
-  records = (recordsResult.results ?? []) as DbFinancialRecord[];
+  // Get recent completed tasks
+  const completedTasksResult = await db.prepare(`
+    SELECT ft.*, s.owner_company_name, j.job_type
+    FROM finance_tasks ft
+    LEFT JOIN sites s ON s.id = ft.site_id
+    LEFT JOIN jobs j ON j.id = ft.job_id
+    WHERE ft.status = 'Completed'
+    ORDER BY ft.updated_at DESC
+    LIMIT 50
+  `).all();
+  completedTasks = completedTasksResult.results || [];
 
-  type StatsRow = {
-    totalPending: number; totalOverdue: number; pendingAmount: number; overdueAmount: number;
-    totalAmount: number; totalSageAmountExVat: number; totalSageVatAmount: number;
-    totalSageAmountIncVat: number; totalRecords: number;
-  };
-  const sr = ((statsResult.results?.[0] as StatsRow | undefined) ?? {}) as Partial<StatsRow>;
+  // Get Sage references that need to be entered
+  const missingSageRefsResult = await db.prepare(`
+    SELECT ft.*, s.owner_company_name, j.job_type
+    FROM finance_tasks ft
+    LEFT JOIN sites s ON s.id = ft.site_id
+    LEFT JOIN jobs j ON j.id = ft.job_id
+    WHERE ft.status = 'Completed' AND ft.sage_document_ref IS NULL
+    ORDER BY ft.updated_at DESC
+    LIMIT 50
+  `).all();
+  missingSageRefs = missingSageRefsResult.results || [];
+
+  // Compute VAT stats from completed tasks
+  const vatStats = await db.prepare("SELECT SUM(amount) as totalEx, SUM(vat_amount) as totalVat FROM finance_tasks WHERE status = 'Completed'").first();
   stats = {
-    totalPending:          Number(sr.totalPending          ?? 0),
-    totalOverdue:          Number(sr.totalOverdue          ?? 0),
-    totalAmount:           Number(sr.totalAmount           ?? 0),
-    pendingAmount:         Number(sr.pendingAmount         ?? 0),
-    overdueAmount:         Number(sr.overdueAmount         ?? 0),
-    totalRecords:          Number(sr.totalRecords          ?? 0),
-    totalSageAmountExVat:  Number(sr.totalSageAmountExVat  ?? 0),
-    totalSageVatAmount:    Number(sr.totalSageVatAmount    ?? 0),
-    totalSageAmountIncVat: Number(sr.totalSageAmountIncVat ?? 0),
+    totalSageAmountExVat: Number(vatStats?.totalEx) || 0,
+    totalSageVatAmount: Number(vatStats?.totalVat) || 0,
+    totalSageAmountIncVat: (Number(vatStats?.totalEx) || 0) + (Number(vatStats?.totalVat) || 0)
   };
-  totalPages = Math.max(1, Math.ceil(stats.totalRecords / limit));
 
-  pendingApproval = (pendingResult.results    ?? []) as DbFinancialRecord[];
-  overduePayments = (overdueResult.results    ?? []) as DbFinancialRecord[];
+  // Get Sage connection status
+  const sageConnectionRow = await db.prepare("SELECT expires_at FROM sage_config WHERE id = 1").first();
+  sageConnection = {
+    connected: !!sageConnectionRow,
+    expiresAt: sageConnectionRow ? new Date(sageConnectionRow.expires_at * 1000).toISOString() : undefined,
+    expired: sageConnectionRow ? new Date(sageConnectionRow.expires_at * 1000) < new Date() : false
+  };
 
-  const sagePipelineRecords = (sagePipelineResult.results ?? []) as DbFinancialRecord[];
-  const statusCounts = (statusCountsResult.results ?? []) as { status: string; count: number }[];
-  sageStatuses = statusCounts.map((sc) => ({
-    status:  sc.status,
-    count:   sc.count,
-    records: sagePipelineRecords.filter((r) => (r.finance_task_status ?? "No Status") === sc.status),
-  }));
+  // Get data for create form
+  const sitesResult = await db.prepare("SELECT id, owner_company_name FROM sites ORDER BY owner_company_name ASC").all();
+  sites = sitesResult.results || [];
 
-  sites           = (sitesResult.results          ?? []) as Pick<DbSite, "id" | "owner_company_name">[];
-  linkableJobs    = (linkableJobsResult.results   ?? []) as DbLinkableJob[];
-  invoiceRequired = (invoiceRequiredResult.results ?? []) as DbInvoiceRequiredJob[];
+  const linkableJobsResult = await db.prepare("SELECT id, job_type, site_id FROM jobs WHERE status = 'Completed' OR status = 'In Progress' ORDER BY created_at DESC").all();
+  linkableJobs = linkableJobsResult.results || [];
 
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "finance dashboard failed" } });
-  loadError = "Finance data could not be loaded.";
+  console.error("Finance dashboard load error:", error);
+  loadError = "Failed to load finance data. Ensure the database migrations are up to date.";
 }
 ---
 
@@ -188,26 +126,14 @@ try {
 
       <FinanceCreateForm {sites} {linkableJobs} />
 
-      <FinanceStatsPanel {stats} />
+      <FinanceStatsPanel {summary} />
 
       <div class="grid gap-6 lg:grid-cols-2">
-        <FinanceExceptionPanel
-          {pendingApproval}
-          {overduePayments}
-          {invoiceRequired}
-          stats={{ totalPending: stats.totalPending, totalOverdue: stats.totalOverdue }}
-        />
-        <FinanceSagePanel
-          {sageStatuses}
-          stats={{
-            totalSageAmountExVat:  stats.totalSageAmountExVat,
-            totalSageVatAmount:    stats.totalSageVatAmount,
-            totalSageAmountIncVat: stats.totalSageAmountIncVat,
-          }}
-        />
+        <FinanceExceptionPanel {pendingTasks} {summary} />
+        <FinanceSagePanel {missingSageRefs} {stats} {sageConnection} />
       </div>
 
-      <FinanceLedgerTable {records} {page} {totalPages} />
+      <FinanceLedgerTable {completedTasks} />
     </div>
   </section>
 </PortalLayout>

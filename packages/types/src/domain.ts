@@ -99,6 +99,7 @@ export interface DbCertificate {
   issued_date: string;
   expiry_date: string | null;
   status: CertStatus;
+  sans_edition: string | null;
   created_at: string;
   system_id: string;
   system_type: string;
@@ -106,63 +107,80 @@ export interface DbCertificate {
   site_id: string;
   owner_company_name: string;
   job_id: string | null;
-  blocking_severity: string | null;
-  blocking_description: string | null;
-}
-
-export interface DbClientSiteAccess {
-  user_id: string;
-  site_id: string;
-  granted_at: string;
-  user_name: string;
-  user_email: string;
-  owner_company_name: string;
 }
 
 export interface DbFinancialRecord {
   id: string;
   site_id: string;
-  amount: number | null;
-  item_type: string; // "Task" | "Quote" | "Invoice" | "Credit Note"
+  job_id: string | null;
+  amount: number;
+  item_type: string;
   payment_status: string;
-  distribution_date: string | null;
+  distribution_date: string;
   reference: string | null;
   sage_quote_number: string | null;
   sage_invoice_number: string | null;
   sage_customer_code: string | null;
   sage_amount_ex_vat: number | null;
   sage_vat_amount: number | null;
-  sage_amount_inc_vat: number | null;
-  sage_document_date: string | null;
-  sage_due_date: string | null;
-  finance_task_status: string | null;
-  finance_notes: string | null;
   sage_payment_reference: string | null;
+  finance_task_status: string | null;
+  created_at: string;
+  updated_at: string;
   owner_company_name: string;
-  age_days?: number;
-  credit_note_for_id?: string | null;
+  job_type: string | null;
+  sage_due_date?: string;
 }
 
 export interface DbInvoiceRequiredJob {
   id: string;
-  completed_at: string;
   owner_company_name: string;
   system_type: string;
   coverage_area: string;
-  assigned_technician_name: string;
+  completed_at: string | null;
+  assigned_technician_name: string | null;
 }
 
-export interface DbLinkableJob {
+export interface DbFinanceTask {
   id: string;
   site_id: string;
-  coverage_area: string;
+  job_id: string | null;
+  task_type: string;
+  amount: number;
+  vat_amount: number | null;
+  reference: string | null;
+  sage_document_ref: string | null;
   status: string;
-  scheduled_date: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  owner_company_name: string;
+  job_type: string | null;
 }
 
-// ─── Session / API types ────────────────────────────────────────────────────
+export interface DbFinanceSummary {
+  pending_tasks: number;
+  total_pending_value: number;
+  overdue_invoices: number;
+  unpaid_amount: number;
+}
 
-export interface PortalUser {
+export interface DbUserFeedback {
+  id: string;
+  user_id: string | null;
+  variant: string;
+  page_path: string;
+  category: string;
+  message: string;
+  submitted_at: string;
+  status: string;
+  user_name: string | null;
+  user_email: string | null;
+}
+
+// ─── API Payloads & App State ───────────────────────────────────────────────
+
+export interface CurrentUser {
   id: string;
   name: string;
   email: string;
@@ -173,9 +191,3 @@ export interface PortalUser {
   mfaEnabled: boolean;
   expiresAt: string;
 }
-
-export type ApiOk<T extends Record<string, unknown> = Record<string, unknown>> = { ok: true } & T;
-export type ApiFail = { ok: false; message: string };
-export type ApiResponse<T extends Record<string, unknown> = Record<string, unknown>> =
-  | ApiOk<T>
-  | ApiFail;

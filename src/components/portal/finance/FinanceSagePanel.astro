@@ -1,15 +1,14 @@
 ---
 import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
-import type { DbFinancialRecord } from "@sentinel/types";
-
-interface SageStatusGroup {
-  status: string;
-  count: number;
-  records: DbFinancialRecord[];
-}
+import type { DbFinanceTask } from "@sentinel/types";
 
 interface Props {
-  sageStatuses: SageStatusGroup[];
+  missingSageRefs: DbFinanceTask[];
+  sageConnection: {
+    connected: boolean;
+    expired?: boolean;
+    expiresAt?: string;
+  };
   stats: {
     totalSageAmountExVat: number;
     totalSageVatAmount: number;
@@ -17,43 +16,88 @@ interface Props {
   };
 }
 
-const { sageStatuses, stats } = Astro.props;
+const { missingSageRefs, sageConnection, stats } = Astro.props;
 ---
 
 <div class="space-y-6">
-  <!-- Sage Task Status Tracking -->
+  <!-- Sage Integration Connection Status -->
+  <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
+    <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Integration</p>
+        <h2 class="text-lg font-bold text-kharon-black">Sage Accounting API</h2>
+      </div>
+      {sageConnection.connected ? (
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800 border border-emerald-200">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          Connected
+        </span>
+      ) : (
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-800 border border-rose-200">
+          <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+          Disconnected
+        </span>
+      )}
+    </div>
+    <div>
+      {sageConnection.connected ? (
+        <div class="space-y-3">
+          <p class="text-xs text-kharon-grey">
+            Your portal is successfully connected to Sage Business Cloud Accounting.
+            {sageConnection.expiresAt && (
+              <span class="block mt-1">Token Expires: <strong class="text-kharon-black">{new Date(sageConnection.expiresAt).toLocaleString()}</strong></span>
+            )}
+          </p>
+          <button
+            id="disconnect-sage-btn"
+            class="w-full inline-flex justify-center items-center rounded-lg border border-kharon-border bg-white px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-all cursor-pointer"
+          >
+            Disconnect Sage Account
+          </button>
+        </div>
+      ) : (
+        <div class="space-y-3">
+          <p class="text-xs text-kharon-grey">
+            Connect your Sage account to automate invoice sync, payments, and client registers.
+          </p>
+          <a
+            href="/portal/api/finance/sage-auth"
+            class="w-full inline-flex justify-center items-center rounded-lg bg-kharon-purple px-3 py-2 text-xs font-semibold text-white hover:bg-kharon-purple-dark shadow-sm hover:shadow transition-all text-center"
+          >
+            Connect to Sage Account
+          </a>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- Missing Sage References -->
   <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
     <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
       <div>
         <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Sage Pipeline</p>
-        <h2 class="text-lg font-bold text-kharon-black">Task Status Tracking</h2>
+        <h2 class="text-lg font-bold text-kharon-black">Missing Sage References</h2>
       </div>
+      <span class="rounded-full bg-kharon-purple px-2.5 py-0.5 text-[10px] font-bold uppercase text-white">{missingSageRefs.length}</span>
     </div>
     <div class="space-y-3 max-h-96 overflow-y-auto">
-      {sageStatuses.length === 0 ? (
-        <p class="text-sm text-kharon-grey italic py-2">No records to track.</p>
+      {missingSageRefs.length === 0 ? (
+        <p class="text-sm text-kharon-grey italic py-2">All completed tasks have Sage references.</p>
       ) : (
-        sageStatuses.map((group) => (
-          <details class="group">
-            <summary class="flex items-center justify-between cursor-pointer p-3 rounded-lg border border-kharon-border bg-white hover:bg-kharon-light transition-colors">
-              <span class="font-semibold text-kharon-black group-open:font-bold">{group.status}</span>
-              <span class="rounded-full bg-kharon-purple px-2 py-0.5 text-xs font-bold text-white">{group.count}</span>
-            </summary>
-            <div class="mt-2 pl-4 border-l-2 border-kharon-border space-y-2">
-              {group.records.slice(0, 5).map((record) => (
-                <div class="flex items-center justify-between p-2 bg-kharon-light/30 rounded">
-                  <div>
-                    <p class="text-xs font-semibold text-kharon-black truncate">{record.owner_company_name}</p>
-                    <p class="text-[10px] text-kharon-grey">{record.item_type} • {formatCurrency(record.amount)}</p>
-                  </div>
-                  <span class="text-[10px] text-kharon-grey">{record.sage_invoice_number || record.sage_quote_number || "No Sage ref"}</span>
-                </div>
-              ))}
-              {group.records.length > 5 && (
-                <p class="text-xs text-kharon-grey pl-2">+{group.records.length - 5} more records</p>
-              )}
+        missingSageRefs.map((task) => (
+          <article class="flex items-start justify-between gap-4 p-4 rounded-lg border border-kharon-border bg-kharon-light/30">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-kharon-black">{task.owner_company_name}</span>
+                <span class="rounded bg-kharon-light px-1.5 py-0.5 text-[9px] font-bold uppercase text-kharon-grey">Missing Ref</span>
+              </div>
+              <p class="text-sm text-kharon-grey mt-0.5">{task.task_type} / Ref: {task.reference || "N/A"}</p>
+              <p class="mt-2 text-xs text-kharon-grey font-semibold">Completed: {task.updated_at ? new Date(task.updated_at).toLocaleDateString() : "N/A"}</p>
             </div>
-          </details>
+            <button class="rounded border border-kharon-purple bg-white px-3 py-1.5 text-[10px] font-bold text-kharon-purple hover:bg-kharon-purple hover:text-white transition-colors text-center cursor-pointer">
+              Add Ref
+            </button>
+          </article>
         ))
       )}
     </div>
@@ -89,3 +133,31 @@ const { sageStatuses, stats } = Astro.props;
     </div>
   </div>
 </div>
+
+<script>
+  const disconnectBtn = document.getElementById("disconnect-sage-btn");
+  if (disconnectBtn) {
+    disconnectBtn.addEventListener("click", async () => {
+      if (confirm("Are you sure you want to disconnect Sage Accounting API?")) {
+        try {
+          // @ts-ignore
+          const res = await window.kharonPortalFetch("/portal/api/finance/sage-status", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ action: "disconnect" })
+          });
+          if (res.ok) {
+            window.location.reload();
+          } else {
+            alert("Failed to disconnect Sage integration.");
+          }
+        } catch (err) {
+          console.error("Disconnect error:", err);
+          alert("An error occurred while disconnecting.");
+        }
+      }
+    });
+  }
+</script>

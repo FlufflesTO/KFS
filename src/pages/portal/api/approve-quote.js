@@ -1,103 +1,117 @@
-import { auditError } from "../../../lib/server/audit.js";
-import { getDatabase } from "../../../lib/server/bindings.js";
-import { auditEvent } from "../../../lib/server/audit.js";
-import { clientCanAccessSite } from "../../../lib/server/clientAccess.js";
-import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
+import { getDatabase } from "../../../lib/server/bindings";
+import { verifyCsrfToken } from "../../../lib/server/csrf";
+import { FinanceService } from "../../../lib/server/services/finance-service";
 
 export const prerender = false;
 
 export async function POST({ request, locals }) {
   try {
+    // Verify authentication
     const user = locals.user;
-    if (!user) return unauthorized();
-    if (user.role !== "client") return forbidden("Only client accounts can approve quotes.");
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-    const body = await request.json();
-    const recordId = String(body.recordId || "").trim();
-    if (!/^[A-Za-z0-9_-]{3,80}$/.test(recordId)) {
-      return badRequest("recordId is invalid.");
+    // Verify CSRF token
+    const formData = await request.formData();
+    const csrfToken = formData.get('_csrf');
+    if (!csrfToken || !verifyCsrfToken(csrfToken, user)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid CSRF token" }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Extract form data
+    const quoteId = formData.get('quoteId');
+    const status = formData.get('status'); // 'approved' or 'rejected'
+
+    if (!quoteId || !status) {
+      return new Response(
+        JSON.stringify({ error: "Quote ID and status are required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid status value" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const db = getDatabase();
-    const record = await db
-      .prepare(
-        `SELECT id, site_id, item_type, payment_status, finance_task_status
-         FROM financial_records
-         WHERE id = ?1
-         LIMIT 1`
-      )
-      .bind(recordId)
-      .first();
+    const financeService = new FinanceService(db);
 
-    if (!record || !(await clientCanAccessSite(db, user, record.site_id))) {
-      await auditEvent(db, request, {
-        eventType: "quote.approve",
-        entityType: "financial_record",
-        entityId: recordId,
-        outcome: "blocked",
-        user,
-        metadata: { reason: "not_found_or_wrong_site" }
-      });
-      return forbidden("Quote approval is not permitted for this account.");
+    // Get the current financial record to determine site and amount
+    const financialRecord = await db.prepare(
+      `SELECT id, site_id, job_id, amount 
+       FROM financial_records 
+       WHERE id = ? AND item_type = 'Quote'`
+    ).bind(quoteId).first();
+
+    if (!financialRecord) {
+      return new Response(
+        JSON.stringify({ error: "Quote not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    if (
-      record.item_type !== "Quote" ||
-      record.payment_status !== "Pending Approval" ||
-      record.finance_task_status === "Approved - Sage Invoice Required"
-    ) {
-      await auditEvent(db, request, {
-        eventType: "quote.approve",
-        entityType: "financial_record",
-        entityId: recordId,
-        outcome: "failure",
-        user,
-        metadata: {
-          reason: "invalid_state",
-          itemType: record.item_type,
-          paymentStatus: record.payment_status,
-          financeTaskStatus: record.finance_task_status
-        }
+    if (status === 'approved') {
+      // INSTEAD OF converting the quote to an invoice in financial_records,
+      // create a finance task to track the approval and subsequent invoice creation in Sage
+      await financeService.createFinanceTask({
+        siteId: financialRecord.site_id,
+        jobId: financialRecord.job_id,
+        taskType: 'Quote Approved',
+        amount: financialRecord.amount,
+        status: 'Pending',
+        notes: `Client approved quote ${quoteId}. Invoice needs to be issued in Sage.`
       });
-      return badRequest("Only pending quote records can be approved.");
+
+      // Update the original quote record to reflect approval
+      await db.prepare(
+        `UPDATE financial_records 
+         SET finance_task_status = 'Quote Approved',
+             updated_at = datetime('now')
+         WHERE id = ?`
+      ).bind(quoteId).run();
+    } else if (status === 'rejected') {
+      // Update the original quote record to reflect rejection
+      await db.prepare(
+        `UPDATE financial_records 
+         SET finance_task_status = 'Quote Rejected',
+             updated_at = datetime('now')
+         WHERE id = ?`
+      ).bind(quoteId).run();
     }
 
-    await db
-      .prepare(
-        `UPDATE financial_records
-         SET finance_task_status = 'Approved - Sage Invoice Required',
-             updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-         WHERE id = ?1`
-      )
-      .bind(recordId)
-      .run();
+    // Log the event
+    await db.prepare(
+      `INSERT INTO audit_events (user_id, event_type, event_details, ip_address, user_agent)
+       VALUES (?1, 'Quote Status Updated', ?2, ?3, ?4)`
+    ).bind(
+      user.id,
+      `Updated quote ${quoteId} status to ${status}`,
+      request.headers.get('CF-Connecting-IP') || '',
+      request.headers.get('User-Agent') || ''
+    ).run();
 
-    await auditEvent(db, request, {
-      eventType: "quote.approve",
-      entityType: "financial_record",
-      entityId: recordId,
-      outcome: "success",
-      user,
-      metadata: { siteId: record.site_id, financeTaskStatus: "Approved - Sage Invoice Required" }
-    });
-
-    return json({
-      ok: true,
-      recordId,
-      itemType: "Quote",
-      paymentStatus: record.payment_status,
-      financeTaskStatus: "Approved - Sage Invoice Required"
-    });
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `Quote ${status}. A finance task has been created to track the next steps in Sage.`
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      return badRequest("Request body must be valid JSON.");
-    }
-
-    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "quote approval failed" } });
-    return serverError("Quote approval could not be completed.");
+    console.error("Quote approval failed:", error);
+    return new Response(
+      JSON.stringify({ error: "Quote approval failed" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
-}
-
-export function ALL() {
-  return methodNotAllowed(["POST"]);
 }

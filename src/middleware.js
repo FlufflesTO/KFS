@@ -152,8 +152,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const nonce = createCspNonce();
   context.locals.nonce = nonce;
 
+  // A/B Testing Variant Assignment
+  const variantCookie = context.cookies.get("kharon_ui_variant")?.value;
+  let variant = variantCookie || (Math.random() < 0.5 ? "A" : "B");
+  context.locals.variant = variant;
+
   if (!pathname.startsWith("/portal")) {
-    return withHtmlSecurityHeaders(await next(), nonce);
+    const response = await withHtmlSecurityHeaders(await next(), nonce);
+    if (!variantCookie) {
+      response.headers.append(
+        "Set-Cookie",
+        `kharon_ui_variant=${variant}; Path=/; Max-Age=31536000; SameSite=Lax; HttpOnly`
+      );
+    }
+    return response;
   }
 
   if (pathContainsTraversal(pathname)) {
@@ -251,5 +263,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const response = await withHtmlSecurityHeaders(await next(), nonce);
   if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
+  if (!variantCookie) {
+    response.headers.append(
+      "Set-Cookie",
+      `kharon_ui_variant=${variant}; Path=/; Max-Age=31536000; SameSite=Lax; HttpOnly`
+    );
+  }
   return response;
 });

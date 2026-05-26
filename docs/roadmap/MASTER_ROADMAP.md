@@ -3232,6 +3232,24 @@ Status:
 
 Implementation complete. CSP tightened with nonces and Plausible Analytics whitelisted. Health API implemented for performance monitoring.
 
+### Phase 11: Continuous Improvement (ONGOING)
+
+Goal:
+
+Establish foundational infrastructure for ongoing site performance, user feedback, and security verification.
+
+Tasks:
+
+- [x] Automate site validation in CI/CD (Performance & Security markers).
+- [x] Add user feedback mechanism to Portal layout.
+- [x] Create Admin feedback review console at `/portal/admin/feedback`.
+- [x] Implement A/B testing variant assignment framework in middleware.
+- [x] Integrate variant tracking into feedback and audit telemetry.
+
+Status:
+
+Foundational infrastructure implemented. Feedback collection and A/B testing live in portal. CI/CD now enforces strict security/performance budgets.
+
 ### Phase 12: Public Authority Proof And Compliance Hub
 
 Goal:

@@ -34,6 +34,9 @@ jobs:
           PUBLIC_SITE_URL: ${{ github.ref == 'refs/heads/main' && 'https://www.kharon.co.za' || 'https://www.tequit.co.za' }}
           PUBLIC_PORTAL_URL: ${{ github.ref == 'refs/heads/main' && 'https://portal.kharon.co.za' || 'https://portal.tequit.co.za' }}
 
+      - name: Site Audit (Security & Performance)
+        run: npm run audit:site
+
   deploy-to-cloudflare:
     needs: validate-and-build
     runs-on: ubuntu-latest

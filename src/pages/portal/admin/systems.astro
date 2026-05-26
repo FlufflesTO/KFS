@@ -1,83 +1,220 @@
 ---
+/**
+ * Project Sentinel - Admin Systems
+ * Purpose: Admin interface for fire & security systems
+ * Dependencies: PortalLayout, getDatabase, requireAdmin
+ * Structural Role: Administrative UI for system lifecycle management
+ */
 import { SITE_CONFIG } from "../../../config/site-config";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
 import { requireAdmin } from "../../../lib/server/admin";
+import type { DbSystem, DbSite } from "@sentinel/types";
 
-export async function getStaticPaths() {
-  return [{ params: {} }];
-}
+export const prerender = false;
 
 const { user } = Astro.locals;
-
-// Verify admin access
 const adminError = requireAdmin(user);
 if (adminError) {
-  return {
-    redirect: {
-      destination: '/portal/login',
-      permanent: false,
-    },
-  };
+  return adminError;
 }
 
-// Fetch systems with pagination
-const db = getDatabase();
-const systems = await db.prepare(
-  `SELECT s.id, s.system_type, s.coverage_area, s.last_service_date, s.next_due_date, s.service_interval_months,
-           si.owner_company_name
-   FROM systems s
-   LEFT JOIN sites si ON si.id = s.site_id
-   WHERE s.deleted_at IS NULL
-   ORDER BY s.next_due_date ASC
-   LIMIT 50`
-).all();
+const params = Astro.url.searchParams;
+const page = Math.max(1, Math.min(999, parseInt(params.get("page") || "1", 10) || 1));
+const searchQuery = params.get("q") || "";
+const typeFilter = params.get("type") || "";
+const perPage = 50;
+const offset = (page - 1) * perPage;
+
+let systems: DbSystem[] = [];
+let sites: DbSite[] = [];
+let systemsTotal = 0;
+let loadError = "";
+
+const today = new Date().toISOString().slice(0, 10);
+const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+try {
+  const db = getDatabase();
+
+  let searchCondition = "";
+  const bindParams: string[] = [];
+
+  if (searchQuery) {
+    searchCondition += ` AND (sites.owner_company_name LIKE ? OR systems.coverage_area LIKE ? OR systems.manufacturer LIKE ? OR systems.model_reference LIKE ?)`;
+    const q = `%${searchQuery}%`;
+    bindParams.push(q, q, q, q);
+  }
+
+  if (typeFilter) {
+    searchCondition += ` AND systems.system_type = ?`;
+    bindParams.push(typeFilter);
+  }
+
+  const countQuery = `
+    SELECT COUNT(*) as total 
+    FROM systems 
+    INNER JOIN sites ON sites.id = systems.site_id
+    WHERE systems.deleted_at IS NULL ${searchCondition}
+  `;
+  systemsTotal = ((await db.prepare(countQuery).bind(...bindParams).first()) as { total: number } | null)?.total ?? 0;
+
+  const dataQuery = `
+    SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area,
+           systems.manufacturer, systems.model_reference, systems.next_due_date,
+           systems.service_interval_months, sites.owner_company_name
+    FROM systems
+    INNER JOIN sites ON sites.id = systems.site_id
+    WHERE systems.deleted_at IS NULL ${searchCondition}
+    ORDER BY sites.owner_company_name, systems.coverage_area
+    LIMIT ? OFFSET ?
+  `;
+
+  systems = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as DbSystem[];
+
+  sites = ((await db.prepare(
+    `SELECT id, owner_company_name
+     FROM sites
+     WHERE deleted_at IS NULL
+     ORDER BY owner_company_name
+     LIMIT 1000`
+  ).all()).results ?? []) as DbSite[];
+
+} catch (error) {
+  loadError = "Systems data could not be loaded.";
+}
+
+const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
 ---
 
-<PortalLayout user={user}>
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<PortalLayout title="System Management | Kharon Portal" active="systems" user={user}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">System Management</h1>
-        <p class="mt-1 text-sm text-gray-500">Manage fire and security systems</p>
+        <p class="mt-1 text-sm text-gray-500">Manage protected systems and lifecycle service dates</p>
       </div>
     </div>
 
-    <div class="bg-white shadow overflow-hidden sm:rounded-md">
-      <ul class="divide-y divide-gray-200">
-        {systems.results?.map((system) => (
-          <li key={system.id}>
-            <div class="px-4 py-4 sm:px-6">
-              <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-kharon-blue truncate">{system.id}</p>
-                <div class="ml-2 flex-shrink-0 flex">
-                  <span class={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    new Date(system.next_due_date) < new Date() ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                  }`}>
-                    {new Date(system.next_due_date) < new Date() ? 'Overdue' : 'Current'}
-                  </span>
-                </div>
-              </div>
-              <div class="mt-2 sm:flex sm:justify-between">
-                <div class="sm:flex">
-                  <p class="flex items-center text-sm text-gray-500">
-                    <span class="font-medium">{system.system_type}</span> • {system.coverage_area}
-                  </p>
-                </div>
-                <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                  <p>Due: {new Date(system.next_due_date).toLocaleDateString()}</p>
-                </div>
-              </div>
-              <div class="mt-2 text-sm text-gray-700">
-                <p>
-                  <span class="font-medium">{system.owner_company_name}</span> • 
-                  Last serviced: {system.last_service_date ? new Date(system.last_service_date).toLocaleDateString() : 'Never'}
-                </p>
-              </div>
+    {loadError && (
+      <p class="mx-auto mb-6 max-w-7xl border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>
+    )}
+
+    <article class="border border-kharon-border bg-white p-4 sm:p-5">
+      <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-white">
+        <h2 class="text-xl font-bold">
+          Systems <span class="ml-2 text-sm font-normal text-kharon-grey">({systemsTotal})</span>
+        </h2>
+        <form class="flex flex-wrap gap-3" method="get">
+          <input
+            name="q"
+            type="search"
+            class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+            placeholder="Search site or area…"
+            value={searchQuery}
+            size="24"
+          />
+          <select name="type" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+            <option value="">All types</option>
+            <option value="Gas Suppression" selected={typeFilter === "Gas Suppression"}>Gas Suppression</option>
+            <option value="Fire Detection" selected={typeFilter === "Fire Detection"}>Fire Detection</option>
+          </select>
+          <button type="submit" class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white text-sm">Filter</button>
+          {(searchQuery || typeFilter) && (
+            <a href="/portal/admin/systems" class="rounded-md border border-kharon-border px-4 py-2 font-semibold text-kharon-grey text-sm">Clear</a>
+          )}
+        </form>
+      </div>
+
+      <div class="grid gap-4">
+        {systems.length === 0 && <p class="py-4 text-sm text-kharon-grey">No systems match your filter.</p>}
+        {systems.map((record) => (
+          <form
+            class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
+            data-endpoint="/portal/api/admin/systems"
+          >
+            <input type="hidden" name="action" value="update" />
+            <input type="hidden" name="id" value={record.id} />
+            <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
+              {sites.map((site) => (
+                <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>
+              ))}
+            </select>
+            <select class="rounded-md border border-kharon-border px-3 py-2" name="systemType">
+              {["Gas Suppression", "Fire Detection"].map((type) => (
+                <option value={type} selected={record.system_type === type}>{type}</option>
+              ))}
+            </select>
+            <input class="rounded-md border border-kharon-border px-3 py-2" name="coverageArea" value={record.coverage_area} />
+            <input class="rounded-md border border-kharon-border px-3 py-2" name="manufacturer" value={record.manufacturer || ""} />
+            <input class="rounded-md border border-kharon-border px-3 py-2" name="modelReference" value={record.model_reference || ""} />
+            <input class="rounded-md border border-kharon-border px-3 py-2" name="nextDueDate" type="date" value={record.next_due_date} />
+            <div class="flex items-center gap-2">
+              <label class="whitespace-nowrap text-xs font-semibold">Interval (mo.)</label>
+              <input class="w-16 rounded-md border border-kharon-border px-2 py-2 text-sm" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} />
             </div>
-          </li>
+            <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+            {record.next_due_date && record.next_due_date < today && (
+              <p class="rounded border border-red-300 bg-red-50 px-3 py-2 text-xs font-bold uppercase text-red-900 lg:col-span-7">
+                Warning: Service overdue — due {record.next_due_date}. Update after the next completed visit.
+              </p>
+            )}
+            {record.next_due_date && record.next_due_date >= today && record.next_due_date <= soonDate && (
+              <p class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold uppercase text-amber-900 lg:col-span-7">
+                Service due {record.next_due_date} — within 30 days.
+              </p>
+            )}
+            <a href={`/portal/admin/jobs?q=${encodeURIComponent(record.owner_company_name + " " + record.coverage_area)}`} class="text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-7">
+              -&gt; Jobs for {record.coverage_area}
+            </a>
+            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+          </form>
         ))}
-      </ul>
-    </div>
+      </div>
+    </article>
+
+    <nav class="mt-6 mb-8 flex items-center justify-between border-t border-kharon-border pt-4">
+      {page > 1 ? (
+        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&type=${encodeURIComponent(typeFilter)}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Previous</a>
+      ) : (
+        <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Previous</span>
+      )}
+      <span class="text-sm text-kharon-grey">Page {page} of {totalPages}</span>
+      {page < totalPages ? (
+        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&type=${encodeURIComponent(typeFilter)}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Next</a>
+      ) : (
+        <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Next</span>
+      )}
+    </nav>
+
+    <article class="border border-kharon-border bg-white p-4 sm:p-5">
+      <h2 class="text-xl font-bold">Create system</h2>
+      <form class="admin-form mt-5 grid gap-3 lg:grid-cols-2" data-endpoint="/portal/api/admin/systems">
+        <input type="hidden" name="action" value="create" />
+        <select class="rounded-md border border-kharon-border px-4 py-3" name="siteId" required>
+          <option value="">Select site</option>
+          {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
+        </select>
+        <select class="rounded-md border border-kharon-border px-4 py-3" name="systemType" required>
+          <option value="Gas Suppression">Gas Suppression</option>
+          <option value="Fire Detection">Fire Detection</option>
+        </select>
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="coverageArea" placeholder="Server Room 01" required />
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="manufacturer" placeholder="Manufacturer" />
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="modelReference" placeholder="Model/reference" />
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="nextDueDate" type="date" value={today} required />
+        <div class="flex items-center gap-3">
+          <label class="whitespace-nowrap text-sm font-semibold">Service interval (months)</label>
+          <input class="w-24 rounded-md border border-kharon-border px-3 py-2" name="serviceIntervalMonths" type="number" min="1" max="36" value="6" required />
+        </div>
+        <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white lg:col-span-2">Create system</button>
+        <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-2"></p>
+      </form>
+    </article>
   </div>
+  
+  <script>
+    import { bindAdminForms } from "../../../lib/client/portalApi";
+    bindAdminForms();
+  </script>
 </PortalLayout>

@@ -1,19 +1,11 @@
-import { auditError } from "../../../../lib/server/audit.js";
-/**
- * Project Sentinel - Finance Records API
- * Purpose: Handles creation of quotes and invoices manually in the portal
- * Dependencies: ../../../../lib/server/bindings.js, ../../../../lib/server/audit.js, ../../../../lib/server/http.js
- * Structural Role: REST API controller for ledger insertions
- */
-
 import { getDatabase } from "../../../../lib/server/bindings.js";
-import { auditEvent } from "../../../../lib/server/audit.js";
-import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
+import { auditEvent, auditError } from "../../../../lib/server/audit.js";
+import { badRequest, forbidden, json, unauthorized } from "../../../../lib/server/http.js";
+import { FinanceService } from "../../../../lib/server/services/finance-service.ts";
 
 export const prerender = false;
 
 const ITEM_TYPES = new Set(["Task", "Quote", "Invoice"]);
-const INITIAL_STATUS = { Task: "Pending", Quote: "Pending Approval", Invoice: "Unpaid" };
 
 function cleanAmount(value) {
   const num = Number(value);
@@ -21,12 +13,6 @@ function cleanAmount(value) {
     throw new Error("Amount must be a number between 0 and 9,999,999.");
   }
   return Math.round(num * 100);
-}
-
-function cleanDate(value, field) {
-  const str = String(value || "").trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) throw new Error(`${field} must be a date in YYYY-MM-DD format.`);
-  return str;
 }
 
 function cleanOptionalId(value) {
@@ -42,6 +28,7 @@ function cleanRef(value) {
 }
 
 export async function POST({ request, locals }) {
+  const db = getDatabase();
   try {
     const user = locals.user;
     if (!user) return unauthorized();
@@ -62,14 +49,10 @@ export async function POST({ request, locals }) {
     const itemType = String(body.itemType || "").trim();
     if (!ITEM_TYPES.has(itemType)) return badRequest("itemType must be Task, Quote, or Invoice.");
 
-    let amountExVat, vatAmount, amountIncVat, distributionDate, sageDocumentDate, sageDueDate;
+    let amountExVat, vatAmount;
     try {
       amountExVat = cleanAmount(body.amountExVat);
       vatAmount = body.vatAmount ? cleanAmount(body.vatAmount) : Math.round(amountExVat * 0.15);
-      amountIncVat = body.amountIncVat ? cleanAmount(body.amountIncVat) : amountExVat + vatAmount;
-      distributionDate = cleanDate(body.distributionDate, "distributionDate");
-      sageDocumentDate = body.sageDocumentDate ? cleanDate(body.sageDocumentDate, "sageDocumentDate") : null;
-      sageDueDate = body.sageDueDate ? cleanDate(body.sageDueDate, "sageDueDate") : null;
     } catch (error) {
       return badRequest(error.message);
     }
@@ -83,73 +66,45 @@ export async function POST({ request, locals }) {
       return badRequest(error.message);
     }
 
-    const db = getDatabase();
-
     // Validate site exists
     const site = await db.prepare(`SELECT id FROM sites WHERE id = ?1 LIMIT 1`).bind(siteId).first();
     if (!site) return badRequest("The specified site was not found.");
 
-    // Validate job if provided
-    if (jobId) {
-      const job = await db
-        .prepare(
-          `SELECT jobs.id, systems.site_id
-           FROM jobs
-           INNER JOIN systems ON systems.id = jobs.system_id
-           WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-             AND jobs.id = ?1
-           LIMIT 1`
-        )
-        .bind(jobId)
-        .first();
-      if (!job) return badRequest("The specified job was not found.");
-      if (job.site_id !== siteId) return badRequest("The specified job does not belong to the selected site.");
+    const financeService = new FinanceService(db);
+    
+    // Map itemType to taskType
+    let taskType = "Finance Follow-up";
+    if (itemType === "Quote") taskType = "Quote Required";
+    if (itemType === "Invoice") taskType = "Invoice Required";
 
-      const existing = await db
-        .prepare(
-          `SELECT id
-           FROM financial_records
-           WHERE job_id = ?1 AND item_type = ?2
-           LIMIT 1`
-        )
-        .bind(jobId, itemType)
-        .first();
-      if (existing) return badRequest(`This job already has a ${itemType.toLowerCase()} record.`);
-    }
-
-    const recordId = crypto.randomUUID();
-    const paymentStatus = INITIAL_STATUS[itemType];
-    const financeTaskStatus = itemType === "Quote" ? "Quote Required" : "Invoice Required";
-
-    await db
-      .prepare(
-        `INSERT INTO financial_records
-           (id, site_id, job_id, amount, sage_amount_ex_vat, sage_vat_amount, sage_amount_inc_vat,
-            item_type, payment_status, distribution_date, sage_document_date, sage_due_date,
-            reference, finance_notes, finance_task_status)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)`
-      )
-      .bind(recordId, siteId, jobId, amountIncVat, amountExVat, vatAmount, amountIncVat,
-            itemType, paymentStatus, distributionDate, sageDocumentDate, sageDueDate,
-            reference, financeNotes, financeTaskStatus)
-      .run();
-
-    await auditEvent(db, request, {
-      eventType: "finance.record.create",
-      entityType: "financial_record",
-      entityId: recordId,
-      outcome: "success",
-      user,
-      metadata: { itemType, siteId, jobId, amountExVat, vatAmount, amountIncVat, paymentStatus, reference, financeTaskStatus, sageDocumentDate, sageDueDate }
+    const task = await financeService.createFinanceTask({
+      siteId,
+      jobId,
+      taskType: taskType,
+      amount: amountExVat,
+      vatAmount,
+      reference,
+      status: "Pending",
+      notes: financeNotes
     });
 
-    return json({ ok: true, recordId, itemType, paymentStatus, financeTaskStatus, amountExVat, vatAmount, amountIncVat, distributionDate });
-  } catch (error) {
-    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "finance record creation failed" } });
-    return serverError("The financial record could not be created.");
-  }
-}
+    await auditEvent(db, request, {
+      userId: user.id,
+      eventType: "finance_task_created",
+      resourceType: "finance_task",
+      resourceId: task.id,
+      siteId: siteId,
+      jobId: jobId,
+      details: { amountExVat, itemType },
+      status: "success",
+    });
 
-export function ALL() {
-  return methodNotAllowed(["POST"]);
+    return json({ ok: true, message: "Record created successfully.", task });
+  } catch (error) {
+    await auditError(db, request, error, {
+      user: locals.user,
+      metadata: { message: "Error creating finance task" },
+    });
+    return json({ ok: false, message: "An internal error occurred." }, { status: 500 });
+  }
 }

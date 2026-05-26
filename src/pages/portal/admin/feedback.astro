@@ -1,0 +1,100 @@
+---
+import { auditError } from "../../../lib/server/audit.js";
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+import type { DbUserFeedback } from "@sentinel/types";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+
+// ─── Database query ────────────────────────────────────────────────────────
+let feedback: DbUserFeedback[] = [];
+let loadError = "";
+
+try {
+  const db = getDatabase();
+
+  feedback = ((await db.prepare(
+    `SELECT user_feedback.*, users.name AS user_name, users.email AS user_email
+     FROM user_feedback
+     LEFT JOIN users ON users.id = user_feedback.user_id
+     ORDER BY submitted_at DESC
+     LIMIT 100`
+  ).all()).results || []) as DbUserFeedback[];
+} catch (error) {
+  await auditError(typeof db !== "undefined" ? db : Astro.locals.db, Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "feedback console load failed" } });
+  loadError = "Feedback data could not be loaded.";
+}
+---
+
+<PortalLayout title="User Feedback | Kharon Portal" active="feedback" user={user}>
+  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
+    <div class="mx-auto max-w-7xl">
+      <p class="text-xs font-bold uppercase text-kharon-cyan">Administration</p>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">User Feedback</h1>
+      <p class="mt-4 max-w-3xl text-white/65">
+        Review feedback from portal users, including their assigned A/B testing variant and the page they were on.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
+    <div class="mx-auto max-w-7xl">
+      {loadError && (
+        <p class="mb-6 border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>
+      )}
+
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm text-kharon-grey">
+          {feedback.length} submission{feedback.length === 1 ? "" : "s"}
+        </p>
+      </div>
+
+      <div class="grid gap-4">
+        {feedback.length === 0 && !loadError && (
+          <p class="border border-kharon-border bg-white p-6 text-center text-kharon-grey">
+            No feedback submissions found.
+          </p>
+        )}
+        {feedback.map((f) => (
+          <article class="border border-kharon-border bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span class={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                    f.category === 'bug' ? 'bg-rose-100 text-rose-700' :
+                    f.category === 'performance' ? 'bg-amber-100 text-amber-700' :
+                    'bg-slate-100 text-slate-700'
+                  }`}>
+                    {f.category}
+                  </span>
+                  <span class="text-xs text-kharon-grey font-medium">
+                    {new Date(f.submitted_at).toLocaleString('en-ZA')}
+                  </span>
+                  <span class={`rounded px-1.5 py-0.5 text-[10px] font-mono font-bold ${
+                    f.variant === 'A' ? 'bg-kharon-purple/10 text-kharon-purple' : 'bg-kharon-cyan/10 text-kharon-cyan'
+                  }`}>
+                    Variant {f.variant}
+                  </span>
+                </div>
+                <p class="mt-3 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{f.message}</p>
+                <div class="mt-4 flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  <span class="truncate max-w-[200px]">Page: {f.page_path}</span>
+                  <span>User: {f.user_name || 'Unknown'} ({f.user_email || 'No email'})</span>
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <span class={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded border ${
+                  f.status === 'pending' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-slate-200 bg-slate-50 text-slate-500'
+                }`}>
+                  {f.status}
+                </span>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</PortalLayout>

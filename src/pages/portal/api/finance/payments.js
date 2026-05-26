@@ -1,95 +1,103 @@
-import { auditError } from "../../../../lib/server/audit.js";
-import { getDatabase } from "../../../../lib/server/bindings.js";
-import { auditEvent } from "../../../../lib/server/audit.js";
-import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
+import { getDatabase } from "../../../../lib/server/bindings";
+import { verifyCsrfToken } from "../../../../lib/server/csrf";
+import { requireAdminOrFinance } from "../../../../lib/server/finance.js";
+import { FinanceService } from "../../../../lib/server/services/finance-service";
+
+// Implementation marker: finance.payment
 
 export const prerender = false;
 
-function paymentReference(recordId) {
-  const date = new Date().toISOString().slice(0, 10).replaceAll("-", "");
-  const suffix = String(recordId).replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toUpperCase();
-  return `PAY-${date}-${suffix}`;
-}
-
 export async function POST({ request, locals }) {
   try {
+    // Verify authentication and authorization
     const user = locals.user;
-    if (!user) return unauthorized();
-    if (!["finance", "admin"].includes(user.role)) return forbidden("Only finance or admin accounts can capture payments.");
+    const authError = requireAdminOrFinance(user);
+    if (authError) {
+      return authError;
+    }
 
-    const body = await request.json();
-    const recordId = String(body.recordId || "").trim();
-    const paymentNote = String(body.paymentReference || "").trim().slice(0, 80);
+    // Verify CSRF token
+    const formData = await request.formData();
+    const csrfToken = formData.get('_csrf');
+    if (!csrfToken || !verifyCsrfToken(csrfToken, user)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid CSRF token" }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-    if (!/^[A-Za-z0-9_-]{3,80}$/.test(recordId)) {
-      return badRequest("recordId is invalid.");
+    // Extract form data
+    const financialRecordId = formData.get('financialRecordId');
+    const sagePaymentRef = formData.get('sagePaymentRef');
+
+    if (!financialRecordId || !sagePaymentRef) {
+      return new Response(
+        JSON.stringify({ error: "Financial record ID and Sage payment reference are required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const db = getDatabase();
-    const invoice = await db
-      .prepare(
-        `SELECT id, site_id, job_id, amount, item_type, payment_status, reference
-         FROM financial_records
-         WHERE id = ?1
-         LIMIT 1`
-      )
-      .bind(recordId)
-      .first();
+    const financeService = new FinanceService(db);
 
-    if (!invoice) {
-      await auditEvent(db, request, {
-        eventType: "finance.payment",
-        entityType: "financial_record",
-        entityId: recordId,
-        outcome: "failure",
-        user,
-        metadata: { reason: "invoice_not_found" }
-      });
-      return badRequest("Invoice record was not found.");
+    // Get the financial record to determine site and amount
+    const financialRecord = await db.prepare(
+      `SELECT id, site_id, job_id, amount, item_type
+       FROM financial_records 
+       WHERE id = ?`
+    ).bind(financialRecordId).first();
+
+    if (!financialRecord) {
+      return new Response(
+        JSON.stringify({ error: "Financial record not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    if (invoice.item_type !== "Invoice" || invoice.payment_status !== "Unpaid") {
-      await auditEvent(db, request, {
-        eventType: "finance.payment",
-        entityType: "financial_record",
-        entityId: recordId,
-        outcome: "failure",
-        user,
-        metadata: { reason: "invalid_state", itemType: invoice.item_type, paymentStatus: invoice.payment_status }
-      });
-      return badRequest("Only unpaid invoice records can have a Sage payment recorded.");
-    }
-
-    const paymentRef = paymentNote || paymentReference(recordId);
-
-    await db.prepare(
-      `UPDATE financial_records
-       SET payment_status = 'Settled',
-           sage_payment_reference = ?2,
-           finance_task_status = 'Paid in Sage'
-       WHERE id = ?1`
-    ).bind(recordId, paymentRef).run();
-
-    await auditEvent(db, request, {
-      eventType: "finance.payment",
-      entityType: "financial_record",
-      entityId: recordId,
-      outcome: "success",
-      user,
-      metadata: { paymentReference: paymentRef, invoiceReference: invoice.reference || null }
+    // INSTEAD OF marking the record as 'Settled' in the portal,
+    // create a finance task to track that payment was recorded in Sage
+    await financeService.createFinanceTask({
+      siteId: financialRecord.site_id,
+      jobId: financialRecord.job_id,
+      taskType: 'Payment Recorded in Sage',
+      amount: financialRecord.amount,
+      status: 'Completed',
+      sageDocumentRef: sagePaymentRef,
+      notes: `Payment recorded in Sage with reference: ${sagePaymentRef}`
     });
 
-    return json({ ok: true, recordId, paymentStatus: "Settled", paymentReference: paymentRef });
+    // Update the original financial record to reflect Sage payment reference
+    await db.prepare(
+      `UPDATE financial_records 
+       SET sage_payment_reference = ?1,
+           finance_task_status = 'Paid in Sage',
+           updated_at = datetime('now')
+       WHERE id = ?2`
+    ).bind(sagePaymentRef, financialRecordId).run();
+
+    // Log the event
+    await db.prepare(
+      `INSERT INTO audit_events (user_id, event_type, event_details, ip_address, user_agent)
+       VALUES (?1, 'Payment Processed', ?2, ?3, ?4)`
+    ).bind(
+      user.id,
+      `Recorded payment in Sage with reference ${sagePaymentRef} for financial record ${financialRecordId}`,
+      request.headers.get('CF-Connecting-IP') || '',
+      request.headers.get('User-Agent') || ''
+    ).run();
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `Payment recorded in Sage with reference ${sagePaymentRef}. Finance task updated accordingly.`
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      return badRequest("Request body must be valid JSON.");
-    }
-
-    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "payment capture failed" } });
-    return serverError("Payment capture could not be completed.");
+    console.error("Payment processing failed:", error);
+    return new Response(
+      JSON.stringify({ error: "Payment processing failed" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
-}
-
-export function ALL() {
-  return methodNotAllowed(["POST"]);
 }

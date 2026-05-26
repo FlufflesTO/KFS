@@ -1,87 +1,240 @@
 ---
+/**
+ * Project Sentinel - Admin Jobs
+ * Purpose: Admin interface for managing and dispatching jobs
+ * Dependencies: PortalLayout, getDatabase, requireAdmin
+ * Structural Role: Administrative UI for jobcard operations
+ */
 import { SITE_CONFIG } from "../../../config/site-config";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
 import { requireAdmin } from "../../../lib/server/admin";
+import type { DbJob, DbSystem, DbUser } from "@sentinel/types";
 
-export async function getStaticPaths() {
-  return [{ params: {} }];
-}
+export const prerender = false;
 
 const { user } = Astro.locals;
-
-// Verify admin access
 const adminError = requireAdmin(user);
 if (adminError) {
-  return {
-    redirect: {
-      destination: '/portal/login',
-      permanent: false,
-    },
-  };
+  return adminError;
 }
 
-// Fetch jobs with pagination
-const db = getDatabase();
-const jobs = await db.prepare(
-  `SELECT j.id, j.scheduled_date, j.status, j.priority, j.job_type, 
-          s.coverage_area, si.owner_company_name, u.name as technician_name
-   FROM jobs j
-   LEFT JOIN systems s ON s.id = j.system_id
-   LEFT JOIN sites si ON si.id = s.site_id
-   LEFT JOIN users u ON u.id = j.assigned_technician_id
-   ORDER BY j.scheduled_date DESC
-   LIMIT 50`
-).all();
+const params = Astro.url.searchParams;
+const page = Math.max(1, Math.min(999, parseInt(params.get("page") || "1", 10) || 1));
+const searchQuery = params.get("q") || "";
+const statusFilter = params.get("status") || "";
+const perPage = 50;
+const offset = (page - 1) * perPage;
+
+let jobs: DbJob[] = [];
+let systems: DbSystem[] = [];
+let technicians: DbUser[] = [];
+let jobsTotal = 0;
+let loadError = "";
+
+const today = new Date().toISOString().slice(0, 10);
+
+try {
+  const db = getDatabase();
+
+  // Search logic
+  let searchCondition = "";
+  const bindParams: string[] = [];
+  
+  if (searchQuery) {
+    searchCondition += ` AND (sites.owner_company_name LIKE ? OR systems.coverage_area LIKE ? OR jobs.job_type LIKE ? OR jobs.site_notes LIKE ?)`;
+    const q = `%${searchQuery}%`;
+    bindParams.push(q, q, q, q);
+  }
+
+  if (statusFilter) {
+    searchCondition += ` AND jobs.status = ?`;
+    bindParams.push(statusFilter);
+  }
+
+  const countQuery = `
+    SELECT COUNT(*) as total 
+    FROM jobs 
+    INNER JOIN systems ON systems.id = jobs.system_id
+    INNER JOIN sites ON sites.id = systems.site_id
+    WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+    ${searchCondition}
+  `;
+  
+  jobsTotal = ((await db.prepare(countQuery).bind(...bindParams).first()) as { total: number } | null)?.total ?? 0;
+
+  const dataQuery = `
+    SELECT jobs.*, systems.coverage_area, sites.owner_company_name
+    FROM jobs
+    INNER JOIN systems ON systems.id = jobs.system_id
+    INNER JOIN sites   ON sites.id   = systems.site_id
+    WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+    ${searchCondition}
+    ORDER BY jobs.scheduled_date DESC
+    LIMIT ? OFFSET ?
+  `;
+
+  jobs = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as DbJob[];
+
+  systems = ((await db.prepare(
+    `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area, sites.owner_company_name
+     FROM systems
+     INNER JOIN sites ON sites.id = systems.site_id
+     WHERE systems.deleted_at IS NULL
+     ORDER BY sites.owner_company_name, systems.coverage_area
+     LIMIT 1000`
+  ).all()).results ?? []) as DbSystem[];
+
+  technicians = ((await db.prepare(
+    `SELECT id, name, email FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name`
+  ).all()).results ?? []) as DbUser[];
+
+} catch (error) {
+  loadError = "Jobs data could not be loaded.";
+}
+
+const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
 ---
 
-<PortalLayout user={user}>
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<PortalLayout title="Job Management | Kharon Portal" active="jobs" user={user}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Job Management</h1>
-        <p class="mt-1 text-sm text-gray-500">View and manage all jobs</p>
+        <p class="mt-1 text-sm text-gray-500">Dispatch, assign, and manage field service works</p>
       </div>
     </div>
 
-    <div class="bg-white shadow overflow-hidden sm:rounded-md">
-      <ul class="divide-y divide-gray-200">
-        {jobs.results?.map((job) => (
-          <li key={job.id}>
-            <div class="px-4 py-4 sm:px-6">
-              <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-kharon-blue truncate">{job.id}</p>
-                <div class="ml-2 flex-shrink-0 flex">
-                  <span class={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    job.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                    job.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-                    job.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {job.status}
-                  </span>
-                </div>
-              </div>
-              <div class="mt-2 sm:flex sm:justify-between">
-                <div class="sm:flex">
-                  <p class="flex items-center text-sm text-gray-500">
-                    <span class="font-medium">{job.job_type}</span> • {job.coverage_area}
-                  </p>
-                </div>
-                <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                  <p>{new Date(job.scheduled_date).toLocaleDateString()}</p>
-                </div>
-              </div>
-              <div class="mt-2 text-sm text-gray-700">
-                <p>
-                  <span class="font-medium">{job.owner_company_name}</span> • 
-                  {job.technician_name ? ` Assigned: ${job.technician_name}` : ' Unassigned'}
-                </p>
-              </div>
-            </div>
-          </li>
+    {loadError && (
+      <p class="mx-auto mb-6 max-w-7xl border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>
+    )}
+
+    <article class="border border-kharon-border bg-white p-4 sm:p-5">
+      <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-white">
+        <h2 class="text-xl font-bold">
+          Jobs <span class="ml-2 text-sm font-normal text-kharon-grey">({jobsTotal})</span>
+        </h2>
+        <form class="flex flex-wrap gap-3" method="get">
+          <input
+            name="q"
+            type="search"
+            class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+            placeholder="Search site or area…"
+            value={searchQuery}
+            size="24"
+          />
+          <select name="status" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+            <option value="">All statuses</option>
+            {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
+              <option value={s} selected={statusFilter === s}>{s}</option>
+            ))}
+          </select>
+          <button type="submit" class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white text-sm">Filter</button>
+          {(searchQuery || statusFilter) && (
+            <a href="/portal/admin/jobs" class="rounded-md border border-kharon-border px-4 py-2 font-semibold text-kharon-grey text-sm">Clear</a>
+          )}
+        </form>
+      </div>
+
+      <div class="grid gap-4">
+        {jobs.length === 0 && <p class="py-4 text-sm text-kharon-grey">No jobs match your filter.</p>}
+        {jobs.map((record) => (
+          <form
+            class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
+            data-endpoint="/portal/api/admin/jobs"
+          >
+            <input type="hidden" name="action" value="update" />
+            <input type="hidden" name="id" value={record.id} />
+            <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
+              {systems.map((system) => (
+                <option value={system.id} selected={record.system_id === system.id}>
+                  {system.owner_company_name} / {system.coverage_area}
+                </option>
+              ))}
+            </select>
+            <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
+              <option value="">Unassigned</option>
+              {technicians.map((tech) => (
+                <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>
+              ))}
+            </select>
+            <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
+            <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
+              {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
+                <option value={s} selected={record.status === s}>{s}</option>
+              ))}
+            </select>
+            <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
+            <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
+            <select class="rounded-md border border-kharon-border px-3 py-2" name="priority">
+              {["Critical", "High", "Normal", "Low"].map((p) => (
+                <option value={p} selected={record.priority === p}>{p}</option>
+              ))}
+            </select>
+            <input class="rounded-md border border-kharon-border px-3 py-2" name="requiredByDate" type="date" value={record.required_by_date || ""} placeholder="Required by date (optional)" />
+            <label class="flex items-center gap-2 text-sm lg:col-span-6">
+              <input type="checkbox" name="isEmergency" checked={record.is_emergency === 1} /> Emergency
+            </label>
+            <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+          </form>
         ))}
-      </ul>
-    </div>
+      </div>
+    </article>
+
+    <nav class="mt-6 mb-8 flex items-center justify-between border-t border-kharon-border pt-4">
+      {page > 1 ? (
+        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Previous</a>
+      ) : (
+        <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Previous</span>
+      )}
+      <span class="text-sm text-kharon-grey">Page {page} of {totalPages}</span>
+      {page < totalPages ? (
+        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Next</a>
+      ) : (
+        <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Next</span>
+      )}
+    </nav>
+
+    <article class="border border-kharon-border bg-white p-4 sm:p-5">
+      <h2 class="text-xl font-bold">Create job</h2>
+      <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/jobs">
+        <input type="hidden" name="action" value="create" />
+        <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId" required>
+          <option value="">Select system</option>
+          {systems.map((system) => (
+            <option value={system.id}>{system.owner_company_name} / {system.coverage_area}</option>
+          ))}
+        </select>
+        <select class="rounded-md border border-kharon-border px-4 py-3" name="assignedTechnicianId">
+          <option value="">Unassigned</option>
+          {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
+        </select>
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="scheduledDate" type="date" value={today} required />
+        <select class="rounded-md border border-kharon-border px-4 py-3" name="status">
+          <option value="Scheduled">Scheduled</option>
+          <option value="In Progress">In Progress</option>
+        </select>
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="jobType" value="Maintenance" required />
+        <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="siteNotes" placeholder="Site notes"></textarea>
+        <select class="rounded-md border border-kharon-border px-4 py-3" name="priority">
+          <option value="Normal" selected>Normal priority</option>
+          <option value="High">High priority</option>
+          <option value="Critical">Critical priority</option>
+          <option value="Low">Low priority</option>
+        </select>
+        <input class="rounded-md border border-kharon-border px-4 py-3" name="requiredByDate" type="date" placeholder="Required by date (optional)" />
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="isEmergency" /> Emergency / after-hours
+        </label>
+        <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create job</button>
+        <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+      </form>
+    </article>
   </div>
+  
+  <script>
+    import { bindAdminForms } from "../../../lib/client/portalApi";
+    bindAdminForms();
+  </script>
 </PortalLayout>

@@ -1,41 +1,32 @@
 ---
-import { formatCurrency, formatCurrencyCompact } from "../../../lib/utils/financial-utils.ts";
+import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
+import type { DbFinanceSummary } from "@sentinel/types";
 
 interface Props {
-  stats: {
-    totalRecords: number;
-    totalPending: number;
-    pendingAmount: number;
-    totalOverdue: number;
-    overdueAmount: number;
-    totalAmount: number;
-  };
+  summary: DbFinanceSummary;
 }
 
-const { stats } = Astro.props;
+const { summary } = Astro.props;
 ---
 
-<div class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 mb-6">
+<div class="grid gap-4 grid-cols-2 sm:grid-cols-4 mb-6">
   <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
-    <p class="text-xs font-bold uppercase text-kharon-purple">Total Records</p>
-    <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.totalRecords}</p>
+    <p class="text-xs font-bold uppercase text-kharon-purple">Pending Tasks</p>
+    <p class="mt-2 text-2xl font-bold text-kharon-black">{summary.pending_tasks}</p>
   </div>
 
-  <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${stats.totalPending > 0 ? "border-amber-200 bg-amber-50/50" : "border-kharon-border bg-white"}`}>
-    <p class={`text-xs font-bold uppercase ${stats.totalPending > 0 ? "text-amber-600" : "text-kharon-grey"}`}>Pending Approval</p>
-    <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.totalPending}</p>
-    <p class="mt-1 text-xs text-kharon-grey">{formatCurrency(stats.pendingAmount)}</p>
+  <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${summary.pending_tasks > 0 ? "border-amber-200 bg-amber-50/50" : "border-kharon-border bg-white"}`}>
+    <p class={`text-xs font-bold uppercase ${summary.pending_tasks > 0 ? "text-amber-600" : "text-kharon-grey"}`}>Pending Value</p>
+    <p class="mt-2 text-2xl font-bold text-kharon-black">{formatCurrency(summary.total_pending_value)}</p>
   </div>
 
-  <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${stats.totalOverdue > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-border bg-white"}`}>
-    <p class={`text-xs font-bold uppercase ${stats.totalOverdue > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue Payments</p>
-    <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.totalOverdue}</p>
-    <p class="mt-1 text-xs text-kharon-red">{formatCurrency(stats.overdueAmount)}</p>
+  <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${summary.overdue_invoices > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-border bg-white"}`}>
+    <p class={`text-xs font-bold uppercase ${summary.overdue_invoices > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue Invoices</p>
+    <p class="mt-2 text-2xl font-bold text-kharon-black">{summary.overdue_invoices}</p>
   </div>
 
-  <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
-    <p class="text-xs font-bold uppercase text-kharon-blue">Total Value</p>
-    <p class="mt-2 text-2xl font-bold text-kharon-black">{formatCurrencyCompact(stats.totalAmount)}</p>
+  <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${summary.unpaid_amount > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-border bg-white"}`}>
+    <p class={`text-xs font-bold uppercase ${summary.unpaid_amount > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Unpaid Value</p>
+    <p class="mt-2 text-2xl font-bold text-kharon-black">{formatCurrency(summary.unpaid_amount)}</p>
   </div>
-
 </div>

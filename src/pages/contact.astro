@@ -1,197 +1,56 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/sections/Hero.astro";
+import ContactForm from "../components/contact/ContactForm.astro";
+import EmergencyResponse from "../components/sections/EmergencyResponse.astro";
 import Footer from "../components/layout/Footer.astro";
-import { pageMeta, site, solutionLinks } from "../data/site.js";
-
-const requestTypes = [
-  "Emergency technical support",
-  "Gas suppression evaluation",
-  "Fire detection system review",
-  "Compliance inspection",
-  "Maintenance assessment",
-  "Client records access",
-  ...solutionLinks.map((link) => link.label)
-];
-
-const intentMap: Record<string, string> = {
-  "site-assessment": "Maintenance assessment",
-  "emergency-support": "Emergency technical support",
-  "urgent-technical-request": "Maintenance assessment",
-  "compliance-intervention": "Compliance inspection"
-};
-
-const intentParam = Astro.url.searchParams.get("intent") || "";
-const preselected = intentMap[intentParam] || "";
+import { pageMeta } from "../data/site.js";
 ---
 
 <BaseLayout title={pageMeta.contact.title} description={pageMeta.contact.description}>
-  <Hero
-    title="Request a site assessment."
-    text="Tell Kharon about your environment, assets and protection requirements."
-  />
-
-  <section class="section-padding bg-white">
-    <div class="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-2">
-      <div>
-        <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">
-          Contact
-        </p>
-
-        <h2 class="text-3xl font-bold leading-tight text-kharon-black sm:text-4xl lg:text-5xl">
-          Start with the operational context.
-        </h2>
-
-        <p class="mt-5 text-lg leading-8 text-kharon-grey">
-          Include site type, existing systems, required timescale and whether gas suppression, fire detection, compliance or security is the priority.
-        </p>
-
-        <div class="mt-8 grid gap-4 text-kharon-grey">
-          <p>
-            <span class="text-xs font-bold uppercase text-kharon-black">Phone</span><br />
-            <a href={`tel:${site.phone.replace(/\s/g, "")}`} class="font-semibold text-kharon-purple hover:text-kharon-blue">{site.phone}</a>
-          </p>
-          <p>
-            <span class="text-xs font-bold uppercase text-kharon-black">Email</span><br />
-            <a href={`mailto:${site.email}`} class="font-semibold text-kharon-purple hover:text-kharon-blue">{site.email}</a>
-          </p>
-          <p>
-            <span class="text-xs font-bold uppercase text-kharon-black">Address</span><br />
-            <span class="leading-6">{site.address}</span>
-          </p>
-          <p>
-            <span class="text-xs font-bold uppercase text-kharon-black">Client Records</span><br />
-            <a class="font-semibold text-kharon-purple hover:text-kharon-blue" href={site.portalLoginPath}>Open the secure portal</a>
-          </p>
-        </div>
-
-        <div id="portal-access" class="mt-10 rounded-lg border border-kharon-border bg-kharon-light p-6">
-          <p class="text-sm font-bold uppercase text-kharon-purple">
-            Records Access
-          </p>
-          <h2 class="mt-3 text-2xl font-bold text-kharon-black">
-            Access service records and maintenance coordination.
-          </h2>
-          <p class="mt-4 leading-7 text-kharon-grey">
-            Existing portal users can sign in directly. New account requests, service-record queries and maintenance coordination questions can still be submitted through the enquiry form.
-          </p>
-          <a href={site.portalLoginPath} class="mt-5 inline-flex rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue">
-            Open Portal
-          </a>
-        </div>
-      </div>
-
-      <form
-        id="contact-form"
-        class="grid gap-5 rounded-lg border border-kharon-border bg-kharon-light p-6"
-      >
-        <label class="sr-only" for="website-field">Website</label>
-        <input
-          id="website-field"
-          class="hidden"
-          name="website"
-          tabindex="-1"
-          autocomplete="off"
-        />
-
-        <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-          Name
-          <input
-            class="rounded-md border border-kharon-border px-4 py-3 font-normal"
-            name="name"
-            autocomplete="name"
-            maxlength="80"
-            required
-          />
-        </label>
-
-        <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-          Email
-          <input
-            class="rounded-md border border-kharon-border px-4 py-3 font-normal"
-            name="email"
-            type="email"
-            autocomplete="email"
-            inputmode="email"
-            maxlength="120"
-            required
-          />
-        </label>
-
-        <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-          Request Type
-          <select class="rounded-md border border-kharon-border px-4 py-3 font-normal" name="requestType" required>
-            {requestTypes.map((item) => (
-              <option value={item} selected={item === preselected}>{item}</option>
-            ))}
-          </select>
-        </label>
-
-        <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-          Message
-          <textarea
-            class="min-h-36 rounded-md border border-kharon-border px-4 py-3 font-normal"
-            name="message"
-            maxlength="3000"
-            required
-          ></textarea>
-        </label>
-
-        <p id="contact-result" class="hidden text-sm font-semibold" aria-live="polite"></p>
-
-        <button id="contact-submit" class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
-          Submit Enquiry
-        </button>
-      </form>
-      <script>
-        const form = document.getElementById("contact-form");
-        const result = document.getElementById("contact-result");
-        const submitBtn = document.getElementById("contact-submit");
-
-        form?.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          submitBtn.disabled = true;
-          submitBtn.textContent = "Sending…";
-          result.className = "hidden text-sm font-semibold";
-
-          const data = new FormData(form);
-          const payload = {
-            website: data.get("website") || "",
-            name: data.get("name") || "",
-            email: data.get("email") || "",
-            requestType: data.get("requestType") || "",
-            message: data.get("message") || ""
-          };
-
-          try {
-            const response = await fetch("/api/contact", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(payload)
-            });
-            const body = await response.json().catch(() => ({ ok: false, message: "Submission failed." }));
-
-            if (body.ok) {
-              const success = document.createElement("p");
-              success.className = "py-4 text-base font-semibold text-kharon-purple";
-              success.textContent = "Enquiry received. Kharon will be in contact shortly.";
-              form.replaceChildren(success);
-            } else {
-              result.textContent = body.message || "Submission failed. Try emailing admin@kharon.co.za directly.";
-              result.className = "text-sm font-semibold text-red-700";
-              submitBtn.disabled = false;
-              submitBtn.textContent = "Submit Enquiry";
-            }
-          } catch {
-            result.textContent = "Could not reach the server. Try emailing admin@kharon.co.za directly.";
-            result.className = "text-sm font-semibold text-red-700";
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit Enquiry";
-          }
-        });
-      </script>
+  <section class="bg-kharon-black px-4 pt-24 pb-12 sm:px-6 sm:pt-32 sm:pb-16 text-white overflow-hidden relative">
+    <div class="mx-auto max-w-7xl relative z-10 text-center">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan mb-4 animate-fade-in-up">Site Assessments</p>
+      <h1 class="text-4xl font-bold sm:text-6xl tracking-tight mb-6 animate-fade-in-up [animation-delay:100ms]">
+        Connect with <span class="text-transparent bg-clip-text bg-gradient-to-r from-kharon-purple to-kharon-blue">Authority.</span>
+      </h1>
+      <p class="max-w-2xl mx-auto text-lg text-white/65 animate-fade-in-up [animation-delay:200ms]">
+        Request a professional site assessment or technical consultation for your critical environment.
+      </p>
     </div>
   </section>
 
+  <section class="px-4 py-16 sm:px-6 sm:py-24">
+    <div class="mx-auto max-w-7xl">
+      <div class="grid lg:grid-cols-2 gap-16 items-start">
+        <div class="space-y-12">
+          <div>
+            <h2 class="text-3xl font-bold tracking-tight mb-4">Immediate Response</h2>
+            <p class="text-slate-600 leading-relaxed">
+              Our technical teams are on standby for emergency support and rapid infrastructure deployment across South Africa.
+            </p>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-8">
+            <div class="p-6 bg-slate-50 rounded-xl border border-slate-100">
+              <h3 class="font-bold text-sm uppercase tracking-widest text-kharon-purple mb-2">Technical Support</h3>
+              <p class="text-slate-800 font-bold mb-1">support@kharon.co.za</p>
+              <p class="text-xs text-slate-500">24/7 Monitoring Center</p>
+            </div>
+            <div class="p-6 bg-slate-50 rounded-xl border border-slate-100">
+              <h3 class="font-bold text-sm uppercase tracking-widest text-kharon-blue mb-2">General Inquiries</h3>
+              <p class="text-slate-800 font-bold mb-1">admin@kharon.co.za</p>
+              <p class="text-xs text-slate-500">Business Hours: 08:00 - 17:00</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
+          <ContactForm />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <EmergencyResponse />
   <Footer />
 </BaseLayout>

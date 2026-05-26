@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-26
 
+### Sage API Integration - OAuth Flow & Token Management (Phase 1)
+- **Database Schema**: Added `sage_config` table (`0024_sage_oauth_tokens.sql`) with single-row constraint to store tokens securely.
+- **Backend Services**: Created `src/lib/server/sage.js` with automated access token retrieval and refresh token rotation logic.
+- **OAuth Endpoints**: Created endpoints `/portal/api/finance/sage-auth`, `/portal/api/finance/sage-callback`, and `/portal/api/finance/sage-status`.
+- **UI Integration**: Added connection status card and connect/disconnect triggers to `FinanceSagePanel.astro` and wired it to `dashboard.astro`.
+- **Security Hardening**: Integrated the portal's custom `window.kharonPortalFetch` CSRF-injected wrapper in the frontend and enabled strict `verifyCsrfRequest` checks in `/portal/api/finance/sage-status`.
+- **Code Cleanups & Bug Fixes**: Resolved layout import path errors in `advanced-reporting.astro` and `multi-client.astro`, eradicated duplicate declarations and redundant DB queries in `submit-jobcard.js`, and removed dead `requireAuth` imports in `submit-jobcard.js` and `approve-quote.js` to ensure 100% warning-free compilation.
+
+### Phase 9 - Portal UX Refactor (completed)
+- **Monolith Deconstruction**: Eradicated the overloaded `operations.astro` administration view. Disaggregated its functions into dedicated, hyper-focused pages (`jobs.astro`, `users.astro`, `sites.astro`, `systems.astro`, and `enquiries.astro`) to drastically improve serverless cold start times and development iteration velocity.
+- **Performant Administration Views**: Introduced server-side pagination, structured filtering, and real-time search across all newly separated administrative views.
+- **Import Validation Ecosystem**: Enhanced the CSV data import module (`exports.astro` and `/api/admin/import.js`) with an explicit "Dry Run Preview" toggle. Admins can now safely validate entity relationships and schema compliance without risking production database mutations.
+- **Priority Dispatch Triage**: Integrated a dedicated "Priority Jobs Queue" component into the central `dashboard.astro`, instantly surfacing Critical and Emergency dispatches for immediate operational action.
+- **Technician Field Resilience**: Deployed a `localStorage`-backed debounced autosave layer to the technician jobcard interface (`job/[id].astro`). Introduced an exponential backoff wrapper around the submission payload fetch request to combat intermittent 3G network drops in industrial environments.
+- **Client Transparency Gateway**: Authored the unified Client Compliance Dashboard (`compliance-dashboard.astro`). Surfaces an immediate, real-time matrix of overdue systems, valid/blocked certificates, and severity-coded defects across a client's entire portfolio.
+
 ### Phase 1 - Final Perimeter & Telemetry Closure (completed)
 - **Absolute Session Timeout**: Enforced strict 8-hour boundary on `verifySessionToken` (`src/lib/server/auth.js`) based on token's `iat` creation timestamp. Indefinite persistence of tokens is now blocked.
 - **Telemetry Logging Hook**: Eradicated native `console.error` logs across 44 SSR blocks and API endpoints. Replaced with the structured `auditError()` utility writing directly to the D1 `audit_events` forensic table without leaking stack traces.
@@ -24,11 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Enhanced Telemetry**: Implemented `auditError` telemetry utility within `src/lib/server/audit.js` to capture unhandled server crashes and 500s directly to the forensic database without leaking stack traces.
 - **Input Validation Layers**: Conducted backend verification ensuring Zod and custom schema assertions strict-parse payload payloads prior to D1 ingestion.
 
-### Phase 11 - Security Headers and Performance Monitoring (completed)
-- **CSP Hardening for Analytics**: Whitelisted `plausible.io` in Content Security Policy (CSP) across `middleware.js` and `_headers` to support integrated privacy-aware analytics.
-- **Nonce-Based Script Protection**: Verified and documented the middleware's automatic nonce injection for inline scripts and styles, effectively eradicating `'unsafe-inline'` requirements.
-- **Enhanced Health Monitoring**: Completed the `/health.json` API with D1 and R2 connection checks, enabling automated performance monitoring and service status verification.
-- **Approved Domain Documentation**: Formally documented and whitelisted external domains for Cloudflare Insights, Turnstile, and Plausible Analytics.
+### Phase 11 - Continuous Improvement Foundations (completed)
+- **User Feedback System**: Integrated a persistent "Provide Feedback" mechanism in the portal layout with a dedicated D1-backed API (`/portal/api/feedback.js`) and an Admin review console.
+- **A/B Testing Framework**: Implemented a lightweight middleware-based variant assignment system (A/B) using persistent cookies, exposed via `Astro.locals.variant` for conditional rendering and telemetry.
+- **Automated Performance & Security Audits**: Updated the GitHub Actions CI/CD workflow to enforce strict CSS/JS budgets and security marker checks (`npm run audit:site`) on every push and PR.
+- **Enhanced Health Monitoring**: Finalized the `/health.json` API with D1 and R2 service status checks to ensure high-availability observability.
+- **CSP Hardening**: Whitelisted `plausible.io` in the Content Security Policy to support privacy-compliant analytics across the public site.
 
 ### Phase 22 - Portal UI/UX Polish and CSS Budget Hardening
 - Redesigned and spaced out flowcharts and SVG diagrams in service pages.

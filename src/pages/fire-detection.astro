@@ -7,72 +7,37 @@ import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
 import DetectionTechnicalBlocks from "../components/sections/DetectionTechnicalBlocks.astro";
 import Footer from "../components/layout/Footer.astro";
 import { pageMeta } from "../data/site.js";
-
-const proofItems = [
-  {
-    title: "Addressable loop structure",
-    text: "Device loops, isolators and panel visibility are planned so faults can be located and service work can be directed quickly.",
-    status: "Detection 01"
-  },
-  {
-    title: "Zoning and cause-effect",
-    text: "Alarm zones, evacuation signals, plant interfaces and suppression triggers are mapped to the way the facility actually operates.",
-    status: "Detection 02"
-  },
-  {
-    title: "Detector environment fit",
-    text: "Detection choices are matched to dust, airflow, ceiling height, access limitations and nuisance-alarm exposure.",
-    status: "Detection 03"
-  },
-  {
-    title: "Diagnostics and records",
-    text: "Fault patterns, device history and service notes are retained as evidence for responsible persons and future technicians.",
-    status: "Detection 04"
-  }
-];
 ---
 
 <BaseLayout title={pageMeta.fireDetection.title} description={pageMeta.fireDetection.description}>
-  <Hero
-    title="Fire detection infrastructure for commercial and industrial sites."
-    text="Kharon designs, installs, services and maintains fire detection systems built around site risk, reliable alarm response and long-term compliance visibility."
-  />
-
-  <SplitFeature
-    eyebrow="Detection Capability"
-    title="Addressable systems, control panels, response zones and diagnostics."
-    text="Fire detection should be intelligible under pressure, maintainable over time and aligned with how each environment actually operates."
-    bullets={[
-      "Addressable fire alarm systems",
-      "Specialist detection options",
-      "Control panel and zone strategy",
-      "Cause-and-effect planning",
-      "False-alarm and fault diagnosis support"
-    ]}
-    visual="detection"
-    imageAlt="Schematic showing addressable detection loop, control panel and response zones"
+  <Hero 
+    title="Commercial Fire Detection" 
+    subtitle="Precision detection and control infrastructure for complex environments."
+    systemType="fire"
   />
 
   <DetectionTechnicalBlocks />
 
-  <ProofGrid
-    eyebrow="Detection Evidence"
-    title="Detection systems should be clear under pressure."
-    text="The design emphasis is on response logic that operators can understand and maintain, not only hardware coverage."
-    items={proofItems}
+  <SplitFeature 
+    title="Addressable Intelligence"
+    description="Modern fire detection goes beyond simple alarms. Our systems provide granular device-level data, allowing for precise location identification and sophisticated cause-and-effect logic."
+    reversed={true}
   />
 
-  <ContextualInquiry
-    eyebrow="Detection Review"
-    title="Request a fire detection review."
-    text="Provide the facility type, panel context, detection concern and maintenance status so the request can be assessed correctly."
-    requestType="Fire detection review"
-    fields={[
-      { label: "Panel Type", name: "panel_type", options: ["Unknown", "Addressable", "Conventional", "Networked panel", "Upgrade required"] },
-      { label: "Facility Type", name: "facility_type", options: ["Commercial site", "Industrial facility", "Warehouse", "Data centre", "Healthcare", "Utilities", "Other"] },
-      { label: "Compliance Issue", name: "compliance_issue", options: ["Inspection due", "Fault condition", "False alarm issue", "Documentation gap", "System expansion"] },
-      { label: "Maintenance Requirement", name: "maintenance_requirement", options: ["Scheduled service", "Fault diagnosis", "Panel review", "Device testing", "Lifecycle assessment"] }
+  <ProofGrid 
+    title="Detection Reliability"
+    items={[
+      { title: "Point Identification", description: "Know exactly which detector triggered the event." },
+      { title: "Fault Isolation", description: "Loop isolators ensure system continuity during wiring faults." },
+      { title: "False Alarm Filter", description: "Multi-sensor technology reduces disruptive false alarms." },
+      { title: "Integrations", description: "Automatic HVAC shutdown and lift grounding on detection." }
     ]}
   />
+
+  <ContextualInquiry 
+    title="Request Detection Review"
+    requestType="Fire Detection"
+  />
+
   <Footer />
 </BaseLayout>

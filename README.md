@@ -14,12 +14,12 @@ Comprehensive fire protection and security solutions portal for South African co
 
 ### Field Service Management (FSM) Portal
 - Role-based access control (admin, tech, client, finance)
-- Job dispatch and scheduling system
-- Technician field reporting with GPS tracking
-- Client dashboard for compliance monitoring
-- Financial workflow integration with Sage
+- Job dispatch and scheduling system with priority triaging
+- Technician field reporting with GPS tracking and offline-resilient draft saving
+- Client compliance dashboard for real-time risk/certificate monitoring
+- Financial workflow integration with Sage (manual control register)
 - Document management with R2 storage
-- Modernized dashboards with consistent card components
+- Modernized dashboards with consistent card components and robust search/pagination
 
 ### Security & Compliance
 - POPIA-compliant data handling

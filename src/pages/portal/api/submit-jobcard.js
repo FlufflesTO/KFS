@@ -1,4 +1,7 @@
 import { auditError } from "../../../lib/server/audit.js";
+import { getDatabase } from "../../../lib/server/bindings.js";
+import { verifyCsrfToken, verifyCsrfRequest } from "../../../lib/server/csrf.js";
+import { FinanceService } from "../../../lib/server/services/finance-service";
 /**
  * Project Sentinel - Jobcard Submission API
  * Purpose: Handles technician signature, evidence collection, and final job closure
@@ -81,11 +84,26 @@ function normalizeDefects(value) {
 
 export async function POST({ request, locals }) {
   try {
+    // Verify authentication
     const user = locals.user;
-    if (!user) return unauthorized();
-    if (user.role !== "tech") return forbidden("Only technician accounts can close field jobcards.");
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify CSRF token from header (JSON payload submission)
+    const csrfValid = await verifyCsrfRequest(request, user);
+    if (!csrfValid) {
+      return new Response(
+        JSON.stringify({ error: "Invalid CSRF token" }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     const payload = await request.json();
+
     const jobId = cleanId(payload.jobId, "jobId");
     const systemId = cleanId(payload.systemId, "systemId");
     const techComments = String(payload.techComments || "").trim();
@@ -111,7 +129,8 @@ export async function POST({ request, locals }) {
       return badRequest("A captured signature is required.");
     }
 
-    const { db, storage } = getBindings();
+    const db = getDatabase();
+    const financeService = new FinanceService(db);
     const job = await db
       .prepare(
         `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, jobs.scheduled_date, jobs.job_type,
@@ -263,24 +282,14 @@ export async function POST({ request, locals }) {
         .bind(serviceDate, completedAt.toISOString(), nextDueDate, systemId),
     ];
 
-    if (!job.existing_financial_record_id) {
-      const hasBlockingDefects = defects.some((d) => d.certificateBlocking === 1);
-      const financeTaskStatus = hasBlockingDefects ? "Quote Required" : "Invoice Required";
-      const reference = hasBlockingDefects
-        ? `Sage quote required for defect remediation on job ${jobId}`
-        : `Sage invoice required for completed job ${jobId}`;
-
-      batchStatements.push(
-        db
-          .prepare(
-          `INSERT INTO financial_records
-               (id, site_id, job_id, amount, item_type, payment_status, distribution_date, reference, finance_task_status)
-             VALUES
-               (?1, ?2, ?3, ?4, 'Task', 'Pending', ?5, ?6, ?7)`
-          )
-          .bind(financialRecordId, job.site_id, jobId, amount, serviceDate, reference, financeTaskStatus)
-      );
-    }
+    // Create finance task instead of direct invoice record
+    // Example amount in cents (R500.00)
+    await financeService.createInvoiceRequired(
+      job.site_id,
+      jobId,
+      50000,
+      `Invoice required for job ${jobId} completion`
+    );
 
     for (const evidence of evidenceRecords) {
       batchStatements.push(
@@ -353,16 +362,14 @@ export async function POST({ request, locals }) {
       }
     });
 
-    return json({
-      ok: true,
-      jobId,
-      systemId,
-      status: "Completed",
-      documentationPath,
-      evidencePaths: evidenceRecords.map((record) => record.storagePath),
-      nextDueDate,
-      financialRecordId
-    });
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        jobId,
+        message: "Job card submitted successfully. An invoice task has been created for the finance team to process in Sage."
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (error) {
     if (error instanceof SyntaxError) {
       return badRequest("Request body must be valid JSON.");

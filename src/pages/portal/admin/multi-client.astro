@@ -1,0 +1,371 @@
+---
+import { SITE_CONFIG } from "../../../config/site-config";
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings";
+import { requireAdmin } from "../../../lib/server/admin";
+
+export async function getStaticPaths() {
+  return [{ params: {} }];
+}
+
+const { user } = Astro.locals;
+
+// Verify admin access
+const adminError = requireAdmin(user);
+if (adminError) {
+  return {
+    redirect: {
+      destination: '/portal/login',
+      permanent: false,
+    },
+  };
+}
+
+// Fetch clients with counts
+const db = getDatabase();
+const clients = await db.prepare(`
+  SELECT 
+    c.id,
+    c.company_name,
+    c.contact_person,
+    c.contact_email,
+    c.contact_phone,
+    c.billing_address,
+    c.created_at,
+    COUNT(si.id) as site_count,
+    COUNT(s.id) as system_count,
+    COUNT(j.id) as job_count,
+    COUNT(fr.id) as finance_record_count
+  FROM clients c
+  LEFT JOIN sites si ON si.owner_company_name = c.company_name
+  LEFT JOIN systems s ON s.site_id = si.id
+  LEFT JOIN jobs j ON j.system_id = s.id
+  LEFT JOIN financial_records fr ON fr.site_id = si.id
+  WHERE c.deleted_at IS NULL
+  GROUP BY c.id, c.company_name
+  ORDER BY c.company_name ASC
+`).all();
+---
+
+<PortalLayout user={user}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Multi-Client Management</h1>
+        <p class="mt-1 text-sm text-gray-500">Manage all clients and their associated resources</p>
+      </div>
+      <div class="mt-3 sm:mt-0 sm:ml-4">
+        <button 
+          type="button"
+          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-kharon-blue hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue"
+          onclick="openAddClientModal()"
+        >
+          Add Client
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+      <ul class="divide-y divide-gray-200">
+        {clients.results?.map((client) => (
+          <li key={client.id}>
+            <div class="px-4 py-4 sm:px-6">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-kharon-blue truncate">{client.company_name}</p>
+                <div class="ml-2 flex-shrink-0 flex">
+                  <button 
+                    class="text-indigo-600 hover:text-indigo-900 mr-4"
+                    onclick="openEditClientModal({JSON.stringify(client)})"
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    class="text-red-600 hover:text-red-900"
+                    onclick="confirmDeleteClient('{client.id}', '{client.company_name}')"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+              <div class="mt-2 sm:flex sm:justify-between">
+                <div class="sm:flex">
+                  <p class="flex items-center text-sm text-gray-500">
+                    {client.contact_person && <span class="font-medium">{client.contact_person}</span>}
+                    {client.contact_email && <span class="ml-2">{client.contact_email}</span>}
+                  </p>
+                </div>
+                <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                  <p>Created: {new Date(client.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <div class="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm text-gray-700">
+                <div class="flex items-center">
+                  <span class="font-medium">Sites:</span>
+                  <span class="ml-1">{client.site_count}</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="font-medium">Systems:</span>
+                  <span class="ml-1">{client.system_count}</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="font-medium">Jobs:</span>
+                  <span class="ml-1">{client.job_count}</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="font-medium">Finance:</span>
+                  <span class="ml-1">{client.finance_record_count}</span>
+                </div>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Add/Edit Client Modal -->
+  <div id="client-modal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+      <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+        <div>
+          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-kharon-blue">
+            <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
+          <div class="mt-3 text-center sm:mt-5">
+            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+              <span id="modal-action">Add</span> Client
+            </h3>
+            <div class="mt-2">
+              <form id="client-form">
+                <input type="hidden" id="client-id" name="id" />
+                
+                <div class="mb-4">
+                  <label for="company-name" class="block text-sm font-medium text-gray-700">Company Name *</label>
+                  <input 
+                    type="text" 
+                    id="company-name" 
+                    name="companyName" 
+                    required
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-kharon-blue focus:border-kharon-blue sm:text-sm"
+                  />
+                </div>
+                
+                <div class="mb-4">
+                  <label for="contact-person" class="block text-sm font-medium text-gray-700">Contact Person</label>
+                  <input 
+                    type="text" 
+                    id="contact-person" 
+                    name="contactPerson"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-kharon-blue focus:border-kharon-blue sm:text-sm"
+                  />
+                </div>
+                
+                <div class="mb-4">
+                  <label for="contact-email" class="block text-sm font-medium text-gray-700">Contact Email</label>
+                  <input 
+                    type="email" 
+                    id="contact-email" 
+                    name="contactEmail"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-kharon-blue focus:border-kharon-blue sm:text-sm"
+                  />
+                </div>
+                
+                <div class="mb-4">
+                  <label for="contact-phone" class="block text-sm font-medium text-gray-700">Contact Phone</label>
+                  <input 
+                    type="tel" 
+                    id="contact-phone" 
+                    name="contactPhone"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-kharon-blue focus:border-kharon-blue sm:text-sm"
+                  />
+                </div>
+                
+                <div class="mb-6">
+                  <label for="billing-address" class="block text-sm font-medium text-gray-700">Billing Address</label>
+                  <textarea 
+                    id="billing-address" 
+                    name="billingAddress"
+                    rows="3"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-kharon-blue focus:border-kharon-blue sm:text-sm"
+                  ></textarea>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+          <button
+            type="button"
+            id="save-client-btn"
+            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-kharon-blue text-base font-medium text-white hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue sm:col-start-2 sm:text-sm"
+            onclick="saveClient()"
+          >
+            Save Client
+          </button>
+          <button
+            type="button"
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue sm:mt-0 sm:col-start-1 sm:text-sm"
+            onclick="closeModal()"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+      <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+        <div class="sm:flex sm:items-start">
+          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+            <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+              Deactivate Client
+            </h3>
+            <div class="mt-2">
+              <p class="text-sm text-gray-500">
+                Are you sure you want to deactivate <span id="delete-client-name" class="font-semibold"></span>? 
+                This will mark the client as inactive but preserve all associated data.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+          <button
+            type="button"
+            id="confirm-delete-btn"
+            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+          >
+            Deactivate
+          </button>
+          <button
+            type="button"
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:w-auto sm:text-sm"
+            onclick="closeDeleteModal()"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentClientId = null;
+    
+    function openAddClientModal() {
+      document.getElementById('modal-action').textContent = 'Add';
+      document.getElementById('client-form').reset();
+      document.getElementById('client-id').value = '';
+      document.getElementById('client-modal').classList.remove('hidden');
+    }
+    
+    function openEditClientModal(client) {
+      document.getElementById('modal-action').textContent = 'Edit';
+      document.getElementById('client-id').value = client.id;
+      document.getElementById('company-name').value = client.company_name || '';
+      document.getElementById('contact-person').value = client.contact_person || '';
+      document.getElementById('contact-email').value = client.contact_email || '';
+      document.getElementById('contact-phone').value = client.contact_phone || '';
+      document.getElementById('billing-address').value = client.billing_address || '';
+      document.getElementById('client-modal').classList.remove('hidden');
+    }
+    
+    function closeModal() {
+      document.getElementById('client-modal').classList.add('hidden');
+    }
+    
+    function confirmDeleteClient(clientId, clientName) {
+      currentClientId = clientId;
+      document.getElementById('delete-client-name').textContent = clientName;
+      document.getElementById('delete-modal').classList.remove('hidden');
+    }
+    
+    function closeDeleteModal() {
+      document.getElementById('delete-modal').classList.add('hidden');
+      currentClientId = null;
+    }
+    
+    async function saveClient() {
+      const form = document.getElementById('client-form');
+      const formData = new FormData(form);
+      const clientData = Object.fromEntries(formData);
+      
+      const method = clientData.id ? 'PUT' : 'POST';
+      const url = '/portal/api/admin/multi-client';
+      
+      try {
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          },
+          body: JSON.stringify(clientData)
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          alert(result.message);
+          closeModal();
+          // Refresh the page to show updated data
+          window.location.reload();
+        } else {
+          const error = await response.json();
+          alert(`Error: ${error.message || 'Failed to save client'}`);
+        }
+      } catch (error) {
+        alert('An error occurred while saving the client');
+        console.error(error);
+      }
+    }
+    
+    async function deleteClient() {
+      if (!currentClientId) return;
+      
+      try {
+        const response = await fetch(`/portal/api/admin/multi-client?id=${encodeURIComponent(currentClientId)}`, {
+          method: 'DELETE',
+          headers: {
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          alert(result.message);
+          closeDeleteModal();
+          // Refresh the page to show updated data
+          window.location.reload();
+        } else {
+          const error = await response.json();
+          alert(`Error: ${error.message || 'Failed to delete client'}`);
+        }
+      } catch (error) {
+        alert('An error occurred while deleting the client');
+        console.error(error);
+      }
+    }
+    
+    // Attach the delete function to the confirm button
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('confirm-delete-btn').addEventListener('click', deleteClient);
+    });
+  </script>
+</PortalLayout>
