@@ -186,11 +186,11 @@ try {
 ---
 
 <PortalLayout title="Admin Control Panel | Kharon Portal" active="admin" user={user}>
-  <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
+  <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-8 text-white sm:px-6 sm:py-10 shadow-inner">
     <div class="mx-auto max-w-7xl">
-      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Office control panel</p>
+      <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-cyan">Office control panel</p>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Operational dispatch and lifecycle matrix</h1>
-      <p class="mt-3 max-w-3xl text-sm text-white/60">Completed works, active jobs and upcoming maintenance exposure across client infrastructure.</p>
+      <p class="mt-3 max-w-3xl text-sm text-white/50">Completed works, active jobs and upcoming maintenance exposure across client infrastructure.</p>
     </div>
   </section>
 
@@ -199,33 +199,33 @@ try {
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800 mb-6">{loadError}</p>}
 
       {/* Consolidated Priority Health Metrics */}
-      <div class="mb-8 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+      <div class="mb-8 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
         <KharonCard variant={stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'danger' : 'primary'} padding="lg">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 h-full">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-8 h-full">
             <div>
               <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Operational Health</p>
-              <h2 class="mt-2 text-2xl font-bold tracking-tight text-kharon-black">
+              <h2 class="mt-2 text-xl font-bold tracking-tight text-kharon-black">
                 {stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'Action Required' : 'All Systems Nominal'}
               </h2>
-              <p class="mt-2 text-sm text-kharon-grey/80 max-w-md">
+              <p class="mt-2 text-[0.875rem] text-kharon-grey/70 max-w-sm">
                 Monitor and resolve critical compliance and dispatch blockers to maintain operational SLA.
               </p>
             </div>
             
-            <div class="flex gap-4">
+            <div class="flex gap-6">
               <div class="text-center">
-                <p class={`text-3xl font-bold ${stats.unassignedJobs > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.unassignedJobs}</p>
-                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Unassigned</p>
+                <p class={`text-3xl font-bold tracking-tighter ${stats.unassignedJobs > 0 ? 'text-kharon-red' : 'text-kharon-grey/30'}`}>{stats.unassignedJobs}</p>
+                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">Unassigned</p>
               </div>
-              <div class="w-px bg-kharon-border"></div>
+              <div class="w-px bg-kharon-border/40"></div>
               <div class="text-center">
-                <p class={`text-3xl font-bold ${stats.overdueSystems > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.overdueSystems}</p>
-                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Overdue</p>
+                <p class={`text-3xl font-bold tracking-tighter ${stats.overdueSystems > 0 ? 'text-kharon-red' : 'text-kharon-grey/30'}`}>{stats.overdueSystems}</p>
+                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">Overdue</p>
               </div>
-              <div class="w-px bg-kharon-border"></div>
+              <div class="w-px bg-kharon-border/40"></div>
               <div class="text-center">
-                <p class={`text-3xl font-bold ${stats.openDefects > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.openDefects}</p>
-                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Defects</p>
+                <p class={`text-3xl font-bold tracking-tighter ${stats.openDefects > 0 ? 'text-kharon-red' : 'text-kharon-grey/30'}`}>{stats.openDefects}</p>
+                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">Defects</p>
               </div>
             </div>
           </div>
@@ -234,55 +234,55 @@ try {
         <div class="grid grid-cols-2 gap-4">
            <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
               <div>
-                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Active Jobs</p>
-                <p class="mt-1 text-xl font-bold text-kharon-black">{stats.activeJobs}</p>
+                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Active Jobs</p>
+                <p class="mt-1 text-xl font-bold text-kharon-black tracking-tight">{stats.activeJobs}</p>
               </div>
-              <KharonButton href="/portal/admin/planning" variant="ghost" size="sm" className="mt-4 self-start">View</KharonButton>
+              <KharonButton href="/portal/admin/planning" variant="ghost" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-purple">View Board →</KharonButton>
            </KharonCard>
 
            <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
               <div>
-                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Missing Docs</p>
-                <p class="mt-1 text-xl font-bold text-kharon-black">{stats.missingDocuments}</p>
+                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Missing Docs</p>
+                <p class="mt-1 text-xl font-bold text-kharon-black tracking-tight">{stats.missingDocuments}</p>
               </div>
-              <KharonButton href="/portal/admin/jobs" variant="ghost" size="sm" className="mt-4 self-start">Review</KharonButton>
+              <KharonButton href="/portal/admin/jobs" variant="ghost" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-purple">Review →</KharonButton>
            </KharonCard>
 
            <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
               <div>
-                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Open Requests</p>
-                <p class="mt-1 text-xl font-bold text-kharon-black">{stats.openRequests}</p>
+                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Open Requests</p>
+                <p class="mt-1 text-xl font-bold text-kharon-black tracking-tight">{stats.openRequests}</p>
               </div>
-              <KharonButton href="/portal/admin/dashboard#requests" variant="ghost" size="sm" className="mt-4 self-start">Review</KharonButton>
+              <KharonButton href="/portal/admin/dashboard#requests" variant="ghost" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-purple">Details →</KharonButton>
            </KharonCard>
 
            <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
               <div>
-                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Blocked Certs</p>
-                <p class="mt-1 text-xl font-bold text-kharon-black">{stats.blockedCertificates}</p>
+                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Blocked Certs</p>
+                <p class="mt-1 text-xl font-bold text-kharon-black tracking-tight">{stats.blockedCertificates}</p>
               </div>
-              <span class="mt-4 text-[0.625rem] font-bold text-kharon-grey/50 self-start">{stats.validCertificates} Valid</span>
+              <span class="mt-4 text-[0.625rem] font-bold text-kharon-grey/40 uppercase tracking-widest self-start">{stats.validCertificates} Valid</span>
            </KharonCard>
         </div>
       </div>
 
 
-      <div class="grid gap-5 lg:grid-cols-2 xl:grid-cols-3 xl:gap-6">
+      <div class="grid gap-5 lg:grid-cols-2 2xl:grid-cols-3 2xl:gap-6">
         <KharonCard title="Completed works" subtitle="Asset Lifecycle">
-          <KharonButton href="/portal/tech/history" variant="ghost" size="sm">View all</KharonButton>
-          <div class="mt-4 grid gap-3">
+          <KharonButton href="/portal/tech/history" variant="ghost" size="sm" className="px-0 font-bold">View all →</KharonButton>
+          <div class="mt-6 grid gap-3">
             {completed.map((item) => (
-              <article class="border border-kharon-border border-l-4 border-l-kharon-blue bg-kharon-light/30 p-4 rounded-lg">
-                <p class="font-semibold text-kharon-black">{item.owner_company_name}</p>
-                <p class="text-sm text-kharon-grey mt-0.5">{item.system_type} / {item.coverage_area}</p>
-                <p class="mt-2.5 text-xs text-kharon-grey/70 uppercase font-medium">{item.completed_at || "Completion pending timestamp"}</p>
+              <article class="border border-kharon-border border-l-4 border-l-kharon-blue bg-kharon-light/30 p-4 rounded shadow-sm hover:bg-white transition-colors">
+                <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
+                <p class="text-sm text-kharon-grey/80 mt-1 font-medium">{item.system_type} / {item.coverage_area}</p>
+                <p class="mt-3 text-[0.625rem] text-kharon-grey/50 uppercase font-bold tracking-widest">{item.completed_at || "PENDING TIMESTAMP"}</p>
                 {item.status === "Completed" && (
-                  <button class="mark-invoiced-btn mt-3 w-full rounded bg-white border border-kharon-blue px-3 py-2 text-xs font-semibold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-all" data-job-id={item.id}>
-                    Sage invoice raised
+                  <button class="mark-invoiced-btn mt-4 w-full rounded border border-kharon-blue/20 bg-white px-3 py-2 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-blue hover:bg-kharon-blue hover:text-white hover:border-kharon-blue transition-all" data-job-id={item.id}>
+                    Raise Sage Invoice
                   </button>
                 )}
                 {item.status === "Invoiced" && (
-                  <span class="mt-3 block text-xs font-bold uppercase text-kharon-grey/50 border border-dashed border-kharon-border bg-white text-center py-1.5 rounded">Sage invoice raised</span>
+                  <span class="mt-4 block text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/30 border border-dashed border-kharon-border bg-white/50 text-center py-2 rounded">Invoiced</span>
                 )}
               </article>
             ))}
@@ -290,63 +290,63 @@ try {
         </KharonCard>
 
         <KharonCard title="Active dispatches" subtitle="Operations">
-          <KharonButton href="/portal/admin/planning" variant="ghost" size="sm">View planning</KharonButton>
-          <div class="mt-4 grid gap-3">
+          <KharonButton href="/portal/admin/planning" variant="ghost" size="sm" className="px-0 font-bold">View board →</KharonButton>
+          <div class="mt-6 grid gap-3">
             {active.map((item) => (
-              <article class="border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-4 rounded-lg">
-                <p class="font-semibold text-kharon-black">{item.owner_company_name}</p>
-                <p class="text-sm text-kharon-grey mt-0.5">{item.status} / {item.technician_name || "Unassigned"}</p>
-                <p class="mt-2.5 text-xs text-kharon-grey/70 uppercase font-medium">{item.scheduled_date}</p>
+              <article class="border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-4 rounded shadow-sm hover:bg-white transition-colors">
+                <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
+                <p class="text-sm text-kharon-grey/80 mt-1 font-medium">{item.status} / {item.technician_name || "Unassigned"}</p>
+                <p class="mt-3 text-[0.625rem] text-kharon-grey/50 uppercase font-bold tracking-widest">{item.scheduled_date}</p>
               </article>
             ))}
           </div>
         </KharonCard>
 
         <KharonCard title="Lifecycle due dates" subtitle="Compliance">
-          <KharonButton href="/portal/admin/planning" variant="ghost" size="sm">View planning</KharonButton>
-          <div class="mt-4 grid gap-3">
+          <KharonButton href="/portal/admin/planning" variant="ghost" size="sm" className="px-0 font-bold">Manage board →</KharonButton>
+          <div class="mt-6 grid gap-3">
             {due.map((item) => (
-              <article class={`border border-kharon-border p-4 rounded-lg ${dueDateCls(item.next_due_date)}`}>
-                <p class="font-semibold text-kharon-black">{item.owner_company_name}</p>
-                <p class="text-sm text-kharon-grey mt-0.5">{item.system_type} / {item.coverage_area}</p>
-                <p class="mt-2.5 text-xs uppercase font-medium">{dueDateLabel(item.next_due_date)}  -  {item.next_due_date}</p>
+              <article class={`border border-kharon-border p-4 rounded shadow-sm hover:bg-white transition-colors ${dueDateCls(item.next_due_date)}`}>
+                <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
+                <p class="text-sm text-kharon-grey/80 mt-1 font-medium">{item.system_type} / {item.coverage_area}</p>
+                <p class="mt-3 text-[0.625rem] uppercase font-bold tracking-widest">{dueDateLabel(item.next_due_date)}  -  {item.next_due_date}</p>
               </article>
             ))}
           </div>
         </KharonCard>
       </div>
 
-      <section class="grid gap-6 lg:grid-cols-2 mt-6">
+      <section class="grid gap-6 lg:grid-cols-2 mt-8">
         <KharonCard title="Client request queue" subtitle="Customer Support">
-          <div class="mt-4 grid gap-3">
+          <div class="mt-6 grid gap-4">
             {clientRequests.length === 0 && <p class="text-sm text-kharon-grey italic py-2">No new client requests require review.</p>}
             {clientRequests.map((item) => (
-              <article class="request-card border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-4 rounded-lg shadow-sm" data-request-id={item.id}>
-                <div class="flex flex-wrap justify-between gap-3">
+              <article class="request-card border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-5 rounded shadow-sm" data-request-id={item.id}>
+                <div class="flex flex-wrap justify-between gap-4">
                   <div class="min-w-0 flex-1">
-                    <p class="font-semibold text-kharon-black">{item.owner_company_name}</p>
-                    <p class="text-xs font-bold text-kharon-purple mt-0.5">{item.subject}</p>
-                    <p class="mt-1 text-[10px] uppercase font-bold text-kharon-grey/65">{item.request_type} / {item.coverage_area || "General site request"}</p>
-                    <p class="mt-2.5 text-xs text-kharon-grey leading-relaxed bg-white border border-kharon-border/60 p-2.5 rounded">{item.message}</p>
-                    {item.linked_job_id && <p class="mt-2.5 text-xs font-bold uppercase text-kharon-blue bg-blue-50 border border-blue-200 px-2 py-0.5 rounded w-fit">Scheduled Dispatch: {item.linked_job_id}</p>}
+                    <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
+                    <p class="text-xs font-bold text-kharon-purple mt-1 uppercase tracking-wide">{item.subject}</p>
+                    <p class="mt-2 text-[0.625rem] uppercase font-bold tracking-widest text-kharon-grey/50">{item.request_type} / {item.coverage_area || "General site request"}</p>
+                    <p class="mt-4 text-[0.8125rem] text-kharon-grey leading-relaxed bg-white border border-kharon-border/40 p-3 rounded">{item.message}</p>
+                    {item.linked_job_id && <p class="mt-3 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-blue bg-blue-50 border border-blue-100 px-2 py-1 rounded w-fit">Scheduled Dispatch: {item.linked_job_id}</p>}
                   </div>
-                  <span class="h-fit rounded border border-kharon-border bg-white px-2 py-1 text-[10px] font-bold uppercase text-kharon-grey">{item.priority} / {item.status}</span>
+                  <span class="h-fit rounded border border-kharon-border bg-white px-2.5 py-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">{item.priority} / {item.status}</span>
                 </div>
-                <div class="mt-4 pt-3 border-t border-kharon-border/60 grid gap-3">
+                <div class="mt-6 pt-5 border-t border-kharon-border/40 grid gap-4">
                   <form class="request-status-form flex flex-wrap gap-2" data-request-id={item.id}>
                     <input type="hidden" name="requestId" value={item.id} />
                     <select class="portal-field sm:w-auto rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="status">
                       {["New", "Reviewing", "Closed"].map((status) => <option value={status} selected={item.status === status}>{status}</option>)}
                     </select>
-                    <KharonButton type="submit" size="sm">Update status</KharonButton>
+                    <KharonButton type="submit" size="sm">Update</KharonButton>
                     <p class="request-result hidden text-sm font-semibold"></p>
                   </form>
                   {!item.linked_job_id && (
-                    <form class="request-schedule-form grid gap-3 border-t border-kharon-border/40 pt-3" data-request-id={item.id}>
+                    <form class="request-schedule-form grid gap-4 border-t border-kharon-border/40 pt-5" data-request-id={item.id}>
                       <input type="hidden" name="requestId" value={item.id} />
-                      <div class="grid gap-2 sm:grid-cols-2">
-                        <div class="grid gap-1">
-                          <label class="text-[10px] font-bold uppercase text-kharon-grey/70">System</label>
+                      <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="grid gap-1.5">
+                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">System</label>
                           <select class="portal-field rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="systemId" required>
                             <option value="">Select system</option>
                             {requestSystems.filter((system) => system.site_id === item.site_id).map((system) => (
@@ -354,29 +354,29 @@ try {
                             ))}
                           </select>
                         </div>
-                        <div class="grid gap-1">
-                          <label class="text-[10px] font-bold uppercase text-kharon-grey/70">Technician</label>
+                        <div class="grid gap-1.5">
+                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Technician</label>
                           <select class="portal-field rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="assignedTechnicianId">
                             <option value="">Unassigned</option>
                             {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
                           </select>
                         </div>
                       </div>
-                      <div class="grid gap-2 sm:grid-cols-2">
-                        <div class="grid gap-1">
-                          <label class="text-[10px] font-bold uppercase text-kharon-grey/70">Scheduled Date</label>
+                      <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="grid gap-1.5">
+                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Scheduled Date</label>
                           <input class="portal-field rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="scheduledDate" type="date" required />
                         </div>
-                        <div class="grid gap-1">
-                          <label class="text-[10px] font-bold uppercase text-kharon-grey/70">Job Type</label>
+                        <div class="grid gap-1.5">
+                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Job Type</label>
                           <input class="portal-field rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="jobType" value={item.request_type} />
                         </div>
                       </div>
-                      <div class="grid gap-1">
-                        <label class="text-[10px] font-bold uppercase text-kharon-grey/70">Site Notes</label>
+                      <div class="grid gap-1.5">
+                        <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Site Notes</label>
                         <input class="portal-field rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="siteNotes" value={`${item.subject}: ${item.message}`.slice(0, 900)} />
                       </div>
-                      <KharonButton type="submit" variant="primary">Schedule dispatch</KharonButton>
+                      <KharonButton type="submit" variant="primary" className="mt-2">Schedule dispatch</KharonButton>
                     </form>
                   )}
                 </div>
@@ -386,64 +386,64 @@ try {
         </KharonCard>
 
         <KharonCard title="Exception queue" subtitle="Risk Management">
-          <div class="mt-4 grid gap-5">
+          <div class="mt-6 grid gap-6">
             <div>
-              <p class="text-xs font-bold uppercase text-kharon-red tracking-wider">Overdue systems</p>
-              <div class="mt-3 grid gap-2">
+              <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-red mb-4">Overdue systems</p>
+              <div class="grid gap-2">
                 {overdue.length === 0 && <p class="text-sm text-kharon-grey italic py-1">No overdue lifecycle items.</p>}
                 {overdue.map((item) => (
-                  <div class="border border-kharon-border border-l-4 border-l-kharon-red bg-kharon-light/30 p-3 text-xs rounded-lg flex items-center justify-between">
-                    <span class="font-semibold text-kharon-black">{item.owner_company_name}</span>
-                    <span class="text-kharon-grey">{item.system_type} / {item.coverage_area} / due {item.next_due_date}</span>
+                  <div class="border border-kharon-border border-l-4 border-l-kharon-red bg-kharon-light/30 p-3.5 text-[0.75rem] rounded shadow-sm flex items-center justify-between">
+                    <span class="font-bold text-kharon-black">{item.owner_company_name}</span>
+                    <span class="text-kharon-grey font-medium">{item.system_type} / {item.coverage_area}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div>
-              <p class="text-xs font-bold uppercase text-kharon-purple tracking-wider">Missing documentation</p>
-              <div class="mt-3 grid gap-2">
+              <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple mb-4">Missing documentation</p>
+              <div class="grid gap-2">
                 {missingDocs.length === 0 && <p class="text-sm text-kharon-grey italic py-1">No completed jobs are missing documentation.</p>}
                 {missingDocs.map((item) => (
-                  <div class="border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-3 text-xs rounded-lg flex items-center justify-between">
-                    <span class="font-semibold text-kharon-black">{item.owner_company_name}</span>
-                    <span class="text-kharon-grey font-mono">{item.id.slice(0, 8)}... / {item.completed_at || "completed"}</span>
+                  <div class="border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-3.5 text-[0.75rem] rounded shadow-sm flex items-center justify-between">
+                    <span class="font-bold text-kharon-black">{item.owner_company_name}</span>
+                    <span class="text-kharon-grey font-mono text-[10px]">{item.id.slice(0, 8)}... / {item.completed_at || "completed"}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div>
-              <p class="text-xs font-bold uppercase text-kharon-blue tracking-wider">Finance follow-up</p>
-              <div class="mt-3 grid gap-2">
+              <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-blue mb-4">Finance follow-up</p>
+              <div class="grid gap-2">
                 {financeFollowup.length === 0 && <p class="text-sm text-kharon-grey italic py-1">No pending finance follow-up.</p>}
                 {financeFollowup.map((item) => (
-                  <div class="border border-kharon-border border-l-4 border-l-kharon-blue bg-kharon-light/30 p-3 text-xs rounded-lg flex items-center justify-between">
-                    <span class="font-semibold text-kharon-black">{item.owner_company_name}</span>
-                    <span class="text-kharon-grey font-medium">{item.record_count} open / {formatCurrency(item.amount || 0)}</span>
+                  <div class="border border-kharon-border border-l-4 border-l-kharon-blue bg-kharon-light/30 p-3.5 text-[0.75rem] rounded shadow-sm flex items-center justify-between">
+                    <span class="font-bold text-kharon-black">{item.owner_company_name}</span>
+                    <span class="text-kharon-grey font-bold">{item.record_count} open / {formatCurrency(item.amount || 0)}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div>
-              <p class="text-xs font-bold uppercase text-kharon-red tracking-wider">Open defects</p>
-              <div class="mt-3 grid gap-2">
+              <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-red mb-4">Open defects</p>
+              <div class="grid gap-3">
                 {openDefects.length === 0 && <p class="text-sm text-kharon-grey italic py-1">No open defects require attention.</p>}
                 {openDefects.map((item) => (
-                  <a href={`/portal/admin/systems?q=${encodeURIComponent(item.system_id)}`} class="block border border-kharon-border border-l-4 p-3 text-xs rounded-lg hover:bg-kharon-light/50 transition-colors" class:list={[
+                  <a href={`/portal/admin/systems?q=${encodeURIComponent(item.system_id)}`} class="block border border-kharon-border border-l-4 p-4 rounded shadow-sm hover:bg-white transition-all" class:list={[
                     item.severity === "Critical" ? "border-l-kharon-red bg-red-50/20" : item.severity === "Major" ? "border-l-kharon-amber bg-amber-50/20" : "border-l-kharon-grey bg-kharon-light/20"
                   ]}>
                     <div class="flex items-center justify-between">
-                      <span class="font-semibold text-kharon-black">{item.owner_company_name}</span>
-                      <span class={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase border ${
+                      <span class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</span>
+                      <span class={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase border tracking-widest ${
                         item.severity === "Critical" ? "border-red-200 bg-red-50 text-kharon-red" :
                         item.severity === "Major" ? "border-amber-200 bg-amber-50 text-amber-700" :
                         "border-kharon-border bg-white text-kharon-grey"
                       }`}>{item.severity}</span>
                     </div>
-                    <p class="text-kharon-grey mt-1">{item.system_type} / {item.coverage_area}</p>
-                    {item.sans_clause_ref && <p class="mt-1 font-mono text-[10px] text-kharon-grey/70">SANS Clause: {item.sans_clause_ref}</p>}
+                    <p class="text-kharon-grey text-xs mt-1.5 font-medium">{item.system_type} / {item.coverage_area}</p>
+                    {item.sans_clause_ref && <p class="mt-2 font-mono text-[9px] text-kharon-grey/40 uppercase tracking-widest">SANS Clause: {item.sans_clause_ref}</p>}
                   </a>
                 ))}
               </div>
@@ -520,12 +520,12 @@ try {
         try {
           await postJson("/portal/api/admin/jobs", { action: "markInvoiced", id: jobId });
           const confirmed = document.createElement("span");
-          confirmed.className = "mt-3 block text-xs font-bold uppercase text-kharon-grey/60";
-          confirmed.textContent = "Sage invoice raised";
+          confirmed.className = "mt-4 block text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/30 border border-dashed border-kharon-border bg-white/50 text-center py-2 rounded";
+          confirmed.textContent = "Invoiced";
           btn.replaceWith(confirmed);
         } catch (error) {
           btn.disabled = false;
-          btn.textContent = "Sage invoice raised";
+          btn.textContent = "Raise Sage Invoice";
           alert(error.message || "Could not update job status.");
         }
       });

@@ -6,7 +6,6 @@ import ProofGrid from "../components/sections/ProofGrid.astro";
 import TrustModules from "../components/sections/TrustModules.astro";
 import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
 import ComplianceTechnicalBlocks from "../components/sections/ComplianceTechnicalBlocks.astro";
-import Footer from "../components/layout/Footer.astro";
 import { pageMeta, trustModules } from "../data/site.js";
 
 const proofItems = [
@@ -99,5 +98,5 @@ const proofItems = [
       { label: "Documentation Status", name: "documentation_status", options: ["Current", "Partial", "Missing", "Requires consolidation", "Unknown"] }
     ]}
   />
-  <Footer />
+  
 </BaseLayout>

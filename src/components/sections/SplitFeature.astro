@@ -61,7 +61,7 @@ const labelIcons = {
   <!-- Subtle background ambient light -->
   <div class="absolute top-1/2 left-0 -translate-y-1/2 w-[800px] h-[800px] bg-kharon-cyan/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-  <div class={`relative z-10 mx-auto grid max-w-7xl items-center gap-16 px-6 lg:grid-cols-2 ${reverse ? "lg:[&>*:first-child]:order-2" : ""}`}>
+  <div class={`relative z-10 mx-auto grid max-w-7xl items-center gap-8 lg:gap-12 px-6 lg:grid-cols-2 ${reverse ? "lg:[&>*:first-child]:order-2" : ""}`}>
     <div class="flex flex-col justify-center" data-animate="slide-up">
       <p class="mb-4 text-sm font-bold uppercase tracking-widest text-kharon-purple">
         {eyebrow}
@@ -103,7 +103,7 @@ const labelIcons = {
             <div class={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-500 hover:shadow-xl ${isFirst ? 'col-span-2 row-span-1 border-kharon-blue/20 bg-gradient-to-br from-white to-slate-50 shadow-lg shadow-kharon-blue/5 hover:border-kharon-blue/40' : (isLast ? 'col-span-1 row-span-1 border-kharon-red/20 bg-gradient-to-br from-white to-rose-50 shadow-lg shadow-kharon-red/5 hover:border-kharon-red/40' : 'col-span-1 row-span-1 border-kharon-cyan/20 bg-gradient-to-br from-white to-cyan-50 shadow-lg shadow-kharon-cyan/5 hover:border-kharon-cyan/40')} p-6`}>
               
               <!-- Subtle inner ambient glow -->
-              <div class={`absolute -right-8 -top-6 sm:p-7 h-32 w-32 rounded-full blur-[40px] transition-opacity duration-500 opacity-0 group-hover:opacity-100 ${isFirst ? 'bg-kharon-blue/20' : (isLast ? 'bg-kharon-red/20' : 'bg-kharon-cyan/20')}`}></div>
+              <div class={`absolute -right-8 -top-8 h-32 w-32 rounded-full blur-[40px] transition-opacity duration-500 opacity-0 group-hover:opacity-100 ${isFirst ? 'bg-kharon-blue/20' : (isLast ? 'bg-kharon-red/20' : 'bg-kharon-cyan/20')}`}></div>
               
               <div class="relative z-10">
                 <div class={`mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-500 group-hover:scale-110 group-hover:shadow-md`}>

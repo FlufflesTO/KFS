@@ -2,41 +2,46 @@
 import { site, solutionLinks } from "../../data/site.js";
 ---
 
-<footer class="bg-kharon-charcoal text-white">
-  <div class="mx-auto max-w-7xl px-6 py-14">
-    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1fr_auto]">
+<footer class="bg-kharon-charcoal text-white border-t border-white/5">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_auto]">
       <div>
-        <a href="/" class="flex shrink-0 items-center gap-3">
-          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="36" height="49" class="flex-none" />
+        <a href="/" class="flex shrink-0 items-center gap-3.5 group">
+          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="30" height="42" class="flex-none transition-transform duration-300 group-hover:scale-110" />
           <span>
-            <span class="block whitespace-nowrap text-base font-bold uppercase tracking-wide">{site.shortName}</span>
-            <span class="block whitespace-nowrap text-xs uppercase tracking-widest text-white/50">Fire &amp; Security Solutions</span>
+            <span class="block whitespace-nowrap text-base font-bold uppercase tracking-[0.1em]">{site.shortName}</span>
+            <span class="block whitespace-nowrap text-[0.625rem] font-bold uppercase tracking-[0.2em] text-white/30">Fire &amp; Security</span>
           </span>
         </a>
-        <p class="mt-5 max-w-sm text-sm leading-7 text-white/55">
+        <p class="mt-6 max-w-md text-sm leading-relaxed text-white/40 font-medium">
           {site.description}
         </p>
       </div>
 
-      <div class="text-sm text-white/60 sm:text-right">
-        <p class="font-semibold text-white/80">{site.phone}</p>
-        <p class="mt-1"><a href={`mailto:${site.email}`} class="hover:text-white">{site.email}</a></p>
-        <p class="mt-3 leading-6 text-white/45">{site.address}</p>
-        <p class="mt-1 text-xs text-white/35">Reg. {site.registration}</p>
+      <div class="text-sm text-white/50 sm:text-right font-medium">
+        <p class="font-bold text-white/80 tracking-wide">{site.phone}</p>
+        <p class="mt-1.5 tracking-tight"><a href={`mailto:${site.email}`} class="hover:text-white transition-colors">{site.email}</a></p>
+        <p class="mt-4 leading-relaxed text-white/30 max-w-xs sm:ml-auto">{site.address}</p>
+        <p class="mt-2 text-[0.625rem] font-bold uppercase tracking-widest text-white/20">Reg. {site.registration}</p>
       </div>
     </div>
 
-    <div class="mt-10 flex flex-wrap gap-6 border-t border-white/10 pt-8 text-sm text-white/50">
-      <a href="/" class="hover:text-white">Home</a>
-      <a href="/about" class="hover:text-white">About</a>
-      {solutionLinks.map((link) => <a href={link.href} class="hover:text-white">{link.label}</a>)}
-      <a href="/compliance" class="hover:text-white">Standards Reference</a>
-      <a href="/contact?intent=site-assessment" class="hover:text-white">Assessment Intake</a>
-      <a href={site.portalLoginPath} title={site.portalStatus} class="hover:text-white">Access Records</a>
+    <div class="mt-12 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/5 pt-8 text-[0.75rem] font-bold uppercase tracking-widest text-white/30">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+      {solutionLinks.map((link) => <a href={link.href} class="hover:text-white transition-colors">{link.label}</a>)}
+      <a href="/compliance" class="hover:text-white transition-colors">Compliance</a>
+      <a href="/contact?intent=site-assessment" class="hover:text-white transition-colors">Intake</a>
+      <a href={site.portalLoginPath} title={site.portalStatus} class="hover:text-white transition-colors">Portal</a>
     </div>
 
-    <p class="mt-8 text-xs text-white/30">
-      &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
-    </p>
+    <div class="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-white/20">
+        &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
+      </p>
+      <div class="flex gap-4">
+        <a href="/legal/paia-manual.html" class="text-[0.625rem] font-bold uppercase tracking-widest text-white/20 hover:text-white transition-colors">PAIA Manual</a>
+      </div>
+    </div>
   </div>
 </footer>

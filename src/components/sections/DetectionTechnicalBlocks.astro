@@ -93,8 +93,8 @@ const zoningStrategies = [
       Every detection input maps to specific outputs. This matrix defines which actions are triggered by which events  -  the core of fire-system response logic.
     </p>
 
-    <div class="mt-10 overflow-x-auto portal-scroll-x">
-      <table class="w-full min-w-[640px] border-collapse text-sm">
+    <div class="mt-10 overflow-x-auto portal-scroll-x scrollbar-hide">
+      <table class="w-full min-w-[480px] border-collapse text-sm">
         <thead>
           <tr>
             <th class="border border-kharon-border bg-kharon-purple px-4 py-3 text-left font-bold text-white whitespace-nowrap">
@@ -138,8 +138,9 @@ const zoningStrategies = [
         When false alarms persist, each branch of this decision tree isolates a root cause  -  from environmental interference to wiring faults  -  and directs a corrective action.
       </p>
 
-      <div class="mt-10 w-full max-w-3xl mx-auto">
-        <svg viewBox="0 0 780 720" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto" role="img" aria-label="False alarm diagnosis decision tree flowchart" font-family="system-ui, -apple-system, sans-serif">
+      <div class="mt-10 w-full max-w-3xl mx-auto overflow-x-auto">
+        <div class="min-w-[320px] px-2">
+        <svg viewBox="0 0 780 720" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto" role="img" aria-label="False alarm diagnosis decision tree flowchart" font-family="system-ui, -apple-system, sans-serif" style="overflow: visible;">
           <defs>
             <marker id="flowArrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
               <path d="M0,0 L8,3 L0,6 Z" fill="#00C2FF" />
@@ -250,51 +251,58 @@ const zoningStrategies = [
           <text x="140" y="13" text-anchor="start" fill="#4B2E83" font-size="10" font-weight="600" opacity="0.7">DECISION</text>
           <text x="430" y="13" text-anchor="start" fill="#1F4E79" font-size="10" font-weight="600" opacity="0.7">CORRECTIVE ACTION</text>
         </svg>
+        </div>
       </div>
     </div>
 
     <!-- ─── Block 3: Service Evidence Examples ─── -->
-    <div class="mt-16">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Service Evidence</span>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">What a professional fire detection service visit produces.</h2>
-      <p class="mt-4 max-w-3xl text-lg leading-8 text-kharon-grey">
+    <div class="mt-20 reveal reveal-delayed">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-1 w-8 bg-kharon-purple"></div>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Service Evidence</p>
+      </div>
+      <h2 class="kharon-h2 text-kharon-black">What a professional fire detection service visit produces.</h2>
+      <p class="mt-4 max-w-3xl text-lg leading-relaxed text-kharon-grey">
         A compliant service visit generates documented evidence at every step  -  not just a pass/fail sticker, but traceable records that responsible persons can rely on.
       </p>
 
-      <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {serviceSteps.map((item) => (
-          <div class="rounded-lg border border-kharon-border p-6 bg-white">
-            <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-md border border-kharon-border text-kharon-purple">
-              <span class="text-sm font-bold">{item.step}</span>
+          <div class="rounded-xl border border-kharon-border p-6 sm:p-7 bg-white transition-all hover:border-kharon-purple/20 hover:shadow-md">
+            <div class="mb-6 flex h-10 w-10 items-center justify-center rounded-lg bg-kharon-purple/5 text-kharon-purple">
+              <span class="text-sm font-black tracking-widest">{item.step}</span>
             </div>
-            <h3 class="text-lg font-semibold text-kharon-black">{item.title}</h3>
-            <p class="mt-3 text-sm leading-6 text-kharon-grey">{item.text}</p>
+            <h3 class="text-lg font-bold tracking-tight text-kharon-black">{item.title}</h3>
+            <p class="mt-3 text-sm leading-relaxed text-kharon-grey/80">{item.text}</p>
           </div>
         ))}
       </div>
     </div>
 
     <!-- ─── Block 4: Zoning Strategy Guide ─── -->
-    <div class="mt-16">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Zone Planning</span>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Fire detection zone strategy principles.</h2>
-      <p class="mt-4 max-w-3xl text-lg leading-8 text-kharon-grey">
+    <div class="mt-20 reveal reveal-delayed">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-1 w-8 bg-kharon-purple"></div>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Zone Planning</p>
+      </div>
+      <h2 class="kharon-h2 text-kharon-black">Fire detection zone strategy principles.</h2>
+      <p class="mt-4 max-w-3xl text-lg leading-relaxed text-kharon-grey">
         Zone boundaries are drawn around building geometry, occupancy risk and evacuation logic  -  not convenience. These principles guide compliant zone planning.
       </p>
 
-      <div class="mt-10 grid gap-5 md:grid-cols-2">
+      <div class="mt-12 grid gap-6 md:grid-cols-2">
         {zoningStrategies.map((item) => (
-          <div class="rounded-lg border border-kharon-border p-6 bg-white">
-            <div class="mb-4 inline-flex items-center gap-2">
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-kharon-purple/10 text-kharon-purple">
+          <div class="rounded-xl border border-kharon-border p-6 sm:p-7 bg-white transition-all hover:border-kharon-purple/20 hover:shadow-md">
+            <div class="mb-4 inline-flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-kharon-purple/5 text-kharon-purple">
                 <svg class="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                   <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z" opacity="0.3" />
                   <path d="M8 4a.75.75 0 01.75.75v2.5h2.5a.75.75 0 010 1.5h-2.5v2.5a.75.75 0 01-1.5 0v-2.5h-2.5a.75.75 0 010-1.5h2.5v-2.5A.75.75 0 018 4z" />
                 </svg>
               </span>
-              <h3 class="text-lg font-semibold text-kharon-black">{item.title}</h3>
+              <h3 class="text-lg font-bold tracking-tight text-kharon-black">{item.title}</h3>
             </div>
-            <p class="text-sm leading-6 text-kharon-grey">{item.text}</p>
+            <p class="text-sm leading-relaxed text-kharon-grey/80">{item.text}</p>
           </div>
         ))}
       </div>

@@ -43,7 +43,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
       </div>
     </a>
 
-    <nav class="hidden items-center gap-6 xl:gap-6 sm:p-7 lg:flex" aria-label="Primary navigation">
+    <nav class="hidden items-center gap-5 xl:gap-8 lg:flex" aria-label="Primary navigation">
       <a href="/" class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-cyan" : "text-white/70 hover:text-white"}`} aria-current={isLinkActive("/") ? "page" : undefined}>
         Home
       </a>
@@ -53,16 +53,16 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
           class={`flex cursor-pointer list-none items-center gap-1.5 whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest marker:hidden transition-colors ${isSolutionsActive ? "text-kharon-cyan" : "text-white/70 hover:text-white"}`}
         >
           Solutions
-          <svg aria-hidden="true" viewBox="0 0 24 24" class="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="3">
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="h-3 w-3 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="4">
             <path d="m6 9 6 6 6-6"></path>
           </svg>
         </summary>
 
         <nav
           aria-label="Solutions"
-          class="absolute left-1/2 -translate-x-1/2 top-10 w-80 rounded-xl border border-white/10 bg-kharon-charcoal p-2 shadow-2xl backdrop-blur-xl"
+          class="absolute left-1/2 -translate-x-1/2 top-11 w-72 rounded-lg border border-white/10 bg-kharon-charcoal p-1.5 shadow-2xl backdrop-blur-xl"
         >
-          <div class="grid gap-1">
+          <div class="grid gap-0.5">
             {
               solutionLinks.map((link) => {
                 const active = isLinkActive(link.href);
@@ -70,10 +70,10 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
                   <a
                     href={link.href}
                     aria-current={active ? "page" : undefined}
-                    class={`flex items-center justify-between rounded-lg px-4 py-3 text-[0.8125rem] font-bold uppercase tracking-wide transition-all ${active ? "bg-kharon-purple text-white shadow-lg" : "text-white/60 hover:bg-white/5 hover:text-white"}`}
+                    class={`flex items-center justify-between rounded-md px-4 py-2.5 text-[0.75rem] font-bold uppercase tracking-wider transition-all ${active ? "bg-kharon-purple text-white" : "text-white/60 hover:bg-white/5 hover:text-white"}`}
                   >
                     {link.label}
-                    {active && <div class="h-1.5 w-1.5 rounded-full bg-kharon-cyan header-active-dot"></div>}
+                    {active && <div class="h-1 w-1 rounded-full bg-kharon-cyan shadow-[0_0_6px_rgba(0,194,255,0.8)]"></div>}
                   </a>
                 );
               })
@@ -94,18 +94,18 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
       }
     </nav>
 
-    <div class="hidden items-center gap-4 lg:flex">
+    <div class="hidden items-center gap-3 lg:flex xl:gap-5">
       <a
         href={site.portalLoginPath}
         aria-label="Open the secure Kharon portal."
         title={site.portalStatus}
-        class="group relative flex items-center gap-2 overflow-hidden rounded-md border border-white/10 px-5 py-2.5 text-[0.8125rem] font-bold uppercase tracking-widest text-white/70 transition-all hover:border-white/20 hover:text-white"
+        class="group flex items-center gap-2 rounded-md border border-white/10 px-4 py-2 text-[0.75rem] font-bold uppercase tracking-widest text-white/70 transition-all hover:border-white/20 hover:text-white"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white/40 transition-colors group-hover:text-kharon-cyan"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white/30 transition-colors group-hover:text-kharon-cyan"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
         Portal
       </a>
 
-      <a href="/contact?intent=site-assessment" class="relative overflow-hidden rounded-md bg-kharon-purple px-6 py-2.5 text-[0.8125rem] font-bold uppercase tracking-widest text-white transition-all hover:bg-kharon-blue header-cta-button">
+      <a href="/contact?intent=site-assessment" class="rounded-md bg-kharon-purple px-5 py-2.5 text-[0.75rem] font-bold uppercase tracking-widest text-white transition-all hover:bg-kharon-blue shadow-sm">
         Inquiry
       </a>
     </div>
@@ -123,7 +123,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
         </svg>
       </summary>
 
-      <div class="fixed inset-x-0 top-20 z-[90] max-h-[calc(100vh-5rem)] overflow-y-auto border-t border-white/10 bg-kharon-black/95 px-6 py-10 shadow-2xl backdrop-blur-xl animate-reveal-down">
+      <div class="fixed inset-x-0 top-[var(--header-height)] z-[90] max-h-[calc(100vh-var(--header-height))] overflow-y-auto border-t border-white/10 bg-kharon-black/95 px-6 py-10 shadow-2xl backdrop-blur-xl animate-reveal-down">
         <nav class="flex flex-col gap-2" aria-label="Mobile navigation">
           {
             [...mobilePrimaryLinks.slice(0, 1), ...solutionLinks, ...mobilePrimaryLinks.slice(1)].map((link) => {
@@ -132,7 +132,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
                 <a
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  class={`flex items-center justify-between border-b border-white/5 py-5 text-sm font-bold uppercase tracking-[0.15em] transition-colors ${active ? "text-kharon-cyan" : "text-white/80"}`}
+                  class={`flex items-center justify-between border-b border-white/5 py-5 text-sm font-bold uppercase tracking-[0.15em] transition-colors min-h-[44px] ${active ? "text-kharon-cyan" : "text-white/80"}`}
                 >
                   {link.label}
                   {active && <div class="h-2 w-2 rounded-full bg-kharon-cyan"></div>}

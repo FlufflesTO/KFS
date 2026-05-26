@@ -250,7 +250,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
   </section>
   
   <script>
-    async function postJson(url, payload) {
+    async function postJson(url: string, payload: any) {
       const response = await window.kharonPortalFetch(url, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -267,7 +267,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
     
     if (outcomeSelect) {
       outcomeSelect.addEventListener('change', function() {
-        if (this.value === 'Unable To Complete') {
+        if ((this as HTMLSelectElement).value === 'Unable To Complete') {
           unableReasonSection.classList.remove('hidden');
         } else {
           unableReasonSection.classList.add('hidden');
@@ -307,7 +307,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
           arrivalForm.classList.add('hidden');
           outcomeForm.classList.remove('hidden');
         } catch (error) {
-          visitResult.textContent = error.message;
+          visitResult.textContent = (error as Error).message;
           visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-red-200 bg-red-50 text-sm font-semibold text-red-800';
           visitResult.classList.remove('hidden');
         }
@@ -336,9 +336,9 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
           visitResult.classList.remove('hidden');
           
           // Disable form after successful submission
-          outcomeForm.querySelectorAll('input, select, textarea, button').forEach(el => el.disabled = true);
+          outcomeForm.querySelectorAll('input, select, textarea, button').forEach((el: Element) => (el as HTMLInputElement).disabled = true);
         } catch (error) {
-          visitResult.textContent = error.message;
+          visitResult.textContent = (error as Error).message;
           visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-red-200 bg-red-50 text-sm font-semibold text-red-800';
           visitResult.classList.remove('hidden');
         }
