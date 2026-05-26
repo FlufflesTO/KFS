@@ -1,11 +1,12 @@
 /**
  * Project Sentinel - Portal Middleware
  * Purpose: Enforces security headers, session verification, rate limits, and CSRF protection across all /portal paths
- * Dependencies: astro/middleware, ./lib/server/auth.js, ./lib/server/csrf.js, ./lib/server/bindings.js, ./lib/server/rateLimit.js, ./lib/server/audit.js
+ * Dependencies: astro:middleware, ./lib/server/auth.js, ./lib/server/csrf.js, ./lib/server/bindings.js, ./lib/server/rateLimit.js, ./lib/server/audit.js
  * Structural Role: Central request interception and security enforcement layer
  */
 
-import { defineMiddleware } from "astro/middleware";
+import { defineMiddleware, sequence } from "astro:middleware";
+import type { MiddlewareHandler } from "astro";
 import { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } from "./lib/server/auth.js";
 import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
 import { getDatabase } from "./lib/server/bindings.js";
@@ -23,11 +24,11 @@ const mfaPath = "/portal/account/mfa";
 const mfaApiPath = "/portal/api/mfa";
 const portalRootPath = "/portal";
 
-function createCspNonce() {
+function createCspNonce(): string {
   return crypto.randomUUID().replaceAll("-", "");
 }
 
-function securityHeaders(nonce) {
+function securityHeaders(nonce: string): Record<string, string> {
   return {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
@@ -43,14 +44,14 @@ function securityHeaders(nonce) {
   };
 }
 
-function withSecurityHeaders(response, nonce = createCspNonce()) {
+function withSecurityHeaders(response: Response, nonce = createCspNonce()): Response {
   for (const [name, value] of Object.entries(securityHeaders(nonce))) {
     response.headers.set(name, value);
   }
   return response;
 }
 
-async function withHtmlSecurityHeaders(response, nonce) {
+async function withHtmlSecurityHeaders(response: Response, nonce: string): Promise<Response> {
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("text/html")) return withSecurityHeaders(response, nonce);
 
@@ -65,14 +66,14 @@ async function withHtmlSecurityHeaders(response, nonce) {
   }), nonce);
 }
 
-function redirectToLogin(context, nonce) {
+function redirectToLogin(context: any, nonce: string): Response {
   const loginUrl = new URL(loginPath, context.url);
   loginUrl.searchParams.set("next", context.url.pathname);
   return withSecurityHeaders(context.redirect(loginUrl.toString(), 302), nonce);
 }
 
-function redirectToRoleDashboard(context, role, nonce) {
-  const destinations = {
+function redirectToRoleDashboard(context: any, role: string, nonce: string): Response {
+  const destinations: Record<string, string> = {
     tech: "/portal/tech/dashboard",
     admin: "/portal/admin/dashboard",
     client: "/portal/client/dashboard",
@@ -82,7 +83,7 @@ function redirectToRoleDashboard(context, role, nonce) {
   return withSecurityHeaders(context.redirect(destinations[role] || loginPath, 302), nonce);
 }
 
-function allowedForPath(pathname, role) {
+function allowedForPath(pathname: string, role: string): boolean {
   if (pathname.startsWith("/portal/account/")) return true;
   
   if (pathname.startsWith("/portal/api/tech/")) return role === "tech" || role === "admin";
@@ -99,7 +100,7 @@ function allowedForPath(pathname, role) {
   return false;
 }
 
-function pathContainsTraversal(pathname) {
+function pathContainsTraversal(pathname: string): boolean {
   try {
     return decodeURIComponent(pathname).split("/").some((segment) => segment === "..");
   } catch {
@@ -107,12 +108,12 @@ function pathContainsTraversal(pathname) {
   }
 }
 
-function isStateChangingPortalApi(request, pathname) {
+function isStateChangingPortalApi(request: Request, pathname: string): boolean {
   return (pathname.startsWith("/portal/api/") || pathname.startsWith("/portal/admin/api/"))
     && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
 }
 
-function rateLimitResponse(retryAfter, nonce) {
+function rateLimitResponse(retryAfter: number, nonce: string): Response {
   return withSecurityHeaders(new Response(JSON.stringify({ ok: false, error: "rate_limited", message: "Too many portal write requests. Try again shortly.", retryAfter }), {
     status: 429,
     headers: {
@@ -123,8 +124,8 @@ function rateLimitResponse(retryAfter, nonce) {
   }), nonce);
 }
 
-function rateLimitConfig(pathname) {
-  const configs = {
+function rateLimitConfig(pathname: string) {
+  const configs: Record<string, any> = {
     "/portal/api/auth": { scope: "portal.auth.login", maxAttempts: 5, windowSeconds: 900 },
     "/portal/api/reset-password": { scope: "portal.auth.reset", maxAttempts: 3, windowSeconds: 3600 },
     "/portal/api/change-password": { scope: "portal.change_password", maxAttempts: 5, windowSeconds: 900 },
@@ -149,40 +150,63 @@ function rateLimitConfig(pathname) {
   return configs[pathname] || { scope: `portal.write.${pathname.replaceAll("/", ".")}`.slice(0, 80), maxAttempts: 20, windowSeconds: 900 };
 }
 
-export const onRequest = defineMiddleware(async (context, next) => {
-  const { pathname } = context.url;
+// 1. Core setup and AB testing
+const setupMiddleware: MiddlewareHandler = async (context, next) => {
   const nonce = createCspNonce();
   context.locals.nonce = nonce;
 
-  // A/B Testing Variant Assignment
   const variantCookie = context.cookies.get("kharon_ui_variant")?.value;
   let variant = variantCookie || (Math.random() < 0.5 ? "A" : "B");
   context.locals.variant = variant;
+  
+  context.locals.needsVariantCookie = !variantCookie;
 
-  if (!pathname.startsWith("/portal")) {
-    const response = await withHtmlSecurityHeaders(await next(), nonce);
-    if (!variantCookie) {
-      response.headers.append(
-        "Set-Cookie",
-        `kharon_ui_variant=${variant}; Path=/; Max-Age=31536000; SameSite=Lax; HttpOnly`
-      );
-    }
-    return response;
-  }
+  return await next();
+};
 
-  if (pathContainsTraversal(pathname)) {
+// 2. Base Security
+const securityMiddleware: MiddlewareHandler = async (context, next) => {
+  const { pathname } = context.url;
+  const nonce = context.locals.nonce;
+
+  if (pathContainsTraversal(pathname) && pathname.startsWith("/portal")) {
     return withSecurityHeaders(new Response("Invalid portal path.", { status: 400 }), nonce);
   }
 
+  const response = await next();
+  
+  let finalResponse = response;
+  if (!finalResponse.headers.has("X-Content-Type-Options")) {
+      finalResponse = await withHtmlSecurityHeaders(finalResponse, nonce);
+  }
+
+  if (context.locals.needsVariantCookie) {
+    finalResponse.headers.append(
+      "Set-Cookie",
+      `kharon_ui_variant=${context.locals.variant}; Path=/; Max-Age=31536000; SameSite=Lax; HttpOnly`
+    );
+  }
+  
+  if (context.locals.shouldSetCsrfCookie && context.locals.csrfToken) {
+     finalResponse.headers.append("Set-Cookie", csrfCookie(context.locals.csrfToken));
+  }
+
+  return finalResponse;
+};
+
+// 3. Authentication
+const authMiddleware: MiddlewareHandler = async (context, next) => {
+  const { pathname } = context.url;
+  const nonce = context.locals.nonce;
+
+  if (!pathname.startsWith("/portal")) return await next();
   if (pathname === loginPath || pathname === authApiPath || pathname === resetPath || pathname === resetApiPath) {
-    return withHtmlSecurityHeaders(await next(), nonce);
+    return await next();
   }
 
   const db = getDatabase();
   const token = context.cookies.get(sessionCookieName)?.value;
-  if (!token) {
-    return redirectToLogin(context, nonce);
-  }
+  if (!token) return redirectToLogin(context, nonce);
 
   const user = await verifySessionToken(token);
   if (!user) {
@@ -198,16 +222,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   context.locals.user = user;
+  return await next();
+};
+
+// 4. CSRF and Rate Limiting
+const csrfAndRateLimitMiddleware: MiddlewareHandler = async (context, next) => {
+  const { pathname } = context.url;
+  const user = context.locals.user;
+  const nonce = context.locals.nonce;
+  
+  if (!user || !pathname.startsWith("/portal")) return await next();
 
   let csrfToken = context.cookies.get(csrfCookieName)?.value;
-  let shouldSetCsrfCookie = false;
+  context.locals.shouldSetCsrfCookie = false;
   if (!(await verifyCsrfToken(csrfToken, user))) {
     csrfToken = await createCsrfToken(user);
-    shouldSetCsrfCookie = true;
+    context.locals.shouldSetCsrfCookie = true;
   }
   context.locals.csrfToken = csrfToken;
 
   if (isStateChangingPortalApi(context.request, pathname)) {
+    const db = getDatabase();
     if (!(await verifyCsrfRequest(context.request, user))) {
       await auditEvent(db, context.request, {
         eventType: "security.csrf",
@@ -239,37 +274,43 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
+  return await next();
+};
+
+// 5. RBAC and Forced Actions
+const rbacMiddleware: MiddlewareHandler = async (context, next) => {
+  const { pathname } = context.url;
+  const user = context.locals.user;
+  const nonce = context.locals.nonce;
+
+  if (!user || !pathname.startsWith("/portal")) return await next();
+  if (pathname === loginPath || pathname === authApiPath || pathname === resetPath || pathname === resetApiPath) {
+      return await next();
+  }
+
   if (user.forcePasswordChange && pathname !== passwordPath && pathname !== passwordApiPath && pathname !== logoutApiPath) {
-    const response = withSecurityHeaders(context.redirect(passwordPath, 302), nonce);
-    if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
-    return response;
+    return withSecurityHeaders(context.redirect(passwordPath, 302), nonce);
   }
 
   if (user.mfaRequired && !user.mfaEnabled && pathname !== mfaPath && pathname !== mfaApiPath && pathname !== logoutApiPath) {
-    const response = withSecurityHeaders(context.redirect(mfaPath, 302), nonce);
-    if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
-    return response;
+    return withSecurityHeaders(context.redirect(mfaPath, 302), nonce);
   }
 
   if (pathname === portalRootPath || pathname === `${portalRootPath}/`) {
-    const response = redirectToRoleDashboard(context, user.role, nonce);
-    if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
-    return response;
+    return redirectToRoleDashboard(context, user.role, nonce);
   }
 
   if (!allowedForPath(pathname, user.role)) {
-    const response = redirectToRoleDashboard(context, user.role, nonce);
-    if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
-    return response;
+    return redirectToRoleDashboard(context, user.role, nonce);
   }
 
-  const response = await withHtmlSecurityHeaders(await next(), nonce);
-  if (shouldSetCsrfCookie) response.headers.append("Set-Cookie", csrfCookie(csrfToken));
-  if (!variantCookie) {
-    response.headers.append(
-      "Set-Cookie",
-      `kharon_ui_variant=${variant}; Path=/; Max-Age=31536000; SameSite=Lax; HttpOnly`
-    );
-  }
-  return response;
-});
+  return await next();
+};
+
+export const onRequest = sequence(
+  setupMiddleware,
+  authMiddleware,
+  csrfAndRateLimitMiddleware,
+  rbacMiddleware,
+  securityMiddleware
+);

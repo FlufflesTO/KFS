@@ -198,80 +198,74 @@ try {
     <div class="mx-auto max-w-7xl">
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800 mb-6">{loadError}</p>}
 
-      {/* Quick-stats row */}
-      <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 mb-6">
-        <KharonCard variant={stats.activeJobs > 0 ? 'primary' : 'default'}>
-          <div class="flex flex-col justify-between h-full">
+      {/* Consolidated Priority Health Metrics */}
+      <div class="mb-8 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+        <KharonCard variant={stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'danger' : 'primary'} padding="lg">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 h-full">
             <div>
-              <p class="text-xs font-bold uppercase text-kharon-purple">Active jobs</p>
-              <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.activeJobs}</p>
+              <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Operational Health</p>
+              <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-kharon-black">
+                {stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'Action Required' : 'All Systems Nominal'}
+              </h2>
+              <p class="mt-2 text-sm text-kharon-grey/80 max-w-md">
+                Monitor and resolve critical compliance and dispatch blockers to maintain operational SLA.
+              </p>
             </div>
-            <KharonButton href="/portal/admin/planning" variant="ghost" size="sm">Planning →</KharonButton>
+            
+            <div class="flex gap-4">
+              <div class="text-center">
+                <p class={`text-3xl font-black ${stats.unassignedJobs > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.unassignedJobs}</p>
+                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Unassigned</p>
+              </div>
+              <div class="w-px bg-kharon-border"></div>
+              <div class="text-center">
+                <p class={`text-3xl font-black ${stats.overdueSystems > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.overdueSystems}</p>
+                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Overdue</p>
+              </div>
+              <div class="w-px bg-kharon-border"></div>
+              <div class="text-center">
+                <p class={`text-3xl font-black ${stats.openDefects > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.openDefects}</p>
+                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Defects</p>
+              </div>
+            </div>
           </div>
         </KharonCard>
-        
-        <KharonCard variant={stats.unassignedJobs > 0 ? 'danger' : 'default'}>
-          <div class="flex flex-col justify-between h-full">
-            <div>
-              <p class={`text-xs font-bold uppercase ${stats.unassignedJobs > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Unassigned</p>
-              <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.unassignedJobs}</p>
-            </div>
-            <KharonButton href="/portal/admin/jobs" variant="ghost" size="sm">Assign →</KharonButton>
-          </div>
-        </KharonCard>
-        
-        <KharonCard variant={stats.overdueSystems > 0 ? 'danger' : 'default'}>
-          <div class="flex flex-col justify-between h-full">
-            <div>
-              <p class={`text-xs font-bold uppercase ${stats.overdueSystems > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue systems</p>
-              <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.overdueSystems}</p>
-            </div>
-            <KharonButton href="/portal/admin/planning" variant="ghost" size="sm">View lifecycle →</KharonButton>
-          </div>
-        </KharonCard>
-        
-        <KharonCard variant={stats.openDefects > 0 ? 'danger' : 'default'}>
-          <div class="flex flex-col justify-between h-full">
-            <div>
-              <p class={`text-xs font-bold uppercase ${stats.openDefects > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Open defects</p>
-              <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.openDefects}</p>
-              {stats.criticalDefects > 0 && <p class="mt-1 text-xs font-bold text-kharon-red">{stats.criticalDefects} critical</p>}
-            </div>
-            <KharonButton href="/portal/admin/compliance" variant="ghost" size="sm">Audits →</KharonButton>
-          </div>
-        </KharonCard>
-        
-        <KharonCard variant={stats.blockedCertificates > 0 ? 'warning' : 'default'}>
-          <div class="flex flex-col justify-between h-full">
-            <div>
-              <p class={`text-xs font-bold uppercase ${stats.blockedCertificates > 0 ? "text-amber-600" : "text-kharon-grey"}`}>Blocked certs</p>
-              <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.blockedCertificates}</p>
-              <p class="mt-1 text-xs text-kharon-grey">{stats.validCertificates} valid</p>
-            </div>
-            <span class="mt-3 block text-xs text-kharon-grey/50">—</span>
-          </div>
-        </KharonCard>
-        
-        <KharonCard variant="default">
-          <div class="flex flex-col justify-between h-full">
-            <div>
-              <p class="text-xs font-bold uppercase text-kharon-purple">Open requests</p>
-              <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.openRequests}</p>
-            </div>
-            <KharonButton href="/portal/admin/dashboard#requests" variant="ghost" size="sm">Review below →</KharonButton>
-          </div>
-        </KharonCard>
-        
-        <KharonCard variant={stats.missingDocuments > 0 ? 'primary' : 'default'}>
-          <div class="flex flex-col justify-between h-full">
-            <div>
-              <p class={`text-xs font-bold uppercase ${stats.missingDocuments > 0 ? "text-kharon-purple" : "text-kharon-grey"}`}>Missing docs</p>
-              <p class="mt-2 text-2xl font-bold text-kharon-black">{stats.missingDocuments}</p>
-            </div>
-            <KharonButton href="/portal/admin/jobs" variant="ghost" size="sm">Review jobs →</KharonButton>
-          </div>
-        </KharonCard>
+
+        <div class="grid grid-cols-2 gap-4">
+           <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
+              <div>
+                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Active Jobs</p>
+                <p class="mt-1 text-xl font-bold text-kharon-black">{stats.activeJobs}</p>
+              </div>
+              <KharonButton href="/portal/admin/planning" variant="ghost" size="sm" className="mt-4 self-start">View</KharonButton>
+           </KharonCard>
+
+           <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
+              <div>
+                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Missing Docs</p>
+                <p class="mt-1 text-xl font-bold text-kharon-black">{stats.missingDocuments}</p>
+              </div>
+              <KharonButton href="/portal/admin/jobs" variant="ghost" size="sm" className="mt-4 self-start">Review</KharonButton>
+           </KharonCard>
+
+           <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
+              <div>
+                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Open Requests</p>
+                <p class="mt-1 text-xl font-bold text-kharon-black">{stats.openRequests}</p>
+              </div>
+              <KharonButton href="/portal/admin/dashboard#requests" variant="ghost" size="sm" className="mt-4 self-start">Review</KharonButton>
+           </KharonCard>
+
+           <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
+              <div>
+                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Blocked Certs</p>
+                <p class="mt-1 text-xl font-bold text-kharon-black">{stats.blockedCertificates}</p>
+              </div>
+              <span class="mt-4 text-[0.625rem] font-bold text-kharon-grey/50 self-start">{stats.validCertificates} Valid</span>
+           </KharonCard>
+        </div>
       </div>
+
 
       <div class="grid gap-5 lg:grid-cols-2 xl:grid-cols-3 xl:gap-6">
         <KharonCard title="Completed works" subtitle="Asset Lifecycle">
