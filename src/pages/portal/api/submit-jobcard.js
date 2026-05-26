@@ -125,7 +125,8 @@ export async function POST({ request, locals }) {
            ON existing_finance.job_id = jobs.id
           AND existing_finance.item_type = 'Invoice'
           AND existing_finance.payment_status IN ('Pending Approval', 'Unpaid', 'Settled')
-         WHERE jobs.id = ?1 AND jobs.system_id = ?2
+         WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+           AND jobs.id = ?1 AND jobs.system_id = ?2
          LIMIT 1`
       )
       .bind(jobId, systemId)

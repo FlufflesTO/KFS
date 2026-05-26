@@ -37,6 +37,7 @@ export interface DbSystem {
   manufacturer: string | null;
   model_reference: string | null;
   next_due_date: string;
+  last_service_date: string | null;
   service_interval_months: number;
   owner_company_name: string;
 }

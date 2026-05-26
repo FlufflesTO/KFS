@@ -113,36 +113,26 @@ export async function getBatchRecords(batchParams: {
   siteIds?: string[];
 }): Promise<BatchRecords> {
   const db = getDatabase();
-  const results: Record<string, unknown> = {};
+  const results: BatchRecords = {};
 
-  const queries = [];
-  const params = [];
+  const queryDefs: Array<{ sql: string; params: string[]; key: keyof BatchRecords }> = [];
 
   if (batchParams.jobIds && batchParams.jobIds.length > 0) {
     const placeholders = batchParams.jobIds.map(() => '?').join(',');
-    queries.push(`SELECT * FROM jobs WHERE id IN (${placeholders})`);
-    params.push(...batchParams.jobIds);
+    queryDefs.push({ sql: `SELECT * FROM jobs WHERE id IN (${placeholders})`, params: batchParams.jobIds, key: 'jobs' });
   }
-
   if (batchParams.systemIds && batchParams.systemIds.length > 0) {
     const placeholders = batchParams.systemIds.map(() => '?').join(',');
-    queries.push(`SELECT * FROM systems WHERE id IN (${placeholders})`);
-    params.push(...batchParams.systemIds);
+    queryDefs.push({ sql: `SELECT * FROM systems WHERE id IN (${placeholders})`, params: batchParams.systemIds, key: 'systems' });
   }
-
   if (batchParams.siteIds && batchParams.siteIds.length > 0) {
     const placeholders = batchParams.siteIds.map(() => '?').join(',');
-    queries.push(`SELECT * FROM sites WHERE id IN (${placeholders})`);
-    params.push(...batchParams.siteIds);
+    queryDefs.push({ sql: `SELECT * FROM sites WHERE id IN (${placeholders})`, params: batchParams.siteIds, key: 'sites' });
   }
 
-  if (queries.length > 0) {
-    // Execute each query separately since we can't do multiple selects in one statement with D1
-    for (const [index, query] of queries.entries()) {
-      const result = await db.prepare(query).bind(...params).all();
-      const key = ['jobs', 'systems', 'sites'][index];
-      if (key) results[key] = result.results || [];
-    }
+  for (const { sql, params, key } of queryDefs) {
+    const result = await db.prepare(sql).bind(...params).all();
+    results[key] = result.results || [];
   }
 
   return results;

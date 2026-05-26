@@ -61,7 +61,7 @@ export async function POST({ locals, request }) {
   try {
     const db = (await import("../../../lib/server/bindings.js")).getDatabase();
     const jobCheck = await db.prepare(
-      `SELECT id, assigned_technician_id, status FROM jobs WHERE id = ?1`
+      `SELECT id, assigned_technician_id, status FROM jobs WHERE deleted_at IS NULL AND id = ?1`
     ).bind(jobId).get();
 
     if (!jobCheck) return json({ ok: false, message: "Job not found." }, 404);

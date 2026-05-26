@@ -36,7 +36,8 @@ if (jobId && user) {
        FROM jobs
        INNER JOIN systems ON systems.id = jobs.system_id
        INNER JOIN sites ON sites.id = systems.site_id
-       WHERE jobs.id = ?1 AND jobs.assigned_technician_id = ?2`
+       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+         AND jobs.id = ?1 AND jobs.assigned_technician_id = ?2`
     ).bind(jobId, user.id).first();
     
     if (result) {

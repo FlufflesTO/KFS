@@ -31,7 +31,7 @@ export async function POST({ request, locals }) {
       .prepare(
         `SELECT id, assigned_technician_id, status
          FROM jobs
-         WHERE id = ?1
+         WHERE deleted_at IS NULL AND id = ?1
          LIMIT 1`
       )
       .bind(jobId)
@@ -51,7 +51,7 @@ export async function POST({ request, locals }) {
       return forbidden("This job is not assigned to the authenticated technician.");
     }
 
-    await db.prepare(`UPDATE jobs SET status = 'In Progress' WHERE id = ?1`).bind(jobId).run();
+    await db.prepare(`UPDATE jobs SET status = 'In Progress' WHERE id = ?1 AND deleted_at IS NULL`).bind(jobId).run();
     await auditEvent(db, request, {
       eventType: "job.status",
       entityType: "job",

@@ -1,7 +1,11 @@
 ---
 import Footer from "../components/layout/Footer.astro";
 import Header from "../components/layout/Header.astro";
-import { SITE_CONFIG } from "../config/site-config";
+const SITE_CONFIG = {
+  title: "Kharon Fire & Security",
+  description: "Specialist Fire and Security Solutions",
+  url: "https://kharon.co.za"
+};
 import AnimationController from "../components/animations/AnimationController.astro";
 
 export interface Props {
