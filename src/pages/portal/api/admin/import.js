@@ -22,7 +22,7 @@ async function siteExists(db, id) {
 
 async function systemExists(db, id) {
   if (!id) return false;
-  const record = await db.prepare(`SELECT id FROM systems WHERE id = ?1 LIMIT 1`).bind(id).first();
+  const record = await db.prepare(`SELECT id FROM systems WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`).bind(id).first();
   return Boolean(record);
 }
 
@@ -50,7 +50,7 @@ async function importSites(db, rows) {
                  site_contact_email = ?4,
                  site_contact_phone = ?5,
                  billing_emails = ?6
-             WHERE id = ?7`
+             WHERE id = ?7 AND deleted_at IS NULL`
           )
           .bind(ownerCompanyName, physicalAddress, siteContactPerson, siteContactEmail, siteContactPhone, billingEmails, id)
           .run();

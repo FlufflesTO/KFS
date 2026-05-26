@@ -2940,7 +2940,7 @@ Quote request to Sage quote:
 - [x] Update finance export for Sage fields (Phase 21).
 - [ ] Add focused job detail route (Phase 22).
 - [ ] Add GPS check-in/check-out (Phase 22).
-- [ ] Add offline draft save and retry queue (Phase 22).
+- [x] Add offline draft save and retry queue (Phase 22 / Phase 2).
 - [ ] Add structured visit status model (Phase 22).
 - [ ] Add unable-to-complete workflow (Phase 22).
 - [ ] Add SANS-aligned checklist fields (Phase 22).

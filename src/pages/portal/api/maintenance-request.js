@@ -54,7 +54,7 @@ export async function POST({ request, locals }) {
 
     if (systemId) {
       const system = await db
-        .prepare(`SELECT id, site_id FROM systems WHERE id = ?1 AND site_id = ?2 LIMIT 1`)
+        .prepare(`SELECT id, site_id FROM systems WHERE deleted_at IS NULL AND id = ?1 AND site_id = ?2 LIMIT 1`)
         .bind(systemId, siteId)
         .first();
       if (!system) return forbidden("The selected system is not available to this client account.");
