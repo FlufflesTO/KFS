@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-25
 
+### Phase 2 - South African Legal & Regulatory Compliance (completed)
+- **POPIA Consent Mechanism**: Verified explicit consent checkboxes in `ContactForm.astro` and `ContextualInquiry.astro`. Enforced server-side validation (`popiaConsent`) in `/api/contact.ts`.
+- **Right to be Forgotten**: Authored `/api/data-request` API stub for structured data export and deletion workflows under POPIA.
+- **Strict MFA Enforcement**: Executed D1 policy injection (`0018_mfa_policy.sql`) mandating `mfa_required = 1` globally for all `tech`, `admin`, and `finance` accounts.
+- **Offline Telemetry Resilience**: Engineered `IndexedDB` offline retry queue (`offline-sync.ts`) to ensure field technicians automatically flush failed telemetry updates using exponential backoff upon network restoration.
+- **Zero-Tolerance Type Safety**: Eradicated all surviving `any` types across the portal middleware and API gateway (`db-optimization.ts`, `auth.ts`) enforcing strict object interface adherence.
+
 ### Phase 4 - Immediate Security Enhancements (completed)
 - **CSP Headers Hardening**: Tightened `default-src` to `'none'`, enforced `strict-dynamic` with nonce verification across `middleware.js` to prevent malicious injections.
 - **Granular Rate Limiting**: Deployed hyper-restrictive rate limits for `/portal/api/auth`, `/mfa`, and `/reset-password` (5 attempts per 15 mins) to aggressively throttle brute force attempts.

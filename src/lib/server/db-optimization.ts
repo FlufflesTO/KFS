@@ -55,6 +55,8 @@ export async function getTechDashboardData(techId: string): Promise<JobWithDetai
     LEFT JOIN sites si ON si.id = s.site_id
     LEFT JOIN users u ON u.id = j.assigned_technician_id
     WHERE j.assigned_technician_id = ?
+    AND j.deleted_at IS NULL
+    AND s.deleted_at IS NULL
     AND j.status IN ('Scheduled', 'In Progress')
     ORDER BY j.scheduled_date ASC
   `).bind(techId).all();
@@ -70,15 +72,15 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   
   const [activeJobs, unassignedJobs, overdueSystems, openRequests, missingDocuments,
          openDefects, criticalDefects, blockedCertificates, validCertificates] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE date(next_due_date) < date('now')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
+    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
+    db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
     db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status = 'Open'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE status = 'Open' AND severity = 'Critical'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Blocked'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE status = 'Valid'`)
+    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
+    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
   ]);
 
   interface CountResult {
@@ -119,11 +121,11 @@ export async function getBatchRecords(batchParams: {
 
   if (batchParams.jobIds && batchParams.jobIds.length > 0) {
     const placeholders = batchParams.jobIds.map(() => '?').join(',');
-    queryDefs.push({ sql: `SELECT * FROM jobs WHERE id IN (${placeholders})`, params: batchParams.jobIds, key: 'jobs' });
+    queryDefs.push({ sql: `SELECT * FROM jobs WHERE deleted_at IS NULL AND id IN (${placeholders})`, params: batchParams.jobIds, key: 'jobs' });
   }
   if (batchParams.systemIds && batchParams.systemIds.length > 0) {
     const placeholders = batchParams.systemIds.map(() => '?').join(',');
-    queryDefs.push({ sql: `SELECT * FROM systems WHERE id IN (${placeholders})`, params: batchParams.systemIds, key: 'systems' });
+    queryDefs.push({ sql: `SELECT * FROM systems WHERE deleted_at IS NULL AND id IN (${placeholders})`, params: batchParams.systemIds, key: 'systems' });
   }
   if (batchParams.siteIds && batchParams.siteIds.length > 0) {
     const placeholders = batchParams.siteIds.map(() => '?').join(',');
@@ -163,11 +165,11 @@ export async function getClientDashboardData(siteIds: string[]): Promise<ClientD
        INNER JOIN sites ON sites.id = systems.site_id
        LEFT JOIN jobs AS latest_jobs ON latest_jobs.id = (
          SELECT j.id FROM jobs j
-         WHERE j.system_id = systems.id AND j.documentation_path IS NOT NULL
+         WHERE j.deleted_at IS NULL AND j.system_id = systems.id AND j.documentation_path IS NOT NULL
          ORDER BY COALESCE(j.completed_at, j.updated_at, j.created_at) DESC
          LIMIT 1
        )
-       WHERE systems.site_id IN (${sitePlaceholders})
+       WHERE systems.deleted_at IS NULL AND systems.site_id IN (${sitePlaceholders})
        ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC`
     ).bind(...siteIds).all(),
 
@@ -191,7 +193,7 @@ export async function getClientDashboardData(siteIds: string[]): Promise<ClientD
               maintenance_requests.linked_job_id, systems.coverage_area, sites.owner_company_name
        FROM maintenance_requests
        INNER JOIN sites ON sites.id = maintenance_requests.site_id
-       LEFT JOIN systems ON systems.id = maintenance_requests.system_id
+       LEFT JOIN systems ON systems.id = maintenance_requests.system_id AND systems.deleted_at IS NULL
        WHERE maintenance_requests.site_id IN (${sitePlaceholders})
        ORDER BY maintenance_requests.created_at DESC
        LIMIT 8`
@@ -204,7 +206,8 @@ export async function getClientDashboardData(siteIds: string[]): Promise<ClientD
        FROM defects
        INNER JOIN systems ON systems.id = defects.system_id
        INNER JOIN sites ON sites.id = systems.site_id
-       WHERE systems.site_id IN (${sitePlaceholders}) AND defects.status IN ('Open', 'In Progress')
+       WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL
+         AND systems.site_id IN (${sitePlaceholders}) AND defects.status IN ('Open', 'In Progress')
        ORDER BY CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 ELSE 3 END,
                 defects.created_at DESC
        LIMIT 10`
@@ -218,7 +221,8 @@ export async function getClientDashboardData(siteIds: string[]): Promise<ClientD
        FROM certificates
        INNER JOIN systems ON systems.id = certificates.system_id
        INNER JOIN sites ON sites.id = systems.site_id
-       WHERE systems.site_id IN (${sitePlaceholders})
+       WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL
+         AND systems.site_id IN (${sitePlaceholders})
        ORDER BY COALESCE(certificates.expiry_date, certificates.issued_date) DESC
        LIMIT 10`
     ).bind(...siteIds).all()

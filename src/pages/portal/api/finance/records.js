@@ -95,7 +95,8 @@ export async function POST({ request, locals }) {
           `SELECT jobs.id, systems.site_id
            FROM jobs
            INNER JOIN systems ON systems.id = jobs.system_id
-           WHERE jobs.id = ?1
+           WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+             AND jobs.id = ?1
            LIMIT 1`
         )
         .bind(jobId)

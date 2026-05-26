@@ -52,7 +52,7 @@ try {
                 sites.owner_company_name, jobs.id AS job_id, jobs.status AS job_status
          FROM financial_records
          INNER JOIN sites ON sites.id = financial_records.site_id
-         LEFT JOIN jobs ON jobs.id = financial_records.job_id
+         LEFT JOIN jobs ON jobs.id = financial_records.job_id AND jobs.deleted_at IS NULL
          WHERE financial_records.site_id IN (${sitePlaceholders})
          ORDER BY financial_records.distribution_date DESC, financial_records.created_at DESC
          LIMIT 120`

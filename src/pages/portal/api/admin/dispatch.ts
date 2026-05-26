@@ -29,7 +29,7 @@ export async function POST({ request, locals }: { request: Request, locals: App.
       
       const { jobId, technicianId } = parsed.data;
 
-      const job = await db.prepare(`SELECT id FROM jobs WHERE id = ?1 LIMIT 1`).bind(jobId).first();
+      const job = await db.prepare(`SELECT id FROM jobs WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`).bind(jobId).first();
       if (!job) return badRequest("Job not found.");
 
       if (technicianId) {
@@ -41,7 +41,7 @@ export async function POST({ request, locals }: { request: Request, locals: App.
       }
 
       await db
-        .prepare(`UPDATE jobs SET assigned_technician_id = ?1 WHERE id = ?2`)
+        .prepare(`UPDATE jobs SET assigned_technician_id = ?1 WHERE id = ?2 AND deleted_at IS NULL`)
         .bind(technicianId || null, jobId)
         .run();
 
@@ -64,7 +64,7 @@ export async function POST({ request, locals }: { request: Request, locals: App.
 
       const { jobId, priority, isEmergency, requiredByDate, estimatedDurationMinutes } = parsed.data;
 
-      const job = await db.prepare(`SELECT id FROM jobs WHERE id = ?1 LIMIT 1`).bind(jobId).first();
+      const job = await db.prepare(`SELECT id FROM jobs WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`).bind(jobId).first();
       if (!job) return badRequest("Job not found.");
 
       await db
@@ -74,7 +74,7 @@ export async function POST({ request, locals }: { request: Request, locals: App.
                is_emergency = ?2,
                required_by_date = ?3,
                estimated_duration_minutes = ?4
-           WHERE id = ?5`
+           WHERE id = ?5 AND deleted_at IS NULL`
         )
         .bind(priority, isEmergency ? 1 : 0, requiredByDate || null, estimatedDurationMinutes || null, jobId)
         .run();

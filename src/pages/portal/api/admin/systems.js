@@ -46,7 +46,7 @@ export async function POST({ request, locals }) {
                model_reference = ?5,
                next_due_date = ?6,
                service_interval_months = ?7
-           WHERE id = ?8`
+           WHERE id = ?8 AND deleted_at IS NULL`
         )
         .bind(siteId, systemType, coverageArea, manufacturer, modelReference, nextDueDate, serviceIntervalMonths, id)
         .run();

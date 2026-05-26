@@ -21,7 +21,8 @@ async function autoBlockCertificates(db, defectId, systemId) {
          SET status = 'Blocked',
              blocked_by_defect_id = ?1
        WHERE system_id = ?2
-         AND status = 'Valid'`
+         AND status = 'Valid'
+         AND deleted_at IS NULL`
     )
     .bind(defectId, systemId)
     .run();
@@ -37,6 +38,7 @@ async function maybeRestoreCertificates(db, systemId, excludeDefectId) {
     .prepare(
       `SELECT id FROM defects
         WHERE system_id = ?1
+          AND deleted_at IS NULL
           AND certificate_blocking = 1
           AND status IN ('Open', 'In Progress')
           AND id != ?2
@@ -52,7 +54,8 @@ async function maybeRestoreCertificates(db, systemId, excludeDefectId) {
            SET status = 'Valid',
                blocked_by_defect_id = NULL
          WHERE system_id = ?1
-           AND status = 'Blocked'`
+           AND status = 'Blocked'
+           AND deleted_at IS NULL`
       )
       .bind(systemId)
       .run();
@@ -97,7 +100,7 @@ export async function POST({ request, locals }) {
       let certificatesBlocked = 0;
       if (certificateBlocking && status !== "Resolved" && status !== "Closed") {
         const before = await db
-          .prepare(`SELECT COUNT(*) AS n FROM certificates WHERE system_id = ?1 AND status = 'Valid'`)
+          .prepare(`SELECT COUNT(*) AS n FROM certificates WHERE system_id = ?1 AND status = 'Valid' AND deleted_at IS NULL`)
           .bind(systemId)
           .first();
         await autoBlockCertificates(db, id, systemId);
@@ -126,7 +129,7 @@ export async function POST({ request, locals }) {
 
       // Read current state before updating so we can detect flag changes
       const existing = await db
-        .prepare(`SELECT system_id, certificate_blocking FROM defects WHERE id = ?1 LIMIT 1`)
+        .prepare(`SELECT system_id, certificate_blocking FROM defects WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`)
         .bind(id)
         .first();
       if (!existing) return badRequest("Defect not found.");
@@ -139,7 +142,7 @@ export async function POST({ request, locals }) {
                  description = ?3,
                  certificate_blocking = ?4,
                  status = ?5
-           WHERE id = ?6`
+           WHERE id = ?6 AND deleted_at IS NULL`
         )
         .bind(severity, sansClauseRef || null, description, certificateBlocking, status, id)
         .run();
@@ -153,7 +156,7 @@ export async function POST({ request, locals }) {
       if (certificateBlocking && isNowActive) {
         // Defect is/remains blocking and active — (re-)block any Valid certs
         const before = await db
-          .prepare(`SELECT COUNT(*) AS n FROM certificates WHERE system_id = ?1 AND status = 'Valid'`)
+          .prepare(`SELECT COUNT(*) AS n FROM certificates WHERE system_id = ?1 AND status = 'Valid' AND deleted_at IS NULL`)
           .bind(systemId)
           .first();
         await autoBlockCertificates(db, id, systemId);
@@ -180,7 +183,7 @@ export async function POST({ request, locals }) {
       const remediationNotes = cleanText(body.remediationNotes, "remediationNotes", { required: false, max: 3000 });
 
       const defect = await db
-        .prepare(`SELECT id, status, system_id, certificate_blocking FROM defects WHERE id = ?1 LIMIT 1`)
+        .prepare(`SELECT id, status, system_id, certificate_blocking FROM defects WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`)
         .bind(id)
         .first();
       if (!defect) return badRequest("Defect not found.");
@@ -190,7 +193,7 @@ export async function POST({ request, locals }) {
           `UPDATE defects
              SET status = 'Resolved',
                  remediation_notes = ?1
-           WHERE id = ?2`
+           WHERE id = ?2 AND deleted_at IS NULL`
         )
         .bind(remediationNotes || null, id)
         .run();
@@ -218,7 +221,7 @@ export async function POST({ request, locals }) {
       const remediationNotes = cleanText(body.remediationNotes, "remediationNotes", { required: false, max: 3000 });
 
       const defect = await db
-        .prepare(`SELECT id, status, system_id, certificate_blocking FROM defects WHERE id = ?1 LIMIT 1`)
+        .prepare(`SELECT id, status, system_id, certificate_blocking FROM defects WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`)
         .bind(id)
         .first();
       if (!defect) return badRequest("Defect not found.");
@@ -228,7 +231,7 @@ export async function POST({ request, locals }) {
           `UPDATE defects
              SET status = 'Closed',
                  remediation_notes = ?1
-           WHERE id = ?2`
+           WHERE id = ?2 AND deleted_at IS NULL`
         )
         .bind(remediationNotes || null, id)
         .run();
@@ -259,7 +262,8 @@ export async function POST({ request, locals }) {
           `SELECT defects.id, defects.system_id, systems.site_id
            FROM defects
            INNER JOIN systems ON systems.id = defects.system_id
-           WHERE defects.id = ?1
+           WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL
+             AND defects.id = ?1
            LIMIT 1`
         )
         .bind(id)
@@ -272,7 +276,7 @@ export async function POST({ request, locals }) {
              SET finance_task_status = 'Quote Required'
            WHERE site_id = ?1
              AND job_id IN (
-               SELECT job_id FROM defects WHERE id = ?2 AND job_id IS NOT NULL
+               SELECT job_id FROM defects WHERE id = ?2 AND deleted_at IS NULL AND job_id IS NOT NULL
              )
              AND finance_task_status = 'Invoice Required'`
         )

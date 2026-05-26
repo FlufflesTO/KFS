@@ -26,7 +26,8 @@ export async function GET({ params, locals, request }) {
           `SELECT jobs.documentation_path, systems.site_id, jobs.assigned_technician_id
            FROM jobs
            INNER JOIN systems ON systems.id = jobs.system_id
-           WHERE jobs.documentation_path = ?1
+           WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+             AND jobs.documentation_path = ?1
            LIMIT 1`
         )
         .bind(key)
@@ -37,7 +38,8 @@ export async function GET({ params, locals, request }) {
            FROM job_evidence_files
            INNER JOIN jobs ON jobs.id = job_evidence_files.job_id
            INNER JOIN systems ON systems.id = job_evidence_files.system_id
-           WHERE job_evidence_files.storage_path = ?1
+           WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+             AND job_evidence_files.storage_path = ?1
            LIMIT 1`
         )
         .bind(key)

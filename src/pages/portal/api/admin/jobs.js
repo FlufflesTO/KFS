@@ -25,7 +25,8 @@ export async function POST({ request, locals }) {
           `SELECT jobs.id, jobs.status, systems.site_id
            FROM jobs
            INNER JOIN systems ON systems.id = jobs.system_id
-           WHERE jobs.id = ?1
+           WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+             AND jobs.id = ?1
            LIMIT 1`
         )
         .bind(id)
@@ -39,7 +40,7 @@ export async function POST({ request, locals }) {
         .first();
 
       const statements = [
-        db.prepare(`UPDATE jobs SET status = 'Invoiced' WHERE id = ?1`).bind(id)
+        db.prepare(`UPDATE jobs SET status = 'Invoiced' WHERE id = ?1 AND deleted_at IS NULL`).bind(id)
       ];
 
       if (existingFinance) {
@@ -120,7 +121,7 @@ export async function POST({ request, locals }) {
                is_emergency = ?8,
                required_by_date = ?9,
                estimated_duration_minutes = ?10
-           WHERE id = ?11`
+           WHERE id = ?11 AND deleted_at IS NULL`
         )
         .bind(systemId, assignedTechnicianId, scheduledDate, status, jobType, siteNotes,
               priority, isEmergency, requiredByDate, estimatedDurationMinutes, id)

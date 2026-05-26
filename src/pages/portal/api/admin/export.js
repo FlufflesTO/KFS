@@ -26,6 +26,7 @@ const configs = {
     headers: ["id", "site_id", "system_type", "coverage_area", "manufacturer", "model_reference", "next_due_date"],
     sql: `SELECT id, site_id, system_type, coverage_area, manufacturer, model_reference, next_due_date
           FROM systems
+          WHERE deleted_at IS NULL
           ORDER BY site_id, coverage_area`
   }
 };

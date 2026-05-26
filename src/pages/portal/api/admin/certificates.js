@@ -33,7 +33,8 @@ export async function POST({ request, locals }) {
         const blockingDefect = await db
           .prepare(
             `SELECT id, severity, description FROM defects
-             WHERE system_id = ?1
+             WHERE deleted_at IS NULL
+               AND system_id = ?1
                AND certificate_blocking = 1
                AND status IN ('Open', 'In Progress')
              LIMIT 1`
@@ -75,7 +76,7 @@ export async function POST({ request, locals }) {
       const expiryDate = cleanDate(body.expiryDate, "expiryDate");
 
       const cert = await db
-        .prepare(`SELECT id, status FROM certificates WHERE id = ?1 LIMIT 1`)
+        .prepare(`SELECT id, status FROM certificates WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`)
         .bind(id)
         .first();
       if (!cert) return badRequest("Certificate not found.");
@@ -84,7 +85,7 @@ export async function POST({ request, locals }) {
         .prepare(
           `UPDATE certificates
            SET expiry_date = ?1
-           WHERE id = ?2`
+           WHERE id = ?2 AND deleted_at IS NULL`
         )
         .bind(expiryDate || null, id)
         .run();
@@ -105,7 +106,7 @@ export async function POST({ request, locals }) {
       const id = cleanId(body.id, "id");
 
       await db
-        .prepare(`UPDATE certificates SET status = 'Revoked' WHERE id = ?1`)
+        .prepare(`UPDATE certificates SET status = 'Revoked' WHERE id = ?1 AND deleted_at IS NULL`)
         .bind(id)
         .run();
 
@@ -125,7 +126,7 @@ export async function POST({ request, locals }) {
       const id = cleanId(body.id, "id");
 
       await db
-        .prepare(`UPDATE certificates SET status = 'Expired' WHERE id = ?1`)
+        .prepare(`UPDATE certificates SET status = 'Expired' WHERE id = ?1 AND deleted_at IS NULL`)
         .bind(id)
         .run();
 

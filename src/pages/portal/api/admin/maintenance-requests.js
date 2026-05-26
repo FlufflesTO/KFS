@@ -59,7 +59,7 @@ export async function POST({ request, locals }) {
     );
 
     const system = await db
-      .prepare(`SELECT id FROM systems WHERE id = ?1 AND site_id = ?2 LIMIT 1`)
+      .prepare(`SELECT id FROM systems WHERE deleted_at IS NULL AND id = ?1 AND site_id = ?2 LIMIT 1`)
       .bind(systemId, maintenanceRequest.site_id)
       .first();
     if (!system) return badRequest("Selected system does not belong to the request site.");

@@ -97,7 +97,8 @@ try {
       FROM jobs
       INNER JOIN systems ON systems.id = jobs.system_id
       INNER JOIN sites   ON sites.id   = systems.site_id
-      WHERE jobs.status IN ('Completed', 'Invoiced')
+      WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+        AND jobs.status IN ('Completed', 'Invoiced')
       ORDER BY jobs.completed_at DESC
       LIMIT 500
     `),
@@ -108,7 +109,8 @@ try {
       INNER JOIN systems ON systems.id = jobs.system_id
       INNER JOIN sites ON sites.id = systems.site_id
       LEFT JOIN users ON users.id = jobs.assigned_technician_id
-      WHERE jobs.status = 'Completed' AND jobs.documentation_path IS NOT NULL
+      WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+        AND jobs.status = 'Completed' AND jobs.documentation_path IS NOT NULL
       ORDER BY jobs.completed_at DESC
     `)
   ]);
