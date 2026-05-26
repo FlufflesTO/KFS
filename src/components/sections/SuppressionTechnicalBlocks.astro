@@ -11,7 +11,7 @@
     <div class="reveal">
       <div class="flex items-center gap-3 mb-6">
         <div class="h-1 w-8 bg-kharon-purple"></div>
-        <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Room Readiness</p>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Room Readiness</p>
       </div>
       <h2 class="kharon-h2 text-kharon-black">Protected enclosure integrity standards.</h2>
       <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
@@ -33,7 +33,7 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
               </div>
               <div>
-                <p class="font-extrabold text-sm uppercase tracking-wider text-kharon-black">{item.title}</p>
+                <p class="font-bold text-sm uppercase tracking-wider text-kharon-black">{item.title}</p>
                 <p class="mt-2 text-xs leading-relaxed text-kharon-grey/80">{item.text}</p>
               </div>
             </div>
@@ -46,7 +46,7 @@
     <div class="mt-24 reveal reveal-delayed">
       <div class="flex items-center gap-3 mb-6">
         <div class="h-1 w-8 bg-kharon-purple"></div>
-        <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Agent Selection</p>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Agent Selection</p>
       </div>
       <h2 class="kharon-h2 text-kharon-black">Agent performance comparison matrix.</h2>
       <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
@@ -60,16 +60,16 @@
           { name: "Novec 1230", type: "Fluoroketone", code: "FK-5-1-12", gwp: "1", space: "Low", safety: "Safe", cost: "$$$", use: "Data Centres" },
           { name: "CO2", type: "High Pressure Gas", code: "Carbon Dioxide", gwp: "0", space: "Moderate", safety: "LETHAL", cost: "$", use: "Plant Rooms (Unmanned)", lethal: true }
         ].map(agent => (
-          <article class={`rounded-xl border ${agent.lethal ? 'border-kharon-red/30 bg-red-50/30' : 'border-kharon-border bg-white'} p-8 transition-all hover:shadow-xl`}>
-            <p class={`text-[0.625rem] font-black uppercase tracking-widest ${agent.lethal ? 'text-kharon-red' : 'text-kharon-purple'}`}>{agent.type}</p>
-            <h3 class="mt-4 text-2xl font-black tracking-tight text-kharon-black">{agent.name}</h3>
+          <article class={`rounded-xl border ${agent.lethal ? 'border-kharon-red/30 bg-red-50/30' : 'border-kharon-border bg-white'} p-6 sm:p-7 transition-all hover:shadow-xl`}>
+            <p class={`text-[0.625rem] font-bold uppercase tracking-widest ${agent.lethal ? 'text-kharon-red' : 'text-kharon-purple'}`}>{agent.type}</p>
+            <h3 class="mt-4 text-2xl font-bold tracking-tight text-kharon-black">{agent.name}</h3>
             <p class="text-[0.625rem] font-bold text-kharon-grey/60 uppercase tracking-widest">{agent.code}</p>
             
             <dl class="mt-8 space-y-4">
               {[['GWP', agent.gwp], ['Space', agent.space], ['Safety', agent.safety], ['Cost', agent.cost]].map(([label, val]) => (
                 <div class="flex items-center justify-between border-b border-kharon-border/30 pb-2">
                   <dt class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">{label}</dt>
-                  <dd class={`text-[0.625rem] font-black uppercase tracking-widest ${val === 'LETHAL' ? 'text-kharon-red' : 'text-kharon-black'}`}>{val}</dd>
+                  <dd class={`text-[0.625rem] font-bold uppercase tracking-widest ${val === 'LETHAL' ? 'text-kharon-red' : 'text-kharon-black'}`}>{val}</dd>
                 </div>
               ))}
             </dl>
@@ -87,14 +87,14 @@
     <div class="mt-24 reveal reveal-delayed">
       <div class="flex items-center gap-3 mb-6">
         <div class="h-1 w-8 bg-kharon-purple"></div>
-        <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">System Sequence</p>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">System Sequence</p>
       </div>
       <h2 class="kharon-h2 text-kharon-black">Automated discharge timeline.</h2>
       <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
         From first detection to post-discharge ventilation, every stage is timed and logged for compliance traceability.
       </p>
 
-      <div class="mt-16 w-full max-w-5xl mx-auto overflow-hidden rounded-2xl border border-kharon-border bg-white p-8 lg:p-12 shadow-sm">
+      <div class="mt-16 w-full max-w-5xl mx-auto overflow-hidden rounded-2xl border border-kharon-border bg-white p-6 sm:p-7 lg:p-12 shadow-sm">
         <div class="overflow-x-auto pb-6">
           <div class="min-w-[55rem]">
             <div class="relative">
@@ -109,11 +109,11 @@
                   { id: "06", label: "Vent", sub: "Post-purge" }
                 ].map((step, idx) => (
                   <div class="flex flex-col items-center text-center">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-kharon-purple text-white font-black text-sm ring-8 ring-white">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-kharon-purple text-white font-bold text-sm ring-8 ring-white">
                       {step.id}
                     </div>
                     <div class="mt-6">
-                      <p class="text-xs font-black uppercase tracking-widest text-kharon-black">{step.label}</p>
+                      <p class="text-xs font-bold uppercase tracking-widest text-kharon-black">{step.label}</p>
                       <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">{step.sub}</p>
                     </div>
                   </div>
@@ -129,7 +129,7 @@
     <div class="mt-24 reveal reveal-delayed">
       <div class="flex items-center gap-3 mb-6">
         <div class="h-1 w-8 bg-kharon-purple"></div>
-        <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Pre-Quote Requirements</p>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Pre-Quote Requirements</p>
       </div>
       <h2 class="kharon-h2 text-kharon-black">Data capture summary.</h2>
       <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
@@ -145,8 +145,8 @@
           { title: "Existing Systems", text: "Current detection types (smoke, heat, aspiration) for interface logic." },
           { title: "Occupancy", text: "Occupied rooms require safer agents and extended countdown logic." }
         ].map(item => (
-          <div class="group rounded-xl border border-kharon-border bg-white p-8 transition-all hover:border-kharon-purple/20 hover:shadow-md">
-            <h3 class="text-sm font-black uppercase tracking-widest text-kharon-black group-hover:text-kharon-purple transition-colors">{item.title}</h3>
+          <div class="group rounded-xl border border-kharon-border bg-white p-6 sm:p-7 transition-all hover:border-kharon-purple/20 hover:shadow-md">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-black group-hover:text-kharon-purple transition-colors">{item.title}</h3>
             <p class="mt-4 text-xs leading-relaxed text-kharon-grey/80">{item.text}</p>
           </div>
         ))}
@@ -155,3 +155,5 @@
 
   </div>
 </section>
+/section>
+>

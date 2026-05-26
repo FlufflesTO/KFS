@@ -1,5 +1,5 @@
 /**
- * Project Sentinel - CSS Purge Post-Build Step
+ * Project Kharon - CSS Purge Post-Build Step
  * Purpose: Post-build script that prunes unused Tailwind CSS classes from built files
  * Dependencies: Node fs, path modules
  * Structural Role: Build pipeline asset optimizer
@@ -48,13 +48,28 @@ const usedWords = new Set();
 
 for (const file of srcFiles) {
   const content = fs.readFileSync(file, 'utf8');
-  // Extract words inside class/class:list attributes
+  // Match class="..." or class:list="..."
   const classMatches = content.match(/class(?::list)?\s*=\s*(?:["']([\s\S]*?)["']|\{[\s\S]*?\})/g) || [];
+  
   for (const match of classMatches) {
-    const words = match.match(/[a-zA-Z0-9_\-\/\[\]\:]+/g) || [];
-    for (const w of words) {
-      if (w !== 'class' && w !== 'list' && w !== 'true' && w !== 'false') {
-        usedWords.add(w);
+    if (match.startsWith('class="') || match.startsWith("class='") || match.startsWith('class:list="') || match.startsWith("class:list='")) {
+      // Static class string
+      const words = match.match(/[a-zA-Z0-9_\-\/\[\]\:]+/g) || [];
+      for (const w of words) {
+        if (w !== 'class' && w !== 'list') {
+          usedWords.add(w);
+        }
+      }
+    } else {
+      // Dynamic class expression
+      const stringLiteralRegex = /(?:"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|`([^`\\]*(?:\\.[^`\\]*)*)`)/g;
+      let strMatch;
+      while ((strMatch = stringLiteralRegex.exec(match)) !== null) {
+        const val = strMatch[1] || strMatch[2] || strMatch[3] || '';
+        const words = val.match(/[a-zA-Z0-9_\-\/\[\]\:]+/g) || [];
+        for (const w of words) {
+          usedWords.add(w);
+        }
       }
     }
   }
@@ -122,6 +137,9 @@ function purgeCssBlock(cssContent) {
         const trimmedDir = directive.trim();
         if (trimmedDir.startsWith('@property')) {
           // Discard @property rule block completely
+        } else if (trimmedDir.startsWith('@keyframes')) {
+          // Keep for keyframe analysis in second pass
+          output += trimmedDir + '{' + body + '}';
         } else if (trimmedDir.startsWith('@media') || trimmedDir.startsWith('@supports') || trimmedDir.startsWith('@layer')) {
           const purgedBody = purgeCssBlock(body);
           if (purgedBody.trim().length > 0) {
@@ -159,13 +177,10 @@ function purgeCssBlock(cssContent) {
   return output;
 }
 
-// Remove any block comments first to prevent brace matching issues
 css = css.replace(/\/\*[\s\S]*?\*\//g, '');
-
 let output = purgeCssBlock(css);
 console.log('Purged CSS size before variable pruning:', output.length, 'bytes');
 
-// Collect all used variables
 const usedVarNames = new Set();
 let refMatch;
 const varRefRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
@@ -204,7 +219,59 @@ for (const v of unusedVars) {
   output = output.replace(defRegex, '');
 }
 
-// Simple CSS minifier to strip whitespace and comments
+// Keyframe pruning pass
+const animationRegex = /animation(?:-name)?\s*:\s*([^;\}]+)/g;
+const usedKeyframeNames = new Set();
+let keyframeMatch;
+while ((keyframeMatch = animationRegex.exec(output)) !== null) {
+  const words = keyframeMatch[1].match(/[a-zA-Z0-9_-]+/g) || [];
+  for (const w of words) {
+    usedKeyframeNames.add(w);
+  }
+}
+
+let keyframePrunedOutput = '';
+let j = 0;
+while (j < output.length) {
+  if (output[j] === '@') {
+    let directive = '';
+    const start = j;
+    while (j < output.length && output[j] !== '{' && output[j] !== ';') {
+      directive += output[j];
+      j++;
+    }
+    if (output[j] === ';') {
+      j++;
+      keyframePrunedOutput += output.slice(start, j);
+    } else if (output[j] === '{') {
+      j++;
+      let braceCount = 1;
+      let body = '';
+      while (j < output.length && braceCount > 0) {
+        const bodyChar = output[j];
+        if (bodyChar === '{') braceCount++;
+        else if (bodyChar === '}') braceCount--;
+        if (braceCount > 0) body += bodyChar;
+        j++;
+      }
+      const block = output.slice(start, j);
+      if (directive.includes('keyframes')) {
+        const matchName = directive.match(/@keyframes\s+([a-zA-Z0-9_-]+)/);
+        if (matchName && usedKeyframeNames.has(matchName[1])) {
+          keyframePrunedOutput += block;
+        }
+      } else {
+        keyframePrunedOutput += block;
+      }
+    }
+  } else {
+    keyframePrunedOutput += output[j];
+    j++;
+  }
+}
+output = keyframePrunedOutput;
+
+// Simple CSS minifier to strip whitespace
 output = output
   .replace(/\s+/g, ' ')             // collapse multiple spaces
   .replace(/\s*([{};:,])\s*/g, '$1') // remove space around separators

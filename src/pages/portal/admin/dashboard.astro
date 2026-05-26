@@ -203,8 +203,8 @@ try {
         <KharonCard variant={stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'danger' : 'primary'} padding="lg">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 h-full">
             <div>
-              <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Operational Health</p>
-              <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-kharon-black">
+              <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Operational Health</p>
+              <h2 class="mt-2 text-2xl font-bold tracking-tight text-kharon-black">
                 {stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'Action Required' : 'All Systems Nominal'}
               </h2>
               <p class="mt-2 text-sm text-kharon-grey/80 max-w-md">
@@ -214,17 +214,17 @@ try {
             
             <div class="flex gap-4">
               <div class="text-center">
-                <p class={`text-3xl font-black ${stats.unassignedJobs > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.unassignedJobs}</p>
+                <p class={`text-3xl font-bold ${stats.unassignedJobs > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.unassignedJobs}</p>
                 <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Unassigned</p>
               </div>
               <div class="w-px bg-kharon-border"></div>
               <div class="text-center">
-                <p class={`text-3xl font-black ${stats.overdueSystems > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.overdueSystems}</p>
+                <p class={`text-3xl font-bold ${stats.overdueSystems > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.overdueSystems}</p>
                 <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Overdue</p>
               </div>
               <div class="w-px bg-kharon-border"></div>
               <div class="text-center">
-                <p class={`text-3xl font-black ${stats.openDefects > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.openDefects}</p>
+                <p class={`text-3xl font-bold ${stats.openDefects > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.openDefects}</p>
                 <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Defects</p>
               </div>
             </div>

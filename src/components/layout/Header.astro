@@ -38,12 +38,12 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
         <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="30" height="40" class="flex-none transition-transform duration-300 group-hover:scale-110" />
       </div>
       <div class="hidden sm:block">
-        <span class="block whitespace-nowrap text-sm font-black uppercase tracking-[0.2em]">{site.shortName}</span>
+        <span class="block whitespace-nowrap text-sm font-bold uppercase tracking-[0.2em]">{site.shortName}</span>
         <span class="block whitespace-nowrap text-[0.625rem] font-bold uppercase tracking-[0.3em] text-white/40 group-hover:text-kharon-cyan/60 transition-colors">Fire &amp; Security</span>
       </div>
     </a>
 
-    <nav class="hidden items-center gap-6 xl:gap-8 lg:flex" aria-label="Primary navigation">
+    <nav class="hidden items-center gap-6 xl:gap-6 sm:p-7 lg:flex" aria-label="Primary navigation">
       <a href="/" class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-cyan" : "text-white/70 hover:text-white"}`} aria-current={isLinkActive("/") ? "page" : undefined}>
         Home
       </a>
@@ -105,7 +105,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
         Portal
       </a>
 
-      <a href="/contact?intent=site-assessment" class="relative overflow-hidden rounded-md bg-kharon-purple px-6 py-2.5 text-[0.8125rem] font-black uppercase tracking-widest text-white transition-all hover:bg-kharon-blue header-cta-button">
+      <a href="/contact?intent=site-assessment" class="relative overflow-hidden rounded-md bg-kharon-purple px-6 py-2.5 text-[0.8125rem] font-bold uppercase tracking-widest text-white transition-all hover:bg-kharon-blue header-cta-button">
         Inquiry
       </a>
     </div>
@@ -132,7 +132,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
                 <a
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  class={`flex items-center justify-between border-b border-white/5 py-5 text-sm font-black uppercase tracking-[0.15em] transition-colors ${active ? "text-kharon-cyan" : "text-white/80"}`}
+                  class={`flex items-center justify-between border-b border-white/5 py-5 text-sm font-bold uppercase tracking-[0.15em] transition-colors ${active ? "text-kharon-cyan" : "text-white/80"}`}
                 >
                   {link.label}
                   {active && <div class="h-2 w-2 rounded-full bg-kharon-cyan"></div>}
@@ -142,11 +142,11 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
           }
 
           <div class="mt-10 grid gap-4">
-            <a href="/contact?intent=site-assessment" class="rounded-md bg-kharon-purple py-5 text-center text-sm font-black uppercase tracking-widest text-white shadow-lg active:scale-[0.98] transition-all">
+            <a href="/contact?intent=site-assessment" class="rounded-md bg-kharon-purple py-5 text-center text-sm font-bold uppercase tracking-widest text-white shadow-lg active:scale-[0.98] transition-all">
               Request Site Assessment
             </a>
 
-            <a href={site.portalLoginPath} class="rounded-md border border-white/10 py-5 text-center text-sm font-black uppercase tracking-widest text-white/80 backdrop-blur-sm active:scale-[0.98] transition-all">
+            <a href={site.portalLoginPath} class="rounded-md border border-white/10 py-5 text-center text-sm font-bold uppercase tracking-widest text-white/80 backdrop-blur-sm active:scale-[0.98] transition-all">
               Portal Access
             </a>
           </div>

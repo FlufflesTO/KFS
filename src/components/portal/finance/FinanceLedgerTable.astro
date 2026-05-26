@@ -45,7 +45,7 @@ const { completedTasks } = Astro.props;
         </thead>
         <tbody id="finance-tbody">
           {completedTasks.length === 0 && (
-            <tr><td colspan="10" class="p-8 text-center text-kharon-grey italic">No completed tasks found.</td></tr>
+            <tr><td colspan="10" class="p-6 sm:p-7 text-center text-kharon-grey italic">No completed tasks found.</td></tr>
           )}
           {completedTasks.map((task) => (
             <tr

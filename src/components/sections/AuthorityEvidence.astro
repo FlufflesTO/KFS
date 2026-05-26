@@ -8,7 +8,7 @@ import { proofSignals, supportedEcosystem } from "../../data/site.js";
       <div class="sticky top-32">
         <div class="flex items-center gap-3 mb-6">
           <div class="h-1 w-8 bg-kharon-purple"></div>
-          <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Technical Authority</p>
+          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Technical Authority</p>
         </div>
 
         <h2 class="kharon-h2 text-kharon-black">
@@ -19,13 +19,13 @@ import { proofSignals, supportedEcosystem } from "../../data/site.js";
           Kharon operates across complex fire detection, gas suppression, and maintenance environments, delivering visible signals of technical proficiency and regulatory alignment.
         </p>
         
-        <div class="mt-12 grid grid-cols-2 gap-8 border-t border-kharon-border pt-12">
+        <div class="mt-12 grid grid-cols-2 gap-6 sm:p-7 border-t border-kharon-border pt-12">
           <div>
-            <p class="text-3xl font-black text-kharon-purple">100%</p>
+            <p class="text-3xl font-bold text-kharon-purple">100%</p>
             <p class="mt-2 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">SANS Compliance</p>
           </div>
           <div>
-            <p class="text-3xl font-black text-kharon-purple">24/7</p>
+            <p class="text-3xl font-bold text-kharon-purple">24/7</p>
             <p class="mt-2 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Support SLA</p>
           </div>
         </div>
@@ -33,31 +33,31 @@ import { proofSignals, supportedEcosystem } from "../../data/site.js";
 
       <div class="grid gap-6">
         {proofSignals.map((item) => (
-          <article class="group rounded-xl border border-kharon-border bg-kharon-light p-8 transition-all hover:border-kharon-purple/20 hover:shadow-lg">
+          <article class="group rounded-xl border border-kharon-border bg-kharon-light p-6 sm:p-7 transition-all hover:border-kharon-purple/20 hover:shadow-lg">
             <div class="flex items-center justify-between mb-6">
-              <span class="rounded-full bg-kharon-purple/5 px-3 py-1 text-[0.625rem] font-black uppercase tracking-widest text-kharon-purple">
+              <span class="rounded-full bg-kharon-purple/5 px-3 py-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-purple">
                 {item.status}
               </span>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-kharon-purple opacity-0 transition-opacity group-hover:opacity-100"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
             </div>
-            <h3 class="text-xl font-extrabold tracking-tight text-kharon-black">{item.title}</h3>
+            <h3 class="text-xl font-bold tracking-tight text-kharon-black">{item.title}</h3>
             <p class="mt-4 text-sm leading-relaxed text-kharon-grey/80">{item.text}</p>
           </article>
         ))}
       </div>
     </div>
 
-    <div class="mt-24 rounded-2xl bg-kharon-black p-8 lg:p-12 text-white relative overflow-hidden">
+    <div class="mt-20 rounded-2xl bg-kharon-black p-6 sm:p-10 text-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10" aria-hidden="true">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,#4B2E83_0%,transparent_50%)]"></div>
       </div>
       
       <div class="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-10">
         <div class="max-w-2xl">
-          <p class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-cyan mb-4">
+          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-cyan mb-4">
             System Ecosystem
           </p>
-          <h3 class="text-2xl lg:text-3xl font-extrabold tracking-tight">
+          <h3 class="text-2xl lg:text-3xl font-bold tracking-tight">
             Field familiarity across leading suppression and detection platforms.
           </h3>
         </div>
@@ -77,3 +77,4 @@ import { proofSignals, supportedEcosystem } from "../../data/site.js";
     </div>
   </div>
 </section>
+ction>
