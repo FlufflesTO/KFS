@@ -148,8 +148,7 @@ const { completedTasks } = Astro.props;
       const buttonEl = e.currentTarget as HTMLButtonElement;
       const taskId = buttonEl.dataset.taskId;
       if (!taskId) return;
-      
-      const originalText = buttonEl.textContent;
+
       buttonEl.textContent = "Syncing...";
       buttonEl.disabled = true;
       

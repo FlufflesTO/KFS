@@ -10,7 +10,7 @@ import type { D1Database } from "@cloudflare/workers-types";
 import type { SessionUser } from "./auth.js";
 
 export interface AuditOptions {
-  user?: SessionUser | null;
+  user?: SessionUser | null | undefined;
   subject?: string;
   metadata?: Record<string, unknown> | null;
   eventType?: string;

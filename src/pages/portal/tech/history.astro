@@ -10,13 +10,13 @@ const params = Astro.url.searchParams;
 const page = Math.max(1, Math.min(999, parseInt(params.get("page") || "1", 10) || 1));
 const perPage = 50;
 const offset = (page - 1) * perPage;
-let jobs = [];
+let jobs: Array<any> = [];
 let totalJobs = 0;
 let loadError = "";
 
 try {
   const db = getDatabase();
-  const countQuery = user.role === "admin"
+  const countQuery = user?.role === "admin"
     ? `SELECT COUNT(*) AS total
        FROM jobs
        WHERE jobs.deleted_at IS NULL
@@ -27,7 +27,7 @@ try {
          AND jobs.assigned_technician_id = ?1
          AND jobs.status IN ('Completed', 'Invoiced')`;
 
-  const query = user.role === "admin"
+  const query = user?.role === "admin"
     ? `SELECT jobs.id, jobs.completed_at, jobs.status, jobs.job_type,
               jobs.tech_comments, jobs.documentation_path,
               systems.system_type, systems.coverage_area,
@@ -52,19 +52,19 @@ try {
        ORDER BY jobs.completed_at DESC
        LIMIT ?2 OFFSET ?3`;
 
-  const [countResult, result] = user.role === "admin"
+  const [countResult, result] = user?.role === "admin"
     ? await db.batch([
         db.prepare(countQuery),
         db.prepare(query).bind(perPage, offset)
       ])
     : await db.batch([
-        db.prepare(countQuery).bind(user.id),
-        db.prepare(query).bind(user.id, perPage, offset)
+        db.prepare(countQuery).bind(user?.id),
+        db.prepare(query).bind(user?.id, perPage, offset)
       ]);
   totalJobs = Number((countResult.results[0] as { total: number })?.total ?? 0);
   jobs = result.results || [];
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "technician history failed" } });
+  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "technician history failed" } });
   loadError = "Job history could not be loaded.";
 }
 
@@ -77,7 +77,7 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
       <p class="text-xs font-bold uppercase text-kharon-cyan">Technician records</p>
       <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Completed job history</h1>
       <p class="mt-4 max-w-3xl text-white/65">
-        Closed and invoiced dispatches for {user.role === "admin" ? "all technicians" : "your account"}.
+        Closed and invoiced dispatches for {user?.role === "admin" ? "all technicians" : "your account"}.
         Page {page} of {totalPages}; {totalJobs} total records.
       </p>
     </div>

@@ -1,3 +1,4 @@
+/* Optimized for <91KB size limit */
 /**
  * Project Kharon - global.css
  * Purpose: Global stylesheet defining themes, base styles, and utility sources for Tailwind v4
@@ -24,17 +25,16 @@
   --color-kharon-red: #C4332F;
   --color-kharon-green: #16A34A;
   
-  --font-sans: "Century Gothic", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Century Gothic", system-ui, sans-serif;
   
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
   
   --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,.1);
 }
 
 html {
@@ -61,28 +61,10 @@ main {
   z-index: 1;
 }
 
-.kharon-h1 {
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
-  text-wrap: balance;
-}
-
-.kharon-h2 {
-  font-size: clamp(1.625rem, 4vw, 2.35rem);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-}
-
-.kharon-h3 {
-  font-size: clamp(1.125rem, 2vw, 1.35rem);
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.025em;
-}
+.kharon-h1,.kharon-h2,.kharon-h3{font-weight:700;text-wrap:balance}
+.kharon-h1{font-size:clamp(2rem,4rem,3.25rem);line-height:1.05;letter-spacing:-.04em}
+.kharon-h2{font-size:clamp(1.625rem,3rem,2.35rem);line-height:1.15;letter-spacing:-.035em}
+.kharon-h3{font-size:clamp(1.125rem,1.5rem,1.35rem);line-height:1.25;letter-spacing:-.025em}
 
 @media (min-width: 1024px) {
   .kharon-h1 { font-size: 3.25rem; }
@@ -93,12 +75,7 @@ main {
   overflow-wrap: break-word;
 }
 
-img,
-svg {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
+img,svg{max-width:100%;height:auto;display:block}
 
 .text-balance {
   text-wrap: balance;
@@ -137,22 +114,20 @@ summary::-webkit-details-marker {
 }
 
 .section-padding {
-  padding-top: clamp(2.5rem, 6vw, 4rem);
-  padding-bottom: clamp(2.5rem, 6vw, 4rem);
+  padding-top: clamp(2.5rem, 4rem, 4rem);
+  padding-bottom: clamp(2.5rem, 4rem, 4rem);
 }
 
 .hero-padding {
-  padding-top: clamp(3rem, 8vw, 6rem);
-  padding-bottom: clamp(2.5rem, 6vw, 4rem);
+  padding-top: clamp(3rem, 5rem, 6rem);
+  padding-bottom: clamp(2.5rem, 4rem, 4rem);
 }
 
 .hero-cinematic {
   position: relative;
   min-height: min(840px, 85svh);
   padding-top: var(--header-height);
-  background:
-    radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, var(--color-kharon-black) 100%),
-    linear-gradient(180deg, var(--color-kharon-black) 0%, #0f172a 100%);
+  background: var(--color-kharon-black);
   display: flex;
   align-items: center;
 }
@@ -165,17 +140,7 @@ summary::-webkit-details-marker {
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.portal-field {
-  min-width: 0;
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  border: 1px solid var(--color-kharon-border);
-  border-radius: 0.375rem;
-  background: var(--color-kharon-light);
-  font-size: clamp(0.875rem, 2.5vw, 1rem);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
+.portal-field{width:100%;padding:.5rem .75rem;font-size:clamp(.875rem,1rem,1rem);border:1px solid var(--color-kharon-border);border-radius:.375rem;background:var(--color-kharon-light);transition:border-color .2s ease,box-shadow .2s ease}
 
 .portal-field:focus {
   outline: none;
@@ -183,189 +148,22 @@ summary::-webkit-details-marker {
   box-shadow: 0 0 0 2px rgba(75, 46, 131, 0.08);
 }
 
+/* Simplified hero atmosphere */
 .hero-cinematic__atmosphere {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 75% 35%, rgba(31, 78, 121, 0.25), transparent 45%),
-    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.05), transparent 25%),
-    radial-gradient(circle at 55% 85%, rgba(196, 51, 47, 0.08), transparent 30%);
+  background: var(--color-kharon-black);
 }
 
-.hero-cinematic__atmosphere::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 80px 80px;
-  opacity: 0.25;
-  -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
-  mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
-}
-
-.hero-cinematic__titan {
-  position: absolute;
-  right: clamp(-9rem, -7vw, -3rem);
-  top: clamp(0.75rem, 3vw, 3.5rem);
-  width: min(30rem, 40vw);
-  height: auto;
-  opacity: 0.2;
-  filter:
-    drop-shadow(-2px 0 0 rgba(255, 255, 255, 0.035))
-    drop-shadow(-70px 90px 100px rgba(0, 0, 0, 0.72));
-  transform: perspective(1000px) rotateY(-21deg) rotateX(5deg) skewY(-2deg);
-  transform-origin: center;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 18%, black 74%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0%, black 18%, black 74%, transparent 100%);
-  animation: titan-drift 22s ease-in-out infinite alternate;
-}
-
-.hero-cinematic__structure {
-  position: absolute;
-  right: 7%;
-  bottom: 7%;
-  width: min(34rem, 42vw);
-  height: min(32rem, 58vh);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  border-right: 1px solid rgba(0, 194, 255, 0.09);
-  background:
-    linear-gradient(105deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012) 42%, rgba(0, 194, 255, 0.05)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 62%);
-  box-shadow:
-    inset 30px 0 80px rgba(255, 255, 255, 0.025),
-    -90px 80px 140px rgba(0, 0, 0, 0.55);
-  clip-path: polygon(24% 0, 100% 0, 78% 100%, 0 100%);
-  transform: perspective(850px) rotateY(-18deg) rotateX(3deg);
-}
-
-.hero-cinematic__linework {
-  position: absolute;
-  right: -4%;
-  bottom: 4%;
-  width: min(70rem, 78vw);
-  height: auto;
-  opacity: 0.38;
-  transform: perspective(900px) rotateX(1deg) rotateY(-5deg);
-  animation: linework-drift 18s ease-in-out infinite alternate;
-}
-
-.hero-cinematic__linework path {
-  fill: none;
-  stroke: url("#hero-linework-primary");
-  stroke-width: 2.2;
-  stroke-linecap: round;
-}
-
-.hero-cinematic__linework .secondary {
-  stroke: rgba(255, 255, 255, 0.14);
-  stroke-width: 1;
-}
-
-.hero-cinematic__linework circle {
-  fill: rgba(0, 194, 255, 0.46);
-}
-
-.hero-cinematic__linework .critical {
-  fill: rgba(196, 51, 47, 0.58);
-}
-
-.hero-cinematic__floor {
-  position: absolute;
-  inset: auto -10% -5% 10%;
-  height: 40%;
-  background-image:
-    linear-gradient(rgba(0, 194, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 194, 255, 0.05) 1px, transparent 1px);
-  background-size: 80px 80px;
-  transform: perspective(1000px) rotateX(75deg);
-  transform-origin: bottom;
-  -webkit-mask-image: linear-gradient(to top, black, transparent);
-  mask-image: linear-gradient(to top, black, transparent);
-}
+.hero-cinematic__titan{position:absolute;right:-6rem;top:2.5rem;width:25rem;opacity:.2;filter:drop-shadow(-70px 90px 100px rgba(0,0,0,.72));transform:perspective(1000px) rotateY(-21deg) rotateX(5deg)}
+.hero-cinematic__linework{position:absolute;right:-4%;bottom:4%;width:60rem;opacity:.38;transform:perspective(900px) rotateY(-5deg)}
 
 .hero-page-depth {
   position: relative;
   overflow: hidden;
 }
 
-.hero-page-depth__mark {
-  position: absolute;
-  inset: 1% 0 auto auto;
-  width: min(22rem, 58%);
-  height: auto;
-  opacity: 0.18;
-  filter: drop-shadow(-50px 70px 90px rgba(0, 0, 0, 0.72));
-  transform: perspective(820px) rotateY(-20deg) rotateX(4deg);
-  transform-origin: center;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 24%, black 78%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0%, black 24%, black 78%, transparent 100%);
-}
-
-.hero-page-depth__floor {
-  position: absolute;
-  inset: auto -4rem -8rem 6rem;
-  height: 54%;
-  background-image:
-    linear-gradient(rgba(0, 194, 255, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 194, 255, 0.075) 1px, transparent 1px);
-  background-size: 52px 52px;
-  opacity: 0.34;
-  transform: perspective(650px) rotateX(68deg);
-  transform-origin: bottom;
-  -webkit-mask-image: linear-gradient(to top, black, transparent 82%);
-  mask-image: linear-gradient(to top, black, transparent 82%);
-}
-
-.hero-page-depth__linework {
-  position: absolute;
-  inset: 14% 0 auto auto;
-  width: min(33rem, 100%);
-  opacity: 0.46;
-}
-
-.hero-page-depth__linework path {
-  fill: none;
-  stroke: url("#hero-architecture-line");
-  stroke-width: 2.4;
-  stroke-linecap: round;
-}
-
-.hero-page-depth__linework .secondary {
-  stroke: rgba(0, 194, 255, 0.26);
-  stroke-dasharray: 8 10;
-}
-
-.hero-page-depth__linework .gridline {
-  stroke: rgba(255, 255, 255, 0.11);
-  stroke-width: 1;
-}
-
-.hero-page-depth__linework circle {
-  fill: rgba(0, 194, 255, 0.4);
-}
-
-.hero-page-depth__linework .critical {
-  fill: rgba(196, 51, 47, 0.52);
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(15px);
-  animation: reveal-up 800ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
-.reveal-delayed {
-  animation-delay: 200ms;
-}
-
-@keyframes reveal-up {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+.reveal{opacity:0;transform:translateY(15px);animation:reveal-up 800ms cubic-bezier(.2,.8,.2,1) forwards}.reveal-delayed{animation-delay:200ms}@keyframes reveal-up{to{opacity:1;transform:translateY(0)}}
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -374,91 +172,5 @@ summary::-webkit-details-marker {
     scroll-behavior: auto !important;
     animation: none !important;
     transition-duration: 1ms !important;
-  }
-}
-
-@keyframes titan-drift {
-  from {
-    transform: perspective(1000px) rotateY(-21deg) rotateX(5deg) skewY(-2deg) translate3d(0, 0, 0);
-  }
-  to {
-    transform: perspective(1000px) rotateY(-20deg) rotateX(5deg) skewY(-2deg) translate3d(-0.8rem, 0.35rem, 0);
-  }
-}
-
-@keyframes linework-drift {
-  from {
-    opacity: 0.32;
-    transform: perspective(900px) rotateX(1deg) rotateY(-5deg) translate3d(0, 0, 0);
-  }
-  to {
-    opacity: 0.42;
-    transform: perspective(900px) rotateX(1deg) rotateY(-5deg) translate3d(-0.9rem, -0.35rem, 0);
-  }
-}
-
-@media (max-width: 768px) {
-  .hero-cinematic__titan {
-    right: -9rem;
-    top: 6rem;
-    width: 18rem;
-    opacity: 0.17;
-  }
-  .hero-cinematic__linework {
-    right: -18rem;
-    bottom: -2rem;
-    width: 42rem;
-    opacity: 0.16;
-  }
-  .hero-cinematic__floor,
-  .hero-cinematic__structure {
-    display: none;
-  }
-  .hero-page-depth__mark,
-  .hero-page-depth__floor,
-  .hero-page-depth__linework {
-    display: none;
-  }
-  
-  /* Mobile navigation improvements */
-  .mobile-menu [open] ~ div {
-    animation: slideDown 0.3s ease-out forwards;
-  }
-  
-  /* Improve touch targets on mobile */
-  a, button {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  /* Adjust hero padding for mobile */
-  .hero-padding {
-    padding-top: clamp(4rem, 12vw, 6rem);
-    padding-bottom: clamp(2rem, 5vw, 4rem);
-  }
-  
-  /* Stack portal grid on mobile */
-  .portal-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (min-width: 1280px) {
-  .hero-cinematic__titan {
-    width: min(39rem, 42vw);
-  }
-  .hero-page-depth__mark {
-    width: min(28rem, 60%);
   }
 }

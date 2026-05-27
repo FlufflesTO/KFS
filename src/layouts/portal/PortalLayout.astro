@@ -13,7 +13,7 @@ const {
   user = Astro.locals.user
 } = Astro.props;
 
-const roleLinks = {
+const roleLinks: Record<string, Array<{ label: string; href: string; key: string }>> = {
   tech: [
     { label: "Dispatches", href: "/portal/tech/dashboard", key: "tech" },
     { label: "Job History", href: "/portal/tech/history", key: "tech-history" }
@@ -45,9 +45,9 @@ const roleLinks = {
 };
 
 const links = [
-  ...(roleLinks[user?.role] || []),
+  ...(roleLinks[user?.role || ""] || []),
   { label: "Password", href: "/portal/account/password", key: "password" },
-  ...(["admin", "finance"].includes(user?.role) ? [{ label: "MFA", href: "/portal/account/mfa", key: "mfa" }] : [])
+  ...(["admin", "finance"].includes(user?.role || "") ? [{ label: "MFA", href: "/portal/account/mfa", key: "mfa" }] : [])
 ];
 ---
 
@@ -163,7 +163,7 @@ const links = [
         <div class="min-w-0 leading-tight hidden xl:block">
           <p class="font-bold text-white/90 truncate">{user?.name}</p>
           <div class="mt-0.5 flex items-center justify-end gap-1">
-            <span class="h-1 w-1 rounded-full bg-kharon-cyan shadow-[0_0_4px_rgba(0,194,255,0.6)]"></span>
+            <span class="h-1 w-1 rounded-full bg-kharon-cyan"></span>
             <p class="uppercase text-kharon-cyan/70 font-bold tracking-widest text-[8px]">{user?.role}</p>
           </div>
         </div>

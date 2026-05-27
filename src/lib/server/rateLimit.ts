@@ -63,7 +63,7 @@ export async function consumeRateLimit(db: D1Database, request: Request, options
   db.prepare("DELETE FROM portal_rate_limits WHERE window_start < ?1")
     .bind(nowSeconds - 86400)
     .run()
-    .catch((error) => console.error("failed to prune portal_rate_limits", error));
+    .catch((error: unknown) => console.error("failed to prune portal_rate_limits", error));
 
   return {
     allowed: attempts <= maxAttempts,

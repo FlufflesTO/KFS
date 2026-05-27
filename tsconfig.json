@@ -21,15 +21,13 @@
     "allowUnusedLabels": false,
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@lib/*": ["src/lib/*"],
-      "@utils/*": ["src/lib/utils/*"],
-      "@server/*": ["src/lib/server/*"],
-      "@types/*": ["src/types/*"]
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@utils/*": ["./src/lib/utils/*"],
+      "@server/*": ["./src/lib/server/*"],
+      "@types/*": ["./src/types/*"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true,

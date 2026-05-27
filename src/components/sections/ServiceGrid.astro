@@ -9,10 +9,10 @@ const { eyebrow, title, text, items = [] } = Astro.props;
     <SectionHeading eyebrow={eyebrow} title={title} text={text} />
 
     <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {items.map((item) => (
+      {items.map((item: any) => (
         <a
           href={item.href}
-          class="group rounded-xl border border-kharon-border bg-kharon-light/50 p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1 hover:border-kharon-purple/20 hover:shadow-xl hover:bg-white"
+          class="group rounded-xl border border-kharon-border bg-kharon-light/50 p-6 sm:p-8 transition-all duration-300 hover:border-kharon-purple/20 hover:shadow-xl hover:bg-white"
         >
           <div class="mb-8 flex h-10 w-10 items-center justify-center rounded-lg bg-kharon-purple/5 text-kharon-purple transition-all group-hover:bg-kharon-purple group-hover:text-white">
             <span class="text-sm font-black tracking-widest">{item.index}</span>

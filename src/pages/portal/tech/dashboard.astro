@@ -8,20 +8,18 @@ import { auditError } from "../../../lib/server/audit.js";
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
-import KharonCard from "../../../components/ui/KharonCard.astro";
-import KharonButton from "../../../components/ui/KharonButton.astro";
 import OfflineBanner from "../../../components/portal/OfflineBanner.astro";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
-let jobs = [];
+let jobs: Array<any> = [];
 let loadError = "";
 const today = new Date().toISOString().slice(0, 10);
 
 try {
   const db = getDatabase();
-  const query = user.role === "admin"
+  const query = user?.role === "admin"
     ? `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
               jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
               systems.system_type, systems.coverage_area,
@@ -45,21 +43,21 @@ try {
        ORDER BY jobs.scheduled_date ASC
        LIMIT 100`;
 
-  const result = user.role === "admin"
+  const result = user?.role === "admin"
     ? await db.prepare(query).all()
-    : await db.prepare(query).bind(user.id).all();
+    : await db.prepare(query).bind(user?.id).all();
   jobs = result.results || [];
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "technician dashboard failed" } });
+  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "technician dashboard failed" } });
   loadError = "Assigned dispatches could not be loaded.";
 }
 
-const actionJobs = jobs.filter((j) => j.scheduled_date <= today);
-const upcomingJobs = jobs.filter((j) => j.scheduled_date > today);
-const todayCount = jobs.filter((j) => j.scheduled_date === today).length;
-const inProgressCount = jobs.filter((j) => j.status === "In Progress").length;
+const actionJobs = jobs.filter((j: any) => j.scheduled_date <= today);
+const upcomingJobs = jobs.filter((j: any) => j.scheduled_date > today);
+const todayCount = jobs.filter((j: any) => j.scheduled_date === today).length;
+const inProgressCount = jobs.filter((j: any) => j.status === "In Progress").length;
 
-function priorityBadgeClass(priority) {
+function priorityBadgeClass(priority: string): string {
   if (priority === "Critical") return "bg-rose-500/10 text-rose-700 ring-1 ring-rose-600/20 shadow-sm shadow-rose-500/10";
   if (priority === "High") return "bg-amber-500/10 text-amber-700 ring-1 ring-amber-600/20 shadow-sm shadow-amber-500/10";
   return "bg-slate-100 text-slate-700 ring-1 ring-slate-400/20";
@@ -132,7 +130,7 @@ function priorityBadgeClass(priority) {
         </div>
       )}
 
-      <div class="grid gap-6">
+      <div class="grid gap-8">
         {actionJobs.map((job) => (
           <article class="group relative grid gap-6 rounded-2xl border border-white bg-white/80 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-md transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/60 lg:grid-cols-[1fr_auto]">
             <div class="absolute inset-0 rounded-2xl ring-1 ring-inset ring-slate-900/5 group-hover:ring-kharon-cyan/20 transition-all pointer-events-none"></div>
@@ -152,7 +150,7 @@ function priorityBadgeClass(priority) {
                 <span class="text-sm font-medium">{job.physical_address}</span>
               </div>
               
-              <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-100 pt-5">
+              <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6 border-t border-slate-100 pt-5">
                 <div><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Job Type</p><p class="text-sm font-bold text-slate-800">{job.job_type}</p></div>
                 <div><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Scheduled</p><p class="text-sm font-bold text-slate-800">{job.scheduled_date}</p></div>
                 <div><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Dispatch ID</p><p class="text-xs font-mono font-bold text-slate-500 break-all bg-slate-100 px-2 py-1 rounded inline-block">{job.id}</p></div>
@@ -167,7 +165,7 @@ function priorityBadgeClass(priority) {
               )}
             </div>
 
-            <aside class="relative z-10 flex flex-col gap-3 justify-center sm:min-w-[16rem]">
+            <aside class="relative z-10 flex flex-col gap-4 justify-center sm:min-w-[16rem]">
               <a href={`/portal/tech/jobs/${job.id}`} class="group/btn relative flex items-center justify-center overflow-hidden rounded-xl bg-kharon-black px-6 py-4 text-sm font-bold uppercase tracking-widest text-white transition-all duration-300 hover:shadow-lg hover:shadow-black/20">
                 <div class="absolute inset-0 bg-gradient-to-r from-kharon-purple/80 to-kharon-blue/80 opacity-0 transition-opacity duration-300 group-hover/btn:opacity-100"></div>
                 <span class="relative z-10 flex items-center gap-2">Open Dispatch <svg class="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></span>
@@ -193,7 +191,7 @@ function priorityBadgeClass(priority) {
         </div>
       )}
 
-      <div class="grid gap-6 opacity-90">
+      <div class="grid gap-8 opacity-90">
         {upcomingJobs.map((job) => (
           <article class="group relative grid gap-6 rounded-2xl border border-white bg-white/60 p-6 shadow-md shadow-slate-200/30 backdrop-blur-sm transition-all duration-300 hover:bg-white/80 hover:shadow-lg lg:grid-cols-[1fr_auto]">
             <div class="relative min-w-0 z-10">
@@ -206,7 +204,7 @@ function priorityBadgeClass(priority) {
               <h2 class="mt-4 text-xl font-bold text-slate-800 tracking-tight">{job.owner_company_name}</h2>
               <p class="mt-1 text-sm font-bold text-kharon-purple/80">{job.system_type} <span class="text-slate-300 mx-1">|</span> {job.coverage_area}</p>
               
-              <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+              <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-slate-100 pt-4">
                 <div><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Scheduled</p><p class="text-sm font-bold text-slate-700">{job.scheduled_date}</p></div>
                 <div><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Job Type</p><p class="text-sm font-bold text-slate-700">{job.job_type}</p></div>
               </div>
@@ -220,6 +218,3 @@ function priorityBadgeClass(priority) {
           </article>
         ))}
       </div>
-    </div>
-  </section>
-</PortalLayout>

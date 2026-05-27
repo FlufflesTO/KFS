@@ -26,9 +26,10 @@ let sites: { id: string; owner_company_name: string }[] = [];
 let records: ClientQuoteRecord[] = [];
 let totals = { pending: 0, unpaid: 0, settled: 0 };
 let loadError = "";
+let db: any = null;
 
 try {
-  const db = getDatabase();
+  db = getDatabase();
   sites = await clientSites(db, user);
   const siteIds = sites.map((site) => site.id);
   if (siteIds.length === 0) {
@@ -74,7 +75,7 @@ try {
     records = (recordsResult.results || []) as ClientQuoteRecord[];
   }
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client quote history failed" } });
+  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "client quote history failed" } });
   loadError = "Client quote history could not be loaded.";
 }
 ---

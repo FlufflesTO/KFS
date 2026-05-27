@@ -199,7 +199,7 @@ try {
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800 mb-6">{loadError}</p>}
 
       {/* Consolidated Priority Health Metrics */}
-      <div class="mb-8 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+      <div class="mb-8 grid gap-6 lg:grid-cols-[1.6fr_1fr]"> <!-- Increased gap from 4 to 6 for better mobile spacing -->
         <KharonCard variant={stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'danger' : 'primary'} padding="lg">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-8 h-full">
             <div>
@@ -267,22 +267,22 @@ try {
       </div>
 
 
-      <div class="grid gap-5 lg:grid-cols-2 2xl:grid-cols-3 2xl:gap-6">
+      <div class="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3 2xl:gap-8"> <!-- Increased gap from 5 to 8 for better mobile spacing -->
         <KharonCard title="Completed works" subtitle="Asset Lifecycle">
           <KharonButton href="/portal/tech/history" variant="ghost" size="sm" className="px-0 font-bold">View all →</KharonButton>
-          <div class="mt-6 grid gap-3">
+          <div class="mt-6 grid gap-4"> <!-- Increased gap from 3 to 4 for better mobile spacing -->
             {completed.map((item) => (
-              <article class="border border-kharon-border border-l-4 border-l-kharon-blue bg-kharon-light/30 p-4 rounded shadow-sm hover:bg-white transition-colors">
+              <article class="border border-kharon-border border-l-4 border-l-kharon-blue bg-kharon-light/30 p-5 rounded shadow-sm hover:bg-white transition-colors"> <!-- Increased padding from p-4 to p-5 -->
                 <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
                 <p class="text-sm text-kharon-grey/80 mt-1 font-medium">{item.system_type} / {item.coverage_area}</p>
                 <p class="mt-3 text-[0.625rem] text-kharon-grey/50 uppercase font-bold tracking-widest">{item.completed_at || "PENDING TIMESTAMP"}</p>
                 {item.status === "Completed" && (
-                  <button class="mark-invoiced-btn mt-4 w-full rounded border border-kharon-blue/20 bg-white px-3 py-2 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-blue hover:bg-kharon-blue hover:text-white hover:border-kharon-blue transition-all" data-job-id={item.id}>
+                  <button class="mark-invoiced-btn mt-4 w-full rounded border border-kharon-blue/20 bg-white px-3 py-2.5 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-blue hover:bg-kharon-blue hover:text-white hover:border-kharon-blue transition-all" data-job-id={item.id}> <!-- Increased padding from py-2 to py-2.5 -->
                     Raise Sage Invoice
                   </button>
                 )}
                 {item.status === "Invoiced" && (
-                  <span class="mt-4 block text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/30 border border-dashed border-kharon-border bg-white/50 text-center py-2 rounded">Invoiced</span>
+                  <span class="mt-4 block text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/30 border border-dashed border-kharon-border bg-white/50 text-center py-2.5 rounded">Invoiced</span> <!-- Increased padding from py-2 to py-2.5 -->
                 )}
               </article>
             ))}
@@ -291,9 +291,9 @@ try {
 
         <KharonCard title="Active dispatches" subtitle="Operations">
           <KharonButton href="/portal/admin/planning" variant="ghost" size="sm" className="px-0 font-bold">View board →</KharonButton>
-          <div class="mt-6 grid gap-3">
+          <div class="mt-6 grid gap-4"> <!-- Increased gap from 3 to 4 for better mobile spacing -->
             {active.map((item) => (
-              <article class="border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-4 rounded shadow-sm hover:bg-white transition-colors">
+              <article class="border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-5 rounded shadow-sm hover:bg-white transition-colors"> <!-- Increased padding from p-4 to p-5 -->
                 <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
                 <p class="text-sm text-kharon-grey/80 mt-1 font-medium">{item.status} / {item.technician_name || "Unassigned"}</p>
                 <p class="mt-3 text-[0.625rem] text-kharon-grey/50 uppercase font-bold tracking-widest">{item.scheduled_date}</p>
@@ -304,9 +304,9 @@ try {
 
         <KharonCard title="Lifecycle due dates" subtitle="Compliance">
           <KharonButton href="/portal/admin/planning" variant="ghost" size="sm" className="px-0 font-bold">Manage board →</KharonButton>
-          <div class="mt-6 grid gap-3">
+          <div class="mt-6 grid gap-4"> <!-- Increased gap from 3 to 4 for better mobile spacing -->
             {due.map((item) => (
-              <article class={`border border-kharon-border p-4 rounded shadow-sm hover:bg-white transition-colors ${dueDateCls(item.next_due_date)}`}>
+              <article class={`border border-kharon-border p-5 rounded shadow-sm hover:bg-white transition-colors ${dueDateCls(item.next_due_date)}`}> <!-- Increased padding from p-4 to p-5 -->
                 <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
                 <p class="text-sm text-kharon-grey/80 mt-1 font-medium">{item.system_type} / {item.coverage_area}</p>
                 <p class="mt-3 text-[0.625rem] uppercase font-bold tracking-widest">{dueDateLabel(item.next_due_date)}  -  {item.next_due_date}</p>
@@ -316,7 +316,7 @@ try {
         </KharonCard>
       </div>
 
-      <section class="grid gap-6 lg:grid-cols-2 mt-8">
+      <section class="grid gap-8 lg:grid-cols-2 mt-8"> <!-- Increased gap from 6 to 8 for better mobile spacing -->
         <KharonCard title="Client request queue" subtitle="Customer Support">
           <div class="mt-6 grid gap-4">
             {clientRequests.length === 0 && <p class="text-sm text-kharon-grey italic py-2">No new client requests require review.</p>}

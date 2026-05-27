@@ -26,12 +26,13 @@ const jobId = Astro.params.id;
 const user = Astro.locals.user;
 let job: JobDetails | null = null;
 let loadError = "";
+let db: any = null;
 
 if (jobId && user) {
   try {
-    const db = getDatabase();
+    db = getDatabase();
     const result = await db.prepare(
-      `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, 
+      `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status,
               systems.system_type, systems.coverage_area,
               sites.owner_company_name, sites.physical_address
        FROM jobs
@@ -40,14 +41,14 @@ if (jobId && user) {
        WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
          AND jobs.id = ?1 AND jobs.assigned_technician_id = ?2`
     ).bind(jobId, user.id).first();
-    
+
     if (result) {
       job = result;
     } else {
       loadError = "Job not found or not assigned to you.";
     }
   } catch (error) {
-    await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "job visit logging failed" } });
+    await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "job visit logging failed" } });
     loadError = "Could not load job details.";
   }
 }
@@ -354,7 +355,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
       
       // Cancel outcome logging
       const cancelBtn = document.querySelector('.cancel-outcome-btn');
-      if (cancelBtn) {
+      if (cancelBtn && outcomeForm && arrivalForm && visitResult) {
         cancelBtn.addEventListener('click', () => {
           outcomeForm.classList.add('hidden');
           arrivalForm.classList.remove('hidden');

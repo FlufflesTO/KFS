@@ -49,16 +49,18 @@ const token = Astro.url.searchParams.get("token") || "";
     </main>
 
     <script>
-      const form = document.querySelector("#reset-form");
-      const result = document.querySelector("#reset-result");
+      const form = document.querySelector<HTMLFormElement>("#reset-form");
+      const result = document.querySelector<HTMLElement>("#reset-result");
 
       form?.addEventListener("submit", async (event) => {
         event.preventDefault();
-        result.classList.add("hidden");
+        result?.classList.add("hidden");
         const formData = new FormData(form);
         if (formData.get("password") !== formData.get("confirmPassword")) {
-          result.textContent = "Passwords do not match.";
-          result.className = "rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+          if (result) {
+            result.textContent = "Passwords do not match.";
+            result.className = "rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+          }
           return;
         }
 
@@ -72,12 +74,16 @@ const token = Astro.url.searchParams.get("token") || "";
         });
         const body = await response.json().catch(() => ({ ok: false, message: "Password reset failed." }));
         if (!response.ok || !body.ok) {
-          result.textContent = body.message || "Password reset failed.";
-          result.className = "rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+          if (result) {
+            result.textContent = body.message || "Password reset failed.";
+            result.className = "rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+          }
           return;
         }
-        result.textContent = "Password reset. Redirecting to login...";
-        result.className = "rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+        if (result) {
+          result.textContent = "Password reset. Redirecting to login...";
+          result.className = "rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+        }
         window.setTimeout(() => {
           window.location.href = body.redirectTo || "/portal/login";
         }, 900);

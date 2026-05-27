@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-05-27
+
+### Changed
+- **TSConfig Modernization**: Removed deprecated `baseUrl` and `ignoreDeprecations` compiler options from [tsconfig.json](file:///c:/Users/User/Desktop/Astro/kharon-website/tsconfig.json), and updated compiler alias mappings (`paths`) to use explicit relative paths (prefixed with `./`). This resolves configuration compatibility errors in TypeScript 6.0 while preventing future removal issues in TypeScript 7.0.
+
 ## [Unreleased] - 2026-05-26
 
 ### White Space Optimization & Spacing Standardization (Final Refinement)

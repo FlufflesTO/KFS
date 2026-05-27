@@ -97,7 +97,7 @@ const { defects, systems } = Astro.props;
             {item.status !== "Closed" && (
               <button type="button" class="close-defect rounded-md border border-kharon-grey px-4 py-2 text-sm font-semibold text-kharon-grey" data-id={item.id}>Close</button>
             )}
-            {(["Open", "In Progress"] as const).includes(item.status) && (
+            {(["Open", "In Progress"] as const).includes(item.status as "Open" | "In Progress") && (
               <button type="button" class="quote-defect rounded-md border border-amber-500 px-4 py-2 text-sm font-semibold text-amber-700" data-id={item.id}>Quote Required</button>
             )}
           </div>

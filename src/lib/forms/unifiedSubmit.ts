@@ -15,7 +15,6 @@ export function bindFinanceForms(): void {
       if (result) result.textContent = "Saving…";
 
       const recordId     = form.dataset.recordId ?? "";
-      const itemType     = form.dataset.itemType  ?? "";
       const sageInvoiceNumber = (form.querySelector<HTMLInputElement>("[name='sageInvoiceNumber']")?.value ?? "").trim();
       const sageQuoteNumber = (form.querySelector<HTMLInputElement>("[name='sageQuoteNumber']")?.value ?? "").trim();
       const custCode     = (form.querySelector<HTMLInputElement>("[name='sageCustomerCode']")?.value ?? "").trim();

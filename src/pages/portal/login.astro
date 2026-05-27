@@ -57,12 +57,12 @@ const next = Astro.url.searchParams.get("next") || "/portal";
     </main>
 
     <script>
-      const form = document.querySelector("#login-form");
-      const error = document.querySelector("#login-error");
+      const form = document.querySelector<HTMLFormElement>("#login-form");
+      const error = document.querySelector<HTMLElement>("#login-error");
 
       form?.addEventListener("submit", async (event) => {
         event.preventDefault();
-        error.classList.add("hidden");
+        error?.classList.add("hidden");
         const formData = new FormData(form);
         const response = await fetch("/portal/api/auth", {
           method: "POST",
@@ -75,8 +75,10 @@ const next = Astro.url.searchParams.get("next") || "/portal";
         });
         const result = await response.json();
         if (!response.ok || !result.ok) {
-          error.textContent = result.message || "Sign in failed.";
-          error.classList.remove("hidden");
+          if (error) {
+            error.textContent = result.message || "Sign in failed.";
+            error.classList.remove("hidden");
+          }
           return;
         }
         const requestedNext = String(formData.get("next") || "");

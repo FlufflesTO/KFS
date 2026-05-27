@@ -103,7 +103,8 @@ function allowedForPath(pathname: string, role: string): boolean {
 
 function pathContainsTraversal(pathname: string): boolean {
   try {
-    return decodeURIComponent(pathname).split("/").some((segment) => segment === "..");
+    const decodedPath = decodeURIComponent(pathname);
+    return decodedPath.split("/").some((segment) => segment === ".." || segment === ".");
   } catch {
     return true;
   }

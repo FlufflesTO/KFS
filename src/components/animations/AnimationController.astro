@@ -5,11 +5,6 @@
  * Dependencies: None
  * Structural Role: Reusable animation optimization component
  */
-export interface Props {
-  children?: unknown;
-}
-
-const { children } = Astro.props;
 ---
 
 <script>
@@ -23,27 +18,28 @@ const { children } = Astro.props;
 
     const animationObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
+        const target = entry.target as HTMLElement;
         if (entry.isIntersecting) {
           // Element is visible, resume animations
-          entry.target.classList.remove('animation-paused');
-          entry.target.style.animationPlayState = 'running';
+          target.classList.remove('animation-paused');
+          target.style.animationPlayState = 'running';
         } else {
           // Element is not visible, pause animations
-          entry.target.classList.add('animation-paused');
-          entry.target.style.animationPlayState = 'paused';
+          target.classList.add('animation-paused');
+          target.style.animationPlayState = 'paused';
         }
       });
     }, observerOptions);
 
     // Observe all animated elements
-    document.querySelectorAll('.hero-cinematic__titan, .hero-cinematic__linework').forEach(element => {
+    document.querySelectorAll<HTMLElement>('.hero-cinematic__titan, .hero-cinematic__linework').forEach(element => {
       animationObserver.observe(element);
     });
 
     // Handle page visibility changes
     const handleVisibilityChange = () => {
-      const animatedElements = document.querySelectorAll('.hero-cinematic__titan, .hero-cinematic__linework');
-      
+      const animatedElements = document.querySelectorAll<HTMLElement>('.hero-cinematic__titan, .hero-cinematic__linework');
+
       if (document.hidden) {
         // Tab is hidden, pause all animations
         animatedElements.forEach(el => {
@@ -62,7 +58,7 @@ const { children } = Astro.props;
     };
 
     // Helper function to check if element is in viewport
-    function isElementInViewport(el) {
+    function isElementInViewport(el: Element): boolean {
       const rect = el.getBoundingClientRect();
       return (
         rect.top >= 0 &&
