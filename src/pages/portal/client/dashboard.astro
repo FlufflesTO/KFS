@@ -76,7 +76,7 @@ try {
          ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC`
       ).bind(...siteIds).all()).results as ClientSystem[] || [];
     } catch (error) {
-      await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "client systems load failed" } });
+      await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_systems" });
       sectionErrors.push("System records could not be loaded.");
     }
 
@@ -94,7 +94,7 @@ try {
          ORDER BY financial_records.distribution_date ASC`
       ).bind(...siteIds).all()).results as ClientQuote[] || [];
     } catch (error) {
-      await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "client quotes load failed" } });
+      await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_quotes" });
       sectionErrors.push("Quote approvals could not be loaded.");
     }
 
@@ -112,7 +112,7 @@ try {
          LIMIT 8`
       ).bind(...siteIds).all()).results || [];
     } catch (error) {
-      await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "client requests load failed" } });
+      await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_requests" });
       sectionErrors.push("Recent service requests could not be loaded.");
     }
 
@@ -131,7 +131,7 @@ try {
          LIMIT 10`
       ).bind(...siteIds).all()).results || [];
     } catch (error) {
-      await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "client defects load failed" } });
+      await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_defects" });
       sectionErrors.push("Defect register could not be loaded.");
     }
 
@@ -150,12 +150,12 @@ try {
          LIMIT 10`
       ).bind(...siteIds).all()).results || [];
     } catch (error) {
-      await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "client certificates load failed" } });
+      await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_certificates" });
       sectionErrors.push("Certificate register could not be loaded.");
     }
   }
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "client dashboard failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_dashboard" });
   loadError = "Client system records could not be loaded.";
 }
 

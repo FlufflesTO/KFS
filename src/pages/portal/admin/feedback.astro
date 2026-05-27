@@ -24,7 +24,7 @@ try {
      LIMIT 100`
   ).all()).results || []) as DbUserFeedback[];
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "feedback console load failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "feedback_console" });
   loadError = "Feedback data could not be loaded.";
 }
 ---

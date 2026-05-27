@@ -48,7 +48,7 @@ try {
     : await db.prepare(query).bind(user?.id).all();
   jobs = result.results || [];
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "technician dashboard failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "tech_dashboard" });
   loadError = "Assigned dispatches could not be loaded.";
 }
 

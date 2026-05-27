@@ -64,7 +64,7 @@ try {
   totalJobs = Number((countResult.results[0] as { total: number })?.total ?? 0);
   jobs = result.results || [];
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "technician history failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "tech_history" });
   loadError = "Job history could not be loaded.";
 }
 

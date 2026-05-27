@@ -182,7 +182,12 @@ export async function POST({ request }: APIContext): Promise<Response> {
         ? "/portal/account/mfa"
         : roleDestinations[user.role] || "/portal/login";
 
-    await resetRateLimit(db!, request, { scope: "portal.login", subject: email });
+    await resetRateLimit(db!, request, { 
+      scope: "portal.login", 
+      subject: email,
+      maxAttempts: 5,
+      windowSeconds: 300
+    });
     await db!.prepare(`UPDATE users SET last_login_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1`).bind(user.id).run();
     await auditEvent(db!, request, {
       eventType: "auth.login",

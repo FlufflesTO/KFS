@@ -180,7 +180,7 @@ try {
      LIMIT 8`
   ).all()).results || [];
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "admin dashboard failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "admin_dashboard" });
   loadError = "Admin matrix data could not be loaded.";
 }
 

@@ -65,7 +65,7 @@ try {
     visits = visitResult.results || [];
   }
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "technician job detail failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "tech_job_detail" });
   loadError = "Dispatch details could not be loaded.";
 }
 

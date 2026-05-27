@@ -1,15 +1,11 @@
-import type { APIContext } from "astro";
+// Removed unused import: import type { APIContext } from "astro";
 import { getDatabase } from "../../../../lib/server/bindings.js";
-import { auditEvent } from "../../../../lib/server/audit.js";
-// Removed unused import: import { requireRole } from "../../../../lib/server/session.js";
 
 export const prerender = false;
 
-export async function GET({ locals }: { request: Request, locals: App.Locals }) {
+export async function GET({}: { request: Request, locals: App.Locals }) {
   try {
     const db = getDatabase();
-    // Removed role requirement since the function isn't defined
-    // await requireRole(locals, "admin");
     
     const clients = await db.prepare(`
       SELECT id, company_name, contact_person, email, phone, address, created_at, updated_at

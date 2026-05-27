@@ -107,7 +107,7 @@ try {
      LIMIT 20`
   ).all()).results || [];
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "compliance dashboard failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "compliance_dashboard" });
   loadError = "Compliance data could not be loaded.";
 }
 ---

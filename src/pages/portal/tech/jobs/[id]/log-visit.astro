@@ -48,7 +48,7 @@ if (jobId && user) {
       loadError = "Job not found or not assigned to you.";
     }
   } catch (error) {
-    await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "job visit logging failed" } });
+    await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "job_visit_logging" });
     loadError = "Could not load job details.";
   }
 }

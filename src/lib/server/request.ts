@@ -10,6 +10,13 @@ import { env } from "cloudflare:workers";
 
 const textEncoder = new TextEncoder();
 
+async function sha256Text(input: string): Promise<string> {
+  const uint8 = textEncoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", uint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 function base64Encode(input: string | Uint8Array): string {
   const bytes = input instanceof Uint8Array ? input : textEncoder.encode(String(input));
   let binary = "";
@@ -63,6 +70,8 @@ export function clientFingerprint(request: Request): string {
   
   return base64Encode(combined).substring(0, 32);
 }
+
+export { sha256Text };
 
 // Export the function that was previously missing
 export function requestFingerprint(request: Request): string {

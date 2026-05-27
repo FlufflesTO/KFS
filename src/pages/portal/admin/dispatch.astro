@@ -166,7 +166,7 @@ try {
   dispatched  = (dispatchedResult.results || []).map(mapJob);
   techs = (techsResult.results || []) as { id: string; name: string }[];
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "dispatch board failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "dispatch_board" });
 
   loadError = "Dispatch data could not be loaded.";
 }

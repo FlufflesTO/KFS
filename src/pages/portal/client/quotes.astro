@@ -75,7 +75,7 @@ try {
     records = (recordsResult.results || []) as ClientQuoteRecord[];
   }
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "client quote history failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_quotes" });
   loadError = "Client quote history could not be loaded.";
 }
 ---

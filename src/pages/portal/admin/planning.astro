@@ -239,7 +239,7 @@ try {
   scheduledTotal = Number((scheduleCountResult.results[0] as { total: number } | undefined)?.total ?? 0);
   lifecycleTotal = Number((lifecycleCountResult.results[0] as { total: number } | undefined)?.total ?? 0);
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "admin planning failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "admin_planning" });
   loadError = "Planning data could not be loaded.";
 }
 

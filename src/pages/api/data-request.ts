@@ -34,7 +34,7 @@ export async function POST({ request }: { request: Request }) {
       eventType: "popia.data_request",
       entityType: "user",
       entityId: parsed.data.email,
-      outcome: "pending",
+      outcome: "success",
       subject: parsed.data.email,
       metadata: { 
         requestType: parsed.data.requestType,

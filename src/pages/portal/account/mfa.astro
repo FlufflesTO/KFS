@@ -23,7 +23,7 @@ try {
     };
   }
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "mfa page failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "mfa_page" });
   loadError = "MFA status could not be loaded.";
 }
 ---
