@@ -228,6 +228,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
       }
     );
   } catch (error) {
+    console.error("AUTH_API_ERROR_STACK:", error);
     if (db) {
       await auditError(db, request, error, {
         entityType: "portal_api",
