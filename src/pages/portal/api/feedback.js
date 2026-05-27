@@ -1,5 +1,5 @@
 import { getDatabase } from "../../../lib/server/bindings.ts";
-import { auditEvent } from "../../../lib/server/audit.js";
+import { auditEvent } from "../../../lib/server/audit";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../lib/server/http.ts";
 
 export const prerender = false;

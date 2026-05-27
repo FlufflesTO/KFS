@@ -1,20 +1,42 @@
 ---
 const {
-  href = "/contact?intent=site-assessment",
-  label = "Request Site Assessment",
-  variant = "primary"
+  variant = "primary",
+  size = "md",
+  disabled = false,
+  href,
+  children,
+  className = ""
 } = Astro.props;
 
-const styles: Record<string, string> = {
-  primary: "bg-kharon-purple text-white hover:bg-kharon-blue",
-  secondary: "border border-white/25 text-white hover:bg-white/10",
-  dark: "bg-kharon-black text-white hover:bg-kharon-blue"
+const baseClasses = "inline-flex items-center justify-center font-bold uppercase tracking-widest transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-kharon-cyan focus:ring-offset-2 focus:ring-offset-kharon-black";
+
+const variantClasses = {
+  primary: "bg-gradient-to-r from-kharon-purple to-kharon-blue text-white border border-kharon-cyan/30 hover:shadow-lg hover:shadow-kharon-purple/20 active:scale-[0.98]",
+  secondary: "bg-transparent border border-kharon-cyan/30 text-kharon-cyan hover:bg-kharon-cyan/10",
+  danger: "bg-kharon-red text-white border border-kharon-red/30 hover:shadow-lg hover:shadow-kharon-red/20 active:scale-[0.98]"
 };
+
+const sizeClasses = {
+  sm: "text-xs px-3 py-1.5 rounded",
+  md: "text-sm px-4 py-2 rounded-md",
+  lg: "text-base px-6 py-3 rounded-md"
+};
+
+const classes = [
+  baseClasses,
+  variantClasses[variant],
+  sizeClasses[size],
+  disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+  className
+].filter(Boolean).join(" ");
+
+const Element = href && !disabled ? "a" : "button";
 ---
 
-<a
+<Element
   href={href}
-  class={`inline-flex rounded-md px-6 py-4 font-semibold ${styles[variant] || styles.primary}`}
+  class={classes}
+  {...(Element === "button" ? { type: "button", disabled } : {})}
 >
-  {label}
-</a>
+  {children}
+</Element>

@@ -269,3 +269,18 @@ function constantTimeEqual(left: string, right: string): boolean {
 
   return diff === 0;
 }
+
+export async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", textEncoder.encode(value));
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+export function createResetToken(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return base64UrlEncode(bytes);
+}
+
+export function resetTokenExpiry(hours: number = 1): string {
+  return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+}

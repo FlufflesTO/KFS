@@ -7,7 +7,7 @@
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
-import { requireAdmin } from "../../../lib/server/admin";
+import { requireAdmin } from "../../../lib/server/access";
 import type { DbUser, DbSite } from "@sentinel/types";
 
 export const prerender = false;
@@ -83,137 +83,194 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
-        <p class="mt-1 text-sm text-gray-500">Manage system users, roles, and access control</p>
+        <h1 class="text-2xl font-bold text-white tracking-tight font-heading">User Management</h1>
+        <p class="mt-1 text-sm text-white/60">Manage system users, roles, and access control</p>
       </div>
     </div>
 
     {loadError && (
-      <p class="mx-auto mb-6 max-w-7xl border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>
+      <p class="mx-auto mb-6 max-w-7xl border border-kharon-red bg-kharon-red/10 p-4 text-red-200 font-semibold">{loadError}</p>
     )}
 
-    <article class="border border-kharon-border bg-white p-4 sm:p-5">
-      <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-white">
-        <h2 class="text-xl font-bold">
-          Users <span class="ml-2 text-sm font-normal text-kharon-grey">({usersTotal})</span>
+    <article class="kharon-surface p-4 sm:p-5">
+      <div class="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-line-cyan-soft pb-4">
+        <h2 class="text-xl font-bold text-white font-heading">
+          Users <span class="ml-2 text-sm font-normal text-white/60">({usersTotal})</span>
         </h2>
-        <form class="flex flex-wrap gap-3" method="get">
-          <input
-            name="q"
-            type="search"
-            class="rounded-md border border-kharon-border px-3 py-2 text-sm"
-            placeholder="Search name or email…"
-            value={searchQuery}
-            size="24"
-          />
-          <select name="role" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
-            <option value="">All roles</option>
-            {["tech", "admin", "client", "finance"].map((r) => (
-              <option value={r} selected={roleFilter === r}>{r}</option>
-            ))}
-          </select>
-          <button type="submit" class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white text-sm">Filter</button>
+        <form class="flex flex-wrap items-end gap-3" method="get">
+          <div class="grid gap-1">
+            <label for="users-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Search Name/Email</label>
+            <input
+              id="users-q"
+              name="q"
+              type="search"
+              class="kharon-field min-w-[200px]"
+              placeholder="Search name or email…"
+              value={searchQuery}
+            />
+          </div>
+          <div class="grid gap-1">
+            <label for="users-role" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Role</label>
+            <select id="users-role" name="role" class="kharon-field">
+              <option value="">All roles</option>
+              {["tech", "admin", "client", "finance"].map((r) => (
+                <option value={r} selected={roleFilter === r}>{r}</option>
+              ))}
+            </select>
+          </div>
+          <button type="submit" class="kharon-command-button text-xs py-2 px-4 h-[38px] self-end">Filter</button>
           {(searchQuery || roleFilter) && (
-            <a href="/portal/admin/users" class="rounded-md border border-kharon-border px-4 py-2 font-semibold text-kharon-grey text-sm">Clear</a>
+            <a href="/portal/admin/users" class="kharon-secondary-button text-xs py-2 px-4 h-[38px] flex items-center justify-center">Clear</a>
           )}
         </form>
       </div>
 
       <div class="grid gap-4">
-        {users.length === 0 && <p class="py-4 text-sm text-kharon-grey">No users match your filter.</p>}
+        {users.length === 0 && <p class="py-4 text-sm text-white/50 italic">No users match your filter.</p>}
         {users.map((record) => (
           <form
-            class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6"
+            class="admin-form grid gap-4 bg-surface-charcoal/40 border border-line-cyan-soft/50 p-4 lg:grid-cols-6 rounded-md"
             data-endpoint="/portal/api/admin/users"
           >
             <input type="hidden" name="action" value="update" />
             <input type="hidden" name="id" value={record.id} />
-            <input class="rounded-md border border-kharon-border px-3 py-2" name="name" value={record.name} />
-            <input class="rounded-md border border-kharon-border px-3 py-2" value={record.email} disabled />
-            <select class="rounded-md border border-kharon-border px-3 py-2" name="role">
-              {(["tech", "admin", "client", "finance"] as const).map((role) => (
-                <option value={role} selected={record.role === role}>{role}</option>
-              ))}
-            </select>
-            <select class="rounded-md border border-kharon-border px-3 py-2" name="siteId">
-              <option value="">No site</option>
-              {sites.map((site) => (
-                <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>
-              ))}
-            </select>
-            <div class="grid gap-2 text-sm">
-              <label><input type="checkbox" name="isActive" checked={Boolean(record.is_active)} /> Active</label>
-              <label><input type="checkbox" name="forcePasswordChange" checked={Boolean(record.force_password_change)} /> Rotate password</label>
-              {(["admin", "finance"] as const).includes(record.role) && (
-                <label><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
-              )}
-              {record.mfa_enabled ? <span class="text-xs font-bold uppercase text-emerald-700">MFA enabled</span> : null}
+            
+            <div class="grid gap-1">
+              <label for={`name-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Full Name</label>
+              <input id={`name-${record.id}`} class="kharon-field" name="name" value={record.name} required />
             </div>
+            
+            <div class="grid gap-1">
+              <label for={`email-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Email Address</label>
+              <input id={`email-${record.id}`} class="kharon-field opacity-60 cursor-not-allowed" value={record.email} disabled />
+            </div>
+            
+            <div class="grid gap-1">
+              <label for={`role-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">System Role</label>
+              <select id={`role-${record.id}`} class="kharon-field" name="role">
+                {(["tech", "admin", "client", "finance"] as const).map((role) => (
+                  <option value={role} selected={record.role === role}>{role}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div class="grid gap-1">
+              <label for={`site-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Site Mapping</label>
+              <select id={`site-${record.id}`} class="kharon-field" name="siteId">
+                <option value="">No site</option>
+                {sites.map((site) => (
+                  <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div class="grid gap-2 text-xs self-center">
+              <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="isActive" checked={Boolean(record.is_active)} /> Active</label>
+              <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="forcePasswordChange" checked={Boolean(record.force_password_change)} /> Rotate password</label>
+              {(["admin", "finance"] as const).includes(record.role) && (
+                <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
+              )}
+              {record.mfa_enabled ? <span class="text-[10px] font-bold uppercase text-kharon-cyan">MFA enabled</span> : null}
+            </div>
+            
             <div class="grid gap-2">
-              <input class="rounded-md border border-kharon-border px-3 py-2" name="password" type="password" placeholder="Optional reset password" />
-              <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-              <button
-                class="generate-reset-link rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple"
-                type="button"
-                data-user-id={record.id}
-              >
-                Issue reset link
-              </button>
-              {record.mfa_enabled ? (
+              <div class="grid gap-1">
+                <label for={`password-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Reset Password</label>
+                <input id={`password-${record.id}`} class="kharon-field py-1" name="password" type="password" placeholder="Optional reset password" />
+              </div>
+              <div class="flex gap-2">
+                <button class="flex-1 kharon-command-button py-1.5 text-xs">Save</button>
                 <button
-                  class="reset-mfa rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900"
+                  class="generate-reset-link kharon-secondary-button py-1.5 text-xs"
                   type="button"
                   data-user-id={record.id}
+                  data-user-email={record.email}
+                >
+                  Link
+                </button>
+              </div>
+              {record.mfa_enabled ? (
+                <button
+                  class="reset-mfa kharon-danger-button py-1.5 text-xs"
+                  type="button"
+                  data-user-id={record.id}
+                  data-user-email={record.email}
                 >
                   Reset MFA
                 </button>
               ) : null}
             </div>
-            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
+            <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
           </form>
         ))}
       </div>
     </article>
 
-    <nav class="mt-6 mb-8 flex items-center justify-between border-t border-kharon-border pt-4">
+    <nav class="mt-6 mb-8 flex items-center justify-between border-t border-line-cyan-soft pt-4">
       {page > 1 ? (
-        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&role=${encodeURIComponent(roleFilter)}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Previous</a>
+        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&role=${encodeURIComponent(roleFilter)}`} class="kharon-secondary-button py-2 text-xs">Previous</a>
       ) : (
-        <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Previous</span>
+        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Previous</span>
       )}
-      <span class="text-sm text-kharon-grey">Page {page} of {totalPages}</span>
+      <span class="text-sm text-white/60">Page {page} of {totalPages}</span>
       {page < totalPages ? (
-        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&role=${encodeURIComponent(roleFilter)}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Next</a>
+        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&role=${encodeURIComponent(roleFilter)}`} class="kharon-secondary-button py-2 text-xs">Next</a>
       ) : (
-        <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Next</span>
+        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Next</span>
       )}
     </nav>
 
-    <article class="border border-kharon-border bg-white p-4 sm:p-5">
-      <h2 class="text-xl font-bold">Create user</h2>
-      <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/users">
+    <article class="kharon-surface p-6 sm:p-8">
+      <h2 class="text-xl font-bold text-white font-heading">Create new user</h2>
+      <form class="admin-form mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-endpoint="/portal/api/admin/users">
         <input type="hidden" name="action" value="create" />
-        <input class="rounded-md border border-kharon-border px-4 py-3" name="name" placeholder="Full name" required />
-        <input class="rounded-md border border-kharon-border px-4 py-3" name="email" type="email" placeholder="email@domain.co.za" required />
-        <select class="rounded-md border border-kharon-border px-4 py-3" name="role" required>
-          <option value="tech">Technician</option>
-          <option value="admin">Admin</option>
-          <option value="client">Client</option>
-          <option value="finance">Finance</option>
-        </select>
-        <select class="rounded-md border border-kharon-border px-4 py-3" name="siteId">
-          <option value="">No site mapping</option>
-          {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
-        </select>
-        <input class="rounded-md border border-kharon-border px-4 py-3" name="password" type="password" minlength="14" placeholder="Temporary password" required />
-        <label class="flex items-center gap-2 text-sm font-semibold">
-          <input type="checkbox" name="forcePasswordChange" checked /> Force password change
-        </label>
-        <label class="flex items-center gap-2 text-sm font-semibold">
-          <input type="checkbox" name="mfaRequired" /> Require MFA for admin/finance roles
-        </label>
-        <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create user</button>
-        <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+        
+        <div class="grid gap-1">
+          <label for="create-name" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Full Name *</label>
+          <input id="create-name" class="kharon-field" name="name" placeholder="John Doe" required />
+        </div>
+
+        <div class="grid gap-1">
+          <label for="create-email" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Email Address *</label>
+          <input id="create-email" class="kharon-field" name="email" type="email" placeholder="email@domain.co.za" required />
+        </div>
+
+        <div class="grid gap-1">
+          <label for="create-role" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">System Role *</label>
+          <select id="create-role" class="kharon-field" name="role" required>
+            <option value="tech">Technician</option>
+            <option value="admin">Admin</option>
+            <option value="client">Client</option>
+            <option value="finance">Finance</option>
+          </select>
+        </div>
+
+        <div class="grid gap-1">
+          <label for="create-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Site Mapping (Optional)</label>
+          <select id="create-siteId" class="kharon-field" name="siteId">
+            <option value="">No site mapping</option>
+            {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
+          </select>
+        </div>
+
+        <div class="grid gap-1">
+          <label for="create-password" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Temporary Password *</label>
+          <input id="create-password" class="kharon-field" name="password" type="password" minlength="14" placeholder="Temporary password" required />
+        </div>
+
+        <div class="flex flex-col gap-2 justify-end text-xs pb-1">
+          <label class="flex items-center gap-2 cursor-pointer font-semibold text-white/80">
+            <input type="checkbox" name="forcePasswordChange" checked /> Force password change
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer font-semibold text-white/80">
+            <input type="checkbox" name="mfaRequired" /> Require MFA for admin/finance
+          </label>
+        </div>
+
+        <div class="md:col-span-2 lg:col-span-3 mt-2">
+          <button class="w-full kharon-command-button py-3">Create User Account</button>
+        </div>
+        <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold md:col-span-2 lg:col-span-3"></p>
       </form>
     </article>
   </div>
@@ -225,6 +282,11 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
     // ── Issue reset link ──────────────────────────────────────────────────────
     for (const btn of document.querySelectorAll<HTMLButtonElement>(".generate-reset-link")) {
       btn.addEventListener("click", async () => {
+        const email = btn.dataset.userEmail;
+        if (!window.confirm(`Are you sure you want to generate a password reset link for user: ${email}?`)) {
+          return;
+        }
+
         const form   = btn.closest<HTMLFormElement>("form");
         const result = form?.querySelector<HTMLElement>(".admin-result");
         if (result) result.classList.add("hidden");
@@ -238,7 +300,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
         const copyBtn = document.createElement("button");
         copyBtn.type = "button";
         copyBtn.textContent = "Copy link";
-        copyBtn.className = "ml-1 inline-flex items-center rounded-md border border-emerald-600 px-2 py-0.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100";
+        copyBtn.className = "ml-1 inline-flex items-center rounded border border-green-600 px-2 py-0.5 text-xs font-bold text-green-200 hover:bg-green-700 bg-green-800";
         copyBtn.addEventListener("click", async () => {
           await navigator.clipboard.writeText(resetUrl).catch(() => null);
           copyBtn.textContent = "Copied!";
@@ -251,6 +313,11 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
     // ── Reset MFA ─────────────────────────────────────────────────────────────
     for (const btn of document.querySelectorAll<HTMLButtonElement>(".reset-mfa")) {
       btn.addEventListener("click", async () => {
+        const email = btn.dataset.userEmail;
+        if (!window.confirm(`Are you sure you want to deactivate and reset Multi-Factor Authentication (MFA) for user: ${email}?`)) {
+          return;
+        }
+
         const form   = btn.closest<HTMLFormElement>("form");
         const result = form?.querySelector<HTMLElement>(".admin-result");
         if (result) result.classList.add("hidden");

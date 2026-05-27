@@ -1,6 +1,6 @@
 import { json, badRequest, serverError } from "../../lib/server/http.ts";
 import { getDatabase } from "../../lib/server/bindings.ts";
-import { auditEvent } from "../../lib/server/audit.js";
+import { auditEvent } from "../../lib/server/audit";
 import { z } from "zod";
 
 const DataRequestSchema = z.object({

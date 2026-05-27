@@ -7,7 +7,7 @@
 
 import { getBindings } from "../../../../lib/server/bindings.ts";
 import { getSageConnectionStatus, disconnectSage } from "../../../../lib/server/sage.js";
-import { auditEvent } from "../../../../lib/server/audit.js";
+import { auditEvent } from "../../../../lib/server/audit";
 import { verifyCsrfRequest, csrfErrorResponse } from "../../../../lib/server/csrf.js";
 import { forbidden, json, methodNotAllowed, unauthorized } from "../../../../lib/server/http.ts";
 

@@ -1,43 +1,79 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/sections/Hero.astro";
-import SplitFeature from "../components/sections/SplitFeature.astro";
-import ProofGrid from "../components/sections/ProofGrid.astro";
-import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
-import DetectionTechnicalBlocks from "../components/sections/DetectionTechnicalBlocks.astro";
-
+import SectionHeading from "../components/sections/SectionHeading.astro";
 import { pageMeta } from "../data/site.js";
+
+const detectionCapabilities = [
+  {
+    title: "Addressable detection",
+    text: "Addressable detection systems with individual device addressing for precise fault location and maintainable layouts."
+  },
+  {
+    title: "Cause-and-effect logic",
+    text: "Programmed response logic that defines specific detection events leading to specific response actions."
+  },
+  {
+    title: "Control panel integration",
+    text: "Centralized monitoring and control with event logging, fault diagnostics and remote access capability."
+  },
+  {
+    title: "Zone management",
+    text: "Configurable detection zones that align to operational areas and response requirements."
+  }
+];
 ---
 
 <BaseLayout title={pageMeta.fireDetection.title} description={pageMeta.fireDetection.description}>
-  <Hero 
-    title="Commercial Fire Detection" 
-    subtitle="Precision detection and control infrastructure for complex environments."
-    systemType="fire"
-  />
+  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
+        Fire Detection Systems
+      </h1>
+      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
+        Addressable detection, control panels, response zones and fault diagnostics for commercial and industrial sites.
+      </p>
+    </div>
+  </section>
 
-  <DetectionTechnicalBlocks />
+  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+    <div class="mx-auto max-w-7xl px-6">
+      <SectionHeading
+        title="Addressable Detection Engineering"
+        subtitle="Cause-and-Effect Logic"
+        description="Precision-engineered detection systems with maintainable layouts and comprehensive diagnostics."
+        center={true}
+      />
+      
+      <div class="mt-12 grid gap-8 md:grid-cols-2">
+        {detectionCapabilities.map((capability, index) => (
+          <div key={index} class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+            <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
+              <div class="w-12 h-12 rounded-lg bg-kharon-blue/10 flex items-center justify-center mb-5">
+                <div class="w-6 h-6 bg-kharon-cyan rounded"></div>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">{capability.title}</h3>
+              <p class="text-kharon-light/70">{capability.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
 
-  <SplitFeature 
-    title="Addressable Intelligence"
-    description="Modern fire detection goes beyond simple alarms. Our systems provide granular device-level data, allowing for precise location identification and sophisticated cause-and-effect logic."
-    reversed={true}
-  />
-
-  <ProofGrid 
-    title="Detection Reliability"
-    items={[
-      { title: "Point Identification", description: "Know exactly which detector triggered the event." },
-      { title: "Fault Isolation", description: "Loop isolators ensure system continuity during wiring faults." },
-      { title: "False Alarm Filter", description: "Multi-sensor technology reduces disruptive false alarms." },
-      { title: "Integrations", description: "Automatic HVAC shutdown and lift grounding on detection." }
-    ]}
-  />
-
-  <ContextualInquiry 
-    title="Request Detection Review"
-    requestType="Fire Detection"
-  />
-
-  
+  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <SectionHeading
+        title="Precision Detection Architecture"
+        subtitle="Engineering Focus"
+        description="Systems engineered for reliable performance and maintainable operation in commercial and industrial environments."
+        center={true}
+      />
+      
+      <div class="mt-12 prose prose-invert max-w-none">
+        <p class="text-kharon-light/80 text-lg leading-relaxed">
+          Our fire detection systems are built around addressable detection technology that provides precise device identification and maintainable layouts. Each system incorporates cause-and-effect logic that defines specific detection events leading to specific response actions, ensuring reliable and predictable system performance.
+        </p>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

@@ -1,75 +1,79 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/sections/Hero.astro";
-import SplitFeature from "../components/sections/SplitFeature.astro";
-import ProofGrid from "../components/sections/ProofGrid.astro";
-import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
-import SecurityTechnicalBlocks from "../components/sections/SecurityTechnicalBlocks.astro";
+import SectionHeading from "../components/sections/SectionHeading.astro";
 import { pageMeta } from "../data/site.js";
 
-const proofItems = [
+const securityCapabilities = [
   {
-    title: "Controlled access support",
-    text: "Access control is positioned around accountable movement through protected areas, plant rooms and operational zones.",
-    status: "Security 01"
+    title: "Access control systems",
+    text: "Integrated access control solutions with configurable permissions, audit trails and emergency override capabilities."
   },
   {
-    title: "CCTV as site evidence",
-    text: "Video systems support incident review and operational awareness without displacing fire detection or suppression priorities.",
-    status: "Security 02"
+    title: "Perimeter security",
+    text: "Comprehensive perimeter protection with detection, deterrence and verification systems for critical site boundaries."
   },
   {
-    title: "IDS for infrastructure context",
-    text: "Intrusion detection is framed as a secondary layer around high-value commercial infrastructure and service access points.",
-    status: "Security 03"
+    title: "CCTV surveillance",
+    text: "High-definition surveillance systems with remote monitoring, event recording and intelligent analytics."
   },
   {
-    title: "Integrated operations",
-    text: "Security integrations are assessed against controlled access, auditability and facility response requirements.",
-    status: "Security 04"
+    title: "Integration with fire systems",
+    text: "Coordinated response between security and fire protection systems for comprehensive site protection."
   }
 ];
 ---
 
-<BaseLayout title={pageMeta.security.title} description={pageMeta.security.description}>
-  <Hero
-    title="Integrated security systems for infrastructure resilience."
-    text="CCTV, access control and monitoring systems delivered where they support wider commercial protection requirements."
-  />
+<BaseLayout title={pageMeta.securitySystems.title} description={pageMeta.securitySystems.description}>
+  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
+        Security Systems
+      </h1>
+      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
+        Integrated security solutions for commercial and industrial environments with focus on access control, surveillance and intrusion detection.
+      </p>
+    </div>
+  </section>
 
-  <SplitFeature
-    eyebrow="Secondary Capability"
-    title="Security integrated with wider protection strategy."
-    text="Security supports controlled access, monitoring and operational resilience without replacing Kharon's fire and suppression specialism."
-    bullets={[
-      "Enterprise CCTV",
-      "Access control",
-      "Operational monitoring",
-      "Commercial security integration"
-    ]}
-    visual="security"
-    imageAlt="Schematic showing access control, CCTV and monitoring infrastructure"
-  />
+  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+    <div class="mx-auto max-w-7xl px-6">
+      <SectionHeading
+        title="Integrated Security Solutions"
+        subtitle="Comprehensive Protection"
+        description="Engineered security systems that integrate with fire protection for holistic site protection."
+        center={true}
+      />
+      
+      <div class="mt-12 grid gap-8 md:grid-cols-2">
+        {securityCapabilities.map((capability, index) => (
+          <div key={index} class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+            <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
+              <div class="w-12 h-12 rounded-lg bg-kharon-amber/10 flex items-center justify-center mb-5">
+                <div class="w-6 h-6 bg-kharon-cyan rounded"></div>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">{capability.title}</h3>
+              <p class="text-kharon-light/70">{capability.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
 
-  <SecurityTechnicalBlocks />
-
-  <ProofGrid
-    eyebrow="Security Evidence"
-    title="Security works best when it supports the whole protection model."
-    text="Kharon's security positioning remains disciplined: integrated support for enterprise sites, not a generic alarm-company offer."
-    items={proofItems}
-  />
-
-  <ContextualInquiry
-    eyebrow="Integrated Security Support"
-    title="Request an infrastructure security review."
-    text="Security requests are assessed as support to operational protection, access control and site resilience requirements."
-    requestType="Integrated infrastructure security review"
-    fields={[
-      { label: "Support Capability", name: "support_capability", options: ["Access control", "CCTV", "IDS", "Monitoring integration", "Multi-system review"] },
-      { label: "Facility Type", name: "facility_type", options: ["Commercial site", "Industrial facility", "Warehouse", "Critical infrastructure", "Control room", "Other"] },
-      { label: "Operational Constraint", name: "operational_constraint", options: ["Access governance", "Monitoring gap", "Incident review", "System expansion", "Integration with fire systems"] }
-    ]}
-  />
-  
+  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <SectionHeading
+        title="Holistic Protection Architecture"
+        subtitle="Integrated Systems"
+        description="Security and fire protection systems designed to work together for comprehensive site protection."
+        center={true}
+      />
+      
+      <div class="mt-12 prose prose-invert max-w-none">
+        <p class="text-kharon-light/80 text-lg leading-relaxed">
+          Our security systems are designed to integrate seamlessly with fire protection systems, providing comprehensive site protection that addresses both security threats and fire hazards. This integrated approach ensures coordinated response and optimal protection outcomes.
+        </p>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

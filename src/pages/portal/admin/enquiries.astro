@@ -7,7 +7,7 @@
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
-import { requireAdmin } from "../../../lib/server/admin";
+import { requireAdmin } from "../../../lib/server/access";
 import type { DbContactEnquiry } from "@sentinel/types";
 
 export const prerender = false;

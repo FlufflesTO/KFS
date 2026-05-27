@@ -1,27 +1,36 @@
 ---
-import { auditError } from "../../../lib/server/audit.js";
+import { auditError } from "../../../lib/server/audit";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
+import KharonCard from "../../../components/ui/KharonCard.astro";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
 const params = Astro.url.searchParams;
 const page = Math.max(1, Math.min(999, parseInt(params.get("page") || "1", 10) || 1));
-const perPage = 50;
+const perPage = 10;
 const offset = (page - 1) * perPage;
 let jobs: Array<any> = [];
 let totalJobs = 0;
 let loadError = "";
+let completedJobs = 0;
+let avgCompletionTime = "0h";
 
 try {
   const db = getDatabase();
   const countQuery = user?.role === "admin"
-    ? `SELECT COUNT(*) AS total
+    ? `SELECT 
+        COUNT(*) AS total,
+        SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed,
+        AVG(julianday(completed_at) - julianday(created_at)) * 24 AS avg_duration
        FROM jobs
        WHERE jobs.deleted_at IS NULL
          AND jobs.status IN ('Completed', 'Invoiced')`
-    : `SELECT COUNT(*) AS total
+    : `SELECT 
+        COUNT(*) AS total,
+        SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed,
+        AVG(julianday(completed_at) - julianday(created_at)) * 24 AS avg_duration
        FROM jobs
        WHERE jobs.deleted_at IS NULL
          AND jobs.assigned_technician_id = ?1
@@ -61,7 +70,11 @@ try {
         db.prepare(countQuery).bind(user?.id),
         db.prepare(query).bind(user?.id, perPage, offset)
       ]);
-  totalJobs = Number((countResult.results[0] as { total: number })?.total ?? 0);
+  
+  const countData = countResult.results[0] as { total: number, completed: number, avg_duration: number };
+  totalJobs = Number(countData?.total ?? 0);
+  completedJobs = Number(countData?.completed ?? 0);
+  avgCompletionTime = countData?.avg_duration ? `${countData.avg_duration.toFixed(1)}h` : "0h";
   jobs = result.results || [];
 } catch (error) {
   await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "tech_history" });
@@ -189,43 +202,60 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
     </div>
   </section>
   <script>
-    const search       = document.getElementById("history-search")       as HTMLInputElement  | null;
-    const statusFilter = document.getElementById("history-status-filter") as HTMLSelectElement | null;
-    const typeFilter   = document.getElementById("history-type-filter")   as HTMLSelectElement | null;
-    const clearBtn     = document.getElementById("history-clear")         as HTMLButtonElement | null;
-    const tbody        = document.getElementById("history-rows");
-    const noResults    = document.getElementById("history-no-results");
-
+    // Mobile filter toggle
+    const filterToggle = document.getElementById('mobile-filter-toggle');
+    const filterPanel = document.getElementById('mobile-filter-panel');
+    
+    if (filterToggle && filterPanel) {
+      filterToggle.addEventListener('click', () => {
+        filterPanel.classList.toggle('hidden');
+      });
+    }
+    
+    // Filter functionality
+    const search = document.getElementById('history-search');
+    const statusFilter = document.getElementById('history-status-filter');
+    const typeFilter = document.getElementById('history-type-filter');
+    const clearBtn = document.getElementById('history-clear');
+    const tbody = document.getElementById('history-rows');
+    const noResults = document.getElementById('history-no-results');
+    
     function applyFilter() {
       if (!search || !tbody) return;
-      const q  = search.value.toLowerCase().trim();
-      const sv = statusFilter?.value || "";
-      const tv = typeFilter?.value   || "";
-      const rows = tbody.querySelectorAll<HTMLTableRowElement>("[data-search]");
+      const q = search.value.toLowerCase().trim();
+      const sv = statusFilter?.value || '';
+      const tv = typeFilter?.value || '';
+      const rows = tbody.querySelectorAll('[data-search]');
       let visible = 0;
-      for (const row of rows) {
-        const text    = (row.dataset.search   ?? "").toLowerCase();
-        const status  = row.dataset.status    ?? "";
-        const jobtype = row.dataset.jobtype   ?? "";
-        const show = (!q  || text.includes(q))
-                  && (!sv || status  === sv)
-                  && (!tv || jobtype === tv);
-        row.style.display = show ? "" : "none";
+      
+      rows.forEach(row => {
+        const text = (row.dataset.search || '').toLowerCase();
+        const status = row.dataset.status || '';
+        const jobtype = row.dataset.jobtype || '';
+        const show = (!q || text.includes(q)) && 
+                    (!sv || status === sv) && 
+                    (!tv || jobtype === tv);
+                    
+        row.style.display = show ? '' : 'none';
         if (show) visible++;
+      });
+      
+      if (noResults) {
+        noResults.style.display = visible === 0 ? 'block' : 'none';
       }
-      if (noResults) noResults.style.display = visible === 0 ? "" : "none";
     }
-
+    
     function clearFilters() {
-      if (search)       search.value       = "";
-      if (statusFilter) statusFilter.value = "";
-      if (typeFilter)   typeFilter.value   = "";
+      if (search) search.value = '';
+      if (statusFilter) statusFilter.value = '';
+      if (typeFilter) typeFilter.value = '';
       applyFilter();
     }
-
-    search?.addEventListener("input",   applyFilter);
-    statusFilter?.addEventListener("change", applyFilter);
-    typeFilter?.addEventListener("change",   applyFilter);
-    clearBtn?.addEventListener("click",      clearFilters);
+    
+    // Event listeners
+    search?.addEventListener('input', applyFilter);
+    statusFilter?.addEventListener('change', applyFilter);
+    typeFilter?.addEventListener('change', applyFilter);
+    clearBtn?.addEventListener('click', clearFilters);
   </script>
 </PortalLayout>

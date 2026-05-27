@@ -1,4 +1,10 @@
 ---
+/**
+ * Contextual Inquiry Component
+ * Purpose: Provides a themed contact intake section with dynamic field mapping and POPIA support
+ * Dependencies: DESIGN_CONSTITUTION
+ * Structural Role: Contextual inquiry input component
+ */
 const {
   eyebrow = "Operational Request",
   title = "Request a site assessment.",
@@ -16,55 +22,61 @@ const baseFields = [
 const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 ---
 
-<section class="section-padding bg-white">
+<section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal text-white border-t border-kharon-cyan/10">
   <div class="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-[0.85fr_1.15fr]">
     <div>
-      <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">{eyebrow}</p>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black sm:text-4xl lg:text-5xl">{title}</h2>
-      <p class="mt-5 text-lg leading-8 text-kharon-grey">{text}</p>
-      <div class="mt-8 rounded-lg border border-kharon-border bg-kharon-light p-5">
-        <p class="text-xs font-bold uppercase text-kharon-purple">Request Type</p>
-        <p class="mt-2 text-xl font-bold text-kharon-black">{requestType}</p>
+      <p class="mb-4 text-xs font-bold uppercase tracking-widest text-kharon-cyan">{eyebrow}</p>
+      <h2 class="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">{title}</h2>
+      <p class="mt-5 text-lg leading-relaxed text-kharon-light/75">{text}</p>
+      <div class="mt-8 rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-5">
+        <p class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Request Type</p>
+        <p class="mt-2 text-xl font-bold text-white">{requestType}</p>
       </div>
     </div>
 
-    <form id={formId} class="grid gap-5 rounded-lg border border-kharon-border bg-kharon-light p-6">
+    <form id={formId} class="grid gap-5 rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-6 kharon-surface">
       <label class="sr-only" for={`${formId}-website`}>Website</label>
       <input id={`${formId}-website`} style="display: none !important; position: absolute !important; left: -9999px !important;" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
       <input type="hidden" name="request_type" value={requestType} />
 
       {[...baseFields, ...fields].map((field) => (
-        <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-          {field.label}
+        <div class="grid gap-1.5">
+          <label for={`${formId}-${field.name}`} class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">
+            {field.label} {field.required !== false && "*"}
+          </label>
           {field.options ? (
-            <select class="rounded-md border border-kharon-border px-4 py-3 font-normal" name={field.name} required={field.required !== false}>
+            <select id={`${formId}-${field.name}`} class="kharon-field font-normal" name={field.name} required={field.required !== false}>
               {field.options.map((option: string) => <option value={option}>{option}</option>)}
             </select>
           ) : (
             <input
-              class="rounded-md border border-kharon-border px-4 py-3 font-normal"
+              id={`${formId}-${field.name}`}
+              class="kharon-field font-normal"
               name={field.name}
               type={field.type || "text"}
               autocomplete={field.autocomplete}
               inputmode={field.inputmode}
               maxlength={field.maxlength || 160}
               required={field.required !== false}
+              placeholder={`Enter your ${field.label.toLowerCase()}`}
             />
           )}
-        </label>
+        </div>
       ))}
 
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-        Operational Notes
-        <textarea class="min-h-32 rounded-md border border-kharon-border px-4 py-3 font-normal" name="operational_notes" maxlength="3000" required></textarea>
-      </label>
+      <div class="grid gap-1.5">
+        <label for={`${formId}-operational-notes`} class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">
+          Operational Notes *
+        </label>
+        <textarea id={`${formId}-operational-notes`} class="kharon-field min-h-32 font-normal" name="operational_notes" maxlength="3000" required placeholder="Provide detail about your systems, requirements or site context..."></textarea>
+      </div>
 
       <div class="flex items-start mt-2">
         <div class="flex items-center h-5">
-          <input id={`${formId}-popia`} name="popia_consent" type="checkbox" required class="focus:ring-kharon-blue h-4 w-4 text-kharon-blue border-gray-300 rounded" />
+          <input id={`${formId}-popia`} name="popia_consent" type="checkbox" required class="focus:ring-kharon-cyan h-4 w-4 text-kharon-cyan border-kharon-cyan/20 bg-kharon-graphite rounded cursor-pointer" />
         </div>
         <div class="ml-3 text-sm">
-          <label for={`${formId}-popia`} class="font-medium text-kharon-black">
+          <label for={`${formId}-popia`} class="font-medium text-kharon-light/80">
             I consent to the collection and processing of my data in accordance with POPIA for the purpose of this inquiry. *
           </label>
         </div>
@@ -72,7 +84,7 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
       <p class="hidden text-sm font-semibold" aria-live="polite"></p>
 
-      <button class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
+      <button class="w-full kharon-command-button py-3.5 mt-2">
         Submit Request
       </button>
     </form>
@@ -123,20 +135,22 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
         if (body.ok) {
           const success = document.createElement("p");
-          success.className = "py-4 text-base font-semibold text-kharon-purple";
+          success.className = "py-4 text-base font-semibold text-kharon-cyan text-center";
           success.textContent = "Request received. Kharon will be in contact shortly.";
           form.replaceChildren(success);
         } else {
           if (resultEl) {
             resultEl.textContent = body.message || "Submission failed. Try emailing admin@kharon.co.za directly.";
-            resultEl.className = "text-sm font-semibold text-red-700";
+            resultEl.className = "text-sm font-semibold text-red-400";
+            resultEl.classList.remove("hidden");
           }
           if (btn) { btn.disabled = false; btn.textContent = "Submit Request"; }
         }
       } catch {
         if (resultEl) {
           resultEl.textContent = "Could not reach the server. Try emailing admin@kharon.co.za directly.";
-          resultEl.className = "text-sm font-semibold text-red-700";
+          resultEl.className = "text-sm font-semibold text-red-400";
+          resultEl.classList.remove("hidden");
         }
         if (btn) { btn.disabled = false; btn.textContent = "Submit Request"; }
       }

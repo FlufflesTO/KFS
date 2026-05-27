@@ -1,35 +1,38 @@
 ---
 import SectionHeading from "./SectionHeading.astro";
 
-const { eyebrow, title, text, items = [] } = Astro.props;
+const { services = [] } = Astro.props;
 ---
 
-<section class="section-padding bg-white relative overflow-hidden">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <SectionHeading eyebrow={eyebrow} title={title} text={text} />
+<section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+  <div class="mx-auto max-w-7xl px-6">
+    <SectionHeading
+      title="Premium Technical Authority Services"
+      subtitle="Engineered Solutions"
+      description="Specialized fire and security solutions engineered for mission-critical environments."
+      center={true}
+    />
 
-    <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {items.map((item: any) => (
-        <a
-          href={item.href}
-          class="group rounded-xl border border-kharon-border bg-kharon-light/50 p-6 sm:p-8 transition-all duration-300 hover:border-kharon-purple/20 hover:shadow-xl hover:bg-white"
-        >
-          <div class="mb-8 flex h-10 w-10 items-center justify-center rounded-lg bg-kharon-purple/5 text-kharon-purple transition-all group-hover:bg-kharon-purple group-hover:text-white">
-            <span class="text-sm font-black tracking-widest">{item.index}</span>
+    <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {services.map((service: any, index: number) => (
+        <div key={index} class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+          <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
+            <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5">
+              <div class="w-6 h-6 bg-kharon-cyan rounded"></div>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-3">{service.title}</h3>
+            <p class="text-kharon-light/70 mb-4">{service.summary}</p>
+            <a 
+              href={service.href} 
+              class="inline-flex items-center text-kharon-cyan font-bold text-sm hover:underline"
+            >
+              Learn more
+              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
           </div>
-
-          <h3 class="text-xl font-bold tracking-tight text-kharon-black">
-            {item.title}
-          </h3>
-
-          <p class="mt-4 text-sm leading-relaxed text-kharon-grey/80">
-            {item.text}
-          </p>
-
-          <span class="mt-8 inline-flex items-center gap-2 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-purple transition-all group-hover:gap-3">
-            Service Details <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-          </span>
-        </a>
+        </div>
       ))}
     </div>
   </div>

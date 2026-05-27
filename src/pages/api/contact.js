@@ -1,4 +1,4 @@
-import { auditError } from "../../lib/server/audit.js";
+import { auditError } from "../../lib/server/audit";
 import { getDatabase } from "../../lib/server/bindings.ts";
 import { consumeRateLimit } from "../../lib/server/rateLimit.js";
 import { sha256Text } from "../../lib/server/request.js";

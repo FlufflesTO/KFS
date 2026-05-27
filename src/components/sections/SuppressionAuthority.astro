@@ -1,68 +1,42 @@
 ---
-const environments = [
-  "Server rooms",
-  "Electrical rooms",
-  "Telecommunications spaces",
-  "Control rooms",
-  "Critical plant rooms"
-];
+import SectionHeading from "./SectionHeading.astro";
 
-const capabilities = [
-  "Clean-agent suppression architecture",
-  "Protected-room and release infrastructure planning",
-  "Detection integration for controlled activation",
-  "Lifecycle servicing for mission-critical spaces"
-];
+const { capabilities = [] } = Astro.props;
 ---
 
-<section class="section-padding bg-kharon-black text-white relative overflow-hidden">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="grid items-center gap-10 lg:grid-cols-[1fr_1.1fr]">
-      <div class="reveal">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="h-1 w-8 bg-kharon-cyan"></div>
-          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-cyan">
-            Suppression Authority
-          </p>
-        </div>
+<section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+  <div class="mx-auto max-w-7xl px-6">
+    <SectionHeading
+      title="Premium Technical Authority"
+      subtitle="Gas Suppression Systems"
+      description="Engineered suppression solutions for mission-critical environments with precision control."
+      center={true}
+    />
 
-        <h2 class="kharon-h2 text-white">
-          Critical environment protection for assets that cannot simply get wet.
-        </h2>
-
-        <p class="mt-8 text-lg leading-relaxed text-white/65">
-          Kharon focuses on clean-agent and engineered suppression systems for sensitive environments where downtime, water damage and uncontrolled fire spread carry high operational consequence.
-        </p>
-
-        <div class="mt-10 flex flex-wrap gap-2">
-          {environments.map((item) => (
-            <span class="rounded-sm border border-white/10 bg-white/5 px-3 py-1.5 text-[0.625rem] font-bold uppercase tracking-widest text-white/50">
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div class="reveal reveal-delayed border border-white/5 bg-white/[0.02] p-5 sm:p-6 rounded-xl">
-        <div class="relative min-h-[28rem] overflow-hidden rounded-lg border border-white/5 bg-[#080B0E] p-6">
-          <div class="absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(255,255,255,.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.1)_1px,transparent_1px)] [background-size:40px_40px]"></div>
-          <div class="absolute bottom-8 left-8 right-8 h-20 border border-kharon-cyan/15 bg-kharon-cyan/5"></div>
-          <div class="absolute bottom-28 left-12 h-44 w-14 rounded-t-full border border-white/10 bg-white/5"></div>
-          <div class="absolute bottom-28 left-32 h-52 w-14 rounded-t-full border border-white/10 bg-white/5"></div>
-          <div class="absolute bottom-28 left-52 h-40 w-14 rounded-t-full border border-white/10 bg-white/5"></div>
-          <div class="absolute left-24 right-16 top-24 h-px bg-kharon-cyan/40"></div>
-          <div class="absolute right-16 top-20 h-24 w-28 border border-kharon-purple/40 bg-kharon-purple/10"></div>
-          <div class="absolute right-24 top-28 h-2 w-2 bg-kharon-cyan"></div>
-
-          <div class="relative z-10 ml-auto grid max-w-sm gap-3">
-            {capabilities.map((item, index) => (
-              <div class="border-l-2 border-white/10 bg-black/40 p-4 transition-colors hover:border-kharon-cyan/50 hover:bg-black/60">
-                <p class="text-[0.625rem] font-black uppercase tracking-widest text-kharon-cyan">0{index + 1}</p>
-                <p class="mt-2 text-xs font-bold text-white tracking-wide">{item}</p>
-              </div>
-            ))}
+    <div class="mt-12">
+      <div class="grid gap-8 md:grid-cols-2">
+        {capabilities.map((capability: any, index: number) => (
+          <div key={index} class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+            <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
+              <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                <span class="mr-3 w-8 h-8 rounded-md bg-kharon-purple/20 flex items-center justify-center text-kharon-cyan text-sm">
+                  {index + 1}
+                </span>
+                {capability.title}
+              </h3>
+              <ul class="space-y-2">
+                {capability.items?.map((item: string, idx: number) => (
+                  <li key={idx} class="flex items-start">
+                    <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span class="text-kharon-light/80">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   </div>

@@ -1,79 +1,65 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/sections/Hero.astro";
-import SplitFeature from "../components/sections/SplitFeature.astro";
-import ProofGrid from "../components/sections/ProofGrid.astro";
-import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
-import SuppressionTechnicalBlocks from "../components/sections/SuppressionTechnicalBlocks.astro";
-
+import SectionHeading from "../components/sections/SectionHeading.astro";
+import SuppressionAuthority from "../components/sections/SuppressionAuthority.astro";
 import { pageMeta } from "../data/site.js";
 
-const proofItems = [
+const suppressionCapabilities = [
   {
-    title: "Clean-agent design intent",
-    text: "Agent selection is framed around protected asset value, occupancy, discharge constraints and downtime consequence.",
-    status: "Suppression 01"
+    title: "Clean-agent precision",
+    items: [
+      "FM-200 systems for server rooms and electrical equipment spaces",
+      "Novec 1230 systems for environmentally sensitive applications",
+      "CO2 systems for industrial applications with appropriate safety measures"
+    ]
   },
   {
-    title: "Protected volume and hold time",
-    text: "Room boundaries, leakage paths and hold-time expectations are treated as part of the suppression system, not separate building details.",
-    status: "Suppression 02"
+    title: "Mission-critical protection",
+    items: [
+      "Zero-damage suppression for sensitive electronic equipment",
+      "Rapid discharge systems for immediate fire suppression",
+      "Pressure relief calculations for enclosed spaces"
+    ]
   },
   {
-    title: "Cylinder bank lifecycle",
-    text: "Cylinder condition, pressure status, signage, access and service records stay visible through the operating life of the installation.",
-    status: "Suppression 03"
-  },
-  {
-    title: "Release and abort logic",
-    text: "Manual release, abort, alarms and discharge sequencing are coordinated so operators understand the route from detection to release.",
-    status: "Suppression 04"
+    title: "Engineered release logic",
+    items: [
+      "Pre-discharge warnings with configurable timing",
+      "Automatic release upon confirmed detection",
+      "Manual release stations with appropriate safety protocols"
+    ]
   }
 ];
 ---
 
 <BaseLayout title={pageMeta.gasSuppression.title} description={pageMeta.gasSuppression.description}>
-  <Hero
-    title="Clean-agent gas suppression for critical rooms and sensitive assets."
-    text="Kharon designs, installs, services and maintains engineered suppression systems for server rooms, electrical infrastructure and commercial environments where water damage and downtime are unacceptable."
-  />
+  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
+        Gas Suppression Systems
+      </h1>
+      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
+        Clean-agent and engineered suppression systems for server rooms, electrical rooms and sensitive operational assets.
+      </p>
+    </div>
+  </section>
 
-  <SplitFeature
-    eyebrow="Engineered Suppression"
-    title="Designed around protected spaces, release logic and continuity risk."
-    text="Gas suppression protects critical equipment spaces through coordinated detection, alarm signalling, release infrastructure and maintainable lifecycle support."
-    bullets={[
-      "Server room and data centre suppression",
-      "Electrical and control-room asset protection",
-      "Cylinder bank and release infrastructure",
-      "Detection and alarm integration",
-      "Inspection, servicing and lifecycle support"
-    ]}
-    visual="suppression"
-    imageAlt="Schematic showing gas cylinder bank, release panel and protected room"
-  />
-
-  <SuppressionTechnicalBlocks />
-
-  <ProofGrid
-    eyebrow="Suppression Evidence"
-    title="Engineered around the protected space."
-    text="Gas suppression work must balance asset protection, occupant safety, detection logic and lifecycle accountability."
-    items={proofItems}
-  />
-
-  <ContextualInquiry
-    eyebrow="Suppression Assessment"
-    title="Request a gas suppression assessment."
-    text="Capture the protected environment, existing agent or system state, continuity exposure and room integrity concerns."
-    requestType="Gas suppression assessment"
-    fields={[
-      { label: "Environment Type", name: "environment_type", options: ["Server room", "Electrical room", "Control room", "Telecoms space", "Industrial process area", "Other critical room"] },
-      { label: "Protected Room / Asset", name: "protected_room" },
-      { label: "Existing System", name: "existing_system", options: ["No existing system", "Existing gaseous suppression", "Water-based system nearby", "Unknown", "Upgrade / replacement"] },
-      { label: "Suppression Agent", name: "suppression_agent", options: ["Unknown", "FM-200", "Inergen", "Novec", "Stat-X", "Other"] },
-      { label: "Continuity Concern", name: "continuity_concern", options: ["High uptime requirement", "Sensitive equipment", "Compliance concern", "Recent fault", "Planned upgrade"] }
-    ]}
-  />
+  <SuppressionAuthority capabilities={suppressionCapabilities} />
   
+  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <SectionHeading
+        title="Clean-Agent Mission-Critical Precision"
+        subtitle="Precision Suppression"
+        description="Engineered gas suppression systems that protect critical assets without causing additional damage."
+        center={true}
+      />
+      
+      <div class="mt-12 prose prose-invert max-w-none">
+        <p class="text-kharon-light/80 text-lg leading-relaxed">
+          Our gas suppression systems are engineered specifically for environments where traditional water-based systems would cause catastrophic damage. Clean-agent systems provide rapid fire suppression without residue, allowing for immediate resumption of operations after incident resolution.
+        </p>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

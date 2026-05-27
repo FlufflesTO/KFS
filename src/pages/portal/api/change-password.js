@@ -1,6 +1,6 @@
-import { auditError } from "../../../lib/server/audit.js";
+import { auditError } from "../../../lib/server/audit";
 import { getDatabase } from "../../../lib/server/bindings.ts";
-import { auditEvent } from "../../../lib/server/audit.js";
+import { auditEvent } from "../../../lib/server/audit";
 import { createSessionToken, hashPassword, sessionCookie, verifyPassword } from "../../../lib/server/auth.js";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.ts";
 

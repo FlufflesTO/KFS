@@ -1589,6 +1589,37 @@ box-shadow: var(--shadow-md);
 font-size: clamp(1rem, 2vw, 1.5rem);
 ```
 
+### 19.6 UI and Design Governance
+
+**Design Constitution Requirement:**
+All UI changes must follow the official `DESIGN_CONSTITUTION.md` which establishes the Industrial Command Intelligence design direction. This locked design authority prevents future visual drift and ensures consistency across the entire application ecosystem.
+
+**Governance Principles:**
+1. All UI changes must follow `DESIGN_CONSTITUTION.md` guidelines
+2. No new color, font, or card system may be introduced without updating the constitution
+3. The design target is Industrial Command Intelligence - mission-critical infrastructure software with enterprise fire and suppression intelligence
+4. Generic SaaS/admin-template styling is prohibited to maintain the premium field service operations technology appearance
+5. Public site and portal must remain visually unified to ensure consistent brand experience
+6. The verified Kharon letterhead must stay top-left as the primary brand anchor
+7. Standalone logo may be used as low-opacity environmental 3D background mark without competing with the letterhead
+8. Brand colors (black, purple, blue, grey, cyan, amber, red, green) must be preserved in all implementations
+
+**Visual Direction:**
+- Industrial Command Intelligence aesthetic: mission-critical infrastructure software
+- Enterprise fire and suppression intelligence feel
+- Compliance command infrastructure appearance
+- Premium field service operations technology
+- South African commercial and industrial protection authority presence
+
+**Prohibited Styles:**
+- Generic SaaS dashboards
+- Bootstrap admin templates
+- Playful startup UI
+- Ordinary SME brochure sites
+- Bright consumer apps
+- Flat corporate templates
+- Cheap cybersecurity clichés
+
 ---
 
 ## 20. Conclusion

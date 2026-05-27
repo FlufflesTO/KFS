@@ -1,7 +1,7 @@
-import { auditError } from "../../../../lib/server/audit.js";
+import { auditError } from "../../../../lib/server/audit";
 import { getDatabase } from "../../../../lib/server/bindings.ts";
-import { auditEvent } from "../../../../lib/server/audit.js";
-import { rowsToCsv } from "../../../../lib/server/csv.js";
+import { auditEvent } from "../../../../lib/server/audit";
+import { rowsToCsv } from "../../../../lib/server/csv";
 import { forbidden, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.ts";
 
 export const prerender = false;

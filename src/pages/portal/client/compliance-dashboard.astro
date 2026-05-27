@@ -1,5 +1,5 @@
 ---
-import { auditError } from "../../../lib/server/audit.js";
+import { auditError } from "../../../lib/server/audit";
 /**
  * Project Sentinel - Client Compliance Command Center
  * Purpose: Provides comprehensive compliance dashboard for clients to track certificates, defects, and maintenance schedules
@@ -8,7 +8,7 @@ import { auditError } from "../../../lib/server/audit.js";
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
-import { clientSites, inClause } from "../../../lib/server/clientAccess.js";
+import { clientSites, inClause } from "../../../lib/server/access";
 
 export const prerender = false;
 
@@ -461,7 +461,7 @@ try {
               <a href="/portal/client/quotes" class="block w-full rounded border border-kharon-purple bg-white px-4 py-3 text-left text-sm font-bold text-kharon-purple hover:bg-kharon-purple hover:text-white transition-colors">
                 Request Quote
               </a>
-              <a href="/portal/api/maintenance-request" class="block w-full rounded border border-kharon-blue bg-white px-4 py-3 text-left text-sm font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
+              <a href="/portal/client/maintenance-request" class="block w-full rounded border border-kharon-blue bg-white px-4 py-3 text-left text-sm font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
                 Submit Service Request
               </a>
               <a href="/compliance" class="block w-full rounded border border-kharon-cyan bg-white px-4 py-3 text-left text-sm font-bold text-kharon-cyan hover:bg-kharon-cyan hover:text-white transition-colors">

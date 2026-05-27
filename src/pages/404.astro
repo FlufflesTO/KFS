@@ -1,28 +1,45 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import SectionHeading from "../components/sections/SectionHeading.astro";
+import { pageMeta } from "../data/site.js";
 ---
 
-<BaseLayout
-  title="Page Not Found | Kharon"
-  description="The requested page could not be found."
-  noindex={true}
->
-  <section class="hero-padding bg-kharon-black text-white">
-    <div class="mx-auto max-w-7xl px-6 reveal">
-      <p class="mb-4 text-sm font-bold uppercase text-kharon-cyan">404</p>
-      <h1 class="kharon-h1 max-w-4xl">Page not found.</h1>
-      <p class="mt-6 max-w-2xl text-lg leading-8 text-white/70">
-        The page may have moved or no longer exists. Continue to core solutions or request a site assessment.
+<BaseLayout title="Page Not Found - Kharon Fire & Security" description="The requested page could not be found on the Kharon Fire & Security website.">
+  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark flex items-center">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <div class="inline-block p-4 rounded-lg bg-kharon-red/10 border border-kharon-red/20 mb-6">
+        <h1 class="text-6xl md:text-7xl font-bold text-kharon-red mb-2">404</h1>
+      </div>
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-6 kharon-h2">
+        Controlled Failure State
+      </h2>
+      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed mb-8">
+        The requested resource is not available in the operational environment. This controlled failure state maintains system integrity.
       </p>
-      <div class="mt-10 flex flex-wrap gap-4">
-        <a href="/" class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
-          Back to Home
-        </a>
-        <a href="/contact?intent=site-assessment" class="rounded-md border border-white/20 px-6 py-4 font-semibold text-white hover:bg-white/10">
-          Request Site Assessment
-        </a>
+      
+      <div class="rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-8 backdrop-blur-sm kharon-surface max-w-md mx-auto">
+        <h3 class="text-lg font-semibold text-white mb-4">Recommended Actions:</h3>
+        <ul class="space-y-2 text-left">
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span class="text-kharon-light/80">Return to the <a href="/" class="text-kharon-cyan hover:underline">home page</a></span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span class="text-kharon-light/80">Check the URL for accuracy</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span class="text-kharon-light/80">Contact support if the issue persists</span>
+          </li>
+        </ul>
       </div>
     </div>
   </section>
-  
 </BaseLayout>

@@ -1,102 +1,81 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/sections/Hero.astro";
-import SplitFeature from "../components/sections/SplitFeature.astro";
-import ProofGrid from "../components/sections/ProofGrid.astro";
-import TrustModules from "../components/sections/TrustModules.astro";
-import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
-import ComplianceTechnicalBlocks from "../components/sections/ComplianceTechnicalBlocks.astro";
-import { pageMeta, trustModules } from "../data/site.js";
+import SectionHeading from "../components/sections/SectionHeading.astro";
+import { pageMeta } from "../data/site.js";
 
-const proofItems = [
+const assuranceItems = [
   {
-    title: "Service interval control",
-    text: "Recurring inspections and maintenance dates are tracked against system type, site risk and overdue exposure.",
-    status: "Control 01"
+    title: "Site assessment",
+    text: "Requirements start with the protected room, asset value, occupancy, detection risk and continuity requirement.",
+    status: "Assess"
   },
   {
-    title: "Jobcard evidence",
-    text: "Service activity, technician comments, customer signatures and documentation paths are captured as operational proof.",
-    status: "Control 02"
+    title: "Detection and release logic",
+    text: "Addressable detection, alarm signalling, suppression release and response paths are structured around maintainable cause-and-effect design.",
+    status: "Design"
   },
   {
-    title: "Defect classification",
-    text: "Faults and defects should be separated by urgency, affected system and required follow-up instead of disappearing into general notes.",
-    status: "Control 03"
-  },
-  {
-    title: "Lifecycle due-date governance",
-    text: "Completed service work advances the next due date so compliance visibility remains tied to actual field activity.",
-    status: "Control 04"
+    title: "Documented servicing",
+    text: "Inspection, testing, servicing and reporting are treated as part of the protection system, not an afterthought.",
+    status: "Maintain"
   }
 ];
 ---
 
 <BaseLayout title={pageMeta.compliance.title} description={pageMeta.compliance.description}>
-  <Hero
-    title="Compliance and maintenance with operational discipline."
-    text="Structured inspection, servicing and reporting for fire detection, gas suppression and integrated protection systems."
-  />
-
-  <SplitFeature
-    eyebrow="Reliability"
-    title="Maintenance processes that support accountability."
-    text="Compliance is visible evidence that critical systems are being managed responsibly and consistently."
-    bullets={[
-      "Scheduled inspection and servicing",
-      "Maintenance reporting",
-      "Lifecycle support",
-      "Operational risk reduction"
-    ]}
-    visual="compliance"
-    imageAlt="Schematic showing inspection, service record and lifecycle planning"
-  />
-
-  <ProofGrid
-    eyebrow="Compliance Evidence"
-    title="Maintenance is an operating control."
-    text="A protection system is only as trustworthy as the inspection, service record and lifecycle decisions around it."
-    items={proofItems}
-  />
-
-  <TrustModules items={trustModules} />
-
-  <section class="bg-white pb-16">
-    <div class="mx-auto max-w-7xl px-6">
-      <div class="max-w-3xl rounded-lg border border-kharon-border bg-kharon-light p-6">
-        <p class="text-sm font-bold uppercase text-kharon-purple">South Africa Context</p>
-        <p class="mt-3 leading-7 text-kharon-grey">
-          Compliance programs are shaped around South African statutory duties, site risk classification, and applicable SANS-aligned requirements where incorporated by contract, permit, or policy.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <ComplianceTechnicalBlocks />
-
-  <!-- ─── Standards reference note ─── -->
-  <section class="bg-kharon-light px-6 py-10 border-y border-kharon-border">
-    <div class="mx-auto max-w-7xl">
-      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Standards Reference</p>
-      <p class="mt-3 max-w-3xl text-sm leading-7 text-kharon-grey">
-        Maintenance obligations referenced on this page align with SANS 10139 (fire detection) and SANS 14520 (gas suppression).
-        For practical inspection interval tables, defect classification, certificate-readiness guidance and service report structure, see the
-        <a href="/compliance" class="font-semibold text-kharon-purple hover:underline">protection system compliance reference</a>.
+  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
+        Compliance & Maintenance
+      </h1>
+      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
+        Inspection, servicing, reporting and lifecycle maintenance for accountable fire-system ownership.
       </p>
     </div>
   </section>
 
-  <ContextualInquiry
-    eyebrow="Compliance Assessment"
-    title="Request a compliance and lifecycle assessment."
-    text="Capture audit readiness, inspection concerns, service backlog and documentation status for fire detection or suppression systems."
-    requestType="Compliance assessment"
-    fields={[
-      { label: "Audit Readiness", name: "audit_readiness", options: ["Upcoming audit", "Inspection overdue", "Records incomplete", "Insurance query", "Internal review"] },
-      { label: "System Scope", name: "system_scope", options: ["Fire detection", "Gas suppression", "Both", "Integrated security support", "Unknown"] },
-      { label: "Maintenance Backlog", name: "maintenance_backlog", options: ["None known", "Minor defects", "Recurring faults", "Major service required", "Unknown"] },
-      { label: "Documentation Status", name: "documentation_status", options: ["Current", "Partial", "Missing", "Requires consolidation", "Unknown"] }
-    ]}
-  />
-  
+  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+    <div class="mx-auto max-w-7xl px-6">
+      <SectionHeading
+        title="Accountable Fire-System Ownership"
+        subtitle="Maintenance Assurance"
+        description="Structured approach to fire system compliance and maintenance that ensures continuous protection."
+        center={true}
+      />
+      
+      <div class="mt-12 grid gap-8 md:grid-cols-3">
+        {assuranceItems.map((item, index) => (
+          <div key={index} class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+            <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
+              <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5">
+                <div class="w-6 h-6 bg-kharon-cyan rounded"></div>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">{item.title}</h3>
+              <p class="text-kharon-light/70 mb-4">{item.text}</p>
+              <span class="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-kharon-purple/20 text-kharon-cyan">
+                {item.status}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <SectionHeading
+        title="Inspection-Ready Documentation"
+        subtitle="Compliance Records"
+        description="All maintenance activities create verifiable records for regulatory compliance and operational review."
+        center={true}
+      />
+      
+      <div class="mt-12 prose prose-invert max-w-none">
+        <p class="text-kharon-light/80 text-lg leading-relaxed">
+          Our maintenance approach treats inspection, testing, and reporting as integral parts of the protection system. Every service visit generates comprehensive documentation that demonstrates ongoing compliance and system integrity.
+        </p>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

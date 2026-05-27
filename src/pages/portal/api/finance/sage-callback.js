@@ -6,7 +6,7 @@
  */
 
 import { getBindings } from "../../../../lib/server/bindings.ts";
-import { auditEvent } from "../../../../lib/server/audit.js";
+import { auditEvent } from "../../../../lib/server/audit";
 import { badRequest, forbidden, unauthorized } from "../../../../lib/server/http.js";
 import { encryptText } from "../../../../lib/server/crypto.js";
 

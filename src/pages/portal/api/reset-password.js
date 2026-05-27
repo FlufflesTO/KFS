@@ -1,9 +1,9 @@
-import { auditError } from "../../../lib/server/audit.js";
+import { auditError } from "../../../lib/server/audit";
 import { getDatabase } from "../../../lib/server/bindings.ts";
-import { auditEvent } from "../../../lib/server/audit.js";
+import { auditEvent } from "../../../lib/server/audit";
 import { hashPassword } from "../../../lib/server/auth.js";
 import { consumeRateLimit } from "../../../lib/server/rateLimit.js";
-import { sha256Hex } from "../../../lib/server/resetToken.js";
+import { sha256Hex } from "../../../lib/server/auth";
 import { badRequest, json, methodNotAllowed, serverError, tooManyRequests } from "../../../lib/server/http.ts";
 
 export const prerender = false;

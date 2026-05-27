@@ -1,14 +1,14 @@
 /**
  * Project Sentinel - User Session Authentication API
  * Purpose: Handles credentials verification, rate limiting, MFA validation, and session token generation
- * Dependencies: ../../../lib/server/bindings.ts, ../../../lib/server/audit.js, ../../../lib/server/auth.ts, ../../../lib/server/mfa.js, ../../../lib/server/rateLimit.js, ../../../lib/server/http.ts
+ * Dependencies: ../../../lib/server/bindings.ts, ../../../lib/server/audit, ../../../lib/server/auth.ts, ../../../lib/server/mfa.js, ../../../lib/server/rateLimit.js, ../../../lib/server/http.ts
  * Structural Role: User login endpoint
  */
 
 import type { APIContext } from "astro";
 import type { D1Database } from "@cloudflare/workers-types";
 import { getDatabase } from "../../../lib/server/bindings.ts";
-import { auditEvent, auditError } from "../../../lib/server/audit.js";
+import { auditEvent, auditError } from "../../../lib/server/audit";
 import { createSessionToken, sessionCookie, verifyPassword } from "../../../lib/server/auth.js";
 import { decryptMfaSecret, verifyTotpCode } from "../../../lib/server/mfa.ts";
 import { consumeRateLimit, resetRateLimit } from "../../../lib/server/rateLimit.js";

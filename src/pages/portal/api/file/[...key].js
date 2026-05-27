@@ -1,8 +1,8 @@
-import { auditError } from "../../../../lib/server/audit.js";
+import { auditError } from "../../../../lib/server/audit";
 import { getBindings } from "../../../../lib/server/bindings.ts";
-import { auditEvent } from "../../../../lib/server/audit.js";
-import { clientCanAccessSite } from "../../../../lib/server/clientAccess.js";
-import { documentAccessLog } from "../../../../lib/server/documentAccess.js";
+import { auditEvent } from "../../../../lib/server/audit";
+import { clientCanAccessSite } from "../../../../lib/server/access";
+import { documentAccessLog } from "../../../../lib/server/audit";
 import { forbidden, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.ts";
 
 export const prerender = false;

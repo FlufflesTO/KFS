@@ -1,0 +1,228 @@
+---
+/**
+ * Project Sentinel - Client Maintenance Request Form
+ * Purpose: Allows client users to submit service requests, faults, or documentation queries for their sites.
+ * Dependencies: PortalLayout, getDatabase, clientSites, http response helpers
+ * Structural Role: Client-side self-service intake form.
+ */
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.ts";
+import { clientSites, inClause } from "../../../lib/server/access";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+
+interface ClientSite {
+  id: string;
+  owner_company_name: string;
+  physical_address?: string;
+}
+
+interface ClientSystem {
+  id: string;
+  system_type: string;
+  coverage_area: string;
+  site_id: string;
+  owner_company_name: string;
+}
+
+let sites: ClientSite[] = [];
+let systems: ClientSystem[] = [];
+let loadError = "";
+
+try {
+  const db = getDatabase();
+  sites = (await clientSites(db, user)) as ClientSite[];
+  const siteIds = sites.map((site) => site.id);
+  
+  if (siteIds.length === 0) {
+    loadError = "This client account is not mapped to any site.";
+  } else {
+    const placeholders = inClause(siteIds);
+    systems = (await db.prepare(
+      `SELECT systems.id, systems.system_type, systems.coverage_area, systems.site_id, sites.owner_company_name
+       FROM systems
+       INNER JOIN sites ON sites.id = systems.site_id
+       WHERE systems.deleted_at IS NULL AND systems.site_id IN (${placeholders})
+       ORDER BY sites.owner_company_name ASC, systems.coverage_area ASC`
+    ).bind(...siteIds).all()).results as ClientSystem[] || [];
+  }
+} catch (error) {
+  loadError = "Unable to load site systems. Please try again later.";
+}
+
+const requestTypes = ["Maintenance", "Fault", "Compliance Documentation", "Quote Request", "Emergency Follow-up"];
+const priorities = ["Routine", "Urgent", "Critical"];
+---
+
+<PortalLayout title="Submit Service Request | Kharon Portal" active="client" user={user}>
+  <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-8 text-white sm:px-6 sm:py-10 shadow-inner">
+    <div class="mx-auto max-w-4xl">
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Support Intake Portal</p>
+      <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Submit Maintenance & Service Request</h1>
+      <p class="mt-3 max-w-2xl text-sm text-white/60 font-medium">
+        Submit a technical request, log a fault, request compliance documentation, or request an emergency follow-up.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
+    <div class="mx-auto max-w-2xl">
+      {loadError && (
+        <div class="rounded border border-kharon-red bg-kharon-red/10 p-4 text-sm font-semibold text-red-200 mb-6">
+          {loadError}
+        </div>
+      )}
+
+      {!loadError && (
+        <div class="kharon-surface p-6 sm:p-8">
+          <form id="maintenance-request-form" class="grid gap-5">
+            <div class="grid gap-1.5">
+              <label for="req-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Select Site *</label>
+              <select id="req-siteId" class="kharon-field" name="siteId" required>
+                {sites.map((site) => (
+                  <option value={site.id}>{site.owner_company_name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div class="grid gap-1.5">
+              <label for="req-systemId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Select System (Optional)</label>
+              <select id="req-systemId" class="kharon-field" name="systemId">
+                <option value="">General Site Request (No specific system)</option>
+                {systems.map((system) => (
+                  <option value={system.id} data-site-id={system.site_id}>
+                    [{system.owner_company_name}] {system.system_type} - {system.coverage_area}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div class="grid gap-1.5">
+              <label for="req-requestType" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Request Type *</label>
+              <select id="req-requestType" class="kharon-field" name="requestType" required>
+                {requestTypes.map((type) => (
+                  <option value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+
+            <div class="grid gap-1.5">
+              <label for="req-priority" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Priority Level *</label>
+              <select id="req-priority" class="kharon-field" name="priority" required>
+                {priorities.map((prio) => (
+                  <option value={prio}>{prio}</option>
+                ))}
+              </select>
+            </div>
+
+            <div class="grid gap-1.5">
+              <label for="req-subject" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Subject *</label>
+              <input id="req-subject" class="kharon-field" name="subject" type="text" minlength="3" maxlength="160" required placeholder="Brief description of the request" />
+            </div>
+
+            <div class="grid gap-1.5">
+              <label for="req-message" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Detailed Description *</label>
+              <textarea id="req-message" class="kharon-field min-h-32" name="message" minlength="10" maxlength="2000" required placeholder="Provide details such as system symptoms, location details, fault indicators..."></textarea>
+            </div>
+
+            <p id="request-result" class="hidden rounded border px-4 py-3 text-sm font-semibold" role="alert" aria-live="polite"></p>
+
+            <button type="submit" id="request-submit-btn" class="w-full kharon-command-button py-3.5 mt-2">
+              Submit Request
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <script>
+    const form = document.querySelector<HTMLFormElement>("#maintenance-request-form");
+    const siteSelect = document.querySelector<HTMLSelectElement>("#req-siteId");
+    const systemSelect = document.querySelector<HTMLSelectElement>("#req-systemId");
+    const result = document.querySelector<HTMLElement>("#request-result");
+    const submitBtn = document.querySelector<HTMLButtonElement>("#request-submit-btn");
+
+    // Dynamic filtering of systems based on selected site
+    function filterSystems() {
+      if (!siteSelect || !systemSelect) return;
+      const selectedSiteId = siteSelect.value;
+      const options = systemSelect.querySelectorAll<HTMLOptionElement>("option");
+      
+      let firstVisibleIdx = 0;
+      options.forEach((option, idx) => {
+        const optionSiteId = option.getAttribute("data-site-id");
+        if (!optionSiteId || optionSiteId === selectedSiteId) {
+          option.style.display = "";
+          if (firstVisibleIdx === 0 && option.value) {
+            firstVisibleIdx = idx;
+          }
+        } else {
+          option.style.display = "none";
+        }
+      });
+      // Reset selection if current selection is now hidden
+      const currentSelectedOption = options[systemSelect.selectedIndex];
+      if (currentSelectedOption.style.display === "none") {
+        systemSelect.selectedIndex = 0;
+      }
+    }
+
+    siteSelect?.addEventListener("change", filterSystems);
+    // Trigger initial filter on load
+    filterSystems();
+
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!result || !submitBtn) return;
+      result.classList.add("hidden");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting...";
+
+      const formData = new FormData(form);
+      try {
+        const response = await window.kharonPortalFetch("/portal/api/maintenance-request", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            siteId: formData.get("siteId"),
+            systemId: formData.get("systemId") || null,
+            requestType: formData.get("requestType"),
+            priority: formData.get("priority"),
+            subject: formData.get("subject"),
+            message: formData.get("message")
+          })
+        });
+
+        const body = await response.json();
+        if (!response.ok || !body.ok) {
+          result.textContent = body.message || "Failed to submit request.";
+          result.className = "rounded border border-kharon-red bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-red-200";
+          result.classList.remove("hidden");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit Request";
+          return;
+        }
+
+        result.textContent = `Request successfully submitted. Status: New (ID: ${body.id})`;
+        result.className = "rounded border border-kharon-green bg-kharon-green/10 px-4 py-3 text-sm font-semibold text-green-200";
+        result.classList.remove("hidden");
+        form.reset();
+        filterSystems();
+        
+        setTimeout(() => {
+          window.location.href = "/portal/client/compliance-dashboard";
+        }, 1500);
+
+      } catch (error) {
+        result.textContent = "Could not reach support server. Please verify your connection.";
+        result.className = "rounded border border-kharon-red bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-red-200";
+        result.classList.remove("hidden");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Request";
+      }
+    });
+  </script>
+</PortalLayout>

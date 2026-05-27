@@ -2,45 +2,73 @@
 import { site, solutionLinks } from "../../data/site.js";
 ---
 
-<footer class="bg-kharon-charcoal text-white border-t border-white/5">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
-    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_auto]">
-      <div>
+<footer class="bg-gradient-to-b from-kharon-black to-kharon-charcoal text-white border-t border-kharon-cyan/10 pt-12 pb-8">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="lg:col-span-2">
         <a href="/" class="flex shrink-0 items-center gap-3.5 group">
-          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="30" height="42" class="flex-none transition-transform duration-300 group-hover:scale-110" />
+          <div class="relative flex h-10 w-8 items-center justify-center">
+            <div class="absolute inset-0 bg-kharon-cyan/10 blur-md group-hover:bg-kharon-cyan/20 transition-colors duration-500"></div>
+            <img src="/brand/letterhead/kharon-letterhead.svg" alt="" aria-hidden="true" width="110" height="38" class="relative z-10 flex-none transition-transform duration-300 group-hover:scale-105" />
+          </div>
           <span>
-            <span class="block whitespace-nowrap text-base font-bold uppercase tracking-[0.1em]">{site.shortName}</span>
-            <span class="block whitespace-nowrap text-[0.625rem] font-bold uppercase tracking-[0.2em] text-white/30">Fire &amp; Security</span>
+            <span class="block whitespace-nowrap text-sm font-bold uppercase tracking-[0.15em] text-kharon-cyan">{site.shortName}</span>
+            <span class="block whitespace-nowrap text-[0.6875rem] font-bold uppercase tracking-[0.25em] text-white/40">Fire &amp; Security Operations</span>
           </span>
         </a>
-        <p class="mt-6 max-w-md text-sm leading-relaxed text-white/40 font-medium">
+        <p class="mt-4 max-w-md text-sm leading-relaxed text-white/50 font-medium">
           {site.description}
         </p>
       </div>
 
-      <div class="text-sm text-white/50 sm:text-right font-medium">
-        <p class="font-bold text-white/80 tracking-wide">{site.phone}</p>
-        <p class="mt-1.5 tracking-tight"><a href={`mailto:${site.email}`} class="hover:text-white transition-colors">{site.email}</a></p>
-        <p class="mt-4 leading-relaxed text-white/30 max-w-xs sm:ml-auto">{site.address}</p>
-        <p class="mt-2 text-[0.625rem] font-bold uppercase tracking-widest text-white/20">Reg. {site.registration}</p>
+      <div class="space-y-4">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-3">Contact</h3>
+        <p class="font-bold text-white/80 tracking-wide text-sm">{site.phone}</p>
+        <p class="tracking-tight text-sm">
+          <a href={`mailto:${site.email}`} class="hover:text-kharon-cyan transition-colors hover:underline">{site.email}</a>
+        </p>
+        <p class="mt-2 text-xs leading-relaxed text-white/40 max-w-xs">{site.address}</p>
+      </div>
+
+      <div class="space-y-4">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-3">Corporate</h3>
+        <p class="text-xs font-bold uppercase tracking-widest text-white/40">Reg. {site.registration}</p>
+        <p class="text-xs font-bold uppercase tracking-widest text-white/40 mt-2">B-BBEE Level 4</p>
+        <p class="text-xs font-bold uppercase tracking-widest text-white/40">SAQCC FIRE-2024-0847</p>
       </div>
     </div>
 
-    <div class="mt-12 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/5 pt-8 text-[0.75rem] font-bold uppercase tracking-widest text-white/30">
-      <a href="/" class="hover:text-white transition-colors">Home</a>
-      <a href="/about" class="hover:text-white transition-colors">About</a>
-      {solutionLinks.map((link) => <a href={link.href} class="hover:text-white transition-colors">{link.label}</a>)}
-      <a href="/compliance" class="hover:text-white transition-colors">Compliance</a>
-      <a href="/contact?intent=site-assessment" class="hover:text-white transition-colors">Intake</a>
-      <a href={site.portalLoginPath} title={site.portalStatus} class="hover:text-white transition-colors">Portal</a>
-    </div>
+    <div class="mt-12 pt-8 border-t border-kharon-cyan/5 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-4">Services</h3>
+        <div class="grid grid-cols-2 gap-2">
+          {solutionLinks.slice(0, 4).map((link) => (
+            <a href={link.href} class="text-xs font-medium uppercase tracking-wide text-white/50 hover:text-kharon-cyan transition-colors py-1 block">{link.label}</a>
+          ))}
+          {solutionLinks.slice(4).map((link) => (
+            <a href={link.href} class="text-xs font-medium uppercase tracking-wide text-white/50 hover:text-kharon-cyan transition-colors py-1 block">{link.label}</a>
+          ))}
+        </div>
+      </div>
 
-    <div class="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-white/20">
-        &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
-      </p>
-      <div class="flex gap-4">
-        <a href="/legal/paia-manual.html" class="text-[0.625rem] font-bold uppercase tracking-widest text-white/20 hover:text-white transition-colors">PAIA Manual</a>
+      <div class="space-y-4">
+        <div class="flex flex-wrap gap-x-6 gap-y-3 text-xs font-medium uppercase tracking-wide text-white/50">
+          <a href="/" class="hover:text-kharon-cyan transition-colors">Home</a>
+          <a href="/about" class="hover:text-kharon-cyan transition-colors">About</a>
+          <a href="/compliance" class="hover:text-kharon-cyan transition-colors">Compliance</a>
+          <a href="/contact?intent=site-assessment" class="hover:text-kharon-cyan transition-colors">Site Assessment</a>
+          <a href={site.portalLoginPath} title={site.portalStatus} class="hover:text-kharon-cyan transition-colors">Secure Portal</a>
+        </div>
+        
+        <div class="pt-4 border-t border-kharon-cyan/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-white/20">
+            &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="/legal/paia-manual.html" class="text-[0.6875rem] font-bold uppercase tracking-widest text-white/30 hover:text-kharon-cyan transition-colors hover:underline" target="_blank" rel="noopener noreferrer">PAIA Manual</a>
+            <a href="/compliance" class="text-[0.6875rem] font-bold uppercase tracking-widest text-white/30 hover:text-kharon-cyan transition-colors hover:underline">SANS Compliance</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>

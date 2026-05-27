@@ -7,7 +7,7 @@
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
-import { requireAdmin } from "../../../lib/server/admin";
+import { requireAdmin } from "../../../lib/server/access";
 
 export const prerender = false;
 
@@ -98,10 +98,10 @@ const groups = [
 ---
 
 <PortalLayout title="Operations Hub | Kharon Portal" active="operations" user={user}>
-  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment kharon-logo-watermark">
     <div class="mx-auto max-w-7xl">
       <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Admin operations</p>
-      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Operations hub</h1>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Operations Command Center</h1>
       <p class="mt-4 max-w-3xl text-sm leading-6 text-white/65">
         The original operations workspace has been split into focused admin pages. This hub keeps the operational entrypoint stable while routing each task to the right surface.
       </p>
@@ -109,19 +109,19 @@ const groups = [
   </section>
 
   <section class="px-4 py-8 sm:px-6">
-    <div class="mx-auto grid max-w-7xl gap-6">
+    <div class="mx-auto max-w-7xl gap-6">
       {loadError && <p class="rounded-md border border-red-300 bg-red-50 p-4 text-sm font-semibold text-red-800">{loadError}</p>}
 
-      <div class="grid gap-5 lg:grid-cols-3">
+      <div class="grid gap-5 lg:grid-cols-3 mb-8">
         {groups.map((group) => (
-          <article class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
-            <h2 class="text-lg font-bold text-kharon-black">{group.title}</h2>
-            <p class="mt-2 min-h-12 text-sm leading-6 text-kharon-grey">{group.description}</p>
+          <article class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-5 shadow-sm kharon-surface">
+            <h2 class="text-lg font-bold text-white">{group.title}</h2>
+            <p class="mt-2 min-h-12 text-sm leading-6 text-kharon-light/70">{group.description}</p>
             <div class="mt-5 grid gap-3">
               {group.links.map((link) => (
-                <a class="flex items-center justify-between rounded-lg border border-kharon-border px-4 py-3 text-sm font-semibold text-kharon-black transition hover:border-kharon-purple hover:bg-kharon-light" href={link.href}>
+                <a class="flex items-center justify-between rounded-lg border border-kharon-cyan/30 px-4 py-3 text-sm font-semibold text-white transition hover:border-kharon-purple hover:bg-kharon-cyan/10 kharon-surface kharon-focus-ring" href={link.href}>
                   <span>{link.label}</span>
-                  <span class="rounded bg-kharon-light px-2 py-1 text-xs uppercase tracking-wide text-kharon-grey">{link.metric}</span>
+                  <span class="rounded bg-kharon-graphite px-2 py-1 text-xs uppercase tracking-wide text-kharon-light/70">{link.metric}</span>
                 </a>
               ))}
             </div>
@@ -129,15 +129,15 @@ const groups = [
         ))}
       </div>
 
-      <article id="defects" class="rounded-xl border border-amber-200 bg-amber-50 p-5">
-        <h2 class="text-lg font-bold text-kharon-black">Defect and certificate actions</h2>
-        <p class="mt-2 text-sm leading-6 text-kharon-grey">
+      <article id="defects" class="rounded-xl border border-kharon-amber/30 bg-kharon-amber/10 p-5 kharon-surface">
+        <h2 class="text-lg font-bold text-white">Defect and certificate actions</h2>
+        <p class="mt-2 text-sm leading-6 text-kharon-light/70">
           Use Compliance for defect and blocked-certificate visibility, then use Jobs or Systems to manage the operational record behind each exception.
         </p>
         <div class="mt-4 flex flex-wrap gap-3">
-          <a href="/portal/admin/compliance" class="rounded-md bg-kharon-purple px-4 py-2 text-sm font-semibold text-white">Open compliance</a>
-          <a href="/portal/admin/jobs" class="rounded-md border border-kharon-border bg-white px-4 py-2 text-sm font-semibold text-kharon-grey">Open jobs</a>
-          <a href="/portal/admin/systems" class="rounded-md border border-kharon-border bg-white px-4 py-2 text-sm font-semibold text-kharon-grey">Open systems</a>
+          <a href="/portal/admin/compliance" class="rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue px-4 py-2 text-sm font-semibold text-white hover:shadow-lg hover:shadow-kharon-purple/30 transition-all">Open compliance</a>
+          <a href="/portal/admin/jobs" class="rounded-md border border-kharon-cyan/30 bg-kharon-surface-elevated px-4 py-2 text-sm font-semibold text-kharon-cyan hover:bg-kharon-cyan/10 transition-colors">Open jobs</a>
+          <a href="/portal/admin/systems" class="rounded-md border border-kharon-cyan/30 bg-kharon-surface-elevated px-4 py-2 text-sm font-semibold text-kharon-cyan hover:bg-kharon-cyan/10 transition-colors">Open systems</a>
         </div>
       </article>
     </div>

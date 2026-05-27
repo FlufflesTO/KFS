@@ -7,7 +7,7 @@
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
-import { requireAdmin } from "../../../lib/server/admin";
+import { requireAdmin } from "../../../lib/server/access";
 import type { DbJob, DbSystem, DbUser } from "@sentinel/types";
 
 export const prerender = false;
@@ -99,135 +99,218 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Job Management</h1>
-        <p class="mt-1 text-sm text-gray-500">Dispatch, assign, and manage field service works</p>
+        <h1 class="text-2xl font-bold text-white tracking-tight font-heading">Job Management</h1>
+        <p class="mt-1 text-sm text-white/60">Dispatch, assign, and manage field service works</p>
       </div>
     </div>
 
     {loadError && (
-      <p class="mx-auto mb-6 max-w-7xl border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>
+      <p class="mx-auto mb-6 max-w-7xl border border-kharon-red bg-kharon-red/10 p-4 text-red-200 font-semibold">{loadError}</p>
     )}
 
-    <article class="border border-kharon-border bg-white p-4 sm:p-5">
-      <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-white">
-        <h2 class="text-xl font-bold">
-          Jobs <span class="ml-2 text-sm font-normal text-kharon-grey">({jobsTotal})</span>
+    <article class="kharon-surface p-4 sm:p-5">
+      <div class="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-line-cyan-soft pb-4">
+        <h2 class="text-xl font-bold text-white font-heading">
+          Jobs <span class="ml-2 text-sm font-normal text-white/60">({jobsTotal})</span>
         </h2>
-        <form class="flex flex-wrap gap-3" method="get">
-          <input
-            name="q"
-            type="search"
-            class="rounded-md border border-kharon-border px-3 py-2 text-sm"
-            placeholder="Search site or area…"
-            value={searchQuery}
-            size="24"
-          />
-          <select name="status" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
-            <option value="">All statuses</option>
-            {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
-              <option value={s} selected={statusFilter === s}>{s}</option>
-            ))}
-          </select>
-          <button type="submit" class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white text-sm">Filter</button>
+        <form class="flex flex-wrap items-end gap-3" method="get">
+          <div class="grid gap-1">
+            <label for="jobs-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Search</label>
+            <input
+              id="jobs-q"
+              name="q"
+              type="search"
+              class="kharon-field min-w-[200px]"
+              placeholder="Search site or area…"
+              value={searchQuery}
+            />
+          </div>
+          <div class="grid gap-1">
+            <label for="jobs-status" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Status</label>
+            <select id="jobs-status" name="status" class="kharon-field">
+              <option value="">All statuses</option>
+              {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
+                <option value={s} selected={statusFilter === s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <button type="submit" class="kharon-command-button text-xs py-2 px-4 h-[38px] self-end">Filter</button>
           {(searchQuery || statusFilter) && (
-            <a href="/portal/admin/jobs" class="rounded-md border border-kharon-border px-4 py-2 font-semibold text-kharon-grey text-sm">Clear</a>
+            <a href="/portal/admin/jobs" class="kharon-secondary-button text-xs py-2 px-4 h-[38px] flex items-center justify-center">Clear</a>
           )}
         </form>
       </div>
 
       <div class="grid gap-4">
-        {jobs.length === 0 && <p class="py-4 text-sm text-kharon-grey">No jobs match your filter.</p>}
+        {jobs.length === 0 && <p class="py-4 text-sm text-white/50 italic">No jobs match your filter.</p>}
         {jobs.map((record) => (
           <form
-            class="admin-form grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-7"
+            class="admin-form grid gap-4 bg-surface-charcoal/40 border border-line-cyan-soft/50 p-4 lg:grid-cols-7 rounded-md"
             data-endpoint="/portal/api/admin/jobs"
           >
             <input type="hidden" name="action" value="update" />
             <input type="hidden" name="id" value={record.id} />
-            <select class="rounded-md border border-kharon-border px-3 py-2" name="systemId">
-              {systems.map((system) => (
-                <option value={system.id} selected={record.system_id === system.id}>
-                  {system.owner_company_name} / {system.coverage_area}
-                </option>
-              ))}
-            </select>
-            <select class="rounded-md border border-kharon-border px-3 py-2" name="assignedTechnicianId">
-              <option value="">Unassigned</option>
-              {technicians.map((tech) => (
-                <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>
-              ))}
-            </select>
-            <input class="rounded-md border border-kharon-border px-3 py-2" name="scheduledDate" type="date" value={record.scheduled_date} />
-            <select class="rounded-md border border-kharon-border px-3 py-2" name="status">
-              {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
-                <option value={s} selected={record.status === s}>{s}</option>
-              ))}
-            </select>
-            <input class="rounded-md border border-kharon-border px-3 py-2" name="jobType" value={record.job_type} />
-            <input class="rounded-md border border-kharon-border px-3 py-2" name="siteNotes" value={record.site_notes || ""} />
-            <select class="rounded-md border border-kharon-border px-3 py-2" name="priority">
-              {["Critical", "High", "Normal", "Low"].map((p) => (
-                <option value={p} selected={record.priority === p}>{p}</option>
-              ))}
-            </select>
-            <input class="rounded-md border border-kharon-border px-3 py-2" name="requiredByDate" type="date" value={record.required_by_date || ""} placeholder="Required by date (optional)" />
-            <label class="flex items-center gap-2 text-sm lg:col-span-6">
-              <input type="checkbox" name="isEmergency" checked={record.is_emergency === 1} /> Emergency
-            </label>
-            <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
-            <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+            
+            <div class="grid gap-1 lg:col-span-2">
+              <label for={`system-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">System Scope</label>
+              <select id={`system-${record.id}`} class="kharon-field" name="systemId">
+                {systems.map((system) => (
+                  <option value={system.id} selected={record.system_id === system.id}>
+                    {system.owner_company_name} / {system.coverage_area}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div class="grid gap-1">
+              <label for={`tech-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Assign Technician</label>
+              <select id={`tech-${record.id}`} class="kharon-field" name="assignedTechnicianId">
+                <option value="">Unassigned</option>
+                {technicians.map((tech) => (
+                  <option value={tech.id} selected={record.assigned_technician_id === tech.id}>{tech.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div class="grid gap-1">
+              <label for={`date-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Scheduled Date</label>
+              <input id={`date-${record.id}`} class="kharon-field" name="scheduledDate" type="date" value={record.scheduled_date} />
+            </div>
+
+            <div class="grid gap-1">
+              <label for={`status-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Job Status</label>
+              <select id={`status-${record.id}`} class="kharon-field" name="status">
+                {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
+                  <option value={s} selected={record.status === s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            <div class="grid gap-1">
+              <label for={`type-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Job Type</label>
+              <input id={`type-${record.id}`} class="kharon-field" name="jobType" value={record.job_type} required />
+            </div>
+
+            <div class="grid gap-1 self-end">
+              <button class="kharon-command-button w-full py-2 text-xs">Save</button>
+            </div>
+
+            <div class="grid gap-1 lg:col-span-3">
+              <label for={`notes-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Site Operational Notes</label>
+              <input id={`notes-${record.id}`} class="kharon-field" name="siteNotes" value={record.site_notes || ""} />
+            </div>
+
+            <div class="grid gap-1">
+              <label for={`priority-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Priority</label>
+              <select id={`priority-${record.id}`} class="kharon-field" name="priority">
+                {["Critical", "High", "Normal", "Low"].map((p) => (
+                  <option value={p} selected={record.priority === p}>{p}</option>
+                ))}
+              </select>
+            </div>
+
+            <div class="grid gap-1 lg:col-span-2">
+              <label for={`reqby-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Required By Date</label>
+              <input id={`reqby-${record.id}`} class="kharon-field" name="requiredByDate" type="date" value={record.required_by_date || ""} />
+            </div>
+
+            <div class="flex items-center gap-2 text-xs lg:col-span-1 self-center mt-4">
+              <label class="flex items-center gap-2 cursor-pointer font-bold text-white/80">
+                <input type="checkbox" name="isEmergency" checked={record.is_emergency === 1} /> Emergency
+              </label>
+            </div>
+            
+            <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
           </form>
         ))}
       </div>
     </article>
 
-    <nav class="mt-6 mb-8 flex items-center justify-between border-t border-kharon-border pt-4">
+    <nav class="mt-6 mb-8 flex items-center justify-between border-t border-line-cyan-soft pt-4">
       {page > 1 ? (
-        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Previous</a>
+        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`} class="kharon-secondary-button py-2 text-xs">Previous</a>
       ) : (
-        <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Previous</span>
+        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Previous</span>
       )}
-      <span class="text-sm text-kharon-grey">Page {page} of {totalPages}</span>
+      <span class="text-sm text-white/60">Page {page} of {totalPages}</span>
       {page < totalPages ? (
-        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Next</a>
+        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`} class="kharon-secondary-button py-2 text-xs">Next</a>
       ) : (
-        <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Next</span>
+        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Next</span>
       )}
     </nav>
 
-    <article class="border border-kharon-border bg-white p-4 sm:p-5">
-      <h2 class="text-xl font-bold">Create job</h2>
-      <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/jobs">
+    <article class="kharon-surface p-6 sm:p-8">
+      <h2 class="text-xl font-bold text-white font-heading">Create job</h2>
+      <form class="admin-form mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-endpoint="/portal/api/admin/jobs">
         <input type="hidden" name="action" value="create" />
-        <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId" required>
-          <option value="">Select system</option>
-          {systems.map((system) => (
-            <option value={system.id}>{system.owner_company_name} / {system.coverage_area}</option>
-          ))}
-        </select>
-        <select class="rounded-md border border-kharon-border px-4 py-3" name="assignedTechnicianId">
-          <option value="">Unassigned</option>
-          {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
-        </select>
-        <input class="rounded-md border border-kharon-border px-4 py-3" name="scheduledDate" type="date" value={today} required />
-        <select class="rounded-md border border-kharon-border px-4 py-3" name="status">
-          <option value="Scheduled">Scheduled</option>
-          <option value="In Progress">In Progress</option>
-        </select>
-        <input class="rounded-md border border-kharon-border px-4 py-3" name="jobType" value="Maintenance" required />
-        <textarea class="min-h-20 rounded-md border border-kharon-border px-4 py-3" name="siteNotes" placeholder="Site notes"></textarea>
-        <select class="rounded-md border border-kharon-border px-4 py-3" name="priority">
-          <option value="Normal" selected>Normal priority</option>
-          <option value="High">High priority</option>
-          <option value="Critical">Critical priority</option>
-          <option value="Low">Low priority</option>
-        </select>
-        <input class="rounded-md border border-kharon-border px-4 py-3" name="requiredByDate" type="date" placeholder="Required by date (optional)" />
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="isEmergency" /> Emergency / after-hours
-        </label>
-        <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white">Create job</button>
-        <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+        
+        <div class="grid gap-1">
+          <label for="create-systemId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Select Protected System *</label>
+          <select id="create-systemId" class="kharon-field" name="systemId" required>
+            <option value="">Select system</option>
+            {systems.map((system) => (
+              <option value={system.id}>{system.owner_company_name} / {system.coverage_area}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="grid gap-1">
+          <label for="create-assignedTechnicianId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Assign Technician</label>
+          <select id="create-assignedTechnicianId" class="kharon-field" name="assignedTechnicianId">
+            <option value="">Unassigned</option>
+            {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
+          </select>
+        </div>
+
+        <div class="grid gap-1">
+          <label for="create-scheduledDate" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Scheduled Date *</label>
+          <input id="create-scheduledDate" class="kharon-field" name="scheduledDate" type="date" value={today} required />
+        </div>
+
+        <div class="grid gap-1">
+          <label for="create-status" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Job Status *</label>
+          <select id="create-status" class="kharon-field" name="status" required>
+            <option value="Scheduled">Scheduled</option>
+            <option value="In Progress">In Progress</option>
+          </select>
+        </div>
+
+        <div class="grid gap-1">
+          <label for="create-jobType" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Job Type *</label>
+          <input id="create-jobType" class="kharon-field" name="jobType" value="Maintenance" required />
+        </div>
+
+        <div class="grid gap-1">
+          <label for="create-priority" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Priority Level *</label>
+          <select id="create-priority" class="kharon-field" name="priority" required>
+            <option value="Normal">Normal priority</option>
+            <option value="High">High priority</option>
+            <option value="Critical">Critical priority</option>
+            <option value="Low">Low priority</option>
+          </select>
+        </div>
+
+        <div class="grid gap-1">
+          <label for="create-requiredByDate" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Required By Date</label>
+          <input id="create-requiredByDate" class="kharon-field" name="requiredByDate" type="date" placeholder="Required by date (optional)" />
+        </div>
+
+        <div class="flex items-center gap-2 text-xs self-end pb-2">
+          <label class="flex items-center gap-2 cursor-pointer font-semibold text-white/80">
+            <input type="checkbox" name="isEmergency" /> Emergency / after-hours
+          </label>
+        </div>
+
+        <div class="md:col-span-2 lg:col-span-3">
+          <label for="create-siteNotes" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Site Operations Notes</label>
+          <textarea id="create-siteNotes" class="min-h-20 kharon-field" name="siteNotes" placeholder="Provide task list or instructions..."></textarea>
+        </div>
+
+        <div class="md:col-span-2 lg:col-span-3 mt-2">
+          <button class="w-full kharon-command-button py-3">Create Dispatch Job</button>
+        </div>
+        <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold md:col-span-2 lg:col-span-3"></p>
       </form>
     </article>
   </div>

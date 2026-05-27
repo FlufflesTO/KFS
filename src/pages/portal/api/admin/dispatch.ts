@@ -7,7 +7,7 @@
 import type { APIContext } from "astro";
 // Removed unused import: import type { D1Database } from "@cloudflare/workers-types";
 import { getDatabase } from "../../../../lib/server/bindings.js";
-import { auditEvent, auditError } from "../../../../lib/server/audit.js";
+import { auditEvent, auditError } from "../../../../lib/server/audit";
 // Removed import of requireRole since it doesn't exist
 import { badRequest, json, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
 

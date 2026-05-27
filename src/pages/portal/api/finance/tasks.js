@@ -1,6 +1,6 @@
 import { getDatabase } from "../../../../lib/server/bindings";
 import { verifyCsrfToken } from "../../../../lib/server/csrf";
-import { requireAdminOrFinance } from "../../../../lib/server/finance.js";
+import { requireAdminOrFinance } from "../../../../lib/server/access";
 import { FinanceService } from "../../../../lib/server/services/finance-service";
 
 export const prerender = false;

@@ -56,6 +56,19 @@ Comprehensive fire protection and security solutions portal for South African co
 - **PAIA Manual**: Available for public access
 - **SANS Standards**: 10139 (Fire Detection), 14520 (Gas Suppression)
 
+## 🎨 UI and Design Governance
+
+All UI changes must follow the official `DESIGN_CONSTITUTION.md` which establishes the Industrial Command Intelligence design direction. Key governance principles include:
+
+- All UI changes must follow `DESIGN_CONSTITUTION.md` guidelines
+- No new color, font, or card system may be introduced without updating the constitution
+- The design target is Industrial Command Intelligence - mission-critical infrastructure software with enterprise fire and suppression intelligence
+- Generic SaaS/admin-template styling is prohibited to maintain the premium field service operations technology appearance
+- Public site and portal must remain visually unified to ensure consistent brand experience
+- The verified Kharon letterhead must stay top-left as the primary brand anchor
+- Standalone logo may be used as low-opacity environmental 3D background mark without competing with the letterhead
+- Brand colors (black, purple, blue, grey, cyan, amber, red, green) must be preserved in all implementations
+
 ## 🚀 Development
 
 ### Prerequisites
@@ -63,16 +76,28 @@ Comprehensive fire protection and security solutions portal for South African co
 - npm or yarn package manager
 
 ### Installation
-```bash
-npm install
-```
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Configure local environment variables: Create a `.dev.vars` file in the root directory:
+   ```env
+   SESSION_SECRET=your-32+-character-secret-key-here
+   ENVIRONMENT=local
+   ```
+3. Run local database migrations:
+   ```bash
+   npx wrangler d1 migrations apply kharon-portal --local
+   ```
 
 ### Development
+Start the local development server:
 ```bash
 npm run dev
 ```
 
 ### Build
+Compile the site and purge unused CSS:
 ```bash
 npm run build
 ```

@@ -1,55 +1,171 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import ContactForm from "../components/contact/ContactForm.astro";
-import EmergencyResponse from "../components/sections/EmergencyResponse.astro";
-import { pageMeta } from "../data/site.js";
+import KharonCard from "../components/ui/KharonCard.astro";
+import { getContactInfo } from "../api/content/contact";
+
+const contactInfo = await getContactInfo();
 ---
 
-<BaseLayout title={pageMeta.contact.title} description={pageMeta.contact.description}>
-  <section class="bg-kharon-black px-4 pt-24 pb-12 sm:px-6 sm:pt-32 sm:pb-16 text-white overflow-hidden relative">
-    <div class="mx-auto max-w-7xl relative z-10 text-center">
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan mb-4 animate-fade-in-up">Site Assessments</p>
-      <h1 class="text-4xl font-bold sm:text-6xl tracking-tight mb-6 animate-fade-in-up [animation-delay:100ms]">
-        Connect with <span class="text-transparent bg-clip-text bg-gradient-to-r from-kharon-purple to-kharon-blue">Authority.</span>
-      </h1>
-      <p class="max-w-2xl mx-auto text-lg text-white/65 animate-fade-in-up [animation-delay:200ms]">
-        Request a professional site assessment or technical consultation for your critical environment.
-      </p>
-    </div>
-  </section>
-
-  <section class="section-padding">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-2 gap-10 lg:gap-10 items-start">
-        <div class="space-y-8">
-          <div>
-            <h2 class="text-3xl font-bold tracking-tight mb-4">Immediate Response</h2>
-            <p class="text-slate-600 leading-relaxed">
-              Our technical teams are on standby for emergency support and rapid infrastructure deployment across South Africa.
-            </p>
-          </div>
-
-          <div class="grid sm:grid-cols-2 gap-6 lg:gap-10">
-            <div class="p-6 bg-slate-50 rounded-xl border border-slate-100">
-              <h3 class="font-bold text-sm uppercase tracking-widest text-kharon-purple mb-2">Technical Support</h3>
-              <p class="text-slate-800 font-bold mb-1">support@kharon.co.za</p>
-              <p class="text-xs text-slate-500">24/7 Monitoring Center</p>
-            </div>
-            <div class="p-6 bg-slate-50 rounded-xl border border-slate-100">
-              <h3 class="font-bold text-sm uppercase tracking-widest text-kharon-blue mb-2">General Inquiries</h3>
-              <p class="text-slate-800 font-bold mb-1">admin@kharon.co.za</p>
-              <p class="text-xs text-slate-500">Business Hours: 08:00 - 17:00</p>
-            </div>
-          </div>
+<BaseLayout title="Contact Kharon Risk Specialists | Fire Protection Experts" description="Get in touch with industrial fire protection specialists. Request a site assessment, system consultation, or emergency support for mission-critical fire protection systems.">
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal py-16 kharon-environment kharon-logo-watermark">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 bg-kharon-graphite/30 backdrop-blur-sm border border-kharon-cyan/20 rounded-full px-4 py-2 mb-6">
+          <span class="h-2 w-2 rounded-full bg-kharon-cyan animate-pulse"></span>
+          <span class="text-sm font-bold uppercase tracking-widest text-kharon-cyan">Premium Site Assessment Intake</span>
         </div>
-
-        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
-          <ContactForm />
-        </div>
+        <h1 class="text-3xl font-bold text-white mb-4">Secure Your Infrastructure Assessment</h1>
+        <p class="text-kharon-light/80">Connect with our industrial command specialists for mission-critical fire protection consultation.</p>
       </div>
     </div>
   </section>
 
-  <EmergencyResponse />
-  
+  <section class="py-16">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        <div>
+          <h2 class="text-2xl font-bold text-white mb-6">Get in Touch</h2>
+          
+          <form method="post" action="/api/contact" class="space-y-6">
+            <div>
+              <label class="block text-kharon-cyan text-xs font-bold uppercase tracking-widest mb-2">Full Name</label>
+              <input 
+                type="text" 
+                name="name"
+                required
+                placeholder="Enter your full name"
+                class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-cyan/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-cyan focus:border-transparent kharon-field kharon-focus-ring"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-kharon-cyan text-xs font-bold uppercase tracking-widest mb-2">Email Address</label>
+              <input 
+                type="email" 
+                name="email"
+                required
+                placeholder="Enter your email address"
+                class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-cyan/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-cyan focus:border-transparent kharon-field kharon-focus-ring"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-kharon-cyan text-xs font-bold uppercase tracking-widest mb-2">Phone Number</label>
+              <input 
+                type="tel" 
+                name="phone"
+                placeholder="Enter your phone number"
+                class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-cyan/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-cyan focus:border-transparent kharon-field kharon-focus-ring"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-kharon-cyan text-xs font-bold uppercase tracking-widest mb-2">Company</label>
+              <input 
+                type="text" 
+                name="company"
+                placeholder="Enter your company name"
+                class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-cyan/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-cyan focus:border-transparent kharon-field kharon-focus-ring"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-kharon-cyan text-xs font-bold uppercase tracking-widest mb-2">Intended Use</label>
+              <select 
+                name="requestType"
+                required
+                class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-cyan/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-cyan focus:border-transparent kharon-field kharon-focus-ring"
+              >
+                <option value="">Select your intended use</option>
+                <option value="site-assessment">Site Assessment</option>
+                <option value="system-consultation">System Consultation</option>
+                <option value="maintenance">Maintenance Inquiry</option>
+                <option value="emergency-support">Emergency Support</option>
+                <option value="compliance">Compliance Query</option>
+                <option value="technical-specs">Technical Specifications</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-kharon-cyan text-xs font-bold uppercase tracking-widest mb-2">Message</label>
+              <textarea 
+                name="message"
+                rows={5}
+                required
+                placeholder="Describe your fire protection requirements or inquiry in detail..."
+                class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-cyan/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-cyan focus:border-transparent kharon-field kharon-focus-ring"
+              ></textarea>
+            </div>
+            
+            <button 
+              type="submit"
+              class="w-full px-6 py-4 bg-gradient-to-r from-kharon-cyan to-kharon-blue text-white font-bold uppercase tracking-widest rounded-md hover:shadow-lg hover:shadow-kharon-cyan/30 transition-all kharon-command-button"
+            >
+              Secure Contact Request
+            </button>
+          </form>
+        </div>
+        
+        <div>
+          <h2 class="text-2xl font-bold text-white mb-6">Contact Information</h2>
+          
+          <div class="space-y-6">
+            <KharonCard variant="command" className="kharon-surface-strong">
+              <h3 class="text-lg font-bold text-white mb-4">Operational Headquarters</h3>
+              <ul class="space-y-3">
+                {contactInfo.addresses?.map((address: any, index: number) => (
+                  <li key={index}>
+                    <p class="text-kharon-light/80">{address.line1}</p>
+                    <p class="text-kharon-light/80">{address.line2}</p>
+                    <p class="text-kharon-light/80">{address.city}, {address.postalCode}</p>
+                  </li>
+                ))}
+              </ul>
+            </KharonCard>
+            
+            <KharonCard variant="command" className="kharon-surface-strong">
+              <h3 class="text-lg font-bold text-white mb-4">Direct Lines</h3>
+              <ul class="space-y-3">
+                {contactInfo.phoneNumbers?.map((number: any, index: number) => (
+                  <li key={index}>
+                    <a href={`tel:${number.number}`} class="flex items-center text-kharon-cyan hover:text-kharon-cyan/80">
+                      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                      </svg>
+                      {number.label}: {number.display}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </KharonCard>
+            
+            <KharonCard variant="command" className="kharon-surface-strong">
+              <h3 class="text-lg font-bold text-white mb-4">Operational Email</h3>
+              <ul class="space-y-3">
+                {contactInfo.emailAddresses?.map((email: any, index: number) => (
+                  <li key={index}>
+                    <a href={`mailto:${email.address}`} class="flex items-center text-kharon-cyan hover:text-kharon-cyan/80">
+                      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                      </svg>
+                      {email.label}: {email.address}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </KharonCard>
+            
+            <KharonCard variant="command" className="kharon-surface-strong">
+              <h3 class="text-lg font-bold text-white mb-4">Response Protocol</h3>
+              <div class="space-y-2 text-kharon-light/80 text-sm">
+                <p>• Standard inquiries: Within 2 business hours</p>
+                <p>• Emergency support: Immediate response</p>
+                <p>• Technical consultations: Within 1 business day</p>
+              </div>
+            </KharonCard>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

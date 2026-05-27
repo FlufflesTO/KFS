@@ -1,6 +1,6 @@
 ---
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
-import { requireAdmin } from "../../../lib/server/admin";
+import { requireAdmin } from "../../../lib/server/access";
 
 export const prerender = false;
 
@@ -15,60 +15,60 @@ if (adminError) {
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Data Import & Export</h1>
-        <p class="mt-1 text-sm text-gray-500">Bulk data operations and administrative exports</p>
+        <h1 class="text-2xl font-bold text-white tracking-tight font-heading">Data Import & Export</h1>
+        <p class="mt-1 text-sm text-white/60">Bulk data operations and administrative exports</p>
       </div>
     </div>
 
     <div class="grid gap-6 lg:gap-10">
       <!-- EXPORT SECTION -->
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
-        <h2 class="text-xl font-bold mb-4">Export Data</h2>
+      <article class="kharon-surface p-4 sm:p-5">
+        <h2 class="text-xl font-bold mb-4 text-white font-heading">Export Data</h2>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div class="border border-kharon-border rounded-lg p-4">
-            <h3 class="text-md font-bold text-gray-900">Sites Export</h3>
-            <p class="mt-1 text-xs text-gray-500 mb-3">Export all site information to CSV.</p>
-            <a href="/portal/api/admin/export?table=sites" class="inline-flex px-3 py-1.5 text-xs font-semibold rounded bg-kharon-blue text-white hover:bg-kharon-purple">Export Sites</a>
+          <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
+            <h3 class="text-md font-bold text-white">Sites Export</h3>
+            <p class="mt-1 text-xs text-white/60 mb-3">Export all site information to CSV.</p>
+            <a href="/portal/api/admin/export?table=sites" class="kharon-command-button text-xs py-1.5 px-3">Export Sites</a>
           </div>
 
-          <div class="border border-kharon-border rounded-lg p-4">
-            <h3 class="text-md font-bold text-gray-900">Jobs Export</h3>
-            <p class="mt-1 text-xs text-gray-500 mb-3">Export job information to CSV.</p>
-            <a href="/portal/api/admin/export?table=jobs" class="inline-flex px-3 py-1.5 text-xs font-semibold rounded bg-kharon-blue text-white hover:bg-kharon-purple">Export Jobs</a>
+          <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
+            <h3 class="text-md font-bold text-white">Jobs Export</h3>
+            <p class="mt-1 text-xs text-white/60 mb-3">Export job information to CSV.</p>
+            <a href="/portal/api/admin/export?table=jobs" class="kharon-command-button text-xs py-1.5 px-3">Export Jobs</a>
           </div>
 
-          <div class="border border-kharon-border rounded-lg p-4">
-            <h3 class="text-md font-bold text-gray-900">Systems Export</h3>
-            <p class="mt-1 text-xs text-gray-500 mb-3">Export system information to CSV.</p>
-            <a href="/portal/api/admin/export?table=systems" class="inline-flex px-3 py-1.5 text-xs font-semibold rounded bg-kharon-blue text-white hover:bg-kharon-purple">Export Systems</a>
+          <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
+            <h3 class="text-md font-bold text-white">Systems Export</h3>
+            <p class="mt-1 text-xs text-white/60 mb-3">Export system information to CSV.</p>
+            <a href="/portal/api/admin/export?table=systems" class="kharon-command-button text-xs py-1.5 px-3">Export Systems</a>
           </div>
 
-          <div class="border border-kharon-border rounded-lg p-4">
-            <h3 class="text-md font-bold text-gray-900">Financial Export</h3>
-            <p class="mt-1 text-xs text-gray-500 mb-3">Export financial records to CSV.</p>
-            <a href="/portal/api/admin/export?table=financial_records" class="inline-flex px-3 py-1.5 text-xs font-semibold rounded bg-kharon-blue text-white hover:bg-kharon-purple">Export Finance</a>
+          <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
+            <h3 class="text-md font-bold text-white">Financial Export</h3>
+            <p class="mt-1 text-xs text-white/60 mb-3">Export financial records to CSV.</p>
+            <a href="/portal/api/admin/export?table=financial_records" class="kharon-command-button text-xs py-1.5 px-3">Export Finance</a>
           </div>
 
-          <div class="border border-kharon-border rounded-lg p-4">
-            <h3 class="text-md font-bold text-gray-900">Clients Export</h3>
-            <p class="mt-1 text-xs text-gray-500 mb-3">Export client information to CSV.</p>
-            <a href="/portal/api/admin/export?table=clients" class="inline-flex px-3 py-1.5 text-xs font-semibold rounded bg-kharon-blue text-white hover:bg-kharon-purple">Export Clients</a>
+          <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
+            <h3 class="text-md font-bold text-white">Clients Export</h3>
+            <p class="mt-1 text-xs text-white/60 mb-3">Export client information to CSV.</p>
+            <a href="/portal/api/admin/export?table=clients" class="kharon-command-button text-xs py-1.5 px-3">Export Clients</a>
           </div>
 
-          <div class="border border-kharon-border rounded-lg p-4">
-            <h3 class="text-md font-bold text-gray-900">Audit Logs Export</h3>
-            <p class="mt-1 text-xs text-gray-500 mb-3">Export audit logs to CSV.</p>
-            <a href="/portal/api/admin/export?table=audit_events" class="inline-flex px-3 py-1.5 text-xs font-semibold rounded bg-kharon-blue text-white hover:bg-kharon-purple">Export Audits</a>
+          <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
+            <h3 class="text-md font-bold text-white">Audit Logs Export</h3>
+            <p class="mt-1 text-xs text-white/60 mb-3">Export audit logs to CSV.</p>
+            <a href="/portal/api/admin/export?table=audit_events" class="kharon-command-button text-xs py-1.5 px-3">Export Audits</a>
           </div>
         </div>
       </article>
 
       <!-- IMPORT SECTION -->
-      <article class="border border-kharon-border bg-white p-4 sm:p-5">
+      <article class="kharon-surface p-4 sm:p-5">
         <div class="flex flex-wrap items-start justify-between gap-4 mb-5">
           <div>
-            <h2 class="text-xl font-bold">CSV Import</h2>
-            <p class="mt-1 max-w-3xl text-sm text-kharon-muted">
+            <h2 class="text-xl font-bold text-white font-heading">CSV Import</h2>
+            <p class="mt-1 max-w-3xl text-sm text-white/60">
               Import controlled site or system updates using the exact CSV headers shown below.
               You can perform a dry-run to preview changes and validate rows before committing them to the database.
             </p>
@@ -77,38 +77,44 @@ if (adminError) {
 
         <div class="grid gap-5 xl:grid-cols-2">
           <!-- Sites Import -->
-          <form class="import-form grid gap-3 border border-kharon-border p-4 bg-kharon-light/30 rounded" data-type="sites">
-            <h3 class="font-bold">Import sites</h3>
-            <p class="overflow-x-auto rounded-md bg-white border border-kharon-border px-3 py-2 font-mono text-xs whitespace-nowrap">
+          <form class="import-form grid gap-3 border border-line-cyan-soft/50 p-4 bg-surface-charcoal/40 rounded" data-type="sites">
+            <h3 class="font-bold text-white">Import sites</h3>
+            <p class="overflow-x-auto rounded-md bg-surface-obsidian border border-line-cyan-soft/30 px-3 py-2 font-mono text-xs whitespace-nowrap text-white/70">
               id,owner_company_name,physical_address,site_contact_person,site_contact_email,site_contact_phone,billing_emails
             </p>
-            <textarea class="portal-field min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste sites CSV here"></textarea>
+            <div class="grid gap-1">
+              <label for="sites-csv-input" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Sites CSV Data</label>
+              <textarea id="sites-csv-input" class="kharon-field min-h-40 font-mono text-xs" name="csv" placeholder="Paste sites CSV here"></textarea>
+            </div>
             
             <div class="flex items-center justify-between mt-2">
-              <label class="flex items-center gap-2 text-sm font-semibold cursor-pointer">
-                <input type="checkbox" name="dryRun" checked class="w-4 h-4 text-kharon-blue" /> 
+              <label class="flex items-center gap-2 text-sm font-semibold cursor-pointer text-white/80">
+                <input type="checkbox" name="dryRun" checked class="w-4 h-4 text-kharon-cyan bg-surface-graphite border-line-cyan-soft" /> 
                 Dry-run / Preview only
               </label>
-              <button class="rounded-md bg-kharon-blue px-5 py-2 font-semibold text-white text-sm">Execute Import</button>
+              <button class="kharon-command-button text-xs py-2 px-4">Execute Import</button>
             </div>
             
             <div class="import-result hidden mt-3 p-3 text-sm rounded border"></div>
           </form>
 
           <!-- Systems Import -->
-          <form class="import-form grid gap-3 border border-kharon-border p-4 bg-kharon-light/30 rounded" data-type="systems">
-            <h3 class="font-bold">Import systems</h3>
-            <p class="overflow-x-auto rounded-md bg-white border border-kharon-border px-3 py-2 font-mono text-xs whitespace-nowrap">
+          <form class="import-form grid gap-3 border border-line-cyan-soft/50 p-4 bg-surface-charcoal/40 rounded" data-type="systems">
+            <h3 class="font-bold text-white">Import systems</h3>
+            <p class="overflow-x-auto rounded-md bg-surface-obsidian border border-line-cyan-soft/30 px-3 py-2 font-mono text-xs whitespace-nowrap text-white/70">
               id,site_id,system_type,coverage_area,manufacturer,model_reference,next_due_date
             </p>
-            <textarea class="portal-field min-h-40 rounded-md border border-kharon-border px-4 py-3 font-mono text-xs" name="csv" placeholder="Paste systems CSV here"></textarea>
+            <div class="grid gap-1">
+              <label for="systems-csv-input" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Systems CSV Data</label>
+              <textarea id="systems-csv-input" class="kharon-field min-h-40 font-mono text-xs" name="csv" placeholder="Paste systems CSV here"></textarea>
+            </div>
             
             <div class="flex items-center justify-between mt-2">
-              <label class="flex items-center gap-2 text-sm font-semibold cursor-pointer">
-                <input type="checkbox" name="dryRun" checked class="w-4 h-4 text-kharon-blue" /> 
+              <label class="flex items-center gap-2 text-sm font-semibold cursor-pointer text-white/80">
+                <input type="checkbox" name="dryRun" checked class="w-4 h-4 text-kharon-cyan bg-surface-graphite border-line-cyan-soft" /> 
                 Dry-run / Preview only
               </label>
-              <button class="rounded-md bg-kharon-blue px-5 py-2 font-semibold text-white text-sm">Execute Import</button>
+              <button class="kharon-command-button text-xs py-2 px-4">Execute Import</button>
             </div>
             
             <div class="import-result hidden mt-3 p-3 text-sm rounded border"></div>
@@ -128,7 +134,7 @@ if (adminError) {
         if (!resultEl) return;
         
         resultEl.classList.remove("hidden");
-        resultEl.className = "import-result mt-3 p-3 text-sm rounded border border-kharon-border bg-white text-kharon-grey";
+        resultEl.className = "import-result mt-3 p-3 text-sm rounded border border-line-cyan-soft bg-surface-charcoal/40 text-white/80";
         resultEl.textContent = "Processing...";
 
         const csv = (form.querySelector<HTMLTextAreaElement>("[name='csv']")?.value ?? "").trim();
@@ -136,7 +142,7 @@ if (adminError) {
         const type = form.dataset.type ?? "";
 
         if (!csv) {
-          resultEl.className = "import-result mt-3 p-3 text-sm rounded border border-red-300 bg-red-50 text-red-800";
+          resultEl.className = "import-result mt-3 p-3 text-sm rounded border border-kharon-red bg-kharon-red/10 text-red-200 font-semibold";
           resultEl.textContent = "CSV data cannot be empty.";
           return;
         }
@@ -145,7 +151,7 @@ if (adminError) {
           const { response, body } = await portalPost("/portal/api/admin/import", { type, csv, dryRun });
           
           if (!response.ok) {
-            resultEl.className = "import-result mt-3 p-3 text-sm rounded border border-red-300 bg-red-50 text-red-800";
+            resultEl.className = "import-result mt-3 p-3 text-sm rounded border border-kharon-red bg-kharon-red/10 text-red-200 font-semibold";
             resultEl.textContent = body.message ?? "Import failed.";
             return;
           }
@@ -154,17 +160,17 @@ if (adminError) {
           const results = (body.results as any[]) || [];
           const isDryRun = body.isDryRun;
 
-          resultEl.className = `import-result mt-3 p-4 text-sm rounded border ${failures.length > 0 ? 'border-red-300 bg-red-50' : (isDryRun ? 'border-amber-300 bg-amber-50' : 'border-emerald-300 bg-emerald-50')}`;
+          resultEl.className = `import-result mt-3 p-4 text-sm rounded border ${failures.length > 0 ? 'border-kharon-red bg-kharon-red/10 text-red-200' : (isDryRun ? 'border-kharon-amber bg-kharon-amber/10 text-amber-200' : 'border-kharon-green bg-kharon-green/10 text-green-200')}`;
           resultEl.textContent = "";
           
           const summary = document.createElement("div");
-          summary.className = `mb-3 font-bold ${isDryRun ? 'text-amber-600' : 'text-emerald-700'}`;
+          summary.className = `mb-3 font-bold ${isDryRun ? 'text-amber-400' : 'text-emerald-400'}`;
           summary.textContent = (isDryRun ? "[DRY RUN PREVIEW] " : "[EXECUTION COMPLETE] ") + `Processed ${results.length} rows (${failures.length} failures).`;
           resultEl.appendChild(summary);
 
           if (failures.length > 0) {
             const list = document.createElement("ul");
-            list.className = "list-disc pl-5 mb-4 text-xs font-mono text-red-700 space-y-1";
+            list.className = "list-disc pl-5 mb-4 text-xs font-mono text-red-200 space-y-1";
             for (const f of failures) {
               const item = document.createElement("li");
               item.textContent = `Row ${f.row ?? "?"}: ${f.message ?? "Unknown error"}`;
@@ -176,12 +182,12 @@ if (adminError) {
           const successes = results.filter((r) => r.ok);
           if (successes.length > 0) {
             const title = document.createElement("p");
-            title.className = "font-bold text-xs mb-2";
+            title.className = "font-bold text-xs mb-2 text-white/80";
             title.textContent = "Valid rows:";
             resultEl.appendChild(title);
 
             const list = document.createElement("ul");
-            list.className = "list-disc pl-5 text-xs font-mono text-emerald-700 space-y-1 max-h-40 overflow-y-auto";
+            list.className = `list-disc pl-5 text-xs font-mono space-y-1 max-h-40 overflow-y-auto ${isDryRun ? 'text-amber-200' : 'text-emerald-200'}`;
             for (const s of successes) {
               const item = document.createElement("li");
               item.textContent = `Row ${s.row}: Will be ${s.action} (ID: ${s.id.substring(0,8)}...)`;
@@ -191,7 +197,7 @@ if (adminError) {
           }
 
         } catch (err: unknown) {
-          resultEl.className = "import-result mt-3 p-3 text-sm rounded border border-red-300 bg-red-50 text-red-800";
+          resultEl.className = "import-result mt-3 p-3 text-sm rounded border border-kharon-red bg-kharon-red/10 text-red-200 font-semibold";
           resultEl.textContent = err instanceof Error ? err.message : "A network error occurred.";
         }
       });

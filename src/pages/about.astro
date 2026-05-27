@@ -1,48 +1,89 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/sections/Hero.astro";
-import SplitFeature from "../components/sections/SplitFeature.astro";
-import ProofGrid from "../components/sections/ProofGrid.astro";
-import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
-import { assuranceItems, pageMeta } from "../data/site.js";
+import SectionHeading from "../components/sections/SectionHeading.astro";
+import { pageMeta } from "../data/site.js";
+
+const capabilityProof = [
+  {
+    title: "SAQCC competency signals",
+    text: "Legacy Kharon material surfaces SAQCC Fire and SAQCC Gas proof points for fire and suppression workstreams."
+  },
+  {
+    title: "Registered fire-system work",
+    text: "Published company material states capability to design, install, commission and maintain fire alarm and evacuation systems."
+  },
+  {
+    title: "Standards-led delivery",
+    text: "Fire and security systems are positioned around relevant industry regulation, installation standards and maintainable handover evidence."
+  }
+];
 ---
 
 <BaseLayout title={pageMeta.about.title} description={pageMeta.about.description}>
-  <Hero
-    title="Specialist protection systems with structured engineering discipline."
-    text="Kharon is positioned around trust, technical competence and operational maturity for commercial and industrial environments."
-  />
+  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
+        About Kharon
+      </h1>
+      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
+        Kharon is positioned around engineered fire detection, gas suppression, compliance discipline and critical environment protection.
+      </p>
+    </div>
+  </section>
 
-  <SplitFeature
-    eyebrow="Company Position"
-    title="Fire and suppression specialists first."
-    text="Kharon is not a generic security installer. The company focuses on engineered fire protection and suppression systems, with security delivered where it strengthens the wider strategy."
-    bullets={[
-      "Gas suppression-first positioning",
-      "Commercial fire detection capability",
-      "Compliance and maintenance discipline",
-      "Integrated security support"
-    ]}
-    visual="systems"
-    imageAlt="Schematic showing Kharon engineering workflow from risk input to operational support"
-  />
+  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+    <div class="mx-auto max-w-4xl px-6">
+      <SectionHeading
+        title="Engineered Fire Protection"
+        subtitle="Technical Authority"
+        description="Specialized in commercial and industrial fire protection systems with engineered solutions."
+        center={true}
+      />
+      
+      <div class="mt-12 prose prose-invert max-w-none">
+        <p class="text-kharon-light/80 text-lg leading-relaxed">
+          Kharon Fire and Security Solutions is a specialized provider of fire protection and security systems for commercial and industrial environments. Our focus is on engineered solutions that prioritize reliability, maintainability, and compliance in critical operational contexts.
+        </p>
+        
+        <p class="text-kharon-light/80 text-lg leading-relaxed mt-6">
+          We specialize in gas suppression systems for server rooms, electrical rooms, and other sensitive operational assets. Our fire detection systems are designed around addressable detection, control panels, and response zones that provide maintainable layouts for commercial sites.
+        </p>
+        
+        <p class="text-kharon-light/80 text-lg leading-relaxed mt-6">
+          Our compliance and maintenance services ensure that your fire protection systems remain accountable, with inspection schedules, service records, and documentation outputs that serve as operational evidence.
+        </p>
+      </div>
+    </div>
+  </section>
 
-  <ProofGrid
-    eyebrow="How Kharon Operates"
-    title="A structured protection partner, not a generic installer."
-    text="The operating model is intentionally disciplined: understand the risk, design the system logic and keep the evidence current."
-    items={assuranceItems}
-  />
+  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+    <div class="mx-auto max-w-7xl px-6">
+      <SectionHeading
+        title="Capability Proof Points"
+        subtitle="Verification Matrix"
+        description="Demonstrated competencies and registered capabilities that establish our technical authority."
+        center={true}
+      />
+      
+      <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {capabilityProof.map((item, index) => (
+          <div key={index} class="rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
+            <h3 class="text-lg font-semibold text-white mb-3">{item.title}</h3>
+            <p class="text-kharon-light/70">{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
 
-  <ContextualInquiry
-    eyebrow="Capability Discussion"
-    title="Discuss Kharon capability against your operating environment."
-    text="Use this route when the request spans multiple systems, sites or governance concerns."
-    requestType="Capability discussion"
-    fields={[
-      { label: "Capability Area", name: "capability_area", options: ["Gas suppression", "Fire detection", "Compliance lifecycle", "Critical infrastructure", "Integrated security support", "Multi-site review"] },
-      { label: "Site Context", name: "site_context", options: ["Single site", "Multiple sites", "Critical room", "Industrial operation", "Commercial estate", "Unknown"] }
-    ]}
-  />
-  
+  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 kharon-h2">
+        Registered Fire-System Work
+      </h2>
+      <p class="text-kharon-light/80 text-lg leading-relaxed max-w-2xl mx-auto">
+        Our company is registered to design, install, commission and maintain fire alarm and evacuation systems, with all work structured around relevant industry regulations and installation standards.
+      </p>
+    </div>
+  </section>
 </BaseLayout>

@@ -1,13 +1,13 @@
-import { auditError } from "../../../../lib/server/audit.js";
+import { auditError } from "../../../../lib/server/audit";
 /**
  * Project Sentinel - Credit Note API
  * Purpose: Creates non-destructive credit notes linked to original finance records
- * Dependencies: ../../../../lib/server/bindings.ts, ../../../../lib/server/audit.js, ../../../../lib/server/http.ts
+ * Dependencies: ../../../../lib/server/bindings.ts, ../../../../lib/server/audit, ../../../../lib/server/http.ts
  * Structural Role: REST API controller for credit note/reversal workflow
  */
 
 import { getDatabase } from "../../../../lib/server/bindings.ts";
-import { auditEvent } from "../../../../lib/server/audit.js";
+import { auditEvent } from "../../../../lib/server/audit";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.ts";
 
 export const prerender = false;

@@ -25,6 +25,21 @@
   --color-kharon-red: #C4332F;
   --color-kharon-green: #16A34A;
 
+  /* Extended dark surface tokens for Industrial Command Intelligence */
+  --color-surface-obsidian: #0B0D0F;
+  --color-surface-charcoal: #15191D;
+  --color-surface-graphite: #1A2027;
+  --color-surface-elevated: rgba(21, 25, 29, 0.82);
+  --color-surface-glass: rgba(21, 25, 29, 0.68);
+  --color-line-cyan-soft: rgba(0, 194, 255, 0.18);
+  --color-line-purple-soft: rgba(75, 46, 131, 0.28);
+  --color-line-white-soft: rgba(243, 245, 247, 0.10);
+  --shadow-glow-cyan: 0 0 40px rgba(0, 194, 255, 0.22);
+  --shadow-glow-purple: 0 0 60px rgba(75, 46, 131, 0.30);
+  --color-text-primary-dark: #F3F5F7;
+  --color-text-secondary-dark: rgba(243,245,247,.72);
+  --color-text-muted-dark: rgba(243,245,247,.52);
+
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-heading: "Inter", system-ui, -apple-system, sans-serif;
 
@@ -117,6 +132,12 @@ summary::-webkit-details-marker {
   outline-offset: 4px;
 }
 
+/* Focus ring utility for accessibility */
+.kharon-focus-ring {
+  outline: 2px solid var(--color-kharon-cyan) !important;
+  outline-offset: 4px !important;
+}
+
 .section-padding {
   padding-top: clamp(2.5rem, 4rem, 4rem);
   padding-bottom: clamp(2.5rem, 4rem, 4rem);
@@ -136,6 +157,7 @@ summary::-webkit-details-marker {
   align-items: center;
 }
 
+/* Portal panel with dark industrial styling */
 .portal-panel {
   min-width: 0;
   background: #fff;
@@ -144,12 +166,246 @@ summary::-webkit-details-marker {
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.portal-field{width:100%;padding:.5rem .75rem;font-size:clamp(.875rem,1rem,1rem);border:1px solid var(--color-kharon-border);border-radius:.375rem;background:var(--color-kharon-light);transition:border-color .2s ease,box-shadow .2s ease;font-weight:400}
+/* Kharon dark surface panel for industrial command interface */
+.kharon-panel {
+  background: var(--color-surface-charcoal);
+  border: 1px solid var(--color-line-cyan-soft);
+  border-radius: var(--radius-md);
+  box-shadow: 0 24px 80px rgba(0,0,0,.42),
+              inset 0 1px 0 var(--color-line-white-soft);
+  backdrop-filter: blur(18px);
+  color: var(--color-text-primary-dark);
+}
 
-.portal-field:focus {
+/* Kharon surface with industrial styling */
+.kharon-surface {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-line-cyan-soft);
+  border-radius: var(--radius-md);
+  box-shadow: 0 24px 80px rgba(0,0,0,.42),
+              inset 0 1px 0 var(--color-line-white-soft);
+  backdrop-filter: blur(18px);
+  color: var(--color-text-primary-dark);
+}
+
+/* Stronger surface for prominent elements */
+.kharon-surface-strong {
+  background: linear-gradient(135deg, var(--color-surface-charcoal), var(--color-surface-obsidian));
+  border: 1px solid var(--color-kharon-cyan);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glow-cyan),
+              0 24px 80px rgba(0,0,0,.42);
+  backdrop-filter: blur(18px);
+  color: var(--color-text-primary-dark);
+}
+
+/* Page shell with industrial background */
+.kharon-page-shell {
+  background: linear-gradient(135deg, var(--color-surface-obsidian), var(--color-surface-charcoal));
+  min-height: 100vh;
+  color: var(--color-text-primary-dark);
+}
+
+/* Environmental background with subtle grid */
+.kharon-environment {
+  background: radial-gradient(circle at 1px 1px, var(--color-line-cyan-soft) 1px, transparent 0);
+  background-size: 40px 40px;
+  background-color: var(--color-surface-obsidian);
+}
+
+/* Grid background for command interface */
+.kharon-grid-bg {
+  background: 
+    linear-gradient(var(--color-line-cyan-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-line-cyan-soft) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-color: var(--color-surface-obsidian);
+}
+
+/* Logo watermark for environmental branding */
+.kharon-logo-watermark {
+  background-image: url('/brand/kharon-mark.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 30%;
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+/* Field styling for dark surfaces */
+.kharon-field {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: clamp(0.875rem, 1rem, 1rem);
+  border: 1px solid var(--color-line-cyan-soft);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-graphite);
+  color: var(--color-text-primary-dark);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kharon-field:focus {
   outline: none;
-  border-color: var(--color-kharon-purple);
-  box-shadow: 0 0 0 2px rgba(75, 46, 131, 0.08);
+  border-color: var(--color-kharon-cyan);
+  box-shadow: 0 0 0 2px var(--color-line-cyan-soft);
+}
+
+/* Command button with industrial styling */
+.kharon-command-button {
+  background: linear-gradient(135deg, var(--color-kharon-purple), var(--color-kharon-blue));
+  border: 1px solid var(--color-kharon-cyan);
+  border-radius: var(--radius-sm);
+  color: white;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.kharon-command-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.kharon-command-button:hover::before {
+  left: 100%;
+}
+
+.kharon-command-button:hover {
+  box-shadow: var(--shadow-glow-purple);
+  transform: translateY(-1px);
+}
+
+.kharon-command-button:focus {
+  outline: 2px solid var(--color-kharon-cyan);
+  outline-offset: 2px;
+}
+
+/* Secondary button with glass effect */
+.kharon-secondary-button {
+  background: var(--color-surface-glass);
+  border: 1px solid var(--color-line-cyan-soft);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary-dark);
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.kharon-secondary-button:hover {
+  background: var(--color-surface-charcoal);
+  border-color: var(--color-kharon-cyan);
+}
+
+.kharon-secondary-button:focus {
+  outline: 2px solid var(--color-kharon-cyan);
+  outline-offset: 2px;
+}
+
+/* Danger button for destructive actions */
+.kharon-danger-button {
+  background: linear-gradient(135deg, var(--color-kharon-red), #a02824);
+  border: 1px solid rgba(196, 51, 47, 0.5);
+  border-radius: var(--radius-sm);
+  color: white;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+}
+
+.kharon-danger-button:hover {
+  box-shadow: 0 0 20px rgba(196, 51, 47, 0.3);
+  transform: translateY(-1px);
+}
+
+.kharon-danger-button:focus {
+  outline: 2px solid var(--color-kharon-red);
+  outline-offset: 2px;
+}
+
+/* Table styling for operational data */
+.kharon-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface-charcoal);
+  border: 1px solid var(--color-line-cyan-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.kharon-table th {
+  background: var(--color-surface-graphite);
+  color: var(--color-text-primary-dark);
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+
+.kharon-table td {
+  padding: 0.75rem;
+  border-top: 1px solid var(--color-line-purple-soft);
+  color: var(--color-text-secondary-dark);
+}
+
+.kharon-table tr:first-child td {
+  border-top: none;
+}
+
+.kharon-table tr:hover {
+  background: var(--color-surface-graphite);
+}
+
+/* Status chip for operational indicators */
+.kharon-status-chip {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kharon-status-chip.active {
+  background: var(--color-kharon-green);
+  color: white;
+}
+
+.kharon-status-chip.warning {
+  background: var(--color-kharon-amber);
+  color: var(--color-kharon-black);
+}
+
+.kharon-status-chip.danger {
+  background: var(--color-kharon-red);
+  color: white;
+}
+
+.kharon-status-chip.info {
+  background: var(--color-kharon-cyan);
+  color: var(--color-kharon-black);
+}
+
+.kharon-status-chip.neutral {
+  background: var(--color-kharon-grey);
+  color: white;
 }
 
 /* Simplified hero atmosphere */

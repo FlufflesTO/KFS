@@ -1,698 +1,208 @@
 ---
-import { auditError } from "../../../../lib/server/audit.js";
+import { auditError } from "../../../../lib/server/audit";
 /**
- * Project Sentinel - Portal Technician Job Detail
- * Purpose: Provides technician detail page for jobcards, logging visits, managing checklist, and signoff
- * Dependencies: PortalLayout, bindings
- * Structural Role: Job details and dispatch execution workflow view
+ * Project Sentinel - Technician Job Detail
+ * Purpose: Shows job details and allows technician actions like logging arrival, submitting jobcard, etc.
+ * Dependencies: PortalLayout, D1 database, KharonCard.
+ * Structural Role: Job detail view for technicians.
  */
 import PortalLayout from "../../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../../lib/server/bindings.js";
+import OfflineBanner from "../../../../components/portal/OfflineBanner.astro";
 
 export const prerender = false;
 
+const { params } = Astro;
+const jobId = params.id;
 const user = Astro.locals.user;
-const jobId = Astro.params.id;
-const today = new Date().toISOString().slice(0, 10);
 let job: any = null;
-let visits: Array<any> = [];
 let loadError = "";
+let jobHistory: Array<any> = [];
 
 try {
   const db = getDatabase();
-  const query = user?.role === "admin"
-    ? `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
-              jobs.site_notes, jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
-              jobs.estimated_duration_minutes,
-              systems.system_type, systems.coverage_area,
-              sites.owner_company_name, sites.physical_address, sites.site_contact_person, sites.site_contact_phone,
-              users.name AS technician_name
-       FROM jobs
-       INNER JOIN systems ON systems.id = jobs.system_id
-       INNER JOIN sites ON sites.id = systems.site_id
-       LEFT JOIN users ON users.id = jobs.assigned_technician_id
-       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-         AND jobs.id = ?1
-       LIMIT 1`
-    : `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
-              jobs.site_notes, jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
-              jobs.estimated_duration_minutes,
-              systems.system_type, systems.coverage_area,
-              sites.owner_company_name, sites.physical_address, sites.site_contact_person, sites.site_contact_phone,
-              users.name AS technician_name
-       FROM jobs
-       INNER JOIN systems ON systems.id = jobs.system_id
-       INNER JOIN sites ON sites.id = systems.site_id
-       LEFT JOIN users ON users.id = jobs.assigned_technician_id
-       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-         AND jobs.id = ?1 AND jobs.assigned_technician_id = ?2
-       LIMIT 1`;
+  
+  // Get job details
+  const jobResult = await db.prepare(`
+    SELECT jobs.*, 
+           systems.system_type, systems.coverage_area, systems.protocol_version,
+           sites.owner_company_name, sites.physical_address, sites.site_notes,
+           technicians.first_name as technician_first_name, technicians.last_name as technician_last_name
+    FROM jobs 
+    LEFT JOIN systems ON systems.id = jobs.system_id
+    LEFT JOIN sites ON sites.id = systems.site_id
+    LEFT JOIN users as technicians ON technicians.id = jobs.assigned_technician_id
+    WHERE jobs.id = ?1 AND jobs.deleted_at IS NULL
+  `).bind(jobId).first();
 
-  job = user?.role === "admin"
-    ? await db.prepare(query).bind(jobId).first()
-    : await db.prepare(query).bind(jobId, user?.id).first();
-
-  if (!job) {
-    loadError = "Dispatch was not found or is not assigned to this account.";
+  if (!jobResult) {
+    loadError = "Job not found";
   } else {
-    const visitResult = await db.prepare(
-      `SELECT id, visit_date, arrival_time, departure_time, gps_latitude, gps_longitude,
-              customer_name, customer_title, notes, visit_status, unable_reason
-       FROM job_visits
-       WHERE job_id = ?1
-       ORDER BY visit_date DESC, arrival_time DESC`
-    ).bind(job.id).all();
-    visits = visitResult.results || [];
+    job = jobResult;
+    
+    // Get job history
+    const historyResult = await db.prepare(`
+      SELECT *
+      FROM job_history
+      WHERE job_id = ?1
+      ORDER BY created_at DESC
+      LIMIT 20
+    `).bind(jobId).all();
+    jobHistory = historyResult.results || [];
   }
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "tech_job_detail" });
-  loadError = "Dispatch details could not be loaded.";
+  await auditError(getDatabase(), Astro.request, error, { entityType: "job", entityId: jobId });
+  loadError = "Job details could not be loaded.";
 }
 
-const isReadOnly = user?.role === "admin";
-const canWork = user?.role === "tech" && job && ["Scheduled", "In Progress"].includes(job.status);
-const checklist = job?.system_type === "Gas Suppression"
-  ? [
-      "Cylinder pressure / mass visually checked",
-      "Release panel status reviewed",
-      "Abort / manual release condition checked",
-      "Nozzle obstruction reviewed",
-      "Signage and protected-room readiness reviewed",
-      "Detection integration / isolation status recorded"
-    ]
-  : [
-      "Panel status reviewed",
-      "Loop faults checked",
-      "Battery / power condition reviewed",
-      "Detector / MCP condition checked",
-      "Sounder / strobe test status recorded",
-      "Cause-and-effect / isolation status reviewed"
-    ];
+function priorityBadgeClass(priority: string): string {
+  if (priority === "Critical") return "bg-kharon-red/20 text-kharon-red";
+  if (priority === "High") return "bg-kharon-amber/20 text-kharon-amber";
+  return "bg-kharon-cyan/20 text-kharon-cyan";
+}
 ---
 
-<PortalLayout title="Dispatch Detail | Kharon Portal" active="tech" user={user}>
-  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
-    <div class="mx-auto max-w-7xl">
-      <a href="/portal/tech/dashboard" class="text-xs font-bold uppercase text-kharon-cyan hover:underline">Back to dispatches</a>
-      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Focused dispatch workflow</h1>
-      <p class="mt-4 max-w-3xl text-white/65">
-        Review the site package, record visit activity, capture structured evidence and close the jobcard from one controlled workflow.
-      </p>
+<PortalLayout title={`${job?.owner_company_name || 'Job'} | Kharon Portal`} active="tech" user={user}>
+  <OfflineBanner initialQueueCount={0} />
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment kharon-logo-watermark">
+    <div class="mx-auto max-w-4xl">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-cyan/10 ring-1 ring-kharon-cyan/20">
+          <svg class="h-4 w-4 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+        <p class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Job Detail</p>
+      </div>
+      <h1 class="text-2xl font-bold sm:text-3xl">Job #{job?.id}</h1>
+      <p class="mt-2 text-sm text-white/70">ID: {job?.id} • Status: {job?.status}</p>
     </div>
   </section>
 
-  <section class="px-4 py-6 sm:px-6 sm:py-8">
-    <div class="mx-auto grid max-w-7xl gap-5">
-      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
-
+  <section class="px-4 py-6 sm:px-6">
+    <div class="mx-auto max-w-4xl">
+      {loadError && <div class="rounded-lg border border-kharon-red/30 bg-kharon-red/10 p-4 mb-6"><p class="text-sm font-bold text-kharon-red">{loadError}</p></div>}
+      
       {job && (
-        <>
-          <article class="grid gap-5 border border-kharon-border bg-white p-4 sm:p-5 lg:grid-cols-[1.1fr_0.9fr]">
-            <div>
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="rounded bg-kharon-light px-2 py-0.5 text-xs font-bold uppercase text-kharon-grey">{job.status}</span>
-                <span class="rounded bg-kharon-purple px-2 py-0.5 text-xs font-bold text-white">{job.priority || "Normal"}</span>
-                {job.is_emergency === 1 && <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Emergency</span>}
-              </div>
-              <h2 class="mt-3 text-2xl font-bold text-kharon-black">{job.owner_company_name}</h2>
-              <p class="mt-2 text-sm text-kharon-grey">{job.physical_address}</p>
-              <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-                <div><dt class="font-bold uppercase text-kharon-grey/70">System</dt><dd>{job.system_type}</dd></div>
-                <div><dt class="font-bold uppercase text-kharon-grey/70">Coverage</dt><dd>{job.coverage_area}</dd></div>
-                <div><dt class="font-bold uppercase text-kharon-grey/70">Job Type</dt><dd>{job.job_type}</dd></div>
-                <div><dt class="font-bold uppercase text-kharon-grey/70">Scheduled</dt><dd>{job.scheduled_date}</dd></div>
-                <div><dt class="font-bold uppercase text-kharon-grey/70">Required By</dt><dd>{job.required_by_date || "Not set"}</dd></div>
-                <div><dt class="font-bold uppercase text-kharon-grey/70">Estimated Duration</dt><dd>{job.estimated_duration_minutes ? `${job.estimated_duration_minutes} minutes` : "Not set"}</dd></div>
-                <div><dt class="font-bold uppercase text-kharon-grey/70">Site Contact</dt><dd>{job.site_contact_person || "Not listed"}{job.site_contact_phone ? ` / ${job.site_contact_phone}` : ""}</dd></div>
-                <div><dt class="font-bold uppercase text-kharon-grey/70">Job ID</dt><dd class="break-all">{job.id}</dd></div>
-              </dl>
-              {job.site_notes && <p class="mt-5 border-l-4 border-kharon-blue bg-kharon-light p-4 text-sm text-kharon-grey">{job.site_notes}</p>}
+        <div class="space-y-6">
+          {/* Job Status Card */}
+          <div class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-4 kharon-surface">
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+              <span class={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest ${priorityBadgeClass(job.priority || "Normal")}`}>{job.priority || "Normal"}</span>
+              <span class="rounded-full bg-kharon-blue/20 text-kharon-blue px-3 py-1 text-xs font-bold uppercase tracking-widest">{job.status}</span>
+              {job.is_emergency === 1 && <span class="rounded-full bg-kharon-red/20 text-kharon-red px-3 py-1 text-xs font-bold uppercase tracking-widest flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-kharon-red animate-pulse"></span>Emergency</span>}
             </div>
-            <aside class="grid content-start gap-3 border border-kharon-border bg-kharon-light p-4">
-              <p class="text-xs font-bold uppercase text-kharon-purple">Field package</p>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address || ""))}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="rounded-md border border-kharon-border bg-white px-4 py-2 text-center text-sm font-semibold text-kharon-grey hover:bg-kharon-light"
-              >
-                Navigate
-              </a>
-              {canWork && job.status === "Scheduled" && (
-                <button class="start-job rounded-md border border-kharon-blue bg-white px-4 py-2 text-sm font-semibold text-kharon-blue hover:bg-kharon-blue hover:text-white" data-job-id={job.id}>
-                  Start job
-                </button>
-              )}
-              {isReadOnly && <p class="text-sm text-kharon-grey">Admin review only. Field actions are technician-controlled.</p>}
-            </aside>
-          </article>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <p class="text-xs text-kharon-cyan uppercase tracking-widest">Job Type</p>
+                <p class="text-sm font-bold text-white">{job.job_type}</p>
+              </div>
+              <div>
+                <p class="text-xs text-kharon-cyan uppercase tracking-widest">Scheduled Date</p>
+                <p class="text-sm font-bold text-white">{job.scheduled_date}</p>
+              </div>
+              <div>
+                <p class="text-xs text-kharon-cyan uppercase tracking-widest">Required By</p>
+                <p class="text-sm font-bold text-white">{job.required_by_date || 'Not specified'}</p>
+              </div>
+              <div>
+                <p class="text-xs text-kharon-cyan uppercase tracking-widest">Assigned Technician</p>
+                <p class="text-sm font-bold text-white">{job.technician_first_name} {job.technician_last_name}</p>
+              </div>
+            </div>
+          </div>
 
-          <section class="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
-            <article class="border border-kharon-border bg-white p-4 sm:p-5">
-              <h2 class="text-lg font-bold text-kharon-black">Visit activity</h2>
-              {canWork && (
-                <div class="mt-4 grid gap-4">
-                  <form class="log-arrival-form grid gap-3" data-job-id={job.id}>
-                    <input type="hidden" name="jobId" value={job.id} />
-                    <p class="text-xs font-bold uppercase text-kharon-purple">Check in / arrival</p>
-                    <div class="grid gap-2 sm:grid-cols-2">
-                      <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="visitDate" type="date" value={today} required />
-                      <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="arrivalTime" type="time" required />
-                    </div>
-                    <div class="grid gap-2 sm:grid-cols-2">
-                      <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="gpsLat" placeholder="GPS latitude (optional)" />
-                      <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="gpsLng" placeholder="GPS longitude (optional)" />
-                    </div>
-                    <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="customerName" placeholder="On-site contact name" />
-                    <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="customerTitle" placeholder="Title / role" />
-                    <textarea class="portal-field min-h-16 rounded-md border border-kharon-border px-3 py-2 text-sm" name="notes" maxlength="500" placeholder="Arrival notes"></textarea>
-                    <button class="rounded-md border border-kharon-blue px-4 py-2 text-sm font-semibold text-kharon-blue hover:bg-kharon-blue hover:text-white">Log arrival</button>
-                    <p class="log-arrival-result hidden text-sm font-semibold"></p>
-                  </form>
-
-                  <form class="visit-outcome-form grid gap-3 border-t border-kharon-border pt-4">
-                    <input type="hidden" name="jobId" value={job.id} />
-                    <p class="text-xs font-bold uppercase text-kharon-purple">Visit outcome / departure</p>
-                    <div class="grid gap-2 sm:grid-cols-2">
-                      <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="visitDate" type="date" value={today} required />
-                      <input class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="departureTime" type="time" required />
-                    </div>
-                    <select class="portal-field rounded-md border border-kharon-border px-3 py-2 text-sm" name="visitStatus" required>
-                      <option value="Completed">Completed</option>
-                      <option value="Follow-up Required">Follow-up Required</option>
-                      <option value="Quote Required">Quote Required</option>
-                      <option value="Unable To Complete">Unable To Complete</option>
-                    </select>
-                    <select class="portal-field hidden rounded-md border border-kharon-border px-3 py-2 text-sm" name="unableReason">
-                      <option value="">Select reason</option>
-                      <option value="No Access">No Access</option>
-                      <option value="Client Unavailable">Client Unavailable</option>
-                      <option value="Unsafe To Proceed">Unsafe To Proceed</option>
-                      <option value="Parts Required">Parts Required</option>
-                      <option value="System Isolated">System Isolated</option>
-                      <option value="Quote Required">Quote Required</option>
-                      <option value="Return Visit Required">Return Visit Required</option>
-                      <option value="Cancelled On Site">Cancelled On Site</option>
-                    </select>
-                    <textarea class="portal-field min-h-16 rounded-md border border-kharon-border px-3 py-2 text-sm" name="notes" maxlength="1000" placeholder="Departure or outcome notes"></textarea>
-                    <button class="rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple hover:bg-kharon-purple hover:text-white">Save visit outcome</button>
-                    <p class="visit-outcome-result hidden text-sm font-semibold"></p>
-                  </form>
+          {/* Site Information */}
+          <div class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-4 kharon-surface">
+            <h2 class="text-lg font-bold text-white mb-3">Site Information</h2>
+            
+            <div class="space-y-4">
+              <div>
+                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">Company</p>
+                <p class="text-lg font-bold text-white">{job.owner_company_name}</p>
+              </div>
+              
+              <div>
+                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">Address</p>
+                <p class="text-sm text-white">{job.physical_address}</p>
+              </div>
+              
+              <div>
+                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">System</p>
+                <p class="text-sm font-bold text-kharon-purple">{job.system_type} | {job.coverage_area}</p>
+              </div>
+              
+              {job.site_notes && (
+                <div class="rounded-lg border border-kharon-blue/20 bg-kharon-blue/10 p-3 text-sm text-white relative overflow-hidden kharon-surface">
+                  <p class="font-bold text-xs text-kharon-blue uppercase tracking-widest mb-1">Site Instructions</p>
+                  <p class="leading-relaxed">{job.site_notes}</p>
                 </div>
               )}
+            </div>
+          </div>
 
-              <div class="mt-5 grid gap-2">
-                {visits.length === 0 && <p class="text-sm text-kharon-grey">No visit records captured yet.</p>}
-                {visits.map((visit) => (
-                  <article class="rounded-md border border-kharon-border bg-kharon-light p-3 text-sm">
-                    <p class="font-semibold">{visit.visit_date} / {visit.arrival_time || "Arrival not recorded"}</p>
-                    <p class="mt-1 text-xs text-kharon-grey">Status: {visit.visit_status || "Arrived"}</p>
-                    {visit.departure_time && <p class="text-xs text-kharon-grey">Departed: {visit.departure_time}</p>}
-                    {visit.unable_reason && <p class="text-xs text-kharon-grey">Reason: {visit.unable_reason}</p>}
-                    {visit.gps_latitude && visit.gps_longitude && <p class="text-xs text-kharon-grey">GPS: {visit.gps_latitude}, {visit.gps_longitude}</p>}
-                    {visit.customer_name && <p class="text-xs text-kharon-grey">Contact: {visit.customer_name}{visit.customer_title ? ` (${visit.customer_title})` : ""}</p>}
-                    {visit.notes && <p class="mt-1 text-xs text-kharon-grey">{visit.notes}</p>}
-                  </article>
+          {/* System Information */}
+          <div class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-4 kharon-surface">
+            <h2 class="text-lg font-bold text-white mb-3">System Information</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">System Type</p>
+                <p class="text-sm font-bold text-white">{job.system_type}</p>
+              </div>
+              <div>
+                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">Coverage Area</p>
+                <p class="text-sm font-bold text-white">{job.coverage_area}</p>
+              </div>
+              <div>
+                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">Protocol Version</p>
+                <p class="text-sm font-bold text-white">{job.protocol_version || 'Not specified'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-4 kharon-surface">
+            <h2 class="text-lg font-bold text-white mb-3">Quick Actions</h2>
+            
+            <div class="grid grid-cols-1 gap-3">
+              <a href={`/portal/tech/jobs/${job.id}/log-visit`} class="w-full px-4 py-3 bg-gradient-to-r from-kharon-cyan to-kharon-blue text-white font-bold uppercase tracking-widest rounded-md text-center hover:shadow-lg hover:shadow-kharon-cyan/30 transition-all kharon-command-button">
+                Log Visit
+              </a>
+              
+              <a href={`/portal/tech/jobs/${job.id}/jobcard`} class="w-full px-4 py-3 border border-kharon-cyan/30 text-kharon-cyan font-bold uppercase tracking-widest rounded-md text-center hover:bg-kharon-cyan/10 transition-colors">
+                Complete Jobcard
+              </a>
+              
+              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`} target="_blank" rel="noopener noreferrer" class="w-full px-4 py-3 border border-kharon-cyan/30 text-kharon-cyan font-bold uppercase tracking-widest rounded-md text-center hover:bg-kharon-cyan/10 transition-colors">
+                Navigate to Site
+              </a>
+            </div>
+          </div>
+
+          {/* Job History */}
+          {jobHistory.length > 0 && (
+            <div class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-4 kharon-surface">
+              <h2 class="text-lg font-bold text-white mb-3">Job History</h2>
+              
+              <div class="space-y-3">
+                {jobHistory.map((entry: any, index: number) => (
+                  <div key={index} class="border-b border-kharon-cyan/10 pb-3 last:border-0 last:pb-0">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <p class="text-sm font-bold text-white">{entry.action}</p>
+                        <p class="text-xs text-kharon-light/70">{entry.description}</p>
+                      </div>
+                      <p class="text-xs text-kharon-amber font-bold">{entry.created_at}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
-            </article>
-
-            <article class="border border-kharon-border bg-white p-4 sm:p-5">
-              <h2 class="text-lg font-bold text-kharon-black">Jobcard closure</h2>
-              <div class="mt-4 border border-kharon-border bg-kharon-light p-4">
-                <p class="text-xs font-bold uppercase text-kharon-purple">{job.system_type} checklist foundation</p>
-                <ul class="mt-3 grid gap-2 text-sm text-kharon-grey sm:grid-cols-2">
-                  {checklist.map((item) => (
-                    <li class="flex gap-2"><span aria-hidden="true">-</span><span>{item}</span></li>
-                  ))}
-                </ul>
-              </div>
-
-              {canWork ? (
-                <form class="jobcard-form mt-4 grid min-w-0 gap-4" data-job-id={job.id} data-system-id={job.system_id}>
-                  <input type="hidden" name="jobId" value={job.id} />
-                  <input type="hidden" name="systemId" value={job.system_id} />
-                  <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-                    Fault / work category
-                    <select name="faultCategory" class="portal-field rounded-md border border-kharon-border px-4 py-3">
-                      <option value="Routine service">Routine service</option>
-                      <option value="Fault response">Fault response</option>
-                      <option value="Compliance inspection">Compliance inspection</option>
-                      <option value="Panel issue">Panel issue</option>
-                      <option value="Detection device issue">Detection device issue</option>
-                      <option value="Suppression release infrastructure">Suppression release infrastructure</option>
-                      <option value="Follow-up required">Follow-up required</option>
-                    </select>
-                  </label>
-                  <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-                    Technician comments
-                    <textarea name="techComments" class="portal-field min-h-28 rounded-md border border-kharon-border px-4 py-3" maxlength="3000" required></textarea>
-                  </label>
-                  <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-                    Parts used
-                    <input name="partsUsed" class="portal-field rounded-md border border-kharon-border px-4 py-3" maxlength="500" placeholder="None / detector head / battery / cylinder label / other" />
-                  </label>
-                  <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-                    Follow-up actions
-                    <textarea name="followUpActions" class="portal-field min-h-20 rounded-md border border-kharon-border px-4 py-3" maxlength="1000" placeholder="No follow-up required, or describe required action."></textarea>
-                  </label>
-                  <div class="grid gap-4 sm:grid-cols-2">
-                    <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-                      Customer / responsible person name
-                      <input name="customerName" class="portal-field rounded-md border border-kharon-border px-4 py-3" maxlength="120" placeholder="Full name of client signatory" required />
-                    </label>
-                    <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-                      Title / role
-                      <input name="customerTitle" class="portal-field rounded-md border border-kharon-border px-4 py-3" maxlength="80" placeholder="e.g. Facilities Manager" />
-                    </label>
-                  </div>
-                  <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-                    Photo evidence
-                    <span class="text-xs font-normal text-kharon-grey">Optional. Up to 3 JPEG, PNG or WebP images, maximum 1.5 MB each. Select a category for all photos in this submission.</span>
-                    <select name="evidenceCategory" class="portal-field rounded-md border border-kharon-border px-4 py-3">
-                      <option value="General Evidence">General Evidence</option>
-                      <option value="Before">Before</option>
-                      <option value="After">After</option>
-                      <option value="Defect">Defect</option>
-                      <option value="Panel">Panel</option>
-                      <option value="Label">Label</option>
-                      <option value="Cylinder">Cylinder</option>
-                    </select>
-                    <input name="evidencePhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple class="portal-field rounded-md border border-kharon-border bg-white px-4 py-3" />
-                  </label>
-
-                  <div class="grid gap-3 rounded-md border border-kharon-border bg-kharon-light p-4">
-                    <div class="flex items-center justify-between">
-                      <p class="text-sm font-bold text-kharon-black">Defects found on site</p>
-                      <button type="button" class="add-defect-btn rounded-md border border-kharon-red px-3 py-1 text-xs font-semibold text-kharon-red hover:bg-kharon-red hover:text-white">+ Add defect</button>
-                    </div>
-                    <div class="defect-list grid gap-3"></div>
-                    <div class="defect-form hidden grid gap-3 rounded-md border border-kharon-red bg-white p-3 sm:grid-cols-2">
-                      <select class="defect-severity rounded-md border border-kharon-border px-3 py-2 text-sm" required>
-                        <option value="Critical">Critical</option>
-                        <option value="Major">Major</option>
-                        <option value="Minor" selected>Minor</option>
-                        <option value="Observation">Observation</option>
-                      </select>
-                      <input class="defect-sans rounded-md border border-kharon-border px-3 py-2 text-sm" placeholder="SANS clause (e.g. SANS 10139-8.3)" />
-                      <textarea class="defect-desc sm:col-span-2 min-h-16 rounded-md border border-kharon-border px-3 py-2 text-sm" maxlength="2000" placeholder="Describe the defect (5-2000 characters)" required></textarea>
-                      <label class="flex items-center gap-2 text-xs font-semibold">
-                        <input type="checkbox" class="defect-blocking" />
-                        Blocks certificate issuance
-                      </label>
-                      <div class="flex gap-2 sm:col-span-2">
-                        <button type="button" class="save-defect rounded-md bg-kharon-red px-3 py-1 text-xs font-semibold text-white">Save defect</button>
-                        <button type="button" class="cancel-defect rounded-md border border-kharon-border px-3 py-1 text-xs font-semibold text-kharon-grey">Cancel</button>
-                      </div>
-                    </div>
-                    <p class="defect-count text-xs text-kharon-grey">No defects recorded.</p>
-                  </div>
-
-                  <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-                    Client / responsible person signature
-                    <span class="text-xs font-normal text-kharon-grey">Sign inside the box. Clear and re-sign if the capture is not legible.</span>
-                    <canvas class="signature-pad h-36 w-full touch-none rounded-md border border-kharon-border bg-white sm:h-40" width="720" height="220" aria-label="Signature capture area"></canvas>
-                    <input type="hidden" name="signatureBase64" required />
-                    <input type="hidden" name="signatureStrokes" />
-                  </label>
-                  <button type="button" class="clear-signature rounded-md border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey hover:bg-white">Clear signature</button>
-                  <button class="rounded-md bg-kharon-purple px-5 py-3 font-semibold text-white hover:bg-kharon-blue" id="submit-jobcard-btn">Submit completed jobcard</button>
-                  <p class="jobcard-result hidden text-sm font-semibold"></p>
-                  <p class="draft-status text-xs text-kharon-grey italic"></p>
-                </form>
-              ) : (
-                <p class="mt-4 border border-kharon-border bg-kharon-light p-4 text-sm text-kharon-grey">Jobcard closure is unavailable for this account or job status.</p>
-              )}
-            </article>
-          </section>
-        </>
+            </div>
+          )}
+        </div>
       )}
     </div>
   </section>
-
-  <script is:inline>
-    async function postJson(url, payload) {
-      const response = await window.kharonPortalFetch(url, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const body = await response.json();
-      if (!response.ok || !body.ok) throw new Error(body.message || "Request failed.");
-      return body;
-    }
-
-    function pointFromEvent(canvas, event) {
-      const rect = canvas.getBoundingClientRect();
-      return {
-        x: Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
-        y: Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height))
-      };
-    }
-
-    function drawStroke(canvas, stroke) {
-      if (stroke.length < 2) return;
-      const context = canvas.getContext("2d");
-      context.lineWidth = 3;
-      context.lineCap = "round";
-      context.lineJoin = "round";
-      context.strokeStyle = "#0B0D0F";
-      context.beginPath();
-      context.moveTo(stroke[0].x * canvas.width, stroke[0].y * canvas.height);
-      for (const point of stroke.slice(1)) context.lineTo(point.x * canvas.width, point.y * canvas.height);
-      context.stroke();
-    }
-
-    for (const form of document.querySelectorAll(".jobcard-form")) {
-      const canvas = form.querySelector(".signature-pad");
-      const clearButton = form.querySelector(".clear-signature");
-      const signatureInput = form.querySelector('input[name="signatureBase64"]');
-      const strokesInput = form.querySelector('input[name="signatureStrokes"]');
-      if (!canvas || !clearButton || !signatureInput || !strokesInput) continue;
-
-      const context = canvas.getContext("2d");
-      const strokes = [];
-      let activeStroke = null;
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-
-      canvas.addEventListener("pointerdown", (event) => {
-        canvas.setPointerCapture(event.pointerId);
-        activeStroke = [pointFromEvent(canvas, event)];
-      });
-      canvas.addEventListener("pointermove", (event) => {
-        if (!activeStroke) return;
-        activeStroke.push(pointFromEvent(canvas, event));
-        drawStroke(canvas, activeStroke.slice(-2));
-      });
-      function finishSignature() {
-        if (activeStroke && activeStroke.length > 1) {
-          strokes.push(activeStroke);
-          signatureInput.value = canvas.toDataURL("image/png");
-          strokesInput.value = JSON.stringify(strokes);
-        }
-        activeStroke = null;
-      }
-      canvas.addEventListener("pointerup", finishSignature);
-      canvas.addEventListener("pointercancel", finishSignature);
-      clearButton.addEventListener("click", () => {
-        strokes.length = 0;
-        activeStroke = null;
-        context.fillStyle = "#ffffff";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        signatureInput.value = "";
-        strokesInput.value = "";
-      });
-    }
-
-    for (const button of document.querySelectorAll(".start-job")) {
-      button.addEventListener("click", async () => {
-        button.disabled = true;
-        try {
-          await postJson("/portal/api/job-status", { jobId: button.dataset.jobId, status: "In Progress" });
-          window.location.reload();
-        } catch (error) {
-          button.disabled = false;
-          button.textContent = error.message || "Start failed";
-        }
-      });
-    }
-
-    for (const form of document.querySelectorAll(".log-arrival-form")) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const result = form.querySelector(".log-arrival-result");
-        result.classList.add("hidden");
-        const data = new FormData(form);
-        try {
-          const body = await postJson("/portal/api/job-visits", {
-            action: "logArrival",
-            jobId: data.get("jobId"),
-            visitDate: data.get("visitDate"),
-            arrivalTime: data.get("arrivalTime"),
-            gpsLat: data.get("gpsLat") || null,
-            gpsLng: data.get("gpsLng") || null,
-            customerName: data.get("customerName") || null,
-            customerTitle: data.get("customerTitle") || null,
-            notes: data.get("notes") || null
-          });
-          result.textContent = `Arrival logged: ${body.visitId}`;
-          result.className = "log-arrival-result text-sm font-semibold text-kharon-blue";
-          setTimeout(() => window.location.reload(), 700);
-        } catch (error) {
-          result.textContent = error.message;
-          result.className = "log-arrival-result text-sm font-semibold text-red-700";
-        }
-      });
-    }
-
-    for (const form of document.querySelectorAll(".visit-outcome-form")) {
-      const statusSelect = form.querySelector('select[name="visitStatus"]');
-      const unableSelect = form.querySelector('select[name="unableReason"]');
-      statusSelect?.addEventListener("change", () => {
-        const showReason = statusSelect.value === "Unable To Complete";
-        unableSelect?.classList.toggle("hidden", !showReason);
-        if (!showReason) unableSelect.value = "";
-      });
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const result = form.querySelector(".visit-outcome-result");
-        result.classList.add("hidden");
-        const data = new FormData(form);
-        try {
-          const body = await postJson("/portal/api/job-visits", {
-            action: "logOutcome",
-            jobId: data.get("jobId"),
-            visitDate: data.get("visitDate"),
-            departureTime: data.get("departureTime"),
-            visitStatus: data.get("visitStatus"),
-            unableReason: data.get("unableReason") || null,
-            notes: data.get("notes") || null
-          });
-          result.textContent = `Visit outcome saved: ${body.visitId}`;
-          result.className = "visit-outcome-result text-sm font-semibold text-kharon-blue";
-          setTimeout(() => window.location.reload(), 700);
-        } catch (error) {
-          result.textContent = error.message;
-          result.className = "visit-outcome-result text-sm font-semibold text-red-700";
-        }
-      });
-    }
-
-    for (const form of document.querySelectorAll(".jobcard-form")) {
-      const defectList = form.querySelector(".defect-list");
-      const defectFormEl = form.querySelector(".defect-form");
-      const addBtn = form.querySelector(".add-defect-btn");
-      const saveBtn = form.querySelector(".save-defect");
-      const cancelBtn = form.querySelector(".cancel-defect");
-      const draftStatusEl = form.querySelector(".draft-status");
-      const submitBtn = form.querySelector("#submit-jobcard-btn");
-      const defects = [];
-      const jobId = form.querySelector('input[name="jobId"]').value;
-      const draftKey = `kharon_jobcard_draft_${jobId}`;
-      let saveTimeout;
-
-      function saveDraft() {
-        const data = {
-          faultCategory: form.querySelector('[name="faultCategory"]')?.value || "",
-          techComments: form.querySelector('[name="techComments"]')?.value || "",
-          partsUsed: form.querySelector('[name="partsUsed"]')?.value || "",
-          followUpActions: form.querySelector('[name="followUpActions"]')?.value || "",
-          customerName: form.querySelector('[name="customerName"]')?.value || "",
-          customerTitle: form.querySelector('[name="customerTitle"]')?.value || "",
-          defects: defects
-        };
-        localStorage.setItem(draftKey, JSON.stringify(data));
-        if (draftStatusEl) draftStatusEl.textContent = `Draft saved locally at ${new Date().toLocaleTimeString()}`;
-      }
-
-      function loadDraft() {
-        const draftData = localStorage.getItem(draftKey);
-        if (draftData) {
-          try {
-            const parsed = JSON.parse(draftData);
-            if (parsed.faultCategory) form.querySelector('[name="faultCategory"]').value = parsed.faultCategory;
-            if (parsed.techComments) form.querySelector('[name="techComments"]').value = parsed.techComments;
-            if (parsed.partsUsed) form.querySelector('[name="partsUsed"]').value = parsed.partsUsed;
-            if (parsed.followUpActions) form.querySelector('[name="followUpActions"]').value = parsed.followUpActions;
-            if (parsed.customerName) form.querySelector('[name="customerName"]').value = parsed.customerName;
-            if (parsed.customerTitle) form.querySelector('[name="customerTitle"]').value = parsed.customerTitle;
-            if (parsed.defects && Array.isArray(parsed.defects)) {
-              defects.push(...parsed.defects);
-            }
-            if (draftStatusEl) draftStatusEl.textContent = "Draft loaded from local storage.";
-          } catch (e) {
-            console.error("Failed to load draft", e);
-          }
-        }
-      }
-
-      form.addEventListener('input', () => {
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(saveDraft, 1000);
-      });
-
-      function renderDefects() {
-        if (!defectList) return;
-        defectList.replaceChildren();
-        if (defects.length === 0) {
-          if (defectCountEl) defectCountEl.textContent = "No defects recorded.";
-          return;
-        }
-        if (defectCountEl) defectCountEl.textContent = `${defects.length} defect(s) recorded.`;
-        for (let i = 0; i < defects.length; i++) {
-          const d = defects[i];
-          const card = document.createElement("article");
-          card.className = "flex items-start justify-between gap-3 rounded border border-kharon-border bg-kharon-light p-3 text-sm";
-          const body = document.createElement("div");
-          body.className = "min-w-0";
-          const severity = document.createElement("span");
-          severity.className = "rounded bg-kharon-grey/20 px-1.5 py-0.5 text-xs font-bold text-kharon-grey";
-          severity.textContent = d.severity;
-          body.appendChild(severity);
-          if (d.sansClauseRef) {
-            const sans = document.createElement("span");
-            sans.className = "ml-1 text-xs text-kharon-grey";
-            sans.textContent = `[${d.sansClauseRef}]`;
-            body.appendChild(sans);
-          }
-          const description = document.createElement("p");
-          description.className = "mt-1 text-xs";
-          description.textContent = d.description;
-          body.appendChild(description);
-          if (d.certificateBlocking) {
-            const blocking = document.createElement("p");
-            blocking.className = "mt-1 text-xs font-bold text-amber-700";
-            blocking.textContent = "Blocks certificate";
-            body.appendChild(blocking);
-          }
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.className = "remove-defect rounded border border-red-300 px-2 py-1 text-xs font-semibold text-red-900";
-          remove.dataset.index = String(i);
-          remove.textContent = "Remove";
-          card.append(body, remove);
-          defectList.appendChild(card);
-        }
-        for (const rm of defectList.querySelectorAll(".remove-defect")) {
-          rm.addEventListener("click", () => {
-            defects.splice(Number(rm.dataset.index), 1);
-            renderDefects();
-            saveDraft();
-          });
-        }
-      }
-
-      addBtn?.addEventListener("click", () => defectFormEl?.classList.remove("hidden"));
-      cancelBtn?.addEventListener("click", () => defectFormEl?.classList.add("hidden"));
-      saveBtn?.addEventListener("click", () => {
-        const severity = form.querySelector(".defect-severity")?.value || "Minor";
-        const sansClauseRef = form.querySelector(".defect-sans")?.value.trim() || "";
-        const description = form.querySelector(".defect-desc")?.value.trim() || "";
-        const certificateBlocking = Boolean(form.querySelector(".defect-blocking")?.checked);
-        if (description.length < 5) {
-          alert("Defect description must be at least 5 characters.");
-          return;
-        }
-        defects.push({ severity, sansClauseRef, description, certificateBlocking });
-        renderDefects();
-        saveDraft();
-        defectFormEl?.classList.add("hidden");
-      });
-      loadDraft();
-      renderDefects();
-
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const result = form.querySelector(".jobcard-result");
-        result.classList.add("hidden");
-        const data = new FormData(form);
-        const evidenceInput = form.querySelector('input[name="evidencePhotos"]');
-        const evidenceFiles = Array.from(evidenceInput?.files || []);
-        if (evidenceFiles.length > 3) {
-          result.textContent = "A maximum of 3 evidence photos can be attached.";
-          result.className = "jobcard-result text-sm font-semibold text-red-700";
-          return;
-        }
-        const evidenceCategory = data.get("evidenceCategory") || "General Evidence";
-        const evidencePhotos = [];
-        for (const [index, file] of evidenceFiles.entries()) {
-          if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 1572864) {
-            result.textContent = `Evidence photo ${index + 1} must be JPEG, PNG or WebP and 1.5 MB or smaller.`;
-            result.className = "jobcard-result text-sm font-semibold text-red-700";
-            return;
-          }
-          const dataUri = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result || ""));
-            reader.onerror = () => reject(new Error("Photo could not be read."));
-            reader.readAsDataURL(file);
-          });
-          evidencePhotos.push({ dataUri, caption: `${evidenceCategory}: ${file.name || `Evidence photo ${index + 1}`}` });
-        }
-        if (!data.get("signatureBase64")) {
-          result.textContent = "A captured signature is required.";
-          result.className = "jobcard-result text-sm font-semibold text-red-700";
-          return;
-        }
-
-        const payload = {
-          jobId: data.get("jobId"),
-          systemId: data.get("systemId"),
-          techComments: data.get("techComments"),
-          faultCategory: data.get("faultCategory"),
-          partsUsed: data.get("partsUsed"),
-          followUpActions: data.get("followUpActions"),
-          signatureBase64: data.get("signatureBase64"),
-          signatureStrokes: JSON.parse(data.get("signatureStrokes") || "[]"),
-          customerName: data.get("customerName"),
-          customerTitle: data.get("customerTitle"),
-          evidencePhotos,
-          defects: defects.map((defect) => ({ ...defect }))
-        };
-
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.textContent = "Submitting... (do not close)";
-        }
-
-        async function submitWithRetry(payload, maxRetries = 3) {
-          for (let i = 0; i < maxRetries; i++) {
-            try {
-              if (i > 0) {
-                result.textContent = `Submission failed. Retrying... (${i}/${maxRetries - 1})`;
-                result.classList.remove("hidden");
-              }
-              const response = await window.kharonPortalFetch("/portal/api/submit-jobcard", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(payload)
-              });
-              const body = await response.json();
-              if (!response.ok || !body.ok) throw new Error(body.message || "Submission failed.");
-              return body;
-            } catch (err) {
-              if (i === maxRetries - 1) throw err;
-              await new Promise(r => setTimeout(r, 2000 * (i + 1))); // exponential backoff
-            }
-          }
-        }
-
-        try {
-          const body = await submitWithRetry(payload);
-          result.textContent = `Completed. Document: ${body.documentationPath}`;
-          result.className = "jobcard-result text-sm font-semibold text-kharon-blue";
-          localStorage.removeItem(draftKey);
-          if (draftStatusEl) draftStatusEl.textContent = "";
-        } catch (error) {
-          result.textContent = error.message || "Submission failed after multiple attempts. Please check connection and try again.";
-          result.className = "jobcard-result text-sm font-semibold text-red-700";
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit completed jobcard";
-          }
-        }
-      });
-    }
-  </script>
 </PortalLayout>

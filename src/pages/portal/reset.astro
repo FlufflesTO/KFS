@@ -15,34 +15,38 @@ const token = Astro.url.searchParams.get("token") || "";
     <title>Kharon Portal Password Reset</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
-  <body class="min-h-screen bg-kharon-black text-white">
+  <body class="kharon-page-shell kharon-grid-bg kharon-environment kharon-logo-watermark min-h-screen text-white">
     <main class="grid min-h-screen place-items-center px-6 py-12">
-      <section class="w-full max-w-md border border-white/10 bg-white/[0.04] p-6 sm:p-7">
-        <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="42" height="57" class="mb-6" />
-        <p class="text-xs font-bold uppercase text-kharon-cyan">Secure operations portal</p>
-        <h1 class="mt-3 text-3xl font-bold">Reset portal password</h1>
-        <p class="mt-4 leading-7 text-white/65">
+      <section class="w-full max-w-md kharon-surface-strong p-6 sm:p-8">
+        <img src="/brand/kharon-mark.svg" alt="Kharon Emblem" aria-hidden="true" width="42" height="57" class="mb-6 opacity-80" />
+        <p class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Secure operations portal</p>
+        <h1 class="mt-3 text-2xl font-bold tracking-tight text-white">Reset Portal Password</h1>
+        <p class="mt-3 text-sm leading-relaxed text-kharon-light/70">
           Enter a new password for the issued reset link. You will be asked to rotate it again after sign-in if account policy requires it.
         </p>
 
-        <form id="reset-form" class="mt-8 grid gap-5">
+        <form id="reset-form" class="mt-6 grid gap-5">
           <input type="hidden" name="token" value={token} />
-          <label class="grid gap-2 text-sm font-semibold">
-            New password
-            <input class="rounded-md border border-white/15 bg-black/30 px-4 py-3 text-white" name="password" type="password" minlength="14" autocomplete="new-password" required />
-          </label>
-          <label class="grid gap-2 text-sm font-semibold">
-            Confirm password
-            <input class="rounded-md border border-white/15 bg-black/30 px-4 py-3 text-white" name="confirmPassword" type="password" minlength="14" autocomplete="new-password" required />
-          </label>
+          
+          <div class="grid gap-1.5">
+            <label for="reset-password" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">New Password</label>
+            <input id="reset-password" class="kharon-field" name="password" type="password" minlength="14" autocomplete="new-password" required placeholder="Min 14 characters" />
+          </div>
+
+          <div class="grid gap-1.5">
+            <label for="reset-confirmPassword" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Confirm Password</label>
+            <input id="reset-confirmPassword" class="kharon-field" name="confirmPassword" type="password" minlength="14" autocomplete="new-password" required placeholder="Confirm new password" />
+          </div>
+
           <p
             id="reset-result"
             role="alert"
             aria-live="polite"
-            class="hidden rounded-md border px-4 py-3 text-sm font-semibold"
+            class="hidden rounded px-4 py-3 text-sm font-semibold"
           ></p>
-          <button class="rounded-md bg-kharon-purple px-6 py-4 font-semibold text-white hover:bg-kharon-blue">
-            Reset password
+          
+          <button id="reset-submit-btn" class="w-full kharon-command-button py-3.5 mt-2">
+            Reset Password
           </button>
         </form>
       </section>
@@ -59,7 +63,8 @@ const token = Astro.url.searchParams.get("token") || "";
         if (formData.get("password") !== formData.get("confirmPassword")) {
           if (result) {
             result.textContent = "Passwords do not match.";
-            result.className = "rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+            result.className = "rounded border border-kharon-red bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-red-200";
+            result.classList.remove("hidden");
           }
           return;
         }
@@ -76,13 +81,15 @@ const token = Astro.url.searchParams.get("token") || "";
         if (!response.ok || !body.ok) {
           if (result) {
             result.textContent = body.message || "Password reset failed.";
-            result.className = "rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900";
+            result.className = "rounded border border-kharon-red bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-red-200";
+            result.classList.remove("hidden");
           }
           return;
         }
         if (result) {
           result.textContent = "Password reset. Redirecting to login...";
-          result.className = "rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900";
+          result.className = "rounded border border-kharon-green bg-kharon-green/10 px-4 py-3 text-sm font-semibold text-green-200";
+          result.classList.remove("hidden");
         }
         window.setTimeout(() => {
           window.location.href = body.redirectTo || "/portal/login";

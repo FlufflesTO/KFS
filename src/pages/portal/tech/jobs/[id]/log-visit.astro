@@ -1,16 +1,18 @@
 ---
-import { auditError } from "../../../../../lib/server/audit.js";
 /**
  * Project Sentinel - Technician Job Visit Logging
- * Purpose: Allows technicians to log site arrival, departure, and outcomes for assigned jobs
- * Dependencies: PortalLayout, bindings
- * Structural Role: Technician field workflow component
+ * Purpose: Allows technicians to log site arrival, departure, and outcomes for assigned jobs.
+ * Dependencies: PortalLayout, getDatabase, auditError
+ * Structural Role: Technician field workflow component — two-phase (arrival → outcome) flow
+ *                  posting JSON to /portal/api/job-visits to preserve endpoint payload contract.
  */
 import PortalLayout from "../../../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../../../lib/server/bindings.js";
+import { auditError } from "../../../../../lib/server/audit";
 
 export const prerender = false;
 
+/** Shape returned by the job details query (mirrors DB columns). */
 interface JobDetails {
   id: string;
   system_id: string;
@@ -26,11 +28,10 @@ const jobId = Astro.params.id;
 const user = Astro.locals.user;
 let job: JobDetails | null = null;
 let loadError = "";
-let db: any = null;
 
 if (jobId && user) {
   try {
-    db = getDatabase();
+    const db = getDatabase();
     const result = await db.prepare(
       `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status,
               systems.system_type, systems.coverage_area,
@@ -43,7 +44,7 @@ if (jobId && user) {
     ).bind(jobId, user.id).first();
 
     if (result) {
-      job = result;
+      job = result as JobDetails;
     } else {
       loadError = "Job not found or not assigned to you.";
     }
@@ -60,7 +61,14 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
 <PortalLayout title={`Log Visit for Job ${jobId} | Kharon Portal`} active="tech" user={user}>
   <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
     <div class="mx-auto max-w-4xl">
-      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Field Operations</p>
+      <div class="flex items-center gap-3 mb-2">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-cyan/10 ring-1 ring-kharon-cyan/20">
+          <svg class="h-4 w-4 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Field Operations</p>
+      </div>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Log Site Visit Details</h1>
       <p class="mt-3 max-w-3xl text-sm text-white/60">Record your arrival, departure, and job outcomes for accurate tracking.</p>
     </div>
@@ -69,138 +77,150 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
   <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto max-w-4xl">
       {loadError ? (
-        <div class="rounded-xl border border-red-200 bg-red-50 p-6 text-center shadow-sm">
-          <p class="font-bold text-red-800">{loadError}</p>
-          <a href="/portal/tech/dashboard" class="mt-4 inline-block rounded bg-kharon-purple px-4 py-2 text-sm font-bold text-white hover:opacity-90">Back to Dashboard</a>
+        <div class="rounded-xl border border-kharon-red bg-kharon-red/10 p-6 text-center shadow-sm">
+          <p class="font-bold text-red-200">{loadError}</p>
+          <a href="/portal/tech/dashboard" class="mt-4 inline-block kharon-secondary-button py-2 text-xs">Back to Dashboard</a>
         </div>
       ) : !job ? (
-        <div class="rounded-xl border border-slate-200/80 bg-white p-6 sm:p-7 text-center shadow-sm">
-          <p class="font-bold text-slate-800">Job Not Found</p>
-          <p class="mt-2 text-sm text-slate-500">The requested job does not exist or is not assigned to you.</p>
-          <a href="/portal/tech/dashboard" class="mt-4 inline-block rounded bg-kharon-purple px-4 py-2 text-sm font-bold text-white hover:opacity-90">Back to Dashboard</a>
+        <div class="rounded-xl border border-line-cyan-soft/40 bg-surface-charcoal/40 p-6 sm:p-7 text-center shadow-sm">
+          <p class="font-bold text-white">Job Not Found</p>
+          <p class="mt-2 text-sm text-white/60">The requested job does not exist or is not assigned to you.</p>
+          <a href="/portal/tech/dashboard" class="mt-4 inline-block kharon-secondary-button py-2 text-xs">Back to Dashboard</a>
         </div>
       ) : (
-        <div class="rounded-xl border border-kharon-border bg-white p-6 shadow-sm">
-          <div class="mb-6 border-b border-kharon-border pb-4">
-            <h2 class="text-lg font-bold text-kharon-black">Job Details</h2>
+        <div class="kharon-surface p-6 sm:p-8">
+          <!-- Job Details Card -->
+          <div class="mb-6 border-b border-line-cyan-soft pb-4">
+            <h2 class="text-lg font-bold text-white font-heading">Job Details</h2>
             <div class="mt-3 grid gap-3 sm:grid-cols-2">
               <div>
-                <p class="text-sm font-semibold text-kharon-black">{job.owner_company_name}</p>
-                <p class="text-xs text-kharon-grey">{job.system_type} / {job.coverage_area}</p>
+                <p class="text-sm font-semibold text-white">{job.owner_company_name}</p>
+                <p class="text-xs text-white/60">{job.system_type} / {job.coverage_area}</p>
               </div>
-              <div>
-                <p class="text-xs text-kharon-grey/70 uppercase">Job ID: {job.id}</p>
-                <p class="text-xs text-kharon-grey/70 uppercase">Scheduled: {job.scheduled_date}</p>
+              <div class="sm:text-right">
+                <p class="text-xs text-kharon-cyan font-mono uppercase">Job ID: {job.id}</p>
+                <p class="text-xs text-white/50 font-mono uppercase">Scheduled: {job.scheduled_date}</p>
               </div>
             </div>
           </div>
 
+          <!-- Phase 1: Log Arrival -->
           <form class="log-arrival-form space-y-6" data-job-id={job.id}>
             <div class="grid gap-6 sm:grid-cols-2">
-              <div>
-                <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">Visit Date</label>
-                <input 
-                  type="date" 
-                  name="visitDate" 
-                  required 
-                  class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+              <div class="grid gap-1">
+                <label for="visit-date-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Visit Date</label>
+                <input
+                  id="visit-date-input"
+                  type="date"
+                  name="visitDate"
+                  required
+                  class="kharon-field"
                   value={new Date().toISOString().split('T')[0]}
                 />
               </div>
-              
-              <div>
-                <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">Arrival Time</label>
-                <input 
-                  type="time" 
-                  name="arrivalTime" 
-                  required 
-                  class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+
+              <div class="grid gap-1">
+                <label for="arrival-time-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Arrival Time</label>
+                <input
+                  id="arrival-time-input"
+                  type="time"
+                  name="arrivalTime"
+                  required
+                  class="kharon-field"
                 />
               </div>
             </div>
 
             <div class="grid gap-6 sm:grid-cols-2">
-              <div>
-                <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">GPS Latitude (optional)</label>
-                <input 
-                  type="number" 
-                  name="gpsLat" 
+              <div class="grid gap-1">
+                <label for="gps-lat-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">GPS Latitude (optional)</label>
+                <input
+                  id="gps-lat-input"
+                  type="number"
+                  name="gpsLat"
                   step="any"
                   placeholder="Auto-fill if available"
-                  class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+                  class="kharon-field"
                 />
               </div>
-              
-              <div>
-                <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">GPS Longitude (optional)</label>
-                <input 
-                  type="number" 
-                  name="gpsLng" 
+
+              <div class="grid gap-1">
+                <label for="gps-lng-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">GPS Longitude (optional)</label>
+                <input
+                  id="gps-lng-input"
+                  type="number"
+                  name="gpsLng"
                   step="any"
                   placeholder="Auto-fill if available"
-                  class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+                  class="kharon-field"
                 />
               </div>
             </div>
 
             <div class="grid gap-6 sm:grid-cols-2">
-              <div>
-                <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">Customer Name (optional)</label>
-                <input 
-                  type="text" 
-                  name="customerName" 
+              <div class="grid gap-1">
+                <label for="customer-name-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Customer Name (optional)</label>
+                <input
+                  id="customer-name-input"
+                  type="text"
+                  name="customerName"
                   maxlength="160"
-                  class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+                  class="kharon-field"
                 />
               </div>
-              
-              <div>
-                <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">Customer Title (optional)</label>
-                <input 
-                  type="text" 
-                  name="customerTitle" 
+
+              <div class="grid gap-1">
+                <label for="customer-title-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Customer Title (optional)</label>
+                <input
+                  id="customer-title-input"
+                  type="text"
+                  name="customerTitle"
                   maxlength="80"
-                  class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+                  class="kharon-field"
                 />
               </div>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">Notes (optional)</label>
-              <textarea 
+            <div class="grid gap-1">
+              <label for="arrival-notes-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Notes (optional)</label>
+              <textarea
+                id="arrival-notes-input"
                 name="notes"
                 maxlength="1000"
                 rows="3"
-                class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+                class="kharon-field"
                 placeholder="Any relevant notes about the visit..."
               ></textarea>
             </div>
 
             <div class="pt-4">
-              <button type="submit" class="w-full rounded bg-kharon-purple px-4 py-3 text-sm font-bold text-white hover:opacity-90 transition-opacity">
+              <button type="submit" class="w-full kharon-command-button py-3">
                 Log Arrival
               </button>
             </div>
           </form>
 
+          <!-- Phase 2: Log Outcome (hidden until arrival is confirmed) -->
           <form class="log-outcome-form space-y-6 mt-8 hidden" data-job-id={job.id}>
             <div class="grid gap-6 sm:grid-cols-2">
-              <div>
-                <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">Departure Time</label>
-                <input 
-                  type="time" 
-                  name="departureTime" 
-                  required 
-                  class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+              <div class="grid gap-1">
+                <label for="departure-time-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Departure Time</label>
+                <input
+                  id="departure-time-input"
+                  type="time"
+                  name="departureTime"
+                  required
+                  class="kharon-field"
                 />
               </div>
-              
-              <div>
-                <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">Visit Outcome</label>
-                <select 
+
+              <div class="grid gap-1">
+                <label for="visit-status-select" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Visit Outcome</label>
+                <select
+                  id="visit-status-select"
                   name="visitStatus"
-                  required 
-                  class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+                  required
+                  class="kharon-field"
                 >
                   <option value="">Select outcome</option>
                   {visitStatuses.map(status => (
@@ -210,11 +230,12 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
               </div>
             </div>
 
-            <div class="unable-reason-section hidden">
-              <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">Unable-to-Complete Reason</label>
-              <select 
+            <div class="unable-reason-section hidden grid gap-1">
+              <label for="unable-reason-select" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Unable-to-Complete Reason</label>
+              <select
+                id="unable-reason-select"
                 name="unableReason"
-                class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+                class="kharon-field"
               >
                 <option value="">Select reason</option>
                 {unableReasons.map(reason => (
@@ -223,35 +244,43 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
               </select>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold uppercase text-kharon-grey/70 mb-1">Outcome Notes (optional)</label>
-              <textarea 
+            <div class="grid gap-1">
+              <label for="outcome-notes-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Outcome Notes (optional)</label>
+              <textarea
+                id="outcome-notes-input"
                 name="notes"
                 maxlength="1000"
                 rows="3"
-                class="portal-field w-full rounded border border-kharon-border bg-white px-3 py-2 text-xs focus:outline-none"
+                class="kharon-field"
                 placeholder="Any notes about the visit outcome..."
               ></textarea>
             </div>
 
-            <div class="pt-4 flex gap-3">
-              <button type="submit" class="flex-1 rounded bg-kharon-purple px-4 py-3 text-sm font-bold text-white hover:opacity-90 transition-opacity">
+            <div class="pt-4 flex gap-4">
+              <button type="submit" class="flex-1 kharon-command-button py-3 text-xs">
                 Log Outcome
               </button>
-              <button type="button" class="cancel-outcome-btn flex-1 rounded border border-kharon-border px-4 py-3 text-sm font-bold text-kharon-black hover:bg-kharon-light transition-colors">
+              <button type="button" class="cancel-outcome-btn flex-1 kharon-secondary-button py-3 text-xs">
                 Cancel
               </button>
             </div>
           </form>
 
-          <div class="visit-result hidden mt-4 p-4 rounded-lg border border-kharon-border bg-kharon-light text-sm font-semibold"></div>
+          <!-- Result banner for success / error feedback -->
+          <div class="visit-result hidden mt-4 p-4 rounded-lg border"></div>
         </div>
       )}
     </div>
   </section>
-  
+
   <script>
-    async function postJson(url: string, payload: any) {
+    /**
+     * Client-side logic for the two-phase visit logging workflow.
+     * Posts JSON to /portal/api/job-visits matching the existing payload contract:
+     *   logArrival  → { action, jobId, visitDate, arrivalTime, gpsLat, gpsLng, customerName, customerTitle, notes }
+     *   logOutcome  → { action, jobId, visitDate, departureTime, visitStatus, unableReason, notes }
+     */
+    async function postJson(url: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
       const response = await window.kharonPortalFetch(url, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -262,104 +291,115 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
       return body;
     }
 
-    // Handle visit outcome selection
-    const outcomeSelect = document.querySelector('.log-outcome-form select[name="visitStatus"]');
-    const unableReasonSection = document.querySelector('.unable-reason-section');
-    
+    // ── DOM references ────────────────────────────────────────────────────────
+    const arrivalForm = document.querySelector<HTMLFormElement>(".log-arrival-form");
+    const outcomeForm = document.querySelector<HTMLFormElement>(".log-outcome-form");
+    const visitResult = document.querySelector<HTMLElement>(".visit-result");
+    const outcomeSelect = document.querySelector<HTMLSelectElement>('.log-outcome-form select[name="visitStatus"]');
+    const unableReasonSection = document.querySelector<HTMLElement>(".unable-reason-section");
+
+    // ── Conditionally show "Unable to Complete" reason dropdown ────────────
     if (outcomeSelect) {
-      outcomeSelect.addEventListener('change', function() {
-        if ((this as HTMLSelectElement).value === 'Unable To Complete') {
-          unableReasonSection.classList.remove('hidden');
+      outcomeSelect.addEventListener("change", function () {
+        if (this.value === "Unable To Complete") {
+          unableReasonSection?.classList.remove("hidden");
         } else {
-          unableReasonSection.classList.add('hidden');
+          unableReasonSection?.classList.add("hidden");
         }
       });
     }
 
-    // Show outcome form after arrival is logged
-    const arrivalForm = document.querySelector('.log-arrival-form');
-    const outcomeForm = document.querySelector('.log-outcome-form');
-    const visitResult = document.querySelector('.visit-result');
-    
+    // ── Phase 1: Log Arrival ──────────────────────────────────────────────
     if (arrivalForm) {
-      arrivalForm.addEventListener('submit', async (event) => {
+      arrivalForm.addEventListener("submit", async (event: Event) => {
         event.preventDefault();
-        const formData = new FormData(arrivalForm as HTMLFormElement);
-        const jobId = (arrivalForm as HTMLFormElement).dataset.jobId;
-        
+        const formData = new FormData(arrivalForm);
+        const jobId = arrivalForm.dataset.jobId;
+
         try {
-          const result = await postJson('/portal/api/job-visits', {
-            action: 'logArrival',
+          const result = await postJson("/portal/api/job-visits", {
+            action: "logArrival",
             jobId,
-            visitDate: formData.get('visitDate'),
-            arrivalTime: formData.get('arrivalTime'),
-            gpsLat: formData.get('gpsLat') || null,
-            gpsLng: formData.get('gpsLng') || null,
-            customerName: formData.get('customerName') || null,
-            customerTitle: formData.get('customerTitle') || null,
-            notes: formData.get('notes') || null
+            visitDate: formData.get("visitDate"),
+            arrivalTime: formData.get("arrivalTime"),
+            gpsLat: formData.get("gpsLat") || null,
+            gpsLng: formData.get("gpsLng") || null,
+            customerName: formData.get("customerName") || null,
+            customerTitle: formData.get("customerTitle") || null,
+            notes: formData.get("notes") || null
           });
-          
-      if (visitResult) {
-        visitResult.textContent = result.message;
-        visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-green-200 bg-green-50 text-sm font-semibold text-green-800';
-        visitResult.classList.remove('hidden');
-      }
-          
-          // Hide arrival form and show outcome form
-          if (arrivalForm) arrivalForm.classList.add('hidden');
-          if (outcomeForm) outcomeForm.classList.remove('hidden');
+
+          if (visitResult) {
+            visitResult.textContent = String(result.message ?? "Arrival logged.");
+            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-green bg-kharon-green/10 text-sm font-semibold text-green-200";
+            visitResult.classList.remove("hidden");
+          }
+
+          // Transition to Phase 2
+          arrivalForm.classList.add("hidden");
+          outcomeForm?.classList.remove("hidden");
         } catch (error) {
           if (visitResult) {
             visitResult.textContent = (error as Error).message;
-            visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-red-200 bg-red-50 text-sm font-semibold text-red-800';
-            visitResult.classList.remove('hidden');
+            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-red bg-kharon-red/10 text-sm font-semibold text-red-200";
+            visitResult.classList.remove("hidden");
           }
         }
       });
     }
-    
+
+    // ── Phase 2: Log Outcome (with confirmation guard) ────────────────────
     if (outcomeForm) {
-      outcomeForm.addEventListener('submit', async (event) => {
+      outcomeForm.addEventListener("submit", async (event: Event) => {
         event.preventDefault();
-        const formData = new FormData(outcomeForm as HTMLFormElement);
-        const jobId = (outcomeForm as HTMLFormElement).dataset.jobId;
-        
+
+        if (!window.confirm("Are you sure you want to log this job outcome? This will finalize the job card and submit the visit record.")) {
+          return;
+        }
+
+        const formData = new FormData(outcomeForm);
+        const jobId = outcomeForm.dataset.jobId;
+
+        // Re-use the visit date from Phase 1
+        const visitDateInput = document.querySelector<HTMLInputElement>('.log-arrival-form [name="visitDate"]');
+
         try {
-          const result = await postJson('/portal/api/job-visits', {
-            action: 'logOutcome',
+          const result = await postJson("/portal/api/job-visits", {
+            action: "logOutcome",
             jobId,
-            visitDate: (document.querySelector('.log-arrival-form [name="visitDate"]') as HTMLInputElement)?.value, // Use the same date as arrival
-            departureTime: formData.get('departureTime'),
-            visitStatus: formData.get('visitStatus'),
-            unableReason: formData.get('unableReason') || null,
-            notes: formData.get('notes') || null
+            visitDate: visitDateInput?.value,
+            departureTime: formData.get("departureTime"),
+            visitStatus: formData.get("visitStatus"),
+            unableReason: formData.get("unableReason") || null,
+            notes: formData.get("notes") || null
           });
-          
+
           if (visitResult) {
-            visitResult.textContent = result.message;
-            visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-green-200 bg-green-50 text-sm font-semibold text-green-800';
-            visitResult.classList.remove('hidden');
+            visitResult.textContent = String(result.message ?? "Visit outcome logged.");
+            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-green bg-kharon-green/10 text-sm font-semibold text-green-200";
+            visitResult.classList.remove("hidden");
           }
-          
-          // Disable form after successful submission
-          outcomeForm.querySelectorAll('input, select, textarea, button').forEach((el: Element) => (el as HTMLInputElement).disabled = true);
+
+          // Disable all form inputs after successful submission
+          outcomeForm.querySelectorAll("input, select, textarea, button").forEach(
+            (el: Element) => ((el as HTMLInputElement).disabled = true)
+          );
         } catch (error) {
           if (visitResult) {
             visitResult.textContent = (error as Error).message;
-            visitResult.className = 'visit-result mt-4 p-4 rounded-lg border border-red-200 bg-red-50 text-sm font-semibold text-red-800';
-            visitResult.classList.remove('hidden');
+            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-red bg-kharon-red/10 text-sm font-semibold text-red-200";
+            visitResult.classList.remove("hidden");
           }
         }
       });
-      
-      // Cancel outcome logging
-      const cancelBtn = document.querySelector('.cancel-outcome-btn');
-      if (cancelBtn && outcomeForm && arrivalForm && visitResult) {
-        cancelBtn.addEventListener('click', () => {
-          outcomeForm.classList.add('hidden');
-          arrivalForm.classList.remove('hidden');
-          visitResult.classList.add('hidden');
+
+      // Cancel button returns to Phase 1
+      const cancelBtn = document.querySelector<HTMLButtonElement>(".cancel-outcome-btn");
+      if (cancelBtn) {
+        cancelBtn.addEventListener("click", () => {
+          outcomeForm.classList.add("hidden");
+          arrivalForm?.classList.remove("hidden");
+          visitResult?.classList.add("hidden");
         });
       }
     }

@@ -1,6 +1,6 @@
 import { getDatabase } from "../../../../lib/server/bindings";
-import { auditEvent } from "../../../../lib/server/audit.js";
-import { requireAdminOrFinance } from "../../../../lib/server/finance.js";
+import { auditEvent } from "../../../../lib/server/audit";
+import { requireAdminOrFinance } from "../../../../lib/server/access";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.ts";
 import { FinanceService } from "../../../../lib/server/services/finance-service";
 

@@ -1,13 +1,13 @@
 /**
  * Project Sentinel - Jobcard Submission API
  * Purpose: Handles technician signature, evidence collection, and final job closure
- * Dependencies: ../../../lib/server/bindings.ts, ../../../lib/server/audit.js, ../../../lib/server/jobcardPdf.js, ../../../lib/server/http.ts, ../../../lib/server/services/finance-service
+ * Dependencies: ../../../lib/server/bindings.ts, ../../../lib/server/audit, ../../../lib/server/jobcardPdf, ../../../lib/server/http.ts, ../../../lib/server/services/finance-service
  * Structural Role: Mutating REST API endpoint for jobcard completion
  */
 
 import type { APIContext } from "astro";
 // Removed unused import: import type { D1Database } from "@cloudflare/workers-types";
-import { auditError, auditEvent } from "../../../lib/server/audit.js";
+import { auditError, auditEvent } from "../../../lib/server/audit";
 import { FinanceService } from "../../../lib/server/services/finance-service.js";
 import { getDatabase, getStandardServiceFee } from "../../../lib/server/bindings.js";
 import { badRequest, forbidden, methodNotAllowed, serverError } from "../../../lib/server/http.js";

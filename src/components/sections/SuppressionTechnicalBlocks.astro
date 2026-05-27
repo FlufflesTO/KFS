@@ -1,157 +1,128 @@
-/**
- * Project Sentinel - Suppression Technical Blocks
- * Purpose: Renders room readiness checklist, agent comparison matrix, discharge sequence timelines, and pre-quote summaries.
- * Dependencies: Astro section layout, SVG.
- * Structural Role: Presentation component for suppression page.
- */
-<section class="section-padding bg-kharon-light relative overflow-hidden">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+---
+import SectionHeading from "./SectionHeading.astro";
+import KharonCard from "../ui/KharonCard.astro";
 
-    <!-- Block 1: Protected Room Readiness Checklist -->
-    <div class="reveal">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="h-1 w-8 bg-kharon-purple"></div>
-        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Room Readiness</p>
-      </div>
-      <h2 class="kharon-h2 text-kharon-black">Protected enclosure integrity standards.</h2>
-      <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
-        Before a gas suppression system can be commissioned, the protected enclosure must meet strict integrity standards. Every item below must be verified.
-      </p>
+const { 
+  suppression = [],
+  detection = [],
+  compliance = [],
+  security = []
+} = Astro.props;
+---
 
-      <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {[
-          { title: "Sealed penetrations", text: "All cable trays, conduits and pipework sealed with rated fire-stopping." },
-          { title: "Automatic door closers", text: "Every access door must be self-closing to prevent agent loss." },
-          { title: "Drop seals on doors", text: "Threshold gaps sealed with automatic drop-down seals for retention." },
-          { title: "Warning signage", text: "Bilingual warning signs at every entrance indicating gas hazard." },
-          { title: "Abort switches", text: "Manual abort stations positioned at each exit for emergency cancellation." },
-          { title: "Dedicated dampers", text: "HVAC dampers must close on activation and reopen for purge." }
-        ].map(item => (
-          <div class="group rounded-xl border border-kharon-border p-6 bg-white transition-all hover:border-kharon-purple/20 hover:shadow-md">
-            <div class="flex items-start gap-4">
-              <div class="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-kharon-purple/10 text-kharon-purple transition-colors group-hover:bg-kharon-purple group-hover:text-white">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
-              </div>
-              <div>
-                <p class="font-bold text-sm uppercase tracking-wider text-kharon-black">{item.title}</p>
-                <p class="mt-2 text-xs leading-relaxed text-kharon-grey/80">{item.text}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+<section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+  <div class="mx-auto max-w-7xl px-6">
+    <SectionHeading
+      title="Technical Capability Framework"
+      subtitle="Engineered Systems"
+      description="Comprehensive technical framework for fire protection and security systems."
+      center={true}
+    />
 
-    <!-- Block 2: Agent Selection Matrix -->
-    <div class="mt-16 reveal reveal-delayed">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="h-1 w-8 bg-kharon-purple"></div>
-        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Agent Selection</p>
-      </div>
-      <h2 class="kharon-h2 text-kharon-black">Agent performance comparison matrix.</h2>
-      <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
-        Agents carry different environmental, spatial, and safety profiles. Kharon selects based on the specific risk, not inventory preference.
-      </p>
-
-      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {[
-          { name: "FM-200", type: "Chemical Clean Agent", code: "HFC-227ea", gwp: "High", space: "Low", safety: "Design Conc.", cost: "$$", use: "IT & Server Rooms" },
-          { name: "Inergen", type: "Inert Gas Blend", code: "IG-541", gwp: "0", space: "High", safety: "Safe (Inert)", cost: "$$$", use: "Archives & Heritage" },
-          { name: "Novec 1230", type: "Fluoroketone", code: "FK-5-1-12", gwp: "1", space: "Low", safety: "Safe", cost: "$$$", use: "Data Centres" },
-          { name: "CO2", type: "High Pressure Gas", code: "Carbon Dioxide", gwp: "0", space: "Moderate", safety: "LETHAL", cost: "$", use: "Plant Rooms (Unmanned)", lethal: true }
-        ].map(agent => (
-          <article class={`rounded-xl border ${agent.lethal ? 'border-kharon-red/30 bg-red-50/30' : 'border-kharon-border bg-white'} p-6 sm:p-7 transition-all hover:shadow-xl`}>
-            <p class={`text-[0.625rem] font-bold uppercase tracking-widest ${agent.lethal ? 'text-kharon-red' : 'text-kharon-purple'}`}>{agent.type}</p>
-            <h3 class="mt-4 text-2xl font-bold tracking-tight text-kharon-black">{agent.name}</h3>
-            <p class="text-[0.625rem] font-bold text-kharon-grey/60 uppercase tracking-widest">{agent.code}</p>
-            
-            <dl class="mt-8 space-y-4">
-              {[['GWP', agent.gwp], ['Space', agent.space], ['Safety', agent.safety], ['Cost', agent.cost]].map(([label, val]) => (
-                <div class="flex items-center justify-between border-b border-kharon-border/30 pb-2">
-                  <dt class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">{label}</dt>
-                  <dd class={`text-[0.625rem] font-bold uppercase tracking-widest ${val === 'LETHAL' ? 'text-kharon-red' : 'text-kharon-black'}`}>{val}</dd>
+    <div class="mt-16 space-y-20">
+      <!-- Gas Suppression Systems -->
+      <div>
+        <h2 class="text-2xl font-bold text-kharon-cyan mb-8 flex items-center">
+          <span class="mr-3 w-10 h-10 rounded-md bg-kharon-purple/20 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+            </svg>
+          </span>
+          Gas Suppression Systems
+        </h2>
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {suppression.map((item: string, index: number) => (
+            <KharonCard key={index} variant="command" className="kharon-surface">
+              <div class="flex items-center">
+                <div class="mr-3 w-8 h-8 rounded-md bg-kharon-cyan/10 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-kharon-cyan" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
                 </div>
-              ))}
-            </dl>
-            
-            <p class="mt-8 text-[0.625rem] font-bold leading-relaxed text-kharon-grey/70 uppercase tracking-widest">
-              <span class="block text-kharon-black/40 mb-1">Typical use:</span>
-              {agent.use}
-            </p>
-          </article>
-        ))}
-      </div>
-    </div>
-
-    <!-- Block 3: Discharge Sequence Diagram -->
-    <div class="mt-16 reveal reveal-delayed">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="h-1 w-8 bg-kharon-purple"></div>
-        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">System Sequence</p>
-      </div>
-      <h2 class="kharon-h2 text-kharon-black">Automated discharge timeline.</h2>
-      <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
-        From first detection to post-discharge ventilation, every stage is timed and logged for compliance traceability.
-      </p>
-
-      <div class="mt-16 w-full max-w-5xl mx-auto overflow-hidden rounded-2xl border border-kharon-border bg-white p-6 sm:p-7 lg:p-12 shadow-sm">
-        <div class="overflow-x-auto pb-6">
-          <div class="min-w-[55rem]">
-            <div class="relative">
-              <div class="absolute top-1/2 left-0 w-full h-0.5 bg-kharon-border/50 -translate-y-1/2" aria-hidden="true"></div>
-              <div class="relative z-10 flex justify-between">
-                {[
-                  { id: "01", label: "Detection", sub: "Logic Trigger" },
-                  { id: "02", label: "Stage 1", sub: "Pre-alarm" },
-                  { id: "03", label: "Countdown", sub: "30-60s Delay" },
-                  { id: "04", label: "Agent", sub: "Discharge" },
-                  { id: "05", label: "Hold", sub: "Retention" },
-                  { id: "06", label: "Vent", sub: "Post-purge" }
-                ].map((step) => (
-                  <div class="flex flex-col items-center text-center">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-kharon-purple text-white font-bold text-sm ring-8 ring-white">
-                      {step.id}
-                    </div>
-                    <div class="mt-6">
-                      <p class="text-xs font-bold uppercase tracking-widest text-kharon-black">{step.label}</p>
-                      <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">{step.sub}</p>
-                    </div>
-                  </div>
-                ))}
+                <span class="text-white font-medium">{item}</span>
               </div>
-            </div>
-          </div>
+            </KharonCard>
+          ))}
+        </div>
+      </div>
+
+      <!-- Fire Detection Systems -->
+      <div>
+        <h2 class="text-2xl font-bold text-kharon-cyan mb-8 flex items-center">
+          <span class="mr-3 w-10 h-10 rounded-md bg-kharon-blue/20 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 13.047 14.01c-.04.27-.31.458-.582.458-.272 0-.542-.188-.582-.458L10.854 7.2 12.033 2.744A1 1 0 0113 2h5a1 1 0 110 2h-1.146l-.5 2h3.146a1 1 0 110 2h-2.5l-.5 2h2.5a1 1 0 110 2H15v1a1 1 0 11-2 0v-1h-1v1a1 1 0 11-2 0v-1H9v1a1 1 0 01-2 0v-1H6a1 1 0 010-2h.146l.5-2H4a1 1 0 110-2h2.5l.5-2H4a1 1 0 110-2h2.146l.5-2H12z" clipRule="evenodd" />
+            </svg>
+          </span>
+          Fire Detection Systems
+        </h2>
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {detection.map((item: string, index: number) => (
+            <KharonCard key={index} variant="command" className="kharon-surface">
+              <div class="flex items-center">
+                <div class="mr-3 w-8 h-8 rounded-md bg-kharon-cyan/10 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-kharon-cyan" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span class="text-white font-medium">{item}</span>
+              </div>
+            </KharonCard>
+          ))}
+        </div>
+      </div>
+
+      <!-- Compliance & Maintenance -->
+      <div>
+        <h2 class="text-2xl font-bold text-kharon-cyan mb-8 flex items-center">
+          <span class="mr-3 w-10 h-10 rounded-md bg-kharon-green/20 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 0a1 1 0 100 2h.01a1 1 0 100-2H9zm2 0a1 1 0 100 2h.01a1 1 0 100-2H11z" clipRule="evenodd" />
+            </svg>
+          </span>
+          Compliance & Maintenance
+        </h2>
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {compliance.map((item: string, index: number) => (
+            <KharonCard key={index} variant="command" className="kharon-surface">
+              <div class="flex items-center">
+                <div class="mr-3 w-8 h-8 rounded-md bg-kharon-cyan/10 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-kharon-cyan" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span class="text-white font-medium">{item}</span>
+              </div>
+            </KharonCard>
+          ))}
+        </div>
+      </div>
+
+      <!-- Integrated Security -->
+      <div>
+        <h2 class="text-2xl font-bold text-kharon-cyan mb-8 flex items-center">
+          <span class="mr-3 w-10 h-10 rounded-md bg-kharon-amber/20 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+            </svg>
+          </span>
+          Integrated Security
+        </h2>
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {security.map((item: string, index: number) => (
+            <KharonCard key={index} variant="command" className="kharon-surface">
+              <div class="flex items-center">
+                <div class="mr-3 w-8 h-8 rounded-md bg-kharon-cyan/10 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-kharon-cyan" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span class="text-white font-medium">{item}</span>
+              </div>
+            </KharonCard>
+          ))}
         </div>
       </div>
     </div>
-
-    <!-- Block 4: Pre-Quote Data Capture -->
-    <div class="mt-16 reveal reveal-delayed">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="h-1 w-8 bg-kharon-purple"></div>
-        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Pre-Quote Requirements</p>
-      </div>
-      <h2 class="kharon-h2 text-kharon-black">Data capture summary.</h2>
-      <p class="mt-6 text-lg text-kharon-grey leading-relaxed max-w-3xl">
-        Accurate quoting requires precise room data. Providing these details upfront avoids site revisits and ensures correct sizing.
-      </p>
-
-      <div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[
-          { title: "Room Dimensions", text: "Length, width and clear height to underside of slab for volume calculations." },
-          { title: "Opening Count", text: "Doors and windows affect retention time and determine sealing requirements." },
-          { title: "Penetrations", text: "Unsealed penetrations cause integrity failures. Count informs fire-stopping scope." },
-          { title: "Construction", text: "Raised floor or solid slab? Determines nozzle placement and routing." },
-          { title: "Existing Systems", text: "Current detection types (smoke, heat, aspiration) for interface logic." },
-          { title: "Occupancy", text: "Occupied rooms require safer agents and extended countdown logic." }
-        ].map(item => (
-          <div class="group rounded-xl border border-kharon-border bg-white p-6 sm:p-7 transition-all hover:border-kharon-purple/20 hover:shadow-md">
-            <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-black group-hover:text-kharon-purple transition-colors">{item.title}</h3>
-            <p class="mt-4 text-xs leading-relaxed text-kharon-grey/80">{item.text}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-
   </div>
 </section>

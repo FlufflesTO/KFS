@@ -6,7 +6,7 @@
  */
 
 import { getBindings } from "../../../../lib/server/bindings.ts";
-import { auditEvent } from "../../../../lib/server/audit.js";
+import { auditEvent } from "../../../../lib/server/audit";
 import { verifyCsrfRequest, csrfErrorResponse } from "../../../../lib/server/csrf.js";
 import { forbidden, json, methodNotAllowed, unauthorized } from "../../../../lib/server/http.ts";
 import { FinanceService } from "../../../../lib/server/services/finance-service.js";

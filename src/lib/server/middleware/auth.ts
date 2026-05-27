@@ -75,6 +75,12 @@ export async function authenticateRequest(request: Request, requiredRole?: strin
   }
 }
 
+// Check if user is logged in (without role requirement)
+export async function isLoggedIn(request: Request): Promise<boolean> {
+  const result = await authenticateRequest(request);
+  return result.isValid && result.user !== null;
+}
+
 // Updated to include technician role in MFA enforcement
 export function requiresMFA(role: string): boolean {
   return ["admin", "finance", "tech"].includes(role); // Added tech role

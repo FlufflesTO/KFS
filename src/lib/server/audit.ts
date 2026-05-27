@@ -81,3 +81,51 @@ export async function auditError(db: D1Database, request: Request, error: unknow
     console.error("Audit error logging failed", logError);
   }
 }
+
+export interface DocumentAccessLogOptions {
+  user?: {
+    id: string;
+    role: string;
+    email: string;
+  } | null;
+  siteId?: string | null;
+  storagePath?: string;
+  documentType?: string;
+  outcome?: "success" | "failure" | "blocked";
+  reason?: string | null;
+}
+
+export async function documentAccessLog(
+  db: D1Database,
+  request: Request,
+  options: DocumentAccessLogOptions = {}
+): Promise<void> {
+  const user = options.user || null;
+  const ip = request.headers.get("cf-connecting-ip") || null;
+  const userAgent = request.headers.get("user-agent") || null;
+
+  try {
+    await db
+      .prepare(
+        `INSERT INTO document_access_logs
+           (id, actor_user_id, actor_role, site_id, storage_path, document_type, outcome, ip_hash, user_agent, reason)
+         VALUES
+           (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .bind(
+        crypto.randomUUID(),
+        user?.id || null,
+        user?.role || null,
+        options.siteId || null,
+        options.storagePath || "",
+        options.documentType || "Jobcard PDF",
+        options.outcome || "success",
+        ip,
+        userAgent,
+        options.reason || null
+      )
+      .run();
+  } catch (error) {
+    console.error("Document access logging failed", error);
+  }
+}

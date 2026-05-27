@@ -1,9 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/sections/Hero.astro";
-import EmergencyResponse from "../components/sections/EmergencyResponse.astro";
-import ContextualInquiry from "../components/sections/ContextualInquiry.astro";
-import { site } from "../data/site.js";
+import SectionHeading from "../components/sections/SectionHeading.astro";
+import { pageMeta } from "../data/site.js";
 
 const emergencyRoutes = [
   {
@@ -33,60 +31,105 @@ const emergencyRoutes = [
 ];
 ---
 
-<BaseLayout
-  title="Emergency Support | Kharon"
-  description="Operational support pathways for fire detection faults, gas suppression issues, urgent compliance interventions and maintenance escalations."
->
-  <Hero
-    title="Emergency and SLA support for protection-system issues."
-    text="Route urgent faults, compliance interventions, maintenance escalations and system support requests with the operational context required for response."
-  />
+<BaseLayout title={pageMeta.emergencySupport.title} description={pageMeta.emergencySupport.description}>
+  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
+        Emergency Support
+      </h1>
+      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
+        Operational response pathways for protection-system faults, compliance interventions and maintenance escalations.
+      </p>
+    </div>
+  </section>
 
-  <EmergencyResponse />
-
-  <section class="bg-white py-16">
-    <div class="mx-auto max-w-7xl px-6">
-      <div class="max-w-3xl">
-        <p class="text-sm font-bold uppercase text-kharon-purple">Decision Route</p>
-        <h2 class="mt-3 text-3xl font-bold text-kharon-black">Select the route that matches the operational consequence.</h2>
-        <p class="mt-4 leading-7 text-kharon-grey">
-          Emergency handling should separate live system faults, existing client record access, urgent technical requests and compliance interventions.
-        </p>
-      </div>
-
-      <div class="mt-10 grid gap-5 md:grid-cols-2">
-        {emergencyRoutes.map((route) => (
-          <article class="rounded-lg border border-kharon-border bg-kharon-light p-6">
-            <h3 class="text-xl font-bold text-kharon-black">{route.title}</h3>
-            <p class="mt-3 leading-7 text-kharon-grey">{route.text}</p>
-            <a class="mt-6 inline-flex rounded-md bg-kharon-purple px-5 py-3 text-sm font-semibold text-white hover:bg-kharon-blue" href={route.href}>
-              {route.action}
-            </a>
-          </article>
-        ))}
-      </div>
-
-      <div class="mt-10 border-t border-kharon-border pt-8">
-        <p class="text-sm text-kharon-grey">
-          For inspection frequencies, maintenance cadence, defect classification and certificate-readiness guidance under SANS 10139 and SANS 14520, see the
-          <a href="/compliance" class="font-semibold text-kharon-purple hover:underline">protection system compliance reference</a>.
-        </p>
+  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+    <div class="mx-auto max-w-4xl px-6">
+      <SectionHeading
+        title="Operational Response Pathways"
+        subtitle="Emergency Protocols"
+        description="Structured response procedures for protection system emergencies and critical incidents."
+        center={true}
+      />
+      
+      <div class="mt-12 grid gap-8 md:grid-cols-2">
+        <div class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+          <div class="bg-kharon-surface-elevated rounded-xl p-6">
+            <h3 class="text-xl font-bold text-white mb-4">System Fault Response</h3>
+            <p class="text-kharon-light/70 mb-4">
+              Immediate response protocols for protection system faults that could compromise safety or operational continuity.
+            </p>
+            <ul class="space-y-2">
+              <li class="flex items-start">
+                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span class="text-kharon-light/80">24/7 emergency response team</span>
+              </li>
+              <li class="flex items-start">
+                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span class="text-kharon-light/80">On-site response within 4 hours</span>
+              </li>
+              <li class="flex items-start">
+                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span class="text-kharon-light/80">System restoration prioritization</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+          <div class="bg-kharon-surface-elevated rounded-xl p-6">
+            <h3 class="text-xl font-bold text-white mb-4">Compliance Interventions</h3>
+            <p class="text-kharon-light/70 mb-4">
+              Escalation procedures for compliance issues that require immediate attention to maintain regulatory standing.
+            </p>
+            <ul class="space-y-2">
+              <li class="flex items-start">
+                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span class="text-kharon-light/80">Priority intervention for critical defects</span>
+              </li>
+              <li class="flex items-start">
+                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span class="text-kharon-light/80">Regulatory liaison support</span>
+              </li>
+              <li class="flex items-start">
+                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span class="text-kharon-light/80">Documentation remediation</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <ContextualInquiry
-    eyebrow="Support Request"
-    title="Start an emergency or SLA support request."
-    text="Identify the protected area, system type, current fault state and operational consequence."
-    requestType="Emergency / SLA support"
-    fields={[
-      { label: "Severity", name: "severity", options: ["Critical system fault", "Urgent service intervention", "Compliance intervention", "Planned support request"] },
-      { label: "Affected System", name: "affected_system", options: ["Gas suppression", "Fire detection", "Fire panel", "Detection devices", "Integrated security support", "Unknown"] },
-      { label: "Protected Area", name: "protected_area", options: ["Server room", "Electrical room", "Warehouse", "Control room", "Commercial facility", "Industrial area", "Other"] },
-      { label: "Operational Status", name: "operational_status", options: ["Live fault", "System isolated", "Service overdue", "Audit pressure", "Preventive request"] }
-    ]}
-  />
+  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <SectionHeading
+        title="Controlled Emergency Response"
+        subtitle="Incident Management"
+        description="Structured procedures that maintain operational control during emergency situations."
+        center={true}
+      />
+      
+      <div class="mt-12 prose prose-invert max-w-none">
+        <p class="text-kharon-light/80 text-lg leading-relaxed">
+          Our emergency support protocols are designed to maintain operational control during critical incidents. We provide structured response procedures that prioritize safety while minimizing operational disruption and maintaining compliance requirements.
+        </p>
+      </div>
+    </div>
+  </section>
 
   
 </BaseLayout>

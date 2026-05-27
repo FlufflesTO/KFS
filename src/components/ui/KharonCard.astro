@@ -9,7 +9,7 @@
 export interface Props {
   title?: string;
   subtitle?: string;
-  variant?: 'default' | 'primary' | 'warning' | 'danger' | 'success';
+  variant?: 'default' | 'primary' | 'warning' | 'danger' | 'success' | 'command';
   border?: boolean;
   padding?: 'sm' | 'md' | 'lg';
   className?: string;
@@ -25,11 +25,12 @@ const {
 } = Astro.props;
 
 const variantClasses = {
-  default: 'border-kharon-border bg-white shadow-subtle',
-  primary: 'border-kharon-purple/20 bg-white shadow-md',
-  warning: 'border-amber-200 bg-amber-50/30',
-  danger: 'border-red-200 bg-red-50/30',
-  success: 'border-green-200 bg-green-50/30'
+  default: 'border-kharon-cyan/20 bg-kharon-surface-elevated backdrop-blur-sm',
+  primary: 'border-kharon-purple/30 bg-kharon-surface-elevated backdrop-blur-sm',
+  warning: 'border-kharon-amber/30 bg-kharon-surface-elevated backdrop-blur-sm',
+  danger: 'border-kharon-red/30 bg-kharon-surface-elevated backdrop-blur-sm',
+  success: 'border-kharon-green/30 bg-kharon-surface-elevated backdrop-blur-sm',
+  command: 'border-kharon-cyan/30 bg-kharon-surface-charcoal/80 backdrop-blur-md shadow-lg shadow-kharon-black/30'
 };
 
 const paddingClasses = {
@@ -39,7 +40,7 @@ const paddingClasses = {
 };
 
 const classes = [
-  'rounded-md',
+  'rounded-lg',
   'overflow-hidden',
   border ? 'border' : '',
   variantClasses[variant],
@@ -50,13 +51,13 @@ const classes = [
 
 <div class={classes}>
   {title && (
-    <div class="mb-5">
-      {subtitle && <p class="mb-1.5 text-xs font-semibold uppercase tracking-widest text-kharon-purple/70">{subtitle}</p>}
-      <h2 class="text-base font-semibold tracking-tight text-kharon-black">{title}</h2>
-      <div class="mt-4 h-[1px] w-6 bg-kharon-purple/30"></div>
+    <div class="mb-5 border-b border-kharon-cyan/10 pb-4">
+      {subtitle && <p class="mb-1.5 text-xs font-semibold uppercase tracking-widest text-kharon-cyan/70">{subtitle}</p>}
+      <h2 class="text-base font-semibold tracking-tight text-white">{title}</h2>
+      <div class="mt-3 h-[1px] w-6 bg-kharon-cyan/30"></div>
     </div>
   )}
-  <div class="text-kharon-grey text-sm leading-relaxed font-normal">
+  <div class="text-kharon-light/80 text-sm leading-relaxed font-normal">
     <slot />
   </div>
 </div>

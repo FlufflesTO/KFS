@@ -1,8 +1,8 @@
 ---
-import { auditError } from "../../../lib/server/audit.js";
+import { auditError } from "../../../lib/server/audit";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
-import { clientSites, inClause } from "../../../lib/server/clientAccess.js";
+import { clientSites, inClause } from "../../../lib/server/access";
 import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
 
 export const prerender = false;
@@ -96,69 +96,77 @@ try {
       {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
 
       <div class="grid gap-4 md:grid-cols-3">
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <p class="text-xs font-bold uppercase text-kharon-purple">Pending approval</p>
-          <p class="mt-2 text-2xl font-bold">{formatCurrency(totals.pending)}</p>
+        <article class="kharon-surface p-4 sm:p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Pending approval</p>
+          <p class="mt-2 text-2xl font-bold text-white">{formatCurrency(totals.pending)}</p>
         </article>
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <p class="text-xs font-bold uppercase text-kharon-red">Unpaid invoices</p>
-          <p class="mt-2 text-2xl font-bold">{formatCurrency(totals.unpaid)}</p>
+        <article class="kharon-surface p-4 sm:p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-kharon-red">Unpaid invoices</p>
+          <p class="mt-2 text-2xl font-bold text-white">{formatCurrency(totals.unpaid)}</p>
         </article>
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <p class="text-xs font-bold uppercase text-kharon-blue">Paid in Sage</p>
-          <p class="mt-2 text-2xl font-bold">{formatCurrency(totals.settled)}</p>
+        <article class="kharon-surface p-4 sm:p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-kharon-blue">Paid in Sage</p>
+          <p class="mt-2 text-2xl font-bold text-white">{formatCurrency(totals.settled)}</p>
         </article>
       </div>
 
-      <section class="border border-kharon-border bg-white p-4 sm:p-5">
+      <section class="kharon-surface p-4 sm:p-5">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p class="text-xs font-bold uppercase text-kharon-purple">Mapped sites</p>
-            <h2 class="mt-2 text-xl font-bold">Commercial scope</h2>
+            <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Mapped sites</p>
+            <h2 class="mt-2 text-xl font-bold text-white font-heading">Commercial scope</h2>
           </div>
-          <a class="rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" href="/portal/client/dashboard">
+          <a class="kharon-secondary-button py-2 text-xs" href="/portal/client/dashboard">
             Back to systems
           </a>
         </div>
         <div class="mt-5 grid gap-3 md:grid-cols-2">
           {sites.map((site) => (
-            <article class="border-l-4 border-kharon-blue bg-kharon-light p-4">
-              <p class="font-semibold">{site.owner_company_name}</p>
+            <article class="border-l-4 border-kharon-blue bg-surface-charcoal/60 border border-transparent p-4 rounded">
+              <p class="font-semibold text-white">{site.owner_company_name}</p>
               <p class="mt-1 text-sm text-kharon-grey">{site.physical_address}</p>
             </article>
           ))}
         </div>
       </section>
 
-      <section class="border border-kharon-border bg-white">
-        <div class="border-b border-kharon-border p-4 sm:p-5">
-          <h2 class="text-xl font-bold">Commercial ledger</h2>
-          <p class="mt-2 text-sm text-kharon-grey">Records reflect Sage document status. Official quotes and invoices are issued from Sage.</p>
+      <section class="kharon-surface overflow-hidden">
+        <div class="border-b border-line-cyan-soft p-4 sm:p-5">
+          <h2 class="text-xl font-bold text-white font-heading">Commercial ledger</h2>
+          <p class="mt-2 text-sm text-white/60">Records reflect Sage document status. Official quotes and invoices are issued from Sage.</p>
         </div>
-        <div class="flex flex-wrap items-center gap-3 px-4 py-3 sm:px-5 border-b border-kharon-border bg-kharon-light">
-          <input
-            id="quotes-search"
-            type="search"
-            class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
-            placeholder="Search site or reference…"
-            size="26"
-          />
-          <select id="quotes-status-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
-            <option value="">All statuses</option>
-            <option value="Pending Approval">Pending approval</option>
-            <option value="Unpaid">Unpaid</option>
-            <option value="Settled">Paid in Sage</option>
-          </select>
-          <select id="quotes-type-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
-            <option value="">All types</option>
-            <option value="Quote">Quote</option>
-            <option value="Invoice">Invoice</option>
-          </select>
+        <div class="flex flex-wrap items-end gap-4 px-4 py-4 sm:px-5 border-b border-line-cyan-soft bg-surface-charcoal/40">
+          <div class="grid gap-1">
+            <label for="quotes-search" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Search Site/Ref</label>
+            <input
+              id="quotes-search"
+              type="search"
+              class="kharon-field min-w-[200px]"
+              placeholder="Search site or reference…"
+            />
+          </div>
+          <div class="grid gap-1">
+            <label for="quotes-status-filter" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Status</label>
+            <select id="quotes-status-filter" class="kharon-field">
+              <option value="">All statuses</option>
+              <option value="Pending Approval">Pending approval</option>
+              <option value="Unpaid">Unpaid</option>
+              <option value="Settled">Paid in Sage</option>
+            </select>
+          </div>
+          <div class="grid gap-1">
+            <label for="quotes-type-filter" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Type</label>
+            <select id="quotes-type-filter" class="kharon-field">
+              <option value="">All types</option>
+              <option value="Quote">Quote</option>
+              <option value="Invoice">Invoice</option>
+            </select>
+          </div>
         </div>
         <p id="quotes-no-results" class="hidden px-4 py-3 text-sm text-kharon-grey sm:px-5">No records match your filter.</p>
-        <div class="portal-scroll-x">
-          <table class="w-full min-w-[760px] border-collapse text-left text-sm">
-            <thead class="bg-kharon-charcoal text-white">
+        <div class="portal-scroll-x overflow-x-auto">
+          <table class="kharon-table w-full min-w-[760px]">
+            <thead>
               <tr>
                 <th class="p-4">Site</th>
                 <th class="p-4">Reference</th>
@@ -176,13 +184,13 @@ try {
               )}
               {records.map((record) => (
                 <tr
-                  class="border-t border-kharon-border"
+                  class="border-t border-line-cyan-soft hover:bg-surface-charcoal/20"
                   data-search={`${record.owner_company_name} ${record.reference || ""} ${record.item_type}`}
                   data-status={record.payment_status}
                   data-type={record.item_type}
                 >
-                  <td class="p-4 font-semibold">{record.owner_company_name}</td>
-                  <td class="p-4">{record.reference || record.id}</td>
+                  <td class="p-4 font-semibold text-white">{record.owner_company_name}</td>
+                  <td class="p-4 font-mono">{record.reference || record.id}</td>
                   <td class="p-4">{record.item_type}</td>
                   <td class="p-4">
                     {record.finance_task_status === "Approved - Sage Invoice Required"
@@ -191,16 +199,16 @@ try {
                         ? "Paid in Sage"
                         : record.payment_status}
                   </td>
-                  <td class="p-4">{formatCurrency(Number(record.amount))}</td>
+                  <td class="p-4 font-mono text-white">{formatCurrency(Number(record.amount))}</td>
                   <td class="p-4">{record.distribution_date}</td>
-                  <td class="p-4">{record.job_id || "Not linked"}</td>
+                  <td class="p-4 font-mono">{record.job_id || "Not linked"}</td>
                   <td class="p-4">
                     {record.item_type === "Quote" && record.payment_status === "Pending Approval" && record.finance_task_status !== "Approved - Sage Invoice Required" ? (
-                      <button class="rounded-md border border-kharon-purple px-4 py-2 text-sm font-semibold text-kharon-purple" data-quote-id={record.id}>
+                      <button class="kharon-command-button py-1.5 px-3 text-xs" data-quote-id={record.id}>
                         Approve quote
                       </button>
                     ) : (
-                      <span class="text-xs uppercase text-kharon-grey/70">No action</span>
+                      <span class="text-xs uppercase text-kharon-grey/50">No action</span>
                     )}
                   </td>
                 </tr>
@@ -245,22 +253,34 @@ try {
   <script is:inline>
     for (const button of document.querySelectorAll("[data-quote-id]")) {
       button.addEventListener("click", async () => {
-        button.setAttribute("disabled", "true");
-        const response = await window.kharonPortalFetch("/portal/api/approve-quote", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ recordId: button.getAttribute("data-quote-id") })
-        });
-        const result = await response.json();
-        if (!response.ok || !result.ok) {
-          button.removeAttribute("disabled");
-          button.textContent = result.message || "Approval failed";
-          button.classList.add("border-red-600", "text-red-700");
+        const quoteId = button.getAttribute("data-quote-id");
+        if (!window.confirm(`Are you sure you want to approve Quote ${quoteId}? This is a destructive operation that will trigger Sage invoicing workflow.`)) {
           return;
         }
-        button.textContent = "Approved";
-        button.classList.remove("border-kharon-purple", "text-kharon-purple");
-        button.classList.add("border-kharon-blue", "text-kharon-blue");
+        
+        button.setAttribute("disabled", "true");
+        button.textContent = "Approving...";
+        
+        try {
+          const response = await window.kharonPortalFetch("/portal/api/approve-quote", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ recordId: quoteId })
+          });
+          const result = await response.json();
+          if (!response.ok || !result.ok) {
+            button.removeAttribute("disabled");
+            button.textContent = result.message || "Approval failed";
+            button.className = "rounded border border-kharon-red bg-kharon-red/10 px-3 py-1.5 text-xs font-semibold text-red-200";
+            return;
+          }
+          button.textContent = "Approved";
+          button.className = "rounded border border-kharon-green bg-kharon-green/10 px-3 py-1.5 text-xs font-semibold text-green-200";
+        } catch (error) {
+          button.removeAttribute("disabled");
+          button.textContent = "Network Error";
+          button.className = "rounded border border-kharon-red bg-kharon-red/10 px-3 py-1.5 text-xs font-semibold text-red-200";
+        }
       });
     }
   </script>
