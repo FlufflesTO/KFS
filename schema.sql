@@ -184,11 +184,14 @@ CREATE INDEX IF NOT EXISTS idx_user_feedback_submitted ON user_feedback(submitte
 CREATE TABLE IF NOT EXISTS audit_events (
     id TEXT PRIMARY KEY,
     actor_user_id TEXT,
+    actor_role TEXT CHECK (actor_role IS NULL OR actor_role IN ('tech', 'admin', 'client', 'finance')),
     event_type TEXT NOT NULL,
     entity_type TEXT,
     entity_id TEXT,
-    outcome TEXT NOT NULL,
-    details TEXT,
+    outcome TEXT NOT NULL CHECK (outcome IN ('success', 'failure', 'blocked')),
+    ip_hash TEXT,
+    user_agent TEXT,
+    metadata_json TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL
 );

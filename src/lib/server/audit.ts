@@ -24,30 +24,33 @@ export interface AuditEvent {
 }
 
 export interface AuditError {
-  entityType: string;
-  entityId: string;
+  entityType?: string;
+  entityId?: string;
 }
 
 export async function auditEvent(db: D1Database, request: Request, event: AuditEvent): Promise<void> {
   try {
+    const id = crypto.randomUUID();
+    const actorUserId = event.user?.id || null;
+    const actorRole = event.user?.role || null;
+    const validRoles = ["tech", "admin", "client", "finance"];
+    const sanitizedRole = actorRole && validRoles.includes(actorRole) ? actorRole : null;
+
     await db.prepare(`
-      INSERT INTO audit_log (
-        event_type, entity_type, entity_id, outcome, user_id, user_name, user_email, user_role, 
-        subject, metadata, ip_address, user_agent, timestamp
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      INSERT INTO audit_events (
+        id, actor_user_id, actor_role, event_type, entity_type, entity_id, outcome, ip_hash, user_agent, metadata_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
+      id,
+      actorUserId,
+      sanitizedRole,
       event.eventType,
       event.entityType,
-      event.entityId,
+      event.entityId || null,
       event.outcome,
-      event.user?.id || null,
-      event.user?.name || null,
-      event.user?.email || null,
-      event.user?.role || null,
-      event.subject,
-      event.metadata ? JSON.stringify(event.metadata) : null,
       request.headers.get("cf-connecting-ip") || null,
-      request.headers.get("user-agent") || null
+      request.headers.get("user-agent") || null,
+      event.metadata ? JSON.stringify(event.metadata) : null
     ).run();
   } catch (error) {
     console.error("Audit event logging failed", error);
@@ -56,22 +59,23 @@ export async function auditEvent(db: D1Database, request: Request, event: AuditE
 
 export async function auditError(db: D1Database, request: Request, error: unknown, context: AuditError): Promise<void> {
   try {
+    const id = crypto.randomUUID();
     await db.prepare(`
-      INSERT INTO audit_log (
-        event_type, entity_type, entity_id, outcome, subject, metadata, ip_address, user_agent, timestamp
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      INSERT INTO audit_events (
+        id, actor_user_id, actor_role, event_type, entity_type, entity_id, outcome, ip_hash, user_agent, metadata_json
+      ) VALUES (?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
+      id,
       "system.error",
-      context.entityType,
-      context.entityId,
+      context.entityType || "system",
+      context.entityId || null,
       "failure",
-      "system",
+      request.headers.get("cf-connecting-ip") || null,
+      request.headers.get("user-agent") || null,
       JSON.stringify({
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined
-      }),
-      request.headers.get("cf-connecting-ip") || null,
-      request.headers.get("user-agent") || null
+      })
     ).run();
   } catch (logError) {
     console.error("Audit error logging failed", logError);
