@@ -1,5 +1,5 @@
 import { auditError } from "../../lib/server/audit.js";
-import { getDatabase } from "../../lib/server/bindings.js";
+import { getDatabase } from "../../lib/server/bindings.ts";
 import { consumeRateLimit } from "../../lib/server/rateLimit.js";
 import { sha256Text } from "../../lib/server/request.js";
 import { ContactSubmissionSchema, ALLOWED_REQUEST_TYPES } from "../../lib/validation/schemas.js";

@@ -1,5 +1,5 @@
-import { json, badRequest, serverError } from "../../lib/server/http.js";
-import { getDatabase } from "../../lib/server/bindings.js";
+import { json, badRequest, serverError } from "../../lib/server/http.ts";
+import { getDatabase } from "../../lib/server/bindings.ts";
 import { auditEvent } from "../../lib/server/audit.js";
 import { z } from "zod";
 

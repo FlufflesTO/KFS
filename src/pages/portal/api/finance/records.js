@@ -1,6 +1,6 @@
-import { getDatabase } from "../../../../lib/server/bindings.js";
+import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent, auditError } from "../../../../lib/server/audit.js";
-import { badRequest, forbidden, json, unauthorized } from "../../../../lib/server/http.js";
+import { badRequest, forbidden, json, unauthorized } from "../../../../lib/server/http.ts";
 import { FinanceService } from "../../../../lib/server/services/finance-service.ts";
 
 export const prerender = false;

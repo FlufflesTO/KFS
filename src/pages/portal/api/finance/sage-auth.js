@@ -5,8 +5,8 @@
  * Structural Role: API Endpoint Handler
  */
 
-import { getBindings } from "../../../../lib/server/bindings.js";
-import { forbidden, unauthorized } from "../../../../lib/server/http.js";
+import { getBindings } from "../../../../lib/server/bindings.ts";
+import { forbidden, unauthorized } from "../../../../lib/server/http.ts";
 
 export const prerender = false;
 

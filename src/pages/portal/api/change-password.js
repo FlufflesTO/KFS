@@ -1,8 +1,8 @@
 import { auditError } from "../../../lib/server/audit.js";
-import { getDatabase } from "../../../lib/server/bindings.js";
+import { getDatabase } from "../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../lib/server/audit.js";
 import { createSessionToken, hashPassword, sessionCookie, verifyPassword } from "../../../lib/server/auth.js";
-import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
+import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.ts";
 
 export const prerender = false;
 

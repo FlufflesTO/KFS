@@ -1,7 +1,7 @@
 import { auditError } from "../../../../lib/server/audit.js";
-import { getDatabase } from "../../../../lib/server/bindings.js";
+import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit.js";
-import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
+import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.ts";
 import { cleanDate, cleanId, cleanText, cleanChoice, readJson, requireAdmin } from "../../../../lib/server/admin.js";
 
 export const prerender = false;

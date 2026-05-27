@@ -5,7 +5,7 @@
  * Structural Role: API Endpoint Handler
  */
 
-import { getBindings } from "../../../../lib/server/bindings.js";
+import { getBindings } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { badRequest, forbidden, unauthorized } from "../../../../lib/server/http.js";
 import { encryptText } from "../../../../lib/server/crypto.js";

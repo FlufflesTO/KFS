@@ -1,9 +1,9 @@
 import { auditError } from "../../../lib/server/audit.js";
-import { getDatabase } from "../../../lib/server/bindings.js";
+import { getDatabase } from "../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../lib/server/audit.js";
 import { createSessionToken, sessionCookie, revokeSessionToken, sessionCookieName } from "../../../lib/server/auth.js";
-import { decryptMfaSecret, encryptMfaSecret, generateTotpSecret, mfaProvisioningUri, verifyTotpCode } from "../../../lib/server/mfa.js";
-import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
+import { decryptMfaSecret, encryptMfaSecret, generateTotpSecret, mfaProvisioningUri, verifyTotpCode } from "../../../lib/server/mfa.ts";
+import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.ts";
 
 export const prerender = false;
 

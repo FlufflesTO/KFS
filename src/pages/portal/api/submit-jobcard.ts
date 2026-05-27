@@ -1,7 +1,7 @@
 /**
  * Project Sentinel - Jobcard Submission API
  * Purpose: Handles technician signature, evidence collection, and final job closure
- * Dependencies: ../../../lib/server/bindings.js, ../../../lib/server/audit.js, ../../../lib/server/jobcardPdf.js, ../../../lib/server/http.js, ../../../lib/server/services/finance-service
+ * Dependencies: ../../../lib/server/bindings.ts, ../../../lib/server/audit.js, ../../../lib/server/jobcardPdf.js, ../../../lib/server/http.ts, ../../../lib/server/services/finance-service
  * Structural Role: Mutating REST API endpoint for jobcard completion
  */
 
