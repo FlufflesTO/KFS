@@ -58,16 +58,57 @@ Comprehensive fire protection and security solutions portal for South African co
 
 ## 🎨 UI and Design Governance
 
-All UI changes must follow the official `DESIGN_CONSTITUTION.md` which establishes the Industrial Command Intelligence design direction. Key governance principles include:
+**All UI/UX work is governed by `DESIGN_CONSTITUTION.md`** - the authoritative document for visual identity, design tokens, and component standards.
 
+### Design Authority
+- **Constitution**: `DESIGN_CONSTITUTION.md` (20 sections, 1,400+ lines)
+- **Design System**: `KHARON_DESIGN_SYSTEM_DOCUMENTATION.md` (complete technical reference)
+- **Summary**: `docs/design-system.md` (quick reference)
+
+### Key Governance Principles
 - All UI changes must follow `DESIGN_CONSTITUTION.md` guidelines
 - No new color, font, or card system may be introduced without updating the constitution
-- The design target is Industrial Command Intelligence - mission-critical infrastructure software with enterprise fire and suppression intelligence
+- The design target is **Industrial Command Intelligence** - mission-critical infrastructure software with enterprise fire and suppression intelligence
 - Generic SaaS/admin-template styling is prohibited to maintain the premium field service operations technology appearance
 - Public site and portal must remain visually unified to ensure consistent brand experience
 - The verified Kharon letterhead must stay top-left as the primary brand anchor
 - Standalone logo may be used as low-opacity environmental 3D background mark without competing with the letterhead
 - Brand colors (black, purple, blue, grey, cyan, amber, red, green) must be preserved in all implementations
+
+### Pull Request Requirements
+All PRs must pass the UI checklist in `.github/pull_request_template.md`:
+- [ ] Uses approved design tokens from DESIGN_CONSTITUTION.md
+- [ ] Preserves letterhead/logo rules
+- [ ] No generic SaaS/admin template visuals
+- [ ] Accessible focus states (2px cyan, 4px offset)
+- [ ] Mobile technician usability (44px touch targets)
+- [ ] Public and portal visual unity
+- [ ] Reduced-motion support (@media query)
+- [ ] No horizontal overflow on mobile
+- [ ] Keyboard navigation support
+- [ ] ARIA labels where required
+
+### Design Tokens (Quick Reference)
+```css
+/* Brand Colors */
+--color-kharon-purple: #4B2E83;  /* Primary action */
+--color-kharon-blue: #1F4E79;    /* Hover states */
+--color-kharon-black: #0B0D0F;   /* Headers, backgrounds */
+--color-kharon-cyan: #00C2FF;    /* Highlights, focus */
+--color-kharon-amber: #F59E0B;   /* Warnings */
+--color-kharon-red: #C4332F;     /* Errors, critical */
+--color-kharon-green: #16A34A;   /* Success, valid */
+
+/* Typography */
+--font-sans: "Inter", system-ui, sans-serif;
+--font-weight-normal: 400;
+--font-weight-medium: 500;
+--font-weight-semibold: 600;
+
+/* Spacing */
+--header-height: 5rem;           /* 80px fixed header */
+--touch-target: 44px;            /* Minimum WCAG */
+```
 
 ## 🚀 Development
 

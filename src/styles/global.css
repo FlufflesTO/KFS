@@ -4,6 +4,10 @@
  * Purpose: Global stylesheet defining themes, base styles, and utility sources for Tailwind v4
  * Dependencies: TailwindCSS
  * Structural Role: Main styling entrypoint
+ * 
+ * ⚠️ GOVERNANCE: Visual design tokens are governed by DESIGN_CONSTITUTION.md
+ * Any changes to color, typography, or spacing tokens must comply with the constitution.
+ * See: DESIGN_CONSTITUTION.md (Articles II, III, IV)
  */
 
 @import "tailwindcss";
