@@ -1,0 +1,91 @@
+﻿{
+    "checkedAt":  "2026-05-25T09:28:36.3190939Z",
+    "ok":  true,
+    "results":  [
+                    {
+                        "name":  "public_home",
+                        "ok":  true,
+                        "details":  {
+                                        "url":  "https://www.tequit.co.za/",
+                                        "status":  200
+                                    }
+                    },
+                    {
+                        "name":  "portal_login",
+                        "ok":  true,
+                        "details":  {
+                                        "url":  "https://portal.tequit.co.za/portal/login",
+                                        "status":  200
+                                    }
+                    },
+                    {
+                        "name":  "protected_dashboard_redirect",
+                        "ok":  true,
+                        "details":  {
+                                        "status":  302,
+                                        "url":  "https://portal.tequit.co.za/portal/admin/dashboard",
+                                        "location":  "https://portal.tequit.co.za/portal/login?next=%2Fportal%2Fadmin%2Fdashboard"
+                                    }
+                    },
+                    {
+                        "name":  "headers_public_home",
+                        "ok":  true,
+                        "details":  {
+                                        "status":  200,
+                                        "url":  "https://www.tequit.co.za/",
+                                        "missingHeaders":  [
+
+                                                           ]
+                                    }
+                    },
+                    {
+                        "name":  "headers_portal_login",
+                        "ok":  true,
+                        "details":  {
+                                        "status":  200,
+                                        "url":  "https://portal.tequit.co.za/portal/login",
+                                        "missingHeaders":  [
+
+                                                           ]
+                                    }
+                    },
+                    {
+                        "name":  "headers_public_api_json",
+                        "ok":  true,
+                        "details":  {
+                                        "status":  422,
+                                        "url":  "https://www.tequit.co.za/api/contact",
+                                        "missingHeaders":  [
+
+                                                           ]
+                                    }
+                    },
+                    {
+                        "name":  "headers_protected_file_redirect",
+                        "ok":  true,
+                        "details":  {
+                                        "status":  302,
+                                        "url":  "https://portal.tequit.co.za/portal/api/file/jobcards/nonexistent.pdf",
+                                        "missingHeaders":  [
+
+                                                           ]
+                                    }
+                    },
+                    {
+                        "name":  "d1_availability",
+                        "ok":  true,
+                        "details":  {
+                                        "database":  "kharon-portal",
+                                        "output":  "\n ⛅️ wrangler 4.93.0 (update available 4.94.0)\n─────────────────────────────────────────────\nResource location: remote \n\n🌀 Executing on remote database kharon-portal (327db922-1c44-438d-8328-af7ba33e9ae0):\n🌀 To execute on your local development database, remove the --remote flag from your wrangler command.\n🚣 Executed 1 command in 0.12ms\n[\n  {\n    \"results\": [\n      {\n        \"user_count\": 5\n      }\n    ],\n    \"success\": true,\n    \"meta\": {\n      \"served_by\": \"v3-prod\",\n      \"served_by_region\": \"WEUR\",\n      \"served_by_colo\": \"LHR\",\n      \"served_by_primary\": true,\n      \"timings\": {\n        \"sql_duration_ms\": 0.1239\n      },\n      \"duration\": 0.1239,\n      \"changes\": 0,\n      \"last_row_id\": 0,\n      \"changed_db\": false,\n      \"size_after\": 335872,\n      \"rows_read\": 5,\n      \"rows_written\": 0,\n      \"total_attempts\": 1\n    }\n  }\n]"
+                                    }
+                    },
+                    {
+                        "name":  "r2_availability",
+                        "ok":  true,
+                        "details":  {
+                                        "bucket":  "kharon-portal-storage",
+                                        "output":  "\n ⛅️ wrangler 4.93.0 (update available 4.94.0)\n─────────────────────────────────────────────\nGetting info for \u0027kharon-portal-storage\u0027...\nname:                   kharon-portal-storage\ncreated:                2026-05-20T14:42:30.507Z\nlocation:               WEUR\ndefault_storage_class:  Standard\nobject_count:           4\nbucket_size:            17.2 kB"
+                                    }
+                    }
+                ]
+}

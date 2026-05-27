@@ -15,48 +15,53 @@ const capabilities = [
 ];
 ---
 
-<section class="section-padding bg-kharon-black text-white">
-  <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-[0.95fr_1.05fr]">
-    <div>
-      <p class="mb-4 text-sm font-bold uppercase text-kharon-cyan">
-        Gas Suppression Authority
-      </p>
+<section class="section-padding bg-kharon-black text-white relative overflow-hidden">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="grid items-center gap-10 lg:grid-cols-[1fr_1.1fr]">
+      <div class="reveal">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="h-1 w-8 bg-kharon-cyan"></div>
+          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-cyan">
+            Suppression Authority
+          </p>
+        </div>
 
-      <h2 class="max-w-4xl text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-        Critical environment fire protection for assets that cannot simply get wet.
-      </h2>
+        <h2 class="kharon-h2 text-white">
+          Critical environment protection for assets that cannot simply get wet.
+        </h2>
 
-      <p class="mt-6 text-lg leading-8 text-white/70">
-        Kharon focuses on clean-agent and engineered suppression systems for sensitive commercial and industrial environments where downtime, water damage and uncontrolled fire spread carry serious operational consequences.
-      </p>
+        <p class="mt-8 text-lg leading-relaxed text-white/65">
+          Kharon focuses on clean-agent and engineered suppression systems for sensitive environments where downtime, water damage and uncontrolled fire spread carry high operational consequence.
+        </p>
 
-      <div class="mt-9 flex flex-wrap gap-3">
-        {environments.map((item) => (
-          <span class="rounded-md border border-white/15 px-4 py-3 text-sm font-semibold text-white/75">
-            {item}
-          </span>
-        ))}
-      </div>
-    </div>
-
-    <div class="border border-white/10 bg-white/[0.025] p-6">
-      <div class="relative min-h-[28rem] overflow-hidden border border-white/10 bg-[#080B0E] p-6">
-        <div class="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.18)_1px,transparent_1px)] [background-size:34px_34px]"></div>
-        <div class="absolute bottom-8 left-8 right-8 h-20 border border-kharon-cyan/25 bg-kharon-cyan/10"></div>
-        <div class="absolute bottom-28 left-12 h-44 w-14 rounded-t-full border border-white/20 bg-white/10"></div>
-        <div class="absolute bottom-28 left-32 h-52 w-14 rounded-t-full border border-white/20 bg-white/10"></div>
-        <div class="absolute bottom-28 left-52 h-40 w-14 rounded-t-full border border-white/20 bg-white/10"></div>
-        <div class="absolute left-24 right-16 top-24 h-px bg-kharon-cyan/70"></div>
-        <div class="absolute right-16 top-20 h-24 w-28 border border-kharon-purple/60 bg-kharon-purple/20"></div>
-        <div class="absolute right-24 top-28 h-3 w-3 bg-kharon-cyan"></div>
-
-        <div class="relative z-10 ml-auto grid max-w-sm gap-4">
-          {capabilities.map((item, index) => (
-            <div class="border-l border-white/15 bg-black/30 p-4">
-              <p class="text-xs font-bold uppercase text-kharon-cyan">0{index + 1}</p>
-              <p class="mt-2 font-semibold text-white">{item}</p>
-            </div>
+        <div class="mt-10 flex flex-wrap gap-2">
+          {environments.map((item) => (
+            <span class="rounded-sm border border-white/10 bg-white/5 px-3 py-1.5 text-[0.625rem] font-bold uppercase tracking-widest text-white/50">
+              {item}
+            </span>
           ))}
+        </div>
+      </div>
+
+      <div class="reveal reveal-delayed border border-white/5 bg-white/[0.02] p-5 sm:p-6 rounded-xl">
+        <div class="relative min-h-[28rem] overflow-hidden rounded-lg border border-white/5 bg-[#080B0E] p-6">
+          <div class="absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(255,255,255,.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.1)_1px,transparent_1px)] [background-size:40px_40px]"></div>
+          <div class="absolute bottom-8 left-8 right-8 h-20 border border-kharon-cyan/15 bg-kharon-cyan/5"></div>
+          <div class="absolute bottom-28 left-12 h-44 w-14 rounded-t-full border border-white/10 bg-white/5"></div>
+          <div class="absolute bottom-28 left-32 h-52 w-14 rounded-t-full border border-white/10 bg-white/5"></div>
+          <div class="absolute bottom-28 left-52 h-40 w-14 rounded-t-full border border-white/10 bg-white/5"></div>
+          <div class="absolute left-24 right-16 top-24 h-px bg-kharon-cyan/40"></div>
+          <div class="absolute right-16 top-20 h-24 w-28 border border-kharon-purple/40 bg-kharon-purple/10"></div>
+          <div class="absolute right-24 top-28 h-2 w-2 bg-kharon-cyan"></div>
+
+          <div class="relative z-10 ml-auto grid max-w-sm gap-3">
+            {capabilities.map((item, index) => (
+              <div class="border-l-2 border-white/10 bg-black/40 p-4 transition-colors hover:border-kharon-cyan/50 hover:bg-black/60">
+                <p class="text-[0.625rem] font-black uppercase tracking-widest text-kharon-cyan">0{index + 1}</p>
+                <p class="mt-2 text-xs font-bold text-white tracking-wide">{item}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -94,17 +94,17 @@ function getStatusLabel(nextDueDate: string | null): string {
 try {
   const db = getDatabase();
   const sites = await clientSites(db, user);
-  const siteIds = sites.map((site) => site.id);
-  
+  const siteIds = sites.map((site: any) => site.id);
+
   if (siteIds.length === 0) {
     loadError = "This client account is not mapped to a site.";
   } else {
     const sitePlaceholders = inClause(siteIds);
-    
+
     try {
       // Get systems with compliance data
       systems = (await db.prepare(
-        `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area, 
+        `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area,
                 systems.last_service_date, systems.next_due_date, systems.service_interval_months,
                 sites.owner_company_name,
                 latest_jobs.id AS latest_job_id, latest_jobs.documentation_path, latest_jobs.completed_at,
@@ -126,9 +126,9 @@ try {
          )
          ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC
          LIMIT 200`
-      ).bind(user.id, user.siteId || null).all()).results as ClientSystem[] || [];
+      ).bind(user?.id || "", user?.siteId || null).all()).results as ClientSystem[] || [];
     } catch (error) {
-      await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client systems load failed" } });
+      await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_systems" });
       sectionErrors.push("System records could not be loaded.");
     }
 
@@ -151,9 +151,9 @@ try {
          ORDER BY CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 ELSE 3 END,
                   defects.created_at DESC
          LIMIT 200`
-      ).bind(user.id, user.siteId || null).all()).results as Defect[] || [];
+      ).bind(user?.id || "", user?.siteId || null).all()).results as Defect[] || [];
     } catch (error) {
-      await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client defects load failed" } });
+      await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_defects" });
       sectionErrors.push("Defect register could not be loaded.");
     }
 
@@ -176,9 +176,9 @@ try {
          )
          ORDER BY certificates.status DESC, COALESCE(certificates.expiry_date, certificates.issued_date) DESC
          LIMIT 200`
-      ).bind(user.id, user.siteId || null).all()).results as Certificate[] || [];
+      ).bind(user?.id || "", user?.siteId || null).all()).results as Certificate[] || [];
     } catch (error) {
-      await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client certificates load failed" } });
+      await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_certificates" });
       sectionErrors.push("Certificate register could not be loaded.");
     }
 
@@ -206,7 +206,7 @@ try {
     };
   }
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "client compliance dashboard failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_compliance_dashboard" });
   loadError = "Client compliance data could not be loaded.";
 }
 ---

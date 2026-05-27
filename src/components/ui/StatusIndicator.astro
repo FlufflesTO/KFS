@@ -1,7 +1,7 @@
 ---
 const { label, tone = "cyan" } = Astro.props;
 
-const tones = {
+const tones: Record<string, string> = {
   cyan: "bg-kharon-cyan",
   amber: "bg-kharon-amber",
   purple: "bg-kharon-purple"

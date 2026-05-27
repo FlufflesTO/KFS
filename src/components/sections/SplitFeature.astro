@@ -13,13 +13,12 @@ const {
   text,
   bullets = [],
   visual = "systems",
-  imageAlt = "Industrial fire and security infrastructure",
   reverse = false,
   href = "/contact?intent=site-assessment",
   cta = "Discuss Requirements"
 } = Astro.props;
 
-const visualLabels = {
+const visualLabels: Record<string, string[]> = {
   suppression: ["Cylinder bank", "Release panel", "Protected room"],
   detection: ["Addressable loop", "Control panel", "Response zones"],
   compliance: ["Inspection", "Service record", "Lifecycle plan"],
@@ -27,9 +26,9 @@ const visualLabels = {
   systems: ["Risk input", "System design", "Operational support"]
 };
 
-const labels = visualLabels[visual] || visualLabels.systems;
+const labels: string[] = visualLabels[visual] || visualLabels.systems!;
 
-const labelIcons = {
+const labelIcons: Record<string, string> = {
   // Suppression
   "Cylinder bank": `<svg class="h-6 w-6 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M7 5h10M7 9h10M7 13h10M7 17h10" stroke-linecap="round"/></svg>`,
   "Release panel": `<svg class="h-6 w-6 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><circle cx="15" cy="9" r="2"/><path d="M6 15h12" stroke-linecap="round"/></svg>`,
@@ -61,7 +60,7 @@ const labelIcons = {
   <!-- Subtle background ambient light -->
   <div class="absolute top-1/2 left-0 -translate-y-1/2 w-[800px] h-[800px] bg-kharon-cyan/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-  <div class={`relative z-10 mx-auto grid max-w-7xl items-center gap-8 lg:gap-12 px-6 lg:grid-cols-2 ${reverse ? "lg:[&>*:first-child]:order-2" : ""}`}>
+  <div class={`relative z-10 mx-auto grid max-w-7xl items-center gap-8 lg:gap-10 px-6 lg:grid-cols-2 ${reverse ? "lg:[&>*:first-child]:order-2" : ""}`}>
     <div class="flex flex-col justify-center" data-animate="slide-up">
       <p class="mb-4 text-sm font-bold uppercase tracking-widest text-kharon-purple">
         {eyebrow}
@@ -76,7 +75,7 @@ const labelIcons = {
       </p>
 
       <ul class="mt-8 grid gap-5">
-        {bullets.map((bullet) => (
+        {bullets.map((bullet: string) => (
           <li class="flex items-start gap-4 text-kharon-grey group">
             <div class="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-kharon-purple/10 text-kharon-purple transition-transform duration-300 group-hover:scale-110">
               <span class="h-2 w-2 rounded-full bg-kharon-purple"></span>
@@ -94,8 +93,8 @@ const labelIcons = {
     <!-- Glassmorphic Bento Visualization -->
     <div class="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square xl:aspect-[4/3] rounded-2xl" data-animate="fade-in">
       <div class="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-4 p-4">
-        {labels.map((label, index) => {
-          const iconHtml = labelIcons[label] || `<svg class="h-8 w-8 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
+        {labels.map((label: string, index: number) => {
+          const iconHtml = labelIcons[label as keyof typeof labelIcons] || `<svg class="h-8 w-8 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
           const isFirst = index === 0;
           const isLast = index === labels.length - 1;
           

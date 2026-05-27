@@ -107,6 +107,7 @@ export interface DbCertificate {
   site_id: string;
   owner_company_name: string;
   job_id: string | null;
+  blocking_severity?: string | null;
 }
 
 export interface DbFinancialRecord {
@@ -139,6 +140,18 @@ export interface DbInvoiceRequiredJob {
   coverage_area: string;
   completed_at: string | null;
   assigned_technician_name: string | null;
+}
+
+export interface DbLinkableJob {
+  id: string;
+  system_id: string;
+  job_type: string;
+  status: string;
+  scheduled_date: string;
+  completed_date: string | null;
+  system_type: string;
+  coverage_area: string;
+  owner_company_name: string;
 }
 
 export interface DbFinanceTask {

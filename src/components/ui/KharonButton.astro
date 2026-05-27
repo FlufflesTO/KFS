@@ -1,7 +1,7 @@
 ---
 /**
  * Project Sentinel - Kharon Button Component
- * Purpose: Consistent button component for all dashboard views with enigmatic design
+ * Purpose: Consistent button component for all dashboard views
  * Dependencies: None
  * Structural Role: Reusable UI component
  */
@@ -15,13 +15,13 @@ export interface Props {
   className?: string;
 }
 
-const { 
-  variant = 'primary', 
+const {
+  variant = 'primary',
   size = 'md',
   disabled = false,
   type = 'button',
   href,
-  className = '' 
+  className = ''
 } = Astro.props;
 
 const variantClasses = {
@@ -46,11 +46,12 @@ const baseClasses = [
   'rounded-md',
   'border',
   'font-semibold',
+  'font-weight-500',
   'transition-all',
   'duration-200',
   'active:scale-[0.98]',
   'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
-  'min-h-[44px]', // Touch target accessibility
+  'min-h-[44px]',
   sizeClasses[size],
   variantClasses[variant],
   className

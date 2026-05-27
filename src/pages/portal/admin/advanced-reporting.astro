@@ -205,8 +205,8 @@ const outstandingFinance = await db.prepare(`
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                {monthlyTrends.results?.map((month) => (
-                  <tr key={month.month}>
+                {monthlyTrends.results?.map((month: any) => (
+                  <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{month.month}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{month.completed}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{month.scheduled}</td>
@@ -227,8 +227,8 @@ const outstandingFinance = await db.prepare(`
         </div>
         <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
           <ul class="divide-y divide-gray-200">
-            {topTechs.results?.map((tech, index) => (
-              <li key={tech.name} class="py-4 flex items-center justify-between">
+            {topTechs.results?.map((tech: any, index: number) => (
+              <li class="py-4 flex items-center justify-between">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-10 w-10 rounded-full bg-kharon-blue flex items-center justify-center text-white font-bold">
                     {index + 1}
@@ -256,8 +256,8 @@ const outstandingFinance = await db.prepare(`
           <div class="flex items-center justify-center">
             <div class="w-full max-w-xs">
               <ul class="space-y-4">
-                {systemTypes.results?.map((type) => (
-                  <li key={type.system_type} class="flex justify-between items-center">
+                {systemTypes.results?.map((type: any) => (
+                  <li class="flex justify-between items-center">
                     <span class="text-sm font-medium text-gray-900">{type.system_type}</span>
                     <span class="text-sm font-semibold text-gray-700">{type.count}</span>
                   </li>
@@ -286,8 +286,8 @@ const outstandingFinance = await db.prepare(`
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                {outstandingFinance.results?.map((record) => (
-                  <tr key={record.reference}>
+                {outstandingFinance.results?.map((record: any) => (
+                  <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{record.reference}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R{record.amount.toFixed(2)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{record.owner_company_name}</td>

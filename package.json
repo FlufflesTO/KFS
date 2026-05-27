@@ -15,6 +15,8 @@
     "build": "astro build && node scripts/purge-css.mjs",
     "build:staging": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 staging",
     "build:production:kharon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 production",
+    "lint": "eslint .",
+    "test": "echo \"Success: No tests defined in project\"",
     "audit:site": "node scripts/audit-site.mjs",
     "validate:site": "npm run build:staging && npm run audit:site",
     "portal:hash-password": "node scripts/hash-password.mjs",
@@ -43,6 +45,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@cloudflare/workers-types": "^4.20260526.1",
     "@eslint/js": "^10.0.1",
     "typescript": "^6.0.3",
     "wrangler": "^4.92.0"

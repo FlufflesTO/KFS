@@ -5,6 +5,7 @@
  * Structural Role: Session cryptography and validation layer
  */
 
+// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
 import { env } from "cloudflare:workers";
 import type { D1Database } from "@cloudflare/workers-types";
 
@@ -45,7 +46,12 @@ export const sessionCookieName = "kharon_session_token";
 function base64UrlEncode(input: string | Uint8Array): string {
   const bytes = input instanceof Uint8Array ? input : textEncoder.encode(String(input));
   let binary = "";
-  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  for (let i = 0; i < bytes.length; i++) {
+    const byte = bytes[i];
+    if (byte !== undefined) {
+      binary += String.fromCharCode(byte);
+    }
+  }
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 
@@ -117,10 +123,11 @@ export async function verifySessionToken(token: string | null | undefined): Prom
   if (!encodedPayload || !encodedSignature) return null;
 
   const expected = base64UrlDecode(encodedSignature);
+  // Explicitly cast to ArrayBuffer to satisfy TypeScript
   const valid = await crypto.subtle.verify(
     "HMAC",
     await hmacKey(getSessionSecret()),
-    expected,
+    expected.buffer as ArrayBuffer,
     textEncoder.encode(encodedPayload)
   );
 

@@ -10,7 +10,7 @@ export async function GET() {
     await db.prepare('SELECT 1 as test').first();
     dbStatus = 'connected';
   } catch (error) {
-    dbError = error instanceof Error ? error.message : 'Unknown error';
+    dbError = error instanceof Error ? error.message : String(error);
     dbStatus = 'error';
   }
 
@@ -40,6 +40,7 @@ export async function GET() {
     status: healthStatus.status === 'healthy' ? 200 : 503,
     headers: {
       'Content-Type': 'application/json',
+      'X-Content-Type-Options': 'nosniff',
       'Cache-Control': 'no-cache'
     }
   });

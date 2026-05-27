@@ -191,7 +191,7 @@ const integrationEvents = [
       </h2>
     </div>
 
-    <div class="mt-10 grid gap-12 lg:grid-cols-12 items-center">
+    <div class="mt-10 grid gap-10 lg:grid-cols-12 items-center">
       <div class="lg:col-span-7">
         <svg viewBox="0 0 600 420" role="img" aria-label="Integration points diagram showing Building Management System connected to Access Control, CCTV, Fire Detection, Gas Suppression and Intruder Alarm" class="h-auto w-full" font-family="system-ui, -apple-system, sans-serif">
           <defs>
@@ -213,7 +213,7 @@ const integrationEvents = [
         ))}
 
         <!-- Event connector lines -->
-        {integrationEvents.map((evt, i) => (
+        {integrationEvents.map((evt) => (
           <line
             x1={evt.x1}
             y1={evt.y1}

@@ -5,6 +5,7 @@
  * Structural Role: Cross-Site Request Forgery mitigation layer
  */
 
+// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
 import { env } from "cloudflare:workers";
 import type { SessionUser } from "./auth";
 
@@ -23,7 +24,12 @@ interface CsrfPayload {
 function base64UrlEncode(input: string | Uint8Array): string {
   const bytes = input instanceof Uint8Array ? input : textEncoder.encode(String(input));
   let binary = "";
-  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  for (let i = 0; i < bytes.length; i++) {
+    const byte = bytes[i];
+    if (byte !== undefined) {
+      binary += String.fromCharCode(byte);
+    }
+  }
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 
@@ -67,10 +73,11 @@ export async function verifyCsrfToken(token: string | null | undefined, user: Se
   const [encodedPayload, encodedSignature] = token.split(".");
   if (!encodedPayload || !encodedSignature) return false;
 
+  // Explicitly cast to ArrayBuffer to satisfy TypeScript
   const valid = await crypto.subtle.verify(
     "HMAC",
     await hmacKey(),
-    base64UrlDecode(encodedSignature),
+    base64UrlDecode(encodedSignature).buffer as ArrayBuffer,
     textEncoder.encode(encodedPayload)
   );
   if (!valid) return false;

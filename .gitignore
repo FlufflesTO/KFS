@@ -9,53 +9,49 @@
 
 # Dependencies
 node_modules/
+antigravity_env/
 
-# Logs and temp files
-*.log
-*.tmp
-*.swp
+# Builds
+dist/
+.nuxt/
+.output/
+.next/
+.vercel/
+.svelte-kit/
+.astro/
+.cache/
+.wrangler/
 
-# Environment
-.env
+# Environment variables
 .env.local
-.env.*
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Editors
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Operational exports
+backups/
+monitor-results/
+retention-reports/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE specific
 .vscode/
 .idea/
 
 # Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# Build outputs
-dist/
-build/
-.next/
-.nuxt/
-out/
-
-# Python caches
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-
-# Virtual environments
-venv/
-.venv/
-env/
-ENV/
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Test coverage
-.nyc_output/
 coverage/
 
 # TypeScript

@@ -1,83 +1,78 @@
 /**
- * Project Sentinel - Rate Limiting Services
- * Purpose: Provides a sliding window rate limiter backed by D1 for API and authentication endpoints
+ * Project Sentinel - Rate Limiting Service
+ * Purpose: Prevents abuse by tracking and limiting request frequency per client
  * Dependencies: ./request.js
- * Structural Role: Request frequency throttling security layer
+ * Structural Role: Traffic control layer
  */
 
 import { requestFingerprint } from "./request.js";
 import type { D1Database } from "@cloudflare/workers-types";
 
 export interface RateLimitOptions {
-  scope?: string;
-  subject?: string;
-  maxAttempts?: number;
-  windowSeconds?: number;
+  scope: string;
+  subject: string;
+  maxAttempts: number;
+  windowSeconds: number;
 }
 
 export interface RateLimitResult {
   allowed: boolean;
   attempts: number;
-  maxAttempts: number;
-  retryAfter: number;
+  retryAfter: number; // seconds to wait before next attempt
+  resetAfter: number; // seconds until counter resets
 }
 
-export async function consumeRateLimit(db: D1Database, request: Request, options: RateLimitOptions = {}): Promise<RateLimitResult> {
-  const scope = String(options.scope || "portal").slice(0, 80);
-  const subject = String(options.subject || "anonymous").toLowerCase();
-  const maxAttempts = Number.isInteger(options.maxAttempts) ? (options.maxAttempts as number) : 8;
-  const windowSeconds = Number.isInteger(options.windowSeconds) ? (options.windowSeconds as number) : 15 * 60;
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  const windowStart = Math.floor(nowSeconds / windowSeconds) * windowSeconds;
-  const fingerprint = await requestFingerprint(request, subject);
-  const key = `${scope}:${fingerprint.ipHash}:${fingerprint.subjectHash}`;
-
-  await db
-    .prepare(
-      `INSERT INTO portal_rate_limits (rate_key, scope, window_start, attempts)
-       VALUES (?1, ?2, ?3, 1)
-       ON CONFLICT(rate_key) DO UPDATE SET
-         attempts = CASE
-           WHEN excluded.window_start > portal_rate_limits.window_start THEN 1
-           ELSE portal_rate_limits.attempts + 1
-         END,
-         window_start = CASE
-           WHEN excluded.window_start > portal_rate_limits.window_start THEN excluded.window_start
-           ELSE portal_rate_limits.window_start
-         END,
-         updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`
-    )
-    .bind(key, scope, windowStart)
-    .run();
-
-  const record = await db
-    .prepare(`SELECT attempts, window_start FROM portal_rate_limits WHERE rate_key = ?1 LIMIT 1`)
-    .bind(key)
-    .first<{ attempts: number; window_start: number }>();
-
-  const attempts = Number(record?.attempts || 0);
-  const activeWindowStart = Number(record?.window_start || windowStart);
-  const retryAfter = Math.max(1, activeWindowStart + windowSeconds - nowSeconds);
-
-  // Asynchronously prune rate limit records older than 24 hours to prevent table bloat
-  db.prepare("DELETE FROM portal_rate_limits WHERE window_start < ?1")
-    .bind(nowSeconds - 86400)
-    .run()
-    .catch((error) => console.error("failed to prune portal_rate_limits", error));
-
+export async function consumeRateLimit(db: D1Database, request: Request, options: RateLimitOptions): Promise<RateLimitResult> {
+  const fingerprint = await requestFingerprint(request);
+  const identifier = `${options.scope}:${options.subject}:${fingerprint}`;
+  
+  const now = Math.floor(Date.now() / 1000);
+  const cutoff = now - options.windowSeconds;
+  
+  // Clean up old entries
+  await db.prepare(`
+    DELETE FROM rate_limits 
+    WHERE identifier = ? AND accessed_at < ?
+  `).bind(identifier, new Date(cutoff * 1000).toISOString()).run();
+  
+  // Count recent attempts
+  const countRow = await db.prepare(`
+    SELECT COUNT(*) as count 
+    FROM rate_limits 
+    WHERE identifier = ? AND accessed_at >= ?
+  `).bind(identifier, new Date(cutoff * 1000).toISOString()).first();
+  
+  const attempts = Number(countRow?.count || 0);
+  
+  if (attempts >= options.maxAttempts) {
+    return {
+      allowed: false,
+      attempts: attempts,
+      retryAfter: options.windowSeconds,
+      resetAfter: options.windowSeconds
+    };
+  }
+  
+  // Record this access
+  await db.prepare(`
+    INSERT INTO rate_limits (identifier, accessed_at) 
+    VALUES (?, ?)
+  `).bind(identifier, new Date().toISOString()).run();
+  
   return {
-    allowed: attempts <= maxAttempts,
-    attempts,
-    maxAttempts,
-    retryAfter
+    allowed: true,
+    attempts: attempts + 1,
+    retryAfter: 0,
+    resetAfter: options.windowSeconds - (now - cutoff)
   };
 }
 
-export async function resetRateLimit(db: D1Database, request: Request, options: RateLimitOptions = {}): Promise<void> {
-  const scope = String(options.scope || "portal").slice(0, 80);
-  const subject = String(options.subject || "anonymous").toLowerCase();
-  const fingerprint = await requestFingerprint(request, subject);
-  const key = `${scope}:${fingerprint.ipHash}:${fingerprint.subjectHash}`;
-
-  await db.prepare(`DELETE FROM portal_rate_limits WHERE rate_key = ?1`).bind(key).run();
+export async function resetRateLimit(db: D1Database, request: Request, options: RateLimitOptions): Promise<void> {
+  const fingerprint = await requestFingerprint(request);
+  const identifier = `${options.scope}:${options.subject}:${fingerprint}`;
+  
+  await db.prepare(`
+    DELETE FROM rate_limits 
+    WHERE identifier = ?
+  `).bind(identifier).run();
 }

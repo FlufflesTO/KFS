@@ -1,5 +1,4 @@
 ---
-import { SITE_CONFIG } from "../../../config/site-config";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
 import { requireFinance } from "../../../lib/server/finance.js";
@@ -12,7 +11,7 @@ import FinanceLedgerTable from "../../../components/portal/finance/FinanceLedger
 export const prerender = false;
 
 const { user } = Astro.locals;
-let loadError = null;
+let loadError: string | null = null;
 
 // Implementation markers: financial_records, payment_status
 
@@ -26,13 +25,13 @@ if (financeError) {
 const db = getDatabase();
 
 let summary = { pending_tasks: 0, total_pending_value: 0, overdue_invoices: 0, unpaid_amount: 0 };
-let pendingTasks = [];
-let completedTasks = [];
-let missingSageRefs = [];
-let sites = [];
-let linkableJobs = [];
+let pendingTasks: Array<any> = [];
+let completedTasks: Array<any> = [];
+let missingSageRefs: Array<any> = [];
+let sites: Array<any> = [];
+let linkableJobs: Array<any> = [];
 let stats = { totalSageAmountExVat: 0, totalSageVatAmount: 0, totalSageAmountIncVat: 0 };
-let sageConnection = { connected: false };
+let sageConnection = { connected: false, expired: false };
 
 try {
   // Get finance summary
@@ -94,7 +93,6 @@ try {
   const sageConnectionRow = await db.prepare("SELECT expires_at FROM sage_config WHERE id = 1").first();
   sageConnection = {
     connected: !!sageConnectionRow,
-    expiresAt: sageConnectionRow ? new Date(sageConnectionRow.expires_at * 1000).toISOString() : undefined,
     expired: sageConnectionRow ? new Date(sageConnectionRow.expires_at * 1000) < new Date() : false
   };
 
@@ -121,14 +119,14 @@ try {
   </section>
 
   <section class="px-4 py-6 sm:px-6 sm:py-8">
-    <div class="mx-auto max-w-7xl space-y-6">
+    <div class="mx-auto max-w-7xl space-y-8"> <!-- Increased space-y from 6 to 8 for better mobile spacing -->
       {loadError && <p class="rounded border border-red-300 bg-red-50 p-4 text-sm text-red-800">{loadError}</p>}
 
       <FinanceCreateForm {sites} {linkableJobs} />
 
       <FinanceStatsPanel {summary} />
 
-      <div class="grid gap-6 lg:grid-cols-2">
+      <div class="grid gap-8 lg:grid-cols-2"> <!-- Increased gap from 6 to 8 for better mobile spacing -->
         <FinanceExceptionPanel {pendingTasks} {summary} />
         <FinanceSagePanel {missingSageRefs} {stats} {sageConnection} />
       </div>

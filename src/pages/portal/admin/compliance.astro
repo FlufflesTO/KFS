@@ -6,8 +6,6 @@ import { getDatabase } from "../../../lib/server/bindings.js";
 export const prerender = false;
 
 const user = Astro.locals.user;
-const today = new Date().toISOString().slice(0, 10);
-const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
 let stats = {
   openCriticalDefects: 0,
@@ -17,14 +15,15 @@ let stats = {
   dueSoonCertificates: 0,
   systemsAtRisk: 0
 };
-let criticalDefects = [];
-let blockedCertificates = [];
-let dueSoonCertificates = [];
-let systemsAtRisk = [];
+let criticalDefects: Array<any> = [];
+let blockedCertificates: Array<any> = [];
+let dueSoonCertificates: Array<any> = [];
+let systemsAtRisk: Array<any> = [];
 let loadError = "";
+let db: any = null;
 
 try {
-  const db = getDatabase();
+  db = getDatabase();
 
   const [cntCritical, cntOpen, cntBlocked, cntOverdue, cntDueSoon, cntAtRisk] = await db.batch([
     db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
@@ -108,7 +107,7 @@ try {
      LIMIT 20`
   ).all()).results || [];
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "compliance dashboard failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "compliance_dashboard" });
   loadError = "Compliance data could not be loaded.";
 }
 ---

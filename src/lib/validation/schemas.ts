@@ -37,14 +37,14 @@ export const ALLOWED_REQUEST_TYPES = [
 export const ContactSubmissionSchema = z.object({
   name: NameSchema,
   email: EmailSchema,
-  requestType: z.enum(ALLOWED_REQUEST_TYPES).or(z.string().min(2).max(120)), // Fallback for subject mapping
+  requestType: z.enum(ALLOWED_REQUEST_TYPES), // Remove fallback to prevent invalid types
   message: TextSchema,
   popiaConsent: z.boolean().or(z.literal("true")).or(z.literal("on")),
   website: z.string().optional() // Honeypot
 }).transform(data => {
   // Normalize variations of consent and requestType
   if (typeof data.popiaConsent !== "boolean") {
-    data.popiaConsent = true;
+    data.popiaConsent = data.popiaConsent === "true" || data.popiaConsent === "on";
   }
   return data;
 });

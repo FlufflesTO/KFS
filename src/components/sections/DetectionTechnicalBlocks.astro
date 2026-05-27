@@ -113,7 +113,7 @@ const zoningStrategies = [
               <td class="border border-kharon-border px-4 py-3 font-semibold text-kharon-black whitespace-nowrap">
                 {event}
               </td>
-              {matrix[rowIdx].map((active) => (
+              {matrix[rowIdx]?.map((active: boolean) => (
                 <td class="border border-kharon-border px-3 py-3 text-center">
                   {active ? (
                     <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-kharon-cyan/20">

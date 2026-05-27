@@ -54,7 +54,7 @@ for (const file of srcFiles) {
   for (const match of classMatches) {
     if (match.startsWith('class="') || match.startsWith("class='") || match.startsWith('class:list="') || match.startsWith("class:list='")) {
       // Static class string
-      const words = match.match(/[a-zA-Z0-9_\-\/\[\]\:]+/g) || [];
+      const words = match.match(/[a-zA-Z0-9_\-\/\[\]\:\.\%]+/g) || [];
       for (const w of words) {
         if (w !== 'class' && w !== 'list') {
           usedWords.add(w);
@@ -66,7 +66,7 @@ for (const file of srcFiles) {
       let strMatch;
       while ((strMatch = stringLiteralRegex.exec(match)) !== null) {
         const val = strMatch[1] || strMatch[2] || strMatch[3] || '';
-        const words = val.match(/[a-zA-Z0-9_\-\/\[\]\:]+/g) || [];
+        const words = val.match(/[a-zA-Z0-9_\-\/\[\]\:\.\%]+/g) || [];
         for (const w of words) {
           usedWords.add(w);
         }
@@ -246,12 +246,10 @@ while (j < output.length) {
     } else if (output[j] === '{') {
       j++;
       let braceCount = 1;
-      let body = '';
       while (j < output.length && braceCount > 0) {
         const bodyChar = output[j];
         if (bodyChar === '{') braceCount++;
         else if (bodyChar === '}') braceCount--;
-        if (braceCount > 0) body += bodyChar;
         j++;
       }
       const block = output.slice(start, j);

@@ -60,7 +60,13 @@ export class SageClient {
     async searchContacts(name: string): Promise<SageContact | null> {
         try {
             const data = await this.request<{ $items: SageContact[] }>(`/contacts?search=${encodeURIComponent(name)}&items_per_page=1`);
-            return data.$items.length > 0 ? data.$items[0] : null;
+            if (data.$items && data.$items.length > 0) {
+                const firstItem = data.$items[0];
+                if (firstItem && firstItem.id) {
+                    return firstItem;
+                }
+            }
+            return null;
         } catch (error) {
             console.error("SageClient: Error searching contacts", error);
             throw error;
@@ -90,10 +96,13 @@ export class SageClient {
     private async getDefaultSalesLedgerId(): Promise<string> {
         // Usually 4000 in UK/ZA but we'll fetch one dynamically based on category
         const data = await this.request<{ $items: { id: string }[] }>('/ledger_accounts?visible_in=sales&items_per_page=1');
-        if (data.$items.length === 0) {
-            throw new Error("No valid sales ledger accounts found in Sage.");
+        if (data.$items && data.$items.length > 0) {
+            const firstItem = data.$items[0];
+            if (firstItem && firstItem.id) {
+                return firstItem.id;
+            }
         }
-        return data.$items[0].id;
+        throw new Error("No valid sales ledger accounts found in Sage.");
     }
 
     /**
@@ -101,7 +110,10 @@ export class SageClient {
      */
     private async getStandardTaxRateId(): Promise<string | undefined> {
         const data = await this.request<{ $items: { id: string }[] }>('/tax_rates?attributes=standard&items_per_page=1');
-        return data.$items.length > 0 ? data.$items[0].id : undefined;
+        if (data.$items && data.$items.length > 0) {
+            return data.$items[0]?.id;
+        }
+        return undefined;
     }
 
     /**
@@ -124,9 +136,9 @@ export class SageClient {
                         description: description,
                         ledger_account_id: ledgerId,
                         quantity: 1,
-                        unit_price: netAmount,
-                        tax_amount: taxAmount,
-                        net_amount: netAmount,
+                        unit_price: parseFloat(netAmount),
+                        tax_amount: parseFloat(taxAmount),
+                        net_amount: parseFloat(netAmount),
                         // Ensure tax rate is provided if we found one
                         ...(taxRateId ? { tax_rate_id: taxRateId } : {})
                     }
@@ -161,9 +173,9 @@ export class SageClient {
                         description: description,
                         ledger_account_id: ledgerId,
                         quantity: 1,
-                        unit_price: netAmount,
-                        tax_amount: taxAmount,
-                        net_amount: netAmount,
+                        unit_price: parseFloat(netAmount),
+                        tax_amount: parseFloat(taxAmount),
+                        net_amount: parseFloat(netAmount),
                         ...(taxRateId ? { tax_rate_id: taxRateId } : {})
                     }
                 ]

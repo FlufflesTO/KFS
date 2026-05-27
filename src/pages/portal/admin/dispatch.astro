@@ -53,9 +53,10 @@ let dispatched: DispatchJob[] = [];
 let techs: { id: string; name: string }[] = [];
 let stats = { unassigned: 0, inProgress: 0, emergency: 0, slaWarning: 0 };
 let loadError = "";
+let db: any = null;
 
 try {
-  const db = getDatabase();
+  db = getDatabase();
 
   const [statsResult, unassignedResult, dispatchedResult, techsResult] = await db.batch([
     db.prepare(`
@@ -165,7 +166,7 @@ try {
   dispatched  = (dispatchedResult.results || []).map(mapJob);
   techs = (techsResult.results || []) as { id: string; name: string }[];
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "dispatch board failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "dispatch_board" });
 
   loadError = "Dispatch data could not be loaded.";
 }

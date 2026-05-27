@@ -179,3 +179,40 @@ CREATE TABLE IF NOT EXISTS user_feedback (
 
 CREATE INDEX IF NOT EXISTS idx_user_feedback_user ON user_feedback(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_feedback_submitted ON user_feedback(submitted_at);
+
+-- Audit events table (Phase 11)
+CREATE TABLE IF NOT EXISTS audit_events (
+    id TEXT PRIMARY KEY,
+    actor_user_id TEXT,
+    actor_role TEXT CHECK (actor_role IS NULL OR actor_role IN ('tech', 'admin', 'client', 'finance')),
+    event_type TEXT NOT NULL,
+    entity_type TEXT,
+    entity_id TEXT,
+    outcome TEXT NOT NULL CHECK (outcome IN ('success', 'failure', 'blocked')),
+    ip_hash TEXT,
+    user_agent TEXT,
+    metadata_json TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Add indexes for audit events table
+CREATE INDEX IF NOT EXISTS idx_audit_events_actor_created ON audit_events(actor_user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_events_type_created ON audit_events(event_type, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_events_outcome_created ON audit_events(outcome, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_events_entity ON audit_events(entity_type, entity_id);
+
+-- Portal rate limits table (Phase 11)
+CREATE TABLE IF NOT EXISTS portal_rate_limits (
+    id TEXT PRIMARY KEY,
+    scope TEXT NOT NULL,
+    window_start TIMESTAMP NOT NULL,
+    window_end TIMESTAMP NOT NULL,
+    limit_count INTEGER NOT NULL,
+    current_count INTEGER NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add indexes for portal rate limits table
+CREATE INDEX IF NOT EXISTS idx_rate_limits_scope_window ON portal_rate_limits(scope, window_start);
+CREATE INDEX IF NOT EXISTS idx_rate_limits_updated_at ON portal_rate_limits(updated_at);

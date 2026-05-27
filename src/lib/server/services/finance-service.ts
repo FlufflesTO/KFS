@@ -108,12 +108,30 @@ export class FinanceService {
    */
   async getTasksBySite(siteId: string): Promise<FinanceTask[]> {
     const tasks = await this.db.prepare(`
-      SELECT * FROM finance_tasks 
+      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
+             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
+             sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
+             updated_at as updatedAt
+      FROM finance_tasks 
       WHERE site_id = ? 
       ORDER BY created_at DESC
     `).bind(siteId).all();
     
-    return tasks.results as FinanceTask[];
+    return tasks.results.map((row: any) => ({
+      id: row.id,
+      siteId: row.siteId,
+      jobId: row.jobId,
+      taskType: row.taskType,
+      amount: row.amount,
+      vatAmount: row.vatAmount,
+      reference: row.reference,
+      sageDocumentRef: row.sageDocumentRef,
+      sageDocumentId: row.sageDocumentId,
+      status: row.status,
+      notes: row.notes,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    })) as FinanceTask[];
   }
 
   /**
@@ -121,12 +139,30 @@ export class FinanceService {
    */
   async getTasksByJob(jobId: string): Promise<FinanceTask[]> {
     const tasks = await this.db.prepare(`
-      SELECT * FROM finance_tasks 
+      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
+             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
+             sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
+             updated_at as updatedAt
+      FROM finance_tasks 
       WHERE job_id = ? 
       ORDER BY created_at DESC
     `).bind(jobId).all();
     
-    return tasks.results as FinanceTask[];
+    return tasks.results.map((row: any) => ({
+      id: row.id,
+      siteId: row.siteId,
+      jobId: row.jobId,
+      taskType: row.taskType,
+      amount: row.amount,
+      vatAmount: row.vatAmount,
+      reference: row.reference,
+      sageDocumentRef: row.sageDocumentRef,
+      sageDocumentId: row.sageDocumentId,
+      status: row.status,
+      notes: row.notes,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    })) as FinanceTask[];
   }
 
   /**
@@ -134,40 +170,70 @@ export class FinanceService {
    */
   async getPendingTasks(): Promise<FinanceTask[]> {
     const tasks = await this.db.prepare(`
-      SELECT * FROM finance_tasks 
+      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
+             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
+             sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
+             updated_at as updatedAt
+      FROM finance_tasks 
       WHERE status = 'Pending'
       ORDER BY created_at ASC
     `).all();
     
-    return tasks.results as FinanceTask[];
+    return tasks.results.map((row: any) => ({
+      id: row.id,
+      siteId: row.siteId,
+      jobId: row.jobId,
+      taskType: row.taskType,
+      amount: row.amount,
+      vatAmount: row.vatAmount,
+      reference: row.reference,
+      sageDocumentRef: row.sageDocumentRef,
+      sageDocumentId: row.sageDocumentId,
+      status: row.status,
+      notes: row.notes,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    })) as FinanceTask[];
   }
 
   /**
    * Create quote required task
    */
-  async createQuoteRequired(siteId: string, jobId?: string, amount: number, notes?: string): Promise<FinanceTask> {
-    return this.createFinanceTask({
+  async createQuoteRequired(siteId: string, jobId: string | undefined, amount: number, notes?: string): Promise<FinanceTask> {
+    // Construct the task object to satisfy exactOptionalPropertyTypes
+    const taskObj: Omit<FinanceTask, 'id' | 'createdAt' | 'updatedAt'> = {
       siteId,
-      jobId,
       taskType: 'Quote Required',
       amount,
       status: 'Pending',
       notes: notes || 'Quote required for job/service'
-    });
+    };
+    
+    if (jobId !== undefined) {
+      taskObj.jobId = jobId;
+    }
+    
+    return this.createFinanceTask(taskObj);
   }
 
   /**
    * Create invoice required task
    */
-  async createInvoiceRequired(siteId: string, jobId?: string, amount: number, notes?: string): Promise<FinanceTask> {
-    return this.createFinanceTask({
+  async createInvoiceRequired(siteId: string, jobId: string | undefined, amount: number, notes?: string): Promise<FinanceTask> {
+    // Construct the task object to satisfy exactOptionalPropertyTypes
+    const taskObj: Omit<FinanceTask, 'id' | 'createdAt' | 'updatedAt'> = {
       siteId,
-      jobId,
       taskType: 'Invoice Required',
       amount,
       status: 'Pending',
       notes: notes || 'Invoice required to be issued in Sage'
-    });
+    };
+    
+    if (jobId !== undefined) {
+      taskObj.jobId = jobId;
+    }
+    
+    return this.createFinanceTask(taskObj);
   }
 
   /**
@@ -185,14 +251,21 @@ export class FinanceService {
    * Mark quote as approved by client
    */
   async markQuoteApproved(taskId: string): Promise<void> {
-    await this.createFinanceTask({
-      siteId: (await this.getTaskById(taskId)).siteId,
-      jobId: (await this.getTaskById(taskId)).jobId,
+    const existingTask = await this.getTaskById(taskId);
+    // Construct the task object to satisfy exactOptionalPropertyTypes
+    const taskObj: Omit<FinanceTask, 'id' | 'createdAt' | 'updatedAt'> = {
+      siteId: existingTask.siteId,
       taskType: 'Quote Approved',
-      amount: (await this.getTaskById(taskId)).amount,
+      amount: existingTask.amount,
       status: 'Pending',
       notes: 'Client approved quote, invoice required in Sage'
-    });
+    };
+    
+    if (existingTask.jobId !== undefined) {
+      taskObj.jobId = existingTask.jobId;
+    }
+    
+    await this.createFinanceTask(taskObj);
   }
 
   /**
@@ -222,11 +295,33 @@ export class FinanceService {
    */
   async getTaskById(taskId: string): Promise<FinanceTask> {
     const task = await this.db.prepare(`
-      SELECT * FROM finance_tasks 
+      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
+             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
+             sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
+             updated_at as updatedAt
+      FROM finance_tasks 
       WHERE id = ?
     `).bind(taskId).first();
     
-    return task as FinanceTask;
+    if (!task) {
+      throw new Error(`Finance task with id ${taskId} not found`);
+    }
+    
+    return {
+      id: task.id,
+      siteId: task.siteId,
+      jobId: task.jobId,
+      taskType: task.taskType,
+      amount: task.amount,
+      vatAmount: task.vatAmount,
+      reference: task.reference,
+      sageDocumentRef: task.sageDocumentRef,
+      sageDocumentId: task.sageDocumentId,
+      status: task.status,
+      notes: task.notes,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt
+    } as FinanceTask;
   }
 
   /**
@@ -247,11 +342,20 @@ export class FinanceService {
       FROM finance_tasks
     `).first();
     
+    if (!result) {
+      return {
+        pendingTasks: 0,
+        totalPendingValue: 0,
+        overdueInvoices: 0,
+        unpaidAmount: 0
+      };
+    }
+    
     return {
-      pendingTasks: parseInt(result.pending_tasks) || 0,
-      totalPendingValue: parseInt(result.total_pending_value) || 0,
-      overdueInvoices: parseInt(result.overdue_invoices) || 0,
-      unpaidAmount: parseInt(result.unpaid_amount) || 0
+      pendingTasks: parseInt(result.pending_tasks as string || '0') || 0,
+      totalPendingValue: parseInt(result.total_pending_value as string || '0') || 0,
+      overdueInvoices: parseInt(result.overdue_invoices as string || '0') || 0,
+      unpaidAmount: parseInt(result.unpaid_amount as string || '0') || 0
     };
   }
 

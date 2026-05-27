@@ -14,13 +14,13 @@ export const prerender = false;
 const user = Astro.locals.user;
 const jobId = Astro.params.id;
 const today = new Date().toISOString().slice(0, 10);
-let job = null;
-let visits = [];
+let job: any = null;
+let visits: Array<any> = [];
 let loadError = "";
 
 try {
   const db = getDatabase();
-  const query = user.role === "admin"
+  const query = user?.role === "admin"
     ? `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
               jobs.site_notes, jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
               jobs.estimated_duration_minutes,
@@ -48,9 +48,9 @@ try {
          AND jobs.id = ?1 AND jobs.assigned_technician_id = ?2
        LIMIT 1`;
 
-  job = user.role === "admin"
+  job = user?.role === "admin"
     ? await db.prepare(query).bind(jobId).first()
-    : await db.prepare(query).bind(jobId, user.id).first();
+    : await db.prepare(query).bind(jobId, user?.id).first();
 
   if (!job) {
     loadError = "Dispatch was not found or is not assigned to this account.";
@@ -65,12 +65,12 @@ try {
     visits = visitResult.results || [];
   }
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "technician job detail failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "tech_job_detail" });
   loadError = "Dispatch details could not be loaded.";
 }
 
-const isReadOnly = user.role === "admin";
-const canWork = user.role === "tech" && job && ["Scheduled", "In Progress"].includes(job.status);
+const isReadOnly = user?.role === "admin";
+const canWork = user?.role === "tech" && job && ["Scheduled", "In Progress"].includes(job.status);
 const checklist = job?.system_type === "Gas Suppression"
   ? [
       "Cylinder pressure / mass visually checked",

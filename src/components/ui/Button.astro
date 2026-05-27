@@ -5,7 +5,7 @@ const {
   variant = "primary"
 } = Astro.props;
 
-const styles = {
+const styles: Record<string, string> = {
   primary: "bg-kharon-purple text-white hover:bg-kharon-blue",
   secondary: "border border-white/25 text-white hover:bg-white/10",
   dark: "bg-kharon-black text-white hover:bg-kharon-blue"
@@ -14,7 +14,7 @@ const styles = {
 
 <a
   href={href}
-  class={`inline-flex rounded-md px-6 py-4 font-semibold ${styles[variant]}`}
+  class={`inline-flex rounded-md px-6 py-4 font-semibold ${styles[variant] || styles.primary}`}
 >
   {label}
 </a>

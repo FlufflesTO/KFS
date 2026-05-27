@@ -80,15 +80,16 @@ let management = {
   slaWarningJobs: 0
 };
 let loadError = "";
+let db: any = null;
 
-function daysUntil(dateText) {
+function daysUntil(dateText: string): number | null {
   if (!dateText) return null;
   const target = new Date(`${dateText}T00:00:00Z`).getTime();
   if (Number.isNaN(target)) return null;
   return Math.ceil((target - Date.now()) / 86400000);
 }
 
-function riskForDueDate(dateText) {
+function riskForDueDate(dateText: string): { label: string; className: string } {
   const days = daysUntil(dateText);
   if (days === null) return { label: "Unknown", className: "border-kharon-border bg-kharon-light text-kharon-grey" };
   if (days < 0) return { label: "Overdue", className: "border-red-300 bg-red-50 text-red-900" };
@@ -97,14 +98,14 @@ function riskForDueDate(dateText) {
   return { label: "Scheduled", className: "border-emerald-300 bg-emerald-50 text-emerald-900" };
 }
 
-function priorityBadge(p) {
+function priorityBadge(p: string): string {
   if (p === "Critical") return "bg-kharon-red text-white";
   if (p === "High") return "border border-amber-400 bg-amber-50 text-amber-800";
   if (p === "Low") return "border border-kharon-border bg-white text-kharon-grey";
   return "bg-kharon-light text-kharon-grey";
 }
 
-function slaLabel(requiredByDate) {
+function slaLabel(requiredByDate: string | null): { text: string; cls: string } | null {
   if (!requiredByDate) return null;
   const days = daysUntil(requiredByDate);
   if (days === null) return null;
@@ -114,7 +115,7 @@ function slaLabel(requiredByDate) {
 }
 
 try {
-  const db = getDatabase();
+  db = getDatabase();
 
   const [
     jobAggResult, scheduleCountResult, lifecycleCountResult,
@@ -238,7 +239,7 @@ try {
   scheduledTotal = Number((scheduleCountResult.results[0] as { total: number } | undefined)?.total ?? 0);
   lifecycleTotal = Number((lifecycleCountResult.results[0] as { total: number } | undefined)?.total ?? 0);
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "admin planning failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "admin_planning" });
   loadError = "Planning data could not be loaded.";
 }
 

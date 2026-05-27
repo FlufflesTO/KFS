@@ -1,6 +1,4 @@
 ---
-import { site } from "../../data/site.js";
-
 const {
   eyebrow = "Operational Request",
   title = "Request a site assessment.",
@@ -40,7 +38,7 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
           {field.label}
           {field.options ? (
             <select class="rounded-md border border-kharon-border px-4 py-3 font-normal" name={field.name} required={field.required !== false}>
-              {field.options.map((option) => <option value={option}>{option}</option>)}
+              {field.options.map((option: string) => <option value={option}>{option}</option>)}
             </select>
           ) : (
             <input
@@ -89,7 +87,7 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
       if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
       if (resultEl) resultEl.className = "hidden text-sm font-semibold";
 
-      const data = new FormData(form);
+      const data = new FormData(form as HTMLFormElement);
 
       // Build message from Company/Site + contextual fields + operational notes
       const parts = [];

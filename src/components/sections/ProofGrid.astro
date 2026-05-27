@@ -28,7 +28,7 @@ const {
     <SectionHeading eyebrow={eyebrow} title={title} text={text} dark={dark} />
 
     <div class="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-12" data-animate="slide-up">
-      {items.map((item, index) => {
+      {items.map((item: any, index: number) => {
         // Asymmetric logic: make the first item larger if odd number of items, or alternate sizes
         let spanClass = "col-span-12 md:col-span-6 lg:col-span-4";
         if (items.length === 3) {
