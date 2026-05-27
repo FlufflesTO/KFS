@@ -1,13 +1,14 @@
 /**
  * Project Sentinel - Sage Auth Callback Endpoint
- * Purpose: Handles OAuth callback from Sage, exchanges code for tokens, and persists them
- * Dependencies: cloudflare:workers, Astro, sqlite (D1)
+ * Purpose: Handles OAuth callback from Sage, exchanges code for tokens, encrypts, and persists them
+ * Dependencies: cloudflare:workers, Astro, sqlite (D1), crypto.js
  * Structural Role: API Endpoint Handler
  */
 
 import { getBindings } from "../../../../lib/server/bindings.js";
 import { auditEvent } from "../../../../lib/server/audit.js";
 import { badRequest, forbidden, unauthorized } from "../../../../lib/server/http.js";
+import { encryptText } from "../../../../lib/server/crypto.js";
 
 export const prerender = false;
 
@@ -107,6 +108,10 @@ export async function GET({ request, locals, url, cookies }) {
     const tokenData = await tokenResponse.json();
     const expiresAt = Math.floor(Date.now() / 1000) + Number(tokenData.expires_in || 3600);
 
+    // Encrypt tokens before storing
+    const encryptedAccessToken = await encryptText(tokenData.access_token, env);
+    const encryptedRefreshToken = await encryptText(tokenData.refresh_token, env);
+
     // Save tokens in database (upsert on ID 1)
     await db.prepare(
       `INSERT INTO sage_config (id, access_token, refresh_token, expires_at, updated_at)
@@ -117,7 +122,7 @@ export async function GET({ request, locals, url, cookies }) {
          expires_at = excluded.expires_at,
          updated_at = excluded.updated_at`
     )
-    .bind(tokenData.access_token, tokenData.refresh_token, expiresAt)
+    .bind(encryptedAccessToken, encryptedRefreshToken, expiresAt)
     .run();
 
     await auditEvent(db, request, {

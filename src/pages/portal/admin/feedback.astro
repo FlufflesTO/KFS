@@ -11,9 +11,10 @@ const user = Astro.locals.user;
 // ─── Database query ────────────────────────────────────────────────────────
 let feedback: DbUserFeedback[] = [];
 let loadError = "";
+let db: any = null;
 
 try {
-  const db = getDatabase();
+  db = getDatabase();
 
   feedback = ((await db.prepare(
     `SELECT user_feedback.*, users.name AS user_name, users.email AS user_email
@@ -23,7 +24,7 @@ try {
      LIMIT 100`
   ).all()).results || []) as DbUserFeedback[];
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "feedback console load failed" } });
+  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "feedback console load failed" } });
   loadError = "Feedback data could not be loaded.";
 }
 ---

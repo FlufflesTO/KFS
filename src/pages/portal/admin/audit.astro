@@ -58,9 +58,10 @@ const last30 = dateOffset(30);
 let events: Array<Record<string, unknown>> = [];
 let loadError = "";
 const isFiltered = !!(filterCategory || filterOutcome || filterFrom || filterTo);
+let db: any = null;
 
 try {
-  const db = getDatabase();
+  db = getDatabase();
 
   const conditions: string[] = [];
   const params: string[] = [];
@@ -97,7 +98,7 @@ try {
   const stmt = db.prepare(sql);
   events = ((await (params.length > 0 ? stmt.bind(...params) : stmt).all()).results || []) as Array<Record<string, unknown>>;
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "audit console load failed" } });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "audit_console" });
   loadError = "Audit data could not be loaded.";
 }
 ---

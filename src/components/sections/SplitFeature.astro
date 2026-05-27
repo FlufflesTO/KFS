@@ -26,7 +26,7 @@ const visualLabels: Record<string, string[]> = {
   systems: ["Risk input", "System design", "Operational support"]
 };
 
-const labels: string[] = visualLabels[visual] || visualLabels.systems;
+const labels: string[] = visualLabels[visual] || visualLabels.systems!;
 
 const labelIcons: Record<string, string> = {
   // Suppression

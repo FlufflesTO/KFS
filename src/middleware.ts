@@ -248,10 +248,11 @@ const csrfAndRateLimitMiddleware: MiddlewareHandler = async (context, next) => {
     if (!(await verifyCsrfRequest(context.request, user))) {
       await auditEvent(db, context.request, {
         eventType: "security.csrf",
-        entityType: "portal_api",
-        entityId: pathname,
+        entityType: "session",
+        entityId: user?.id || "unknown",
         outcome: "blocked",
-        user
+        user: user,
+        subject: user?.email || "unknown"
       });
       return withSecurityHeaders(csrfErrorResponse(), nonce);
     }
@@ -266,11 +267,12 @@ const csrfAndRateLimitMiddleware: MiddlewareHandler = async (context, next) => {
     if (!limit.allowed) {
       await auditEvent(db, context.request, {
         eventType: "security.rate_limit",
-        entityType: "portal_api",
-        entityId: pathname,
+        entityType: "session",
+        entityId: user?.id || "unknown",
         outcome: "blocked",
         metadata: { scope: config.scope, retryAfter: limit.retryAfter },
-        user
+        user: user,
+        subject: user?.email || "unknown"
       });
       return rateLimitResponse(limit.retryAfter, nonce);
     }

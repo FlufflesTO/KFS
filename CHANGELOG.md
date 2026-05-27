@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-27
 
+### Security
+- **Sage OAuth Token Encryption**: Hardened initial authorization credential storage by encrypting tokens at rest in [sage-callback.js](file:///c:/Users/User/Desktop/Astro/kharon-website/src/pages/portal/api/finance/sage-callback.js) using the PBKDF2/AES-GCM encryption service.
+
 ### Changed
 - **TSConfig Modernization**: Removed deprecated `baseUrl` and `ignoreDeprecations` compiler options from [tsconfig.json](file:///c:/Users/User/Desktop/Astro/kharon-website/tsconfig.json), and updated compiler alias mappings (`paths`) to use explicit relative paths (prefixed with `./`). This resolves configuration compatibility errors in TypeScript 6.0 while preventing future removal issues in TypeScript 7.0.
+
+### Fixed
+- **Sage Client Strict TypeScript compliance**: Resolved unchecked array indexed access errors in [sage-client.ts](file:///c:/Users/User/Desktop/Astro/kharon-website/src/lib/server/services/sage-client.ts) to align with strict compiler options.
+
+### Deployment
+- **Cloudflare Pages Deploy**: Built and deployed the hardened and modernised build to Cloudflare Pages (Version ID: `7b2cd252-a051-4ac8-9f4b-35c25fb4cbcd`) targeting the `tequit.co.za` and `portal.tequit.co.za` staging gateways.
 
 ## [Unreleased] - 2026-05-26
 

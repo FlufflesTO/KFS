@@ -80,7 +80,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
       return badRequest("Email and password are required.");
     }
 
-    const rateLimit = await consumeRateLimit(db, request, {
+    const rateLimit = await consumeRateLimit(db!, request, {
       scope: "portal.login",
       subject: email,
       maxAttempts: 8,
@@ -88,7 +88,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
     });
 
     if (!rateLimit.allowed) {
-      await auditEvent(db, request, {
+      await auditEvent(db!, request, {
         eventType: "auth.rate_limited",
         entityType: "user",
         entityId: email,
@@ -99,7 +99,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
       return tooManyRequests("Too many sign-in attempts. Try again later.", rateLimit.retryAfter);
     }
 
-    const user = await db
+    const user = await db!
       .prepare(
         `SELECT id, name, email, password_hash, role, site_id, force_password_change,
                 mfa_required, mfa_enabled, mfa_secret_encrypted
@@ -111,7 +111,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
       .first<DbUserQueryResult>();
 
     if (!user) {
-      await auditEvent(db, request, {
+      await auditEvent(db!, request, {
         eventType: "auth.login",
         entityType: "user",
         entityId: email,
@@ -124,7 +124,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
 
     const verified = await verifyPassword(password, user.password_hash);
     if (!verified) {
-      await auditEvent(db, request, {
+      await auditEvent(db!, request, {
         eventType: "auth.login",
         entityType: "user",
         entityId: user.id,
@@ -146,7 +146,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
       const mfaSecret = user.mfa_secret_encrypted ? await decryptMfaSecret(user.mfa_secret_encrypted) : null;
       const mfaValid = mfaSecret && (await verifyTotpCode(mfaSecret, mfaCode));
       if (!mfaValid) {
-        await auditEvent(db, request, {
+        await auditEvent(db!, request, {
           eventType: "auth.mfa",
           entityType: "user",
           entityId: user.id,
@@ -182,9 +182,9 @@ export async function POST({ request }: APIContext): Promise<Response> {
         ? "/portal/account/mfa"
         : roleDestinations[user.role] || "/portal/login";
 
-    await resetRateLimit(db, request, { scope: "portal.login", subject: email });
-    await db.prepare(`UPDATE users SET last_login_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1`).bind(user.id).run();
-    await auditEvent(db, request, {
+    await resetRateLimit(db!, request, { scope: "portal.login", subject: email });
+    await db!.prepare(`UPDATE users SET last_login_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1`).bind(user.id).run();
+    await auditEvent(db!, request, {
       eventType: "auth.login",
       entityType: "user",
       entityId: user.id,

@@ -15,16 +15,16 @@ import KharonButton from "../../../components/ui/KharonButton.astro";
 export const prerender = false;
 
 const user = Astro.locals.user;
-let completed = [];
-let active = [];
-let due = [];
-let clientRequests = [];
-let overdue = [];
-let missingDocs = [];
-let openDefects = [];
-let financeFollowup = [];
-let technicians = [];
-let requestSystems = [];
+let completed: Array<any> = [];
+let active: Array<any> = [];
+let due: Array<any> = [];
+let clientRequests: Array<any> = [];
+let overdue: Array<any> = [];
+let missingDocs: Array<any> = [];
+let openDefects: Array<any> = [];
+let financeFollowup: Array<any> = [];
+let technicians: Array<any> = [];
+let requestSystems: Array<any> = [];
 let stats = {
   activeJobs: 0,
   unassignedJobs: 0,
@@ -37,6 +37,7 @@ let stats = {
   validCertificates: 0
 };
 let loadError = "";
+let db: any = null;
 const today    = new Date().toISOString().slice(0, 10);
 const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
@@ -53,7 +54,7 @@ function dueDateLabel(nd: string | null | undefined): string {
 }
 
 try {
-  const db = getDatabase();
+  db = getDatabase();
 
   const [cntActive, cntUnassigned, cntOverdue, cntRequests, cntMissingDocs,
          cntOpenDefects, cntCriticalDefects, cntBlockedCerts, cntValidCerts] = await db.batch([
@@ -179,7 +180,7 @@ try {
      LIMIT 8`
   ).all()).results || [];
 } catch (error) {
-  await auditError(typeof db !== "undefined" ? db : getDatabase(), Astro.request, error, { user: typeof user !== "undefined" ? user : Astro.locals.user, metadata: { message: "admin dashboard failed" } });
+  await auditError(getDatabase(), Astro.request, error, { user: Astro.locals.user ?? null, metadata: { message: "admin dashboard failed" } });
   loadError = "Admin matrix data could not be loaded.";
 }
 
@@ -454,7 +455,7 @@ try {
     </div>
   </section>
   <script>
-    async function postJson(url, payload) {
+    async function postJson(url: string, payload: Record<string, unknown>) {
       const response = await window.kharonPortalFetch(url, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -465,10 +466,10 @@ try {
       return body;
     }
 
-    for (const form of document.querySelectorAll(".request-status-form")) {
+    for (const form of document.querySelectorAll<HTMLFormElement>(".request-status-form")) {
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const result = form.querySelector(".request-result");
+        const result = form.querySelector<HTMLElement>(".request-result");
         const data = new FormData(form);
         try {
           const body = await postJson("/portal/api/admin/maintenance-requests", {
@@ -476,20 +477,24 @@ try {
             requestId: data.get("requestId"),
             status: data.get("status")
           });
-          result.textContent = `Status: ${body.status}`;
-          result.className = "request-result text-sm font-semibold text-kharon-blue";
+          if (result) {
+            result.textContent = `Status: ${body.status}`;
+            result.className = "request-result text-sm font-semibold text-kharon-blue";
+          }
         } catch (error) {
-          result.textContent = error.message;
-          result.className = "request-result text-sm font-semibold text-red-700";
+          if (result) {
+            result.textContent = (error as Error).message;
+            result.className = "request-result text-sm font-semibold text-red-700";
+          }
         }
       });
     }
 
-    for (const form of document.querySelectorAll(".request-schedule-form")) {
+    for (const form of document.querySelectorAll<HTMLFormElement>(".request-schedule-form")) {
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const card = form.closest(".request-card");
-        const result = card.querySelector(".request-result");
+        const card = form.closest<HTMLElement>(".request-card");
+        const result = card?.querySelector<HTMLElement>(".request-result");
         const data = new FormData(form);
         try {
           const body = await postJson("/portal/api/admin/maintenance-requests", {
@@ -501,17 +506,21 @@ try {
             jobType: data.get("jobType"),
             siteNotes: data.get("siteNotes")
           });
-          result.textContent = `Scheduled dispatch: ${body.jobId}`;
-          result.className = "request-result text-sm font-semibold text-kharon-blue";
+          if (result) {
+            result.textContent = `Scheduled dispatch: ${body.jobId}`;
+            result.className = "request-result text-sm font-semibold text-kharon-blue";
+          }
           form.remove();
         } catch (error) {
-          result.textContent = error.message;
-          result.className = "request-result text-sm font-semibold text-red-700";
+          if (result) {
+            result.textContent = (error as Error).message;
+            result.className = "request-result text-sm font-semibold text-red-700";
+          }
         }
       });
     }
 
-    for (const btn of document.querySelectorAll(".mark-invoiced-btn")) {
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".mark-invoiced-btn")) {
       btn.addEventListener("click", async () => {
         if (!window.confirm("Confirm that a Sage invoice has been raised for this job.")) return;
         const jobId = btn.dataset.jobId;
@@ -526,7 +535,7 @@ try {
         } catch (error) {
           btn.disabled = false;
           btn.textContent = "Raise Sage Invoice";
-          alert(error.message || "Could not update job status.");
+          alert((error as Error).message || "Could not update job status.");
         }
       });
     }

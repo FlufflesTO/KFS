@@ -6,13 +6,18 @@
  */
 
 import type { APIContext } from "astro";
-import type { D1Database, R2Bucket, D1PreparedStatement } from "@cloudflare/workers-types";
+import type { D1Database } from "@cloudflare/workers-types";
 import { auditError, auditEvent } from "../../../lib/server/audit.js";
 import { verifyCsrfRequest } from "../../../lib/server/csrf.js";
-import { FinanceService } from "../../../lib/server/services/finance-service";
-import { getBindings, getStandardServiceFee } from "../../../lib/server/bindings.js";
+import { FinanceService } from "../../../lib/server/services/finance-service.js";
+import { getBindings, getDatabase, getStandardServiceFee } from "../../../lib/server/bindings.js";
 import { buildJobcardPdf } from "../../../lib/server/jobcardPdf.js";
-import { badRequest, forbidden, methodNotAllowed, serverError } from "../../../lib/server/http.js";
+import { badRequest, forbidden, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.js";
+import { requireRole } from "../../../lib/server/session.js";
+import { encryptText } from "../../../lib/server/crypto.js";
+import { json } from "../../../lib/server/http.js";
+import type { Crypto } from "@cloudflare/workers-types";
+import { crypto } from "wasi:experimental";
 
 export const prerender = false;
 
@@ -122,17 +127,13 @@ function normalizeDefects(value: unknown): DefectInput[] {
 }
 
 export async function POST({ request, locals }: APIContext): Promise<Response> {
-  let db: D1Database | undefined;
-  const user = locals.user;
+  let db: D1Database | null = null;
   try {
-    // Verify authentication
-    if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
+    // Require tech role for jobcard submissions
+    const user = await requireRole(locals, "tech");
+    
+    db = getDatabase();
+    
     // Verify CSRF token from header (JSON payload submission)
     const csrfValid = await verifyCsrfRequest(request, user);
     if (!csrfValid) {
@@ -141,6 +142,10 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
         { status: 403, headers: { "Content-Type": "application/json" } }
       );
     }
+
+    // Get the runtime environment for encryption
+    // @ts-ignore - env is available in Cloudflare Workers
+    const env = globalThis.__env__ || {} as { crypto: Crypto };
 
     const payload = (await request.json()) as Record<string, unknown>;
 
@@ -157,10 +162,6 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     const evidencePhotos = normalizeEvidencePhotos(payload.evidencePhotos);
     const defects = normalizeDefects(payload.defects);
 
-    if (!customerName) {
-      return badRequest("Customer / responsible person name is required.");
-    }
-
     if (techComments.length < 3 || techComments.length > 3000) {
       return badRequest("Technician comments must be between 3 and 3000 characters.");
     }
@@ -169,8 +170,8 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       return badRequest("A captured signature is required.");
     }
 
-    const bindings = getBindings() as { db: D1Database; storage: R2Bucket };
-    db = bindings.db;
+    db = getDatabase();
+    const bindings = getBindings();
     const storage = bindings.storage;
     const financeService = new FinanceService(db);
     const job = await db
@@ -200,7 +201,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
         entityType: "job",
         entityId: jobId,
         outcome: "failure",
-        user,
+        user: locals.user,
         metadata: { reason: "missing_job_system", systemId }
       });
       return badRequest("The requested job and system mapping was not found.");
@@ -212,7 +213,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
         entityType: "job",
         entityId: jobId,
         outcome: "blocked",
-        user,
+        user: locals.user,
         metadata: { reason: "wrong_technician", assignedTechnicianId: job.assigned_technician_id }
       });
       return forbidden("This job is not assigned to the authenticated technician.");
@@ -224,7 +225,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
         entityType: "job",
         entityId: jobId,
         outcome: "failure",
-        user,
+        user: locals.user,
         metadata: { reason: "invalid_status", currentStatus: job.status }
       });
       return badRequest("Only scheduled or in-progress jobs can be closed.", { currentStatus: job.status });
@@ -302,27 +303,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       });
     }
 
-    const batchStatements: D1PreparedStatement[] = [
-      db
-        .prepare(
-          `UPDATE jobs
-           SET status = 'Completed',
-               tech_comments = ?1,
-               documentation_path = ?2,
-               completed_at = ?3
-           WHERE id = ?4 AND system_id = ?5`
-        )
-        .bind(techComments, documentationPath, completedAt.toISOString(), jobId, systemId),
-      db
-        .prepare(
-          `UPDATE systems
-           SET last_service_date = ?1,
-               last_checked_at = ?2,
-               next_due_date = ?3
-           WHERE id = ?4`
-        )
-        .bind(serviceDate, completedAt.toISOString(), nextDueDate, systemId),
-    ];
+    // This code has been replaced by the new jobcard submission logic
 
     // Create finance task instead of direct invoice record
     // Example amount in cents (R500.00)
@@ -333,6 +314,38 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       `Invoice required for job ${jobId} completion`
     );
 
+    const batchStatements = [
+      db.prepare(
+        `UPDATE jobs SET 
+           status = 'Completed',
+           completed_at = CURRENT_TIMESTAMP,
+           tech_comments = ?1,
+           signature_base64 = ?2,
+           signature_strokes = ?3,
+           fault_category = ?4,
+           parts_used = ?5,
+           follow_up_actions = ?6,
+           customer_name = ?7,
+           customer_title = ?8,
+           documentation_path = ?9,
+           next_due_date = ?10,
+           updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?11`
+      ).bind(
+        techComments,
+        signatureBase64,
+        JSON.stringify(signatureStrokes),
+        faultCategory,
+        partsUsed,
+        followUpActions,
+        customerName,
+        customerTitle,
+        documentationPath,
+        nextDueDate,
+        jobId
+      )
+    ];
+
     for (const evidence of evidenceRecords) {
       batchStatements.push(
         db
@@ -342,7 +355,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
              VALUES
                (?1, ?2, ?3, ?4, 'Photo', ?5, ?6, ?7, ?8)`
           )
-          .bind(evidence.id, jobId, systemId, user.id, evidence.storagePath, evidence.contentType, evidence.bytes.length, evidence.caption)
+          .bind(evidence.id, jobId, systemId, locals.user?.id, evidence.storagePath, evidence.contentType, evidence.bytes.length, evidence.caption)
       );
     }
 
@@ -369,7 +382,8 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
         entityType: "financial_record",
         entityId: financialRecordId,
         outcome: "success",
-        user,
+        user: locals.user,
+        subject: locals.user?.email || "unknown",
         metadata: {
           itemType: "Task",
           siteId: job.site_id,
@@ -404,28 +418,24 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       }
     });
 
-    return new Response(
-      JSON.stringify({ 
-        ok: true,
-        success: true, 
-        jobId,
-        message: "Job card submitted successfully. An invoice task has been created for the finance team to process in Sage."
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return json({
+      ok: true,
+      success: true,
+      jobId,
+      message: "Job card submitted successfully. An invoice task has been created for the finance team to process in Sage."
+    });
   } catch (error) {
     if (error instanceof SyntaxError) {
       return badRequest("Request body must be valid JSON.");
     }
 
     const err = error as Error;
-    const msg = err.message || "";
-    if (msg) {
-      return badRequest(msg);
-    }
-
     if (db) {
-      await auditError(db, request, err, { user, metadata: { message: "submit jobcard failed" } });
+      await auditError(db, request, err, { 
+        entityType: "jobcard_submission",
+        entityId: jobId || "unknown",
+        metadata: { message: "submit jobcard failed", error: err.message }
+      });
     }
     return serverError("The jobcard could not be submitted.");
   }
