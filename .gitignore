@@ -10,8 +10,9 @@ dist/
 .next/
 .vercel/
 .svelte-kit/
-astro/
+.astro/
 .cache/
+.wrangler/
 
 # Environment variables
 .env.local
