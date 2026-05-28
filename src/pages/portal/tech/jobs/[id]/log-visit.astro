@@ -44,7 +44,7 @@ if (jobId && user) {
     ).bind(jobId, user.id).first();
 
     if (result) {
-      job = result as JobDetails;
+      job = result as unknown as JobDetails;
     } else {
       loadError = "Job not found or not assigned to you.";
     }
@@ -300,7 +300,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
 
     // ── Conditionally show "Unable to Complete" reason dropdown ────────────
     if (outcomeSelect) {
-      outcomeSelect.addEventListener("change", function () {
+      outcomeSelect.addEventListener("change", function (this: HTMLSelectElement) {
         if (this.value === "Unable To Complete") {
           unableReasonSection?.classList.remove("hidden");
         } else {

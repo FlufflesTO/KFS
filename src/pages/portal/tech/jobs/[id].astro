@@ -15,9 +15,39 @@ export const prerender = false;
 const { params } = Astro;
 const jobId = params.id;
 const user = Astro.locals.user;
-let job: any = null;
+
+interface JobDetail {
+  id: string;
+  system_id: string;
+  assigned_technician_id: string | null;
+  scheduled_date: string;
+  required_by_date: string | null;
+  status: string;
+  priority: string;
+  job_type: string;
+  is_emergency: number;
+  completed_at: string | null;
+  system_type: string;
+  coverage_area: string;
+  protocol_version: string | null;
+  owner_company_name: string;
+  physical_address: string;
+  site_notes: string | null;
+  technician_first_name: string | null;
+  technician_last_name: string | null;
+}
+
+interface HistoryEntry {
+  id: string;
+  job_id: string;
+  action: string;
+  description: string;
+  created_at: string;
+}
+
+let job: JobDetail | null = null;
 let loadError = "";
-let jobHistory: Array<any> = [];
+let jobHistory: Array<HistoryEntry> = [];
 
 try {
   const db = getDatabase();
@@ -38,7 +68,7 @@ try {
   if (!jobResult) {
     loadError = "Job not found";
   } else {
-    job = jobResult;
+    job = jobResult as unknown as JobDetail;
     
     // Get job history
     const historyResult = await db.prepare(`
@@ -48,10 +78,10 @@ try {
       ORDER BY created_at DESC
       LIMIT 20
     `).bind(jobId).all();
-    jobHistory = historyResult.results || [];
+    jobHistory = (historyResult.results as unknown as HistoryEntry[]) || [];
   }
 } catch (error) {
-  await auditError(getDatabase(), Astro.request, error, { entityType: "job", entityId: jobId });
+  await auditError(getDatabase(), Astro.request, error, { entityType: "job", entityId: jobId || "unknown" });
   loadError = "Job details could not be loaded.";
 }
 
@@ -187,8 +217,8 @@ function priorityBadgeClass(priority: string): string {
               <h2 class="text-lg font-bold text-white mb-3">Job History</h2>
               
               <div class="space-y-3">
-                {jobHistory.map((entry: any, index: number) => (
-                  <div key={index} class="border-b border-kharon-cyan/10 pb-3 last:border-0 last:pb-0">
+                {jobHistory.map((entry: any) => (
+                  <div class="border-b border-kharon-cyan/10 pb-3 last:border-0 last:pb-0">
                     <div class="flex justify-between items-start">
                       <div>
                         <p class="text-sm font-bold text-white">{entry.action}</p>

@@ -1,4 +1,10 @@
 ---
+/**
+ * Project Sentinel - SectorRiskGrid
+ * Purpose: Risk analysis profile grid
+ * Dependencies: SectionHeading.astro
+ * Structural Role: Reusable sections UI component
+ */
 import SectionHeading from "./SectionHeading.astro";
 
 const { sectors = [] } = Astro.props;
@@ -14,8 +20,8 @@ const { sectors = [] } = Astro.props;
     />
 
     <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {sectors.map((sector: any, index: number) => (
-        <div key={index} class="rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
+      {sectors.map((sector: any) => (
+        <div class="rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
           <h3 class="text-lg font-semibold text-white">{sector.title}</h3>
           <p class="mt-2 text-kharon-light/70">{sector.risk}</p>
           <div class="mt-4 flex items-center justify-between">

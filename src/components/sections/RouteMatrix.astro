@@ -1,30 +1,46 @@
 ---
-interface Props {
+/**
+ * Project Sentinel - RouteMatrix
+ * Purpose: Operational routing map component
+ * Dependencies: SectionHeading.astro
+ * Structural Role: Reusable sections UI component
+ */
+import SectionHeading from "./SectionHeading.astro";
+
+interface Route {
   title: string;
-  subtitle: string;
+  type: string;
   description: string;
-  center?: boolean;
+  tags: string[];
 }
-const { title, subtitle, description, center = false } = Astro.props;
+
+interface Props {
+  routes?: Route[];
+}
+
+const defaultRoutes: Route[] = [
+  {
+    title: "Critical Telemetry Routing",
+    type: "Suppression Path",
+    description: "Multi-point detector triggering initiates automatic clean-agent gas release and control panel signal routing to central dispatch.",
+    tags: ["SANS 14520", "Double-Knock", "Auto-Release"]
+  },
+  {
+    title: "Compliance Certification",
+    type: "Verification Path",
+    description: "Inspections feed into the forensic ledger, generating verification tokens for insurers and local fire authorities.",
+    tags: ["SANS 10139", "Ledger Event", "Auditable"]
+  },
+  {
+    title: "Field Dispatch Orchestration",
+    type: "Response Path",
+    description: "Automated routing connects urgent defect alarms with the nearest qualified SAQCC technician for rapid field response.",
+    tags: ["GPS Route", "POPIA Safe", "Rugged Mobile"]
+  }
+];
+
+const { routes = defaultRoutes } = Astro.props;
 ---
-
-<div class={`mb-12 ${center ? 'text-center' : ''}`}>
-  <div class="flex items-center gap-3 mb-4 ${center ? 'justify-center' : ''}">
-    <div class="h-1 w-8 bg-kharon-cyan"></div>
-    <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-cyan">
-      {subtitle}
-    </p>
-  </div>
-  <h2 class="kharon-h2 text-white mb-4">
-    {title}
-  </h2>
-  <p class="max-w-2xl mx-auto text-lg text-kharon-light/70">
-    {description}
-  </p>
-</div>
-import SectionHeading from "../SectionHeading.astro";
-
-const { routes = [] } = Astro.props;
 
 <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
   <div class="mx-auto max-w-7xl px-6">
@@ -37,8 +53,8 @@ const { routes = [] } = Astro.props;
 
     <div class="mt-12 overflow-x-auto">
       <div class="inline-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {routes.map((route: any, index: number) => (
-          <div key={index} class="rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
+        {routes.map((route) => (
+          <div class="rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-semibold text-white">{route.title}</h3>
               <span class="text-xs font-bold uppercase tracking-widest px-2 py-1 rounded-full bg-kharon-purple/20 text-kharon-cyan">
@@ -48,8 +64,8 @@ const { routes = [] } = Astro.props;
             <p class="mt-3 text-kharon-light/70">{route.description}</p>
             <div class="mt-4 pt-4 border-t border-kharon-cyan/10">
               <div class="flex flex-wrap gap-2">
-                {route.tags?.map((tag: string, idx: number) => (
-                  <span key={idx} class="text-xs px-2 py-1 rounded bg-kharon-graphite text-kharon-cyan">
+                {route.tags?.map((tag) => (
+                  <span class="text-xs px-2 py-1 rounded bg-kharon-graphite text-kharon-cyan">
                     {tag}
                   </span>
                 ))}

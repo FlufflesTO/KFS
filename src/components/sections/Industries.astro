@@ -1,4 +1,10 @@
 ---
+/**
+ * Project Sentinel - Industries
+ * Purpose: Industries served showcase section
+ * Dependencies: SectionHeading.astro, site data
+ * Structural Role: Reusable sections UI component
+ */
 import SectionHeading from "./SectionHeading.astro";
 import { industries } from "../../data/site.js";
 ---
@@ -6,10 +12,10 @@ import { industries } from "../../data/site.js";
 <section class="section-padding bg-white relative overflow-hidden">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <SectionHeading
-      eyebrow="High-Risk Environments"
+      subtitle="High-Risk Environments"
       title="Protection for facilities where fire events become operational events."
-      text="Kharon focuses on commercial and industrial environments where detection reliability, suppression readiness and service records matter to continuity."
-      align="center"
+      description="Kharon focuses on commercial and industrial environments where detection reliability, suppression readiness and service records matter to continuity."
+      center={true}
     />
 
     <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">

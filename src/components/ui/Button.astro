@@ -1,10 +1,23 @@
 ---
+/**
+ * Project Sentinel - Button
+ * Purpose: Reusable UI button component
+ * Dependencies: None
+ * Structural Role: Base UI button
+ */
+export interface Props {
+  variant?: 'primary' | 'secondary' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  href?: string;
+  className?: string;
+}
+
 const {
   variant = "primary",
   size = "md",
   disabled = false,
   href,
-  children,
   className = ""
 } = Astro.props;
 
@@ -38,5 +51,5 @@ const Element = href && !disabled ? "a" : "button";
   class={classes}
   {...(Element === "button" ? { type: "button", disabled } : {})}
 >
-  {children}
+  <slot />
 </Element>
