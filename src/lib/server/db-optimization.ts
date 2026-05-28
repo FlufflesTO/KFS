@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Database Query Optimization Services
+ * Purpose: Provides optimized database access methods including batch queries, dashboard analytics, and client data retrieval
+ * Dependencies: ./bindings.ts
+ * Structural Role: Performance-optimized database read/query layer
+ */
+
 import { getDatabase } from "./bindings";
 
 export interface JobWithDetails {
@@ -61,7 +68,7 @@ export async function getTechDashboardData(techId: string): Promise<JobWithDetai
     ORDER BY j.scheduled_date ASC
   `).bind(techId).all();
 
-  return result.results as JobWithDetails[] || [];
+  return result.results as unknown as JobWithDetails[] || [];
 }
 
 /**
@@ -88,15 +95,15 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   }
   
   return {
-    activeJobs: (activeJobs.results[0] as CountResult | undefined)?.n ?? 0,
-    unassignedJobs: (unassignedJobs.results[0] as CountResult | undefined)?.n ?? 0,
-    overdueSystems: (overdueSystems.results[0] as CountResult | undefined)?.n ?? 0,
-    openRequests: (openRequests.results[0] as CountResult | undefined)?.n ?? 0,
-    missingDocuments: (missingDocuments.results[0] as CountResult | undefined)?.n ?? 0,
-    openDefects: (openDefects.results[0] as CountResult | undefined)?.n ?? 0,
-    criticalDefects: (criticalDefects.results[0] as CountResult | undefined)?.n ?? 0,
-    blockedCertificates: (blockedCertificates.results[0] as CountResult | undefined)?.n ?? 0,
-    validCertificates: (validCertificates.results[0] as CountResult | undefined)?.n ?? 0
+    activeJobs: (activeJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    unassignedJobs: (unassignedJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    overdueSystems: (overdueSystems?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    openRequests: (openRequests?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    missingDocuments: (missingDocuments?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    openDefects: (openDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    criticalDefects: (criticalDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    blockedCertificates: (blockedCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    validCertificates: (validCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0
   };
 }
 
