@@ -163,9 +163,41 @@ Compile the site and purge unused CSS:
 npm run build
 ```
 
-### Deployment
-The site is configured for deployment to Cloudflare Pages with automatic builds from the main branch. The system includes automated CSS purging and asset optimization to maintain performance standards.
+## ☁️ Cloudflare Deployment
 
+### Configuration
+The site is configured for deployment to Cloudflare Pages with the following setup:
+- **Domain**: www.tequit.co.za, portal.tequit.co.za
+- **Database**: Cloudflare D1 with existing schema
+- **Storage**: Cloudflare R2 for document management
+- **Authentication**: OAuth-based with Wrangler CLI
+
+### Deployment Process
+1. Authenticate with Cloudflare:
+   ```bash
+   npm run auth:cloudflare
+   ```
+2. Verify authentication:
+   ```bash
+   npm run cloudflare:whoami
+   ```
+3. Deploy to production:
+   ```bash
+   npm run deploy:cloudflare
+   ```
+4. For preview deployments:
+   ```bash
+   npm run deploy:cloudflare:preview
+   ```
+
+### Automated Deployment
+The system is configured for automatic deployments from the `main` branch. Each push to `main` triggers:
+- Build process with CSS purging
+- Asset optimization
+- Security scanning
+- Deployment to Cloudflare Pages
+
+For detailed deployment configuration, see [docs/cloudflare-deployment.md](docs/cloudflare-deployment.md).
 
 ## 🏗️ Architecture Overview
 
