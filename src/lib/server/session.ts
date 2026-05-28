@@ -24,19 +24,21 @@ export async function validateSession(sessionId: string): Promise<boolean> {
     }
 
     // Check if session has expired normally
-    if (new Date(session.expires_at) < new Date()) {
+    if (typeof session.expires_at === 'string' && new Date(session.expires_at) < new Date()) {
       return false;
     }
 
     // Check absolute timeout (created_at + 8 hours)
-    const createdAt = new Date(session.created_at);
-    const now = new Date();
-    const timeElapsed = now.getTime() - createdAt.getTime();
-    
-    if (timeElapsed > ABSOLUTE_SESSION_TIMEOUT) {
-      // Session has exceeded absolute timeout, should be revoked
-      await revokeSession(sessionId);
-      return false;
+    if (typeof session.created_at === 'string') {
+      const createdAt = new Date(session.created_at);
+      const now = new Date();
+      const timeElapsed = now.getTime() - createdAt.getTime();
+      
+      if (timeElapsed > ABSOLUTE_SESSION_TIMEOUT) {
+        // Session has exceeded absolute timeout, should be revoked
+        await revokeSession(sessionId);
+        return false;
+      }
     }
 
     return true;
@@ -105,7 +107,7 @@ export async function getSessionTimeoutInfo(sessionId: string): Promise<{
       `SELECT created_at FROM sessions WHERE id = ?1`
     ).bind(sessionId).first()) as { created_at: string } | null;
     
-    if (!session) {
+    if (!session || typeof session.created_at !== 'string') {
       return { timeRemaining: 0, isApproachingTimeout: true, absoluteTimeout: true };
     }
 

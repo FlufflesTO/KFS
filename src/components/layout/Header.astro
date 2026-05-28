@@ -160,23 +160,26 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
 </header>
 
 <script>
-  const solutionsDropdown = document.querySelector("details.group") as HTMLDetailsElement | null;
-  if (solutionsDropdown) {
+  const solutionsDropdown = document.querySelector("details.group");
+  if (solutionsDropdown instanceof HTMLDetailsElement) {
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && solutionsDropdown.open) {
         solutionsDropdown.removeAttribute("open");
-        (solutionsDropdown.querySelector("summary") as HTMLElement | null)?.focus();
+        const summaryElement = solutionsDropdown.querySelector("summary");
+        if (summaryElement instanceof HTMLElement) {
+          summaryElement.focus();
+        }
       }
     });
-    document.addEventListener("click", (event) => {
-      if (!solutionsDropdown.contains(event.target as Node | null)) {
+    document.addEventListener("click", (event: MouseEvent) => {
+      if (!(event.target instanceof Node) || !solutionsDropdown.contains(event.target)) {
         solutionsDropdown.removeAttribute("open");
       }
     });
   }
 
   const mobileMenu = document.querySelector("details.mobile-menu");
-  if (mobileMenu) {
+  if (mobileMenu instanceof HTMLDetailsElement) {
     for (const link of mobileMenu.querySelectorAll("nav a")) {
       link.addEventListener("click", () => {
         mobileMenu.removeAttribute("open");

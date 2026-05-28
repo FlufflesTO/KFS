@@ -7,7 +7,13 @@
 
 import { getDatabase } from "../bindings";
 import { verifyCsrfToken } from "../csrf.js";
-import type { SessionUser } from "../auth.js";
+// SessionUser 类型应该与实际使用相匹配
+type SessionUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: "tech" | "admin" | "client" | "finance";
+};
 
 export interface AuthUser {
   id: string;

@@ -97,8 +97,10 @@ const { sites, linkableJobs } = Astro.props;
     JSON.parse(document.getElementById("finance-jobs-data")?.getAttribute("data-jobs") ?? "[]");
 
   if (distDate && (distDate.value === "" || !distDate.value)) {
-    const inputEl = distDate as HTMLInputElement;
-    inputEl.value = new Date().toISOString().split("T")[0] ?? "";
+    const today = new Date().toISOString().split("T")[0];
+    if (today) {
+      distDate.value = today;
+    }
   }
 
   const exVatInput = createForm?.querySelector<HTMLInputElement>("[name='amountExVat']");
