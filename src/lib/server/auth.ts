@@ -1,12 +1,10 @@
 /**
  * Project Sentinel - Session Authentication Services
  * Purpose: Manages generation, verification, and revocation of HMAC signed session tokens
- * Dependencies: cloudflare:workers
+ * Dependencies: @cloudflare/workers-types
  * Structural Role: Session cryptography and validation layer
  */
 
-// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
-import { env } from "cloudflare:workers";
 import type { D1Database } from "@cloudflare/workers-types";
 
 export interface SessionUser {
@@ -76,7 +74,8 @@ async function hmacKey(secret: string): Promise<CryptoKey> {
 
 function getSessionSecret(): string {
   // @ts-ignore - env types might not be perfectly aligned with generic runtime
-  const secret = String(env.SESSION_SECRET || env.AUTH_SECRET || "");
+  const bindings = (globalThis as any).__env__ || globalThis;
+  const secret = String(bindings.SESSION_SECRET || bindings.AUTH_SECRET || "");
   if (secret.length < 32) {
     throw new Error("SESSION_SECRET must be configured with at least 32 characters.");
   }
@@ -159,13 +158,15 @@ export async function verifySessionToken(token: string | null | undefined): Prom
 
 export function sessionCookie(token: string): string {
   // @ts-ignore
-  const secure = env.ENVIRONMENT === "local" ? "" : " Secure;";
+  const bindings = (globalThis as any).__env__ || globalThis;
+  const secure = bindings.ENVIRONMENT === "local" ? "" : " Secure;";
   return `${sessionCookieName}=${token}; Path=/portal; HttpOnly;${secure} SameSite=Strict; Max-Age=${sessionDurationSeconds}`;
 }
 
 export function expiredSessionCookie(): string {
   // @ts-ignore
-  const secure = env.ENVIRONMENT === "local" ? "" : " Secure;";
+  const bindings = (globalThis as any).__env__ || globalThis;
+  const secure = bindings.ENVIRONMENT === "local" ? "" : " Secure;";
   return `${sessionCookieName}=; Path=/portal; HttpOnly;${secure} SameSite=Strict; Max-Age=0`;
 }
 
