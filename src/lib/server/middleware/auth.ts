@@ -1,5 +1,13 @@
+/**
+ * Project Sentinel - Request Authentication Middleware
+ * Purpose: Handles session verification, CSRF checking, and MFA checks for API endpoints
+ * Dependencies: ../bindings.ts, ../csrf.ts, ../auth.ts
+ * Structural Role: HTTP authentication middleware layer
+ */
+
 import { getDatabase } from "../bindings";
 import { verifyCsrfToken } from "../csrf.js";
+import type { SessionUser } from "../auth.js";
 
 export interface AuthUser {
   id: string;
@@ -49,14 +57,6 @@ export async function authenticateRequest(request: Request, requiredRole?: strin
       return { user: null, isValid: false, error: "Invalid or expired session" };
     }
 
-    // Verify CSRF token for non-GET requests
-    if (request.method !== "GET") {
-      const csrfToken = request.headers.get("x-csrf-token");
-      if (!csrfToken || !verifyCsrfToken(csrfToken, session.csrf_token)) {
-        return { user: null, isValid: false, error: "Invalid CSRF token" };
-      }
-    }
-
     // Fetch user details
     const user = (await db.prepare(
       `SELECT id, email, name, role, is_active, mfa_secret_encrypted FROM users WHERE id = ?1 AND is_active = 1`
@@ -64,6 +64,20 @@ export async function authenticateRequest(request: Request, requiredRole?: strin
     
     if (!user) {
       return { user: null, isValid: false, error: "User no longer exists" };
+    }
+
+    // Verify CSRF token for non-GET requests
+    if (request.method !== "GET") {
+      const csrfToken = request.headers.get("x-csrf-token");
+      const sessionUser: SessionUser = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role as "tech" | "admin" | "client" | "finance"
+      };
+      if (!csrfToken || !(await verifyCsrfToken(csrfToken, sessionUser))) {
+        return { user: null, isValid: false, error: "Invalid CSRF token" };
+      }
     }
 
     // Check role requirement

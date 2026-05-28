@@ -8,7 +8,7 @@
 import { z } from "zod";
 
 // Shared Patterns
-const EmailSchema = z.string().email().max(120);
+const EmailSchema = z.string().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Invalid email address").max(120);
 const NameSchema = z.string().min(2).max(80).regex(/^[a-zA-Z\s\-\.']+$/, "Name contains invalid characters.");
 const TextSchema = z.string().min(10).max(3000);
 

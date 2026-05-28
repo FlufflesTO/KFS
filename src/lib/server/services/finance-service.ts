@@ -35,7 +35,7 @@ export class FinanceService {
    * Create a finance task (operational task, not official invoice)
    */
   async createFinanceTask(task: Omit<FinanceTask, 'id' | 'createdAt' | 'updatedAt'>): Promise<FinanceTask> {
-    const id = `ft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const id = `ft-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
     
     await this.db.prepare(`
       INSERT INTO finance_tasks (

@@ -1,10 +1,17 @@
+/**
+ * Project Sentinel - POPIA Data Request API Endpoint
+ * Purpose: Handles user data export and deletion requests in accordance with POPIA regulations
+ * Dependencies: ../../lib/server/http.ts, ../../lib/server/bindings.ts, ../../lib/server/audit, zod
+ * Structural Role: POPIA data request submission handler
+ */
+
 import { json, badRequest, serverError } from "../../lib/server/http.ts";
 import { getDatabase } from "../../lib/server/bindings.ts";
 import { auditEvent } from "../../lib/server/audit";
 import { z } from "zod";
 
 const DataRequestSchema = z.object({
-  email: z.string().email(),
+  email: z.string().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Invalid email address"),
   requestType: z.enum(["export", "delete"]),
   details: z.string().max(1000).optional()
 });
@@ -24,7 +31,7 @@ export async function POST({ request }: { request: Request }) {
 
     const parsed = DataRequestSchema.safeParse(data);
     if (!parsed.success) {
-      return badRequest((parsed.error as any).errors[0]?.message || "Invalid payload.");
+      return badRequest(parsed.error.errors[0]?.message || "Invalid payload.");
     }
 
     const db = getDatabase();
