@@ -98,7 +98,7 @@ const { sites, linkableJobs } = Astro.props;
 
   if (distDate && (distDate.value === "" || !distDate.value)) {
     const inputEl = distDate as HTMLInputElement;
-    inputEl.value = new Date().toISOString().split("T")[0];
+    inputEl.value = new Date().toISOString().split("T")[0] ?? "";
   }
 
   const exVatInput = createForm?.querySelector<HTMLInputElement>("[name='amountExVat']");

@@ -160,16 +160,16 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
 </header>
 
 <script>
-  const solutionsDropdown = document.querySelector("details.group");
+  const solutionsDropdown = document.querySelector("details.group") as HTMLDetailsElement | null;
   if (solutionsDropdown) {
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && solutionsDropdown.open) {
         solutionsDropdown.removeAttribute("open");
-        solutionsDropdown.querySelector("summary").focus();
+        (solutionsDropdown.querySelector("summary") as HTMLElement | null)?.focus();
       }
     });
     document.addEventListener("click", (event) => {
-      if (!solutionsDropdown.contains(event.target)) {
+      if (!solutionsDropdown.contains(event.target as Node | null)) {
         solutionsDropdown.removeAttribute("open");
       }
     });
