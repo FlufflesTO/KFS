@@ -221,14 +221,25 @@ summary::-webkit-details-marker {
   opacity: 0.03;
 }
 
-/* Logo watermark for environmental branding */
+/* Logo watermark for environmental branding - using pseudo-element to avoid interaction issues */
 .kharon-logo-watermark {
+  position: relative;
+}
+
+.kharon-logo-watermark::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-image: url('/brand/kharon-mark.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: 30%;
   opacity: 0.03;
   pointer-events: none;
+  z-index: -1;
 }
 
 /* Grid background for command interface */
