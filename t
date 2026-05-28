@@ -297,4 +297,161 @@ summary::-webkit-details-marker {
   transition: left 0.5s;
 }
 
-.kharon-command-button
+.kharon-command-button:hover::before {
+  left: 100%;
+}
+
+.kharon-command-button:hover {
+  box-shadow: var(--shadow-glow-purple);
+  transform: translateY(-1px);
+}
+
+.kharon-command-button:focus {
+  outline: 2px solid var(--color-kharon-cyan);
+  outline-offset: 2px;
+}
+
+/* Secondary button with glass effect */
+.kharon-secondary-button {
+  background: var(--color-surface-glass);
+  border: 1px solid var(--color-line-cyan-soft);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary-dark);
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.kharon-secondary-button:hover {
+  background: var(--color-surface-charcoal);
+  border-color: var(--color-kharon-cyan);
+}
+
+.kharon-secondary-button:focus {
+  outline: 2px solid var(--color-kharon-cyan);
+  outline-offset: 2px;
+}
+
+/* Danger button for destructive actions */
+.kharon-danger-button {
+  background: linear-gradient(135deg, var(--color-kharon-red), #a02824);
+  border: 1px solid rgba(196, 51, 47, 0.5);
+  border-radius: var(--radius-sm);
+  color: white;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+}
+
+.kharon-danger-button:hover {
+  box-shadow: 0 0 20px rgba(196, 51, 47, 0.3);
+  transform: translateY(-1px);
+}
+
+.kharon-danger-button:focus {
+  outline: 2px solid var(--color-kharon-red);
+  outline-offset: 2px;
+}
+
+/* Table styling for operational data */
+.kharon-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface-charcoal);
+  border: 1px solid var(--color-line-cyan-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.kharon-table th {
+  background: var(--color-surface-graphite);
+  color: var(--color-text-primary-dark);
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+
+.kharon-table td {
+  padding: 0.75rem;
+  border-top: 1px solid var(--color-line-purple-soft);
+  color: var(--color-text-secondary-dark);
+}
+
+.kharon-table tr:first-child td {
+  border-top: none;
+}
+
+.kharon-table tr:hover {
+  background: var(--color-surface-graphite);
+}
+
+/* Status chip for operational indicators */
+.kharon-status-chip {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kharon-status-chip.active {
+  background: var(--color-kharon-green);
+  color: white;
+}
+
+.kharon-status-chip.warning {
+  background: var(--color-kharon-amber);
+  color: var(--color-kharon-black);
+}
+
+.kharon-status-chip.danger {
+  background: var(--color-kharon-red);
+  color: white;
+}
+
+.kharon-status-chip.info {
+  background: var(--color-kharon-cyan);
+  color: var(--color-kharon-black);
+}
+
+.kharon-status-chip.neutral {
+  background: var(--color-kharon-grey);
+  color: white;
+}
+
+/* Simplified hero atmosphere */
+.hero-cinematic__atmosphere {
+  position: absolute;
+  inset: 0;
+  background: var(--color-kharon-black);
+}
+
+.hero-cinematic__titan{position:absolute;right:-6rem;top:2.5rem;width:25rem;opacity:.2;filter:drop-shadow(-70px 90px 100px rgba(0,0,0,.72));transform:perspective(1000px) rotateY(-21deg) rotateX(5deg)}
+.hero-cinematic__linework{position:absolute;right:-4%;bottom:4%;width:60rem;opacity:.38;transform:perspective(900px) rotateY(-5deg)}
+
+.hero-page-depth {
+  position: relative;
+  overflow: hidden;
+}
+
+.reveal{opacity:0;transform:translateY(15px);animation:reveal-up 800ms cubic-bezier(.2,.8,.2,1) forwards}.reveal-delayed{animation-delay:200ms}@keyframes reveal-up{to{opacity:1;transform:translateY(0)}}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition-duration: 1ms !important;
+  }
+}
