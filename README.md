@@ -2,17 +2,22 @@
 
 Comprehensive fire protection and security solutions portal for South African commercial/industrial applications. Built with Astro, deployed on Cloudflare Pages with D1 database and R2 storage.
 
+
 ## 🚀 Features
 
 ### Public Website
+- **Industrial Command Intelligence Design**: Dark-themed, professional interface with glass-metal surfaces and cyan/purple accent highlights
 - Responsive design optimized for South African market
 - Comprehensive service pages (Gas Suppression, Fire Detection, Security Systems)
 - Emergency support and compliance information
 - SEO optimized with proper meta tags and structured data
 - Accessibility features including skip links and ARIA labels
 - Premium card-based layouts for enhanced user experience
+- Environmental branding with low-opacity Kharon logo watermarks
+- Cinematic hero sections with technical atmosphere
 
 ### Field Service Management (FSM) Portal
+- **Secure Operations Console**: Dark industrial command interface with glass-metal surfaces and enterprise-level security
 - Role-based access control (admin, tech, client, finance)
 - Job dispatch and scheduling system with priority triaging
 - Technician field reporting with GPS tracking and offline-resilient draft saving
@@ -20,6 +25,7 @@ Comprehensive fire protection and security solutions portal for South African co
 - Financial workflow integration with Sage (manual control register)
 - Document management with R2 storage
 - Modernized dashboards with consistent card components and robust search/pagination
+- Mission-critical infrastructure interface with operational hierarchy
 
 ### Security & Compliance
 - POPIA-compliant data handling
@@ -29,6 +35,7 @@ Comprehensive fire protection and security solutions portal for South African co
 - Audit logging for all actions
 - South African regulatory compliance (SANS standards)
 - Enhanced honeypot security with inline styling
+- Enterprise-grade authentication with role-specific security requirements
 
 ### Performance & Optimization
 - Server-side rendering (SSR) with Astro
@@ -38,11 +45,12 @@ Comprehensive fire protection and security solutions portal for South African co
 - Print-optimized stylesheets for compliance documents
 - Mobile-first responsive design
 - CPU-efficient animations that pause when off-screen
+- Optimized for enterprise infrastructure operations
 
 ## 🛠 Tech Stack
 
 - **Framework**: Astro v6.3.3 with SSR
-- **Styling**: TailwindCSS v4 with custom components
+- **Styling**: TailwindCSS v4 with custom industrial design components
 - **Deployment**: Cloudflare Pages with D1 database and R2 storage
 - **Authentication**: Custom session management with CSRF protection
 - **Forms**: Anti-spam with honeypot fields and rate limiting
@@ -99,6 +107,18 @@ All PRs must pass the UI checklist in `.github/pull_request_template.md`:
 --color-kharon-red: #C4332F;     /* Errors, critical */
 --color-kharon-green: #16A34A;   /* Success, valid */
 
+/* Extended Dark Surface Tokens */
+--color-surface-obsidian: #0B0D0F;
+--color-surface-charcoal: #15191D;
+--color-surface-graphite: #1A2027;
+--color-surface-elevated: rgba(21, 25, 29, 0.82);
+--color-surface-glass: rgba(21, 25, 29, 0.68);
+--color-line-cyan-soft: rgba(0, 194, 255, 0.18);
+--color-line-purple-soft: rgba(75, 46, 131, 0.28);
+--color-line-white-soft: rgba(243, 245, 247, 0.10);
+--shadow-glow-cyan: 0 0 40px rgba(0, 194, 255, 0.22);
+--shadow-glow-purple: 0 0 60px rgba(75, 46, 131, 0.30);
+
 /* Typography */
 --font-sans: "Inter", system-ui, sans-serif;
 --font-weight-normal: 400;
@@ -144,7 +164,23 @@ npm run build
 ```
 
 ### Deployment
-The site is configured for deployment to Cloudflare Pages with automatic builds from the main branch.
+The site is configured for deployment to Cloudflare Pages with automatic builds from the main branch. The system includes automated CSS purging and asset optimization to maintain performance standards.
+
+
+## 🏗️ Architecture Overview
+
+### Visual System
+- **Industrial Command Interface**: Professional dark-themed interface for critical infrastructure operations
+- **Unified Brand Experience**: Consistent visual language across public and secure portal interfaces
+- **Environmental Branding**: Subtle Kharon logo watermarks that enhance rather than dominate the user experience
+- **Glass-Metal Surfaces**: Advanced visual effects with backdrop filters and gradients for modern enterprise feel
+
+### Technical Architecture
+- **Frontend**: Astro framework with component-based architecture
+- **Styling**: TailwindCSS with custom industrial design extensions
+- **Backend**: Cloudflare Workers with D1 database
+- **Authentication**: Secure session management with multi-factor authentication
+- **Storage**: R2 for document management and file storage
 
 ## 📄 License
 
