@@ -212,9 +212,36 @@ summary::-webkit-details-marker {
 
 /* Environmental background with subtle grid */
 .kharon-environment {
-  background: radial-gradient(circle at 1px 1px, var(--color-line-cyan-soft) 1px, transparent 0);
-  background-size: 40px 40px;
+  background: 
+    radial-gradient(circle at 1px 1px, var(--color-line-cyan-soft) 1px, transparent 0),
+    url('/brand/kharon-mark.svg');
+  background-position: 0 0, center;
+  background-size: 40px 40px, 30%;
   background-color: var(--color-surface-obsidian);
+  opacity: 0.03;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Logo watermark for environmental branding - using pseudo-element to avoid interaction issues */
+.kharon-logo-watermark {
+  position: relative;
+}
+
+.kharon-logo-watermark::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/brand/kharon-mark.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 30%;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* Grid background for command interface */
@@ -224,18 +251,6 @@ summary::-webkit-details-marker {
     linear-gradient(90deg, var(--color-line-cyan-soft) 1px, transparent 1px);
   background-size: 40px 40px;
   background-color: var(--color-surface-obsidian);
-}
-
-/* Logo watermark for environmental branding */
-.kharon-logo-watermark {
-  background-image: url('/brand/kharon-mark.svg');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 30%;
-  opacity: 0.03;
-  pointer-events: none;
-  position: relative;
-  z-index: -1;
 }
 
 /* Field styling for dark surfaces */
