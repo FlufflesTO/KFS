@@ -1,3 +1,9 @@
+/**
+ * Project Sentinel - Inventory Parts API
+ * Purpose: Allows technicians and administrators to retrieve and allocate parts inventory
+ * Dependencies: getDatabase
+ * Structural Role: REST API endpoint for inventory management
+ */
 import { getDatabase } from "../../../lib/server/bindings";
 
 export const prerender = false;
@@ -11,7 +17,7 @@ export async function GET({ request }: { request: Request }) {
     const db = getDatabase();
     
     let query = `SELECT p.*, ip.quantity_available, ip.location FROM parts p`;
-    const params: any[] = [];
+    const params: string[] = [];
     
     if (jobId) {
       // Get parts required for a specific job
@@ -73,9 +79,9 @@ export async function POST({ request }: { request: Request }) {
         }
         
         // Check if enough parts are available
-        const partInventory = await db.prepare(
+        const partInventory = (await db.prepare(
           `SELECT quantity_available FROM inventory_parts WHERE part_id = ? AND technician_id = ?`
-        ).bind(partId, technicianId).first();
+        ).bind(partId, technicianId).first()) as { quantity_available: number } | null;
         
         if (!partInventory || partInventory.quantity_available < quantity) {
           return new Response(

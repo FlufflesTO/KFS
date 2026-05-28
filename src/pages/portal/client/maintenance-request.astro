@@ -46,7 +46,7 @@ try {
        INNER JOIN sites ON sites.id = systems.site_id
        WHERE systems.deleted_at IS NULL AND systems.site_id IN (${placeholders})
        ORDER BY sites.owner_company_name ASC, systems.coverage_area ASC`
-    ).bind(...siteIds).all()).results as ClientSystem[] || [];
+    ).bind(...siteIds).all()).results as unknown as ClientSystem[] || [];
   }
 } catch (error) {
   loadError = "Unable to load site systems. Please try again later.";
@@ -164,8 +164,8 @@ const priorities = ["Routine", "Urgent", "Critical"];
         }
       });
       // Reset selection if current selection is now hidden
-      const currentSelectedOption = options[systemSelect.selectedIndex];
-      if (currentSelectedOption.style.display === "none") {
+      const currentSelectedOption = options[systemSelect.selectedIndex] as HTMLOptionElement | undefined;
+      if (currentSelectedOption && currentSelectedOption.style.display === "none") {
         systemSelect.selectedIndex = 0;
       }
     }

@@ -49,15 +49,20 @@ try {
     db.prepare("SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')")
   ]);
 
+  const getCount = (res: unknown): number => {
+    const r = res as { results?: Array<Record<string, unknown>> } | undefined;
+    return (r?.results?.[0] as { n: number } | undefined)?.n ?? 0;
+  };
+
   stats = {
-    jobs: jobs.results?.[0]?.n ?? 0,
-    unassigned: unassigned.results?.[0]?.n ?? 0,
-    users: users.results?.[0]?.n ?? 0,
-    sites: sites.results?.[0]?.n ?? 0,
-    systems: systems.results?.[0]?.n ?? 0,
-    openDefects: openDefects.results?.[0]?.n ?? 0,
-    blockedCertificates: blockedCertificates.results?.[0]?.n ?? 0,
-    pendingRequests: pendingRequests.results?.[0]?.n ?? 0
+    jobs: getCount(jobs),
+    unassigned: getCount(unassigned),
+    users: getCount(users),
+    sites: getCount(sites),
+    systems: getCount(systems),
+    openDefects: getCount(openDefects),
+    blockedCertificates: getCount(blockedCertificates),
+    pendingRequests: getCount(pendingRequests)
   };
 } catch {
   loadError = "Operations status could not be loaded.";

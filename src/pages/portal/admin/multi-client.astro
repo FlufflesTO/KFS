@@ -1,4 +1,11 @@
 ---
+/**
+ * Project Sentinel - Multi-Client Management
+ * Purpose: Allows administrators to create, read, update, and delete client company entities
+ * Dependencies: PortalLayout, getDatabase, requireAdmin
+ * Structural Role: Portal page for administrative client records management
+ */
+
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
 import { requireAdmin } from "../../../lib/server/access";
@@ -18,9 +25,23 @@ if (adminError) {
   };
 }
 
+interface ClientRecord {
+  id: string;
+  company_name: string;
+  contact_person: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  billing_address: string | null;
+  created_at: string;
+  site_count: number;
+  system_count: number;
+  job_count: number;
+  finance_record_count: number;
+}
+
 // Fetch clients with counts
 const db = getDatabase();
-const clients = await db.prepare(`
+const rawClients = await db.prepare(`
   SELECT 
     c.id,
     c.company_name,
@@ -42,6 +63,8 @@ const clients = await db.prepare(`
   GROUP BY c.id, c.company_name
   ORDER BY c.company_name ASC
 `).all();
+
+const clientRecords = (rawClients.results ?? []) as unknown as ClientRecord[];
 ---
 
 <PortalLayout title="Multi-Client Management | Kharon Portal" active="multi-client" user={user}>
@@ -64,8 +87,8 @@ const clients = await db.prepare(`
 
     <div class="bg-white shadow overflow-hidden sm:rounded-md">
       <ul class="divide-y divide-gray-200">
-        {clients.results?.map((client) => (
-          <li key={client.id}>
+        {clientRecords.map((client) => (
+          <li>
             <div class="px-4 py-4 sm:px-6">
               <div class="flex items-center justify-between">
                 <p class="text-sm font-medium text-kharon-blue truncate">{client.company_name}</p>
@@ -264,48 +287,79 @@ const clients = await db.prepare(`
   </div>
 
   <script>
-    let currentClientId = null;
+    interface ClientModalPayload {
+      id: string;
+      company_name: string;
+      contact_person?: string | null;
+      contact_email?: string | null;
+      contact_phone?: string | null;
+      billing_address?: string | null;
+    }
+
+    let currentClientId: string | null = null;
     
     function openAddClientModal() {
-      document.getElementById('modal-action').textContent = 'Add';
-      document.getElementById('client-form').reset();
-      document.getElementById('client-id').value = '';
-      document.getElementById('client-modal').classList.remove('hidden');
+      const modalAction = document.getElementById('modal-action');
+      if (modalAction) modalAction.textContent = 'Add';
+      
+      const form = document.getElementById('client-form') as HTMLFormElement | null;
+      if (form) form.reset();
+      
+      const clientId = document.getElementById('client-id') as HTMLInputElement | null;
+      if (clientId) clientId.value = '';
+      
+      document.getElementById('client-modal')?.classList.remove('hidden');
     }
     
-    function openEditClientModal(client) {
-      document.getElementById('modal-action').textContent = 'Edit';
-      document.getElementById('client-id').value = client.id;
-      document.getElementById('company-name').value = client.company_name || '';
-      document.getElementById('contact-person').value = client.contact_person || '';
-      document.getElementById('contact-email').value = client.contact_email || '';
-      document.getElementById('contact-phone').value = client.contact_phone || '';
-      document.getElementById('billing-address').value = client.billing_address || '';
-      document.getElementById('client-modal').classList.remove('hidden');
+    function openEditClientModal(client: ClientModalPayload) {
+      const modalAction = document.getElementById('modal-action');
+      if (modalAction) modalAction.textContent = 'Edit';
+      
+      const clientId = document.getElementById('client-id') as HTMLInputElement | null;
+      if (clientId) clientId.value = client.id;
+      
+      const companyName = document.getElementById('company-name') as HTMLInputElement | null;
+      if (companyName) companyName.value = client.company_name || '';
+      
+      const contactPerson = document.getElementById('contact-person') as HTMLInputElement | null;
+      if (contactPerson) contactPerson.value = client.contact_person || '';
+      
+      const contactEmail = document.getElementById('contact-email') as HTMLInputElement | null;
+      if (contactEmail) contactEmail.value = client.contact_email || '';
+      
+      const contactPhone = document.getElementById('contact-phone') as HTMLInputElement | null;
+      if (contactPhone) contactPhone.value = client.contact_phone || '';
+      
+      const billingAddress = document.getElementById('billing-address') as HTMLTextAreaElement | null;
+      if (billingAddress) billingAddress.value = client.billing_address || '';
+      
+      document.getElementById('client-modal')?.classList.remove('hidden');
     }
     
     function closeModal() {
-      document.getElementById('client-modal').classList.add('hidden');
+      document.getElementById('client-modal')?.classList.add('hidden');
     }
     
-    function confirmDeleteClient(clientId, clientName) {
+    function confirmDeleteClient(clientId: string, clientName: string) {
       currentClientId = clientId;
-      document.getElementById('delete-client-name').textContent = clientName;
-      document.getElementById('delete-modal').classList.remove('hidden');
+      const deleteClientName = document.getElementById('delete-client-name');
+      if (deleteClientName) deleteClientName.textContent = clientName;
+      document.getElementById('delete-modal')?.classList.remove('hidden');
     }
     
     function closeDeleteModal() {
-      document.getElementById('delete-modal').classList.add('hidden');
+      document.getElementById('delete-modal')?.classList.add('hidden');
       currentClientId = null;
     }
     
     async function saveClient() {
-      const form = document.getElementById('client-form');
+      const form = document.getElementById('client-form') as HTMLFormElement | null;
+      if (!form) return;
       const formData = new FormData(form);
-      const clientData = Object.fromEntries(formData);
-      clientData.clientId = clientData.id;
+      const clientData = Object.fromEntries(formData) as Record<string, unknown>;
+      clientData['clientId'] = clientData['id'];
       
-      const method = clientData.id ? 'PUT' : 'POST';
+      const method = clientData['id'] ? 'PUT' : 'POST';
       const url = '/portal/admin/api/multi-client';
       
       try {
@@ -313,7 +367,7 @@ const clients = await db.prepare(`
           method: method,
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-Token': document.querySelector('meta[name="kharon-csrf-token"]')?.content || ''
+            'X-CSRF-Token': (document.querySelector('meta[name="kharon-csrf-token"]') as HTMLMetaElement | null)?.content || ''
           },
           body: JSON.stringify(clientData)
         });
@@ -341,7 +395,7 @@ const clients = await db.prepare(`
         const response = await fetch(`/portal/admin/api/multi-client?id=${encodeURIComponent(currentClientId)}`, {
           method: 'DELETE',
           headers: {
-            'X-CSRF-Token': document.querySelector('meta[name="kharon-csrf-token"]')?.content || ''
+            'X-CSRF-Token': (document.querySelector('meta[name="kharon-csrf-token"]') as HTMLMetaElement | null)?.content || ''
           }
         });
         
@@ -368,13 +422,13 @@ const clients = await db.prepare(`
       document.getElementById('cancel-delete-btn')?.addEventListener('click', closeDeleteModal);
       document.getElementById('confirm-delete-btn')?.addEventListener('click', deleteClient);
 
-      for (const button of document.querySelectorAll('.edit-client')) {
+      for (const button of document.querySelectorAll<HTMLButtonElement>('.edit-client')) {
         button.addEventListener('click', () => {
-          openEditClientModal(JSON.parse(button.dataset.client || '{}'));
+          openEditClientModal(JSON.parse(button.dataset.client || '{}') as ClientModalPayload);
         });
       }
 
-      for (const button of document.querySelectorAll('.delete-client')) {
+      for (const button of document.querySelectorAll<HTMLButtonElement>('.delete-client')) {
         button.addEventListener('click', () => {
           confirmDeleteClient(button.dataset.clientId || '', button.dataset.clientName || 'this client');
         });

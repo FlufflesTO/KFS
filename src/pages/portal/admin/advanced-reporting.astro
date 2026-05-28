@@ -1,4 +1,10 @@
 ---
+/**
+ * Project Sentinel - Advanced Reporting Dashboard
+ * Purpose: Aggregates system metrics, finance, and technician performance statistics
+ * Dependencies: PortalLayout, getDatabase, requireAdmin
+ * Structural Role: Administrative reporting portal UI
+ */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
 import { requireAdmin } from "../../../lib/server/access";
@@ -21,8 +27,19 @@ if (adminError) {
 // Fetch reporting data
 const db = getDatabase();
 
+interface AdvancedStats {
+  completed_jobs: number;
+  scheduled_jobs: number;
+  in_progress_jobs: number;
+  overdue_systems: number;
+  open_defects: number;
+  unpaid_invoices: number;
+  unpaid_amount: number;
+  active_users: number;
+}
+
 // Overall stats
-const stats = await db.prepare(`
+const stats = (await db.prepare(`
   SELECT 
     (SELECT COUNT(*) FROM jobs WHERE status = 'Completed') as completed_jobs,
     (SELECT COUNT(*) FROM jobs WHERE status = 'Scheduled') as scheduled_jobs,
@@ -32,7 +49,7 @@ const stats = await db.prepare(`
     (SELECT COUNT(*) FROM financial_records WHERE payment_status = 'Unpaid') as unpaid_invoices,
     (SELECT SUM(amount)/100.0 FROM financial_records WHERE payment_status = 'Unpaid') as unpaid_amount,
     (SELECT COUNT(*) FROM users WHERE is_active = 1) as active_users
-`).first();
+`).first()) as unknown as AdvancedStats | null;
 
 // Monthly trends
 const monthlyTrends = await db.prepare(`

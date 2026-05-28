@@ -63,14 +63,14 @@ try {
     LIMIT ? OFFSET ?
   `;
 
-  users = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as DbUser[];
+  users = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as unknown as DbUser[];
 
   sites = ((await db.prepare(
     `SELECT id, owner_company_name, physical_address, site_contact_person, site_contact_email, site_contact_phone, billing_emails
      FROM sites
      ORDER BY owner_company_name
      LIMIT 1000`
-  ).all()).results ?? []) as DbSite[];
+  ).all()).results ?? []) as unknown as DbSite[];
 
 } catch (error) {
   loadError = "Users data could not be loaded.";
@@ -167,7 +167,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
             <div class="grid gap-2 text-xs self-center">
               <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="isActive" checked={Boolean(record.is_active)} /> Active</label>
               <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="forcePasswordChange" checked={Boolean(record.force_password_change)} /> Rotate password</label>
-              {(["admin", "finance"] as const).includes(record.role) && (
+              {(record.role === "admin" || record.role === "finance") && (
                 <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
               )}
               {record.mfa_enabled ? <span class="text-[10px] font-bold uppercase text-kharon-cyan">MFA enabled</span> : null}
@@ -288,7 +288,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
         }
 
         const form   = btn.closest<HTMLFormElement>("form");
-        const result = form?.querySelector<HTMLElement>(".admin-result");
+        const result = form?.querySelector<HTMLElement>(".admin-result") ?? null;
         if (result) result.classList.add("hidden");
         const { response, body } = await portalPost("/portal/api/admin/users", { action: "reset-link", id: btn.dataset.userId });
         if (!response.ok || !body.ok) {
@@ -319,7 +319,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
         }
 
         const form   = btn.closest<HTMLFormElement>("form");
-        const result = form?.querySelector<HTMLElement>(".admin-result");
+        const result = form?.querySelector<HTMLElement>(".admin-result") ?? null;
         if (result) result.classList.add("hidden");
         const { response, body } = await portalPost("/portal/api/admin/users", { action: "reset-mfa", id: btn.dataset.userId });
         if (!response.ok || !body.ok) {

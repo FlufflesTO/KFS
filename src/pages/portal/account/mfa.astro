@@ -6,7 +6,7 @@ import { getDatabase } from "../../../lib/server/bindings.js";
 export const prerender = false;
 
 const user = Astro.locals.user;
-let mfa = { required: Boolean(user?.mfaRequired), enabled: Boolean(user?.mfaEnabled), eligible: ["admin", "finance", "tech"].includes(user?.role) };
+let mfa = { required: Boolean(user?.mfaRequired), enabled: Boolean(user?.mfaEnabled), eligible: ["admin", "finance", "tech"].includes(user?.role || "") };
 let loadError = "";
 
 try {

@@ -36,11 +36,11 @@ interface DispatchJob {
   system_type: string;
   coverage_area: string;
   owner_company_name: string;
-  physical_address?: string;
-  site_contact_person?: string;
-  site_contact_phone?: string;
-  technician_name?: string;
-  technician_id?: string;
+  physical_address?: string | undefined;
+  site_contact_person?: string | undefined;
+  site_contact_phone?: string | undefined;
+  technician_name?: string | undefined;
+  technician_id?: string | undefined;
   // computed
   sla: { text: string; cls: string };
   priorityCls: string;

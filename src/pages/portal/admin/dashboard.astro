@@ -238,7 +238,7 @@ try {
                 <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Active Jobs</p>
                 <p class="mt-1 text-xl font-bold text-kharon-black tracking-tight">{stats.activeJobs}</p>
               </div>
-              <KharonButton href="/portal/admin/planning" variant="ghost" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-purple">View Board →</KharonButton>
+              <KharonButton href="/portal/admin/planning" variant="secondary" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-purple">View Board →</KharonButton>
            </KharonCard>
 
            <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
@@ -246,7 +246,7 @@ try {
                 <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Missing Docs</p>
                 <p class="mt-1 text-xl font-bold text-kharon-black tracking-tight">{stats.missingDocuments}</p>
               </div>
-              <KharonButton href="/portal/admin/jobs" variant="ghost" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-purple">Review →</KharonButton>
+              <KharonButton href="/portal/admin/jobs" variant="secondary" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-purple">Review →</KharonButton>
            </KharonCard>
 
            <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
@@ -254,7 +254,7 @@ try {
                 <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Open Requests</p>
                 <p class="mt-1 text-xl font-bold text-kharon-black tracking-tight">{stats.openRequests}</p>
               </div>
-              <KharonButton href="/portal/admin/dashboard#requests" variant="ghost" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-purple">Details →</KharonButton>
+              <KharonButton href="/portal/admin/dashboard#requests" variant="secondary" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-purple">Details →</KharonButton>
            </KharonCard>
 
            <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
@@ -270,7 +270,7 @@ try {
 
       <div class="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3 2xl:gap-8"> <!-- Increased gap from 5 to 8 for better mobile spacing -->
         <KharonCard title="Completed works" subtitle="Asset Lifecycle">
-          <KharonButton href="/portal/tech/history" variant="ghost" size="sm" className="px-0 font-bold">View all →</KharonButton>
+          <KharonButton href="/portal/tech/history" variant="secondary" size="sm" className="px-0 font-bold">View all →</KharonButton>
           <div class="mt-6 grid gap-4"> <!-- Increased gap from 3 to 4 for better mobile spacing -->
             {completed.map((item) => (
               <article class="border border-kharon-border border-l-4 border-l-kharon-blue bg-kharon-light/30 p-5 rounded shadow-sm hover:bg-white transition-colors"> <!-- Increased padding from p-4 to p-5 -->
@@ -291,7 +291,7 @@ try {
         </KharonCard>
 
         <KharonCard title="Active dispatches" subtitle="Operations">
-          <KharonButton href="/portal/admin/planning" variant="ghost" size="sm" className="px-0 font-bold">View board →</KharonButton>
+          <KharonButton href="/portal/admin/planning" variant="secondary" size="sm" className="px-0 font-bold">View board →</KharonButton>
           <div class="mt-6 grid gap-4"> <!-- Increased gap from 3 to 4 for better mobile spacing -->
             {active.map((item) => (
               <article class="border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-5 rounded shadow-sm hover:bg-white transition-colors"> <!-- Increased padding from p-4 to p-5 -->
@@ -304,7 +304,7 @@ try {
         </KharonCard>
 
         <KharonCard title="Lifecycle due dates" subtitle="Compliance">
-          <KharonButton href="/portal/admin/planning" variant="ghost" size="sm" className="px-0 font-bold">Manage board →</KharonButton>
+          <KharonButton href="/portal/admin/planning" variant="secondary" size="sm" className="px-0 font-bold">Manage board →</KharonButton>
           <div class="mt-6 grid gap-4"> <!-- Increased gap from 3 to 4 for better mobile spacing -->
             {due.map((item) => (
               <article class={`border border-kharon-border p-5 rounded shadow-sm hover:bg-white transition-colors ${dueDateCls(item.next_due_date)}`}> <!-- Increased padding from p-4 to p-5 -->

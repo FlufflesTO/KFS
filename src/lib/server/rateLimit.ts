@@ -23,7 +23,7 @@ export interface RateLimitResult {
 }
 
 export async function consumeRateLimit(db: D1Database, request: Request, options: RateLimitOptions): Promise<RateLimitResult> {
-  const fingerprint = await requestFingerprint(request);
+  const fingerprint = requestFingerprint(request);
   const identifier = `${options.scope}:${options.subject}:${fingerprint}`;
   
   const now = Math.floor(Date.now() / 1000);
@@ -68,7 +68,7 @@ export async function consumeRateLimit(db: D1Database, request: Request, options
 }
 
 export async function resetRateLimit(db: D1Database, request: Request, options: RateLimitOptions): Promise<void> {
-  const fingerprint = await requestFingerprint(request);
+  const fingerprint = requestFingerprint(request);
   const identifier = `${options.scope}:${options.subject}:${fingerprint}`;
   
   await db.prepare(`

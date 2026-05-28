@@ -73,7 +73,7 @@ try {
     LIMIT ? OFFSET ?
   `;
 
-  jobs = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as DbJob[];
+  jobs = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as unknown as DbJob[];
 
   systems = ((await db.prepare(
     `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area, sites.owner_company_name
@@ -82,11 +82,11 @@ try {
      WHERE systems.deleted_at IS NULL
      ORDER BY sites.owner_company_name, systems.coverage_area
      LIMIT 1000`
-  ).all()).results ?? []) as DbSystem[];
+  ).all()).results ?? []) as unknown as DbSystem[];
 
   technicians = ((await db.prepare(
     `SELECT id, name, email FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name`
-  ).all()).results ?? []) as DbUser[];
+  ).all()).results ?? []) as unknown as DbUser[];
 
 } catch (error) {
   loadError = "Jobs data could not be loaded.";

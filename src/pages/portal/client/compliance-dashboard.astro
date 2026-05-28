@@ -8,7 +8,7 @@ import { auditError } from "../../../lib/server/audit";
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
-import { clientSites, inClause } from "../../../lib/server/access";
+import { clientSites } from "../../../lib/server/access";
 
 export const prerender = false;
 
@@ -61,7 +61,35 @@ const user = Astro.locals.user;
 let systems: ClientSystem[] = [];
 let openDefects: Defect[] = [];
 let certificates: Certificate[] = [];
-let complianceStats: Record<string, number> = {};
+interface ComplianceStats {
+  totalSystems: number;
+  overdueSystems: number;
+  dueSoonSystems: number;
+  compliantSystems: number;
+  totalDefects: number;
+  criticalDefects: number;
+  majorDefects: number;
+  minorDefects: number;
+  totalCertificates: number;
+  blockedCertificates: number;
+  validCertificates: number;
+  expiredCertificates: number;
+}
+
+let complianceStats: ComplianceStats = {
+  totalSystems: 0,
+  overdueSystems: 0,
+  dueSoonSystems: 0,
+  compliantSystems: 0,
+  totalDefects: 0,
+  criticalDefects: 0,
+  majorDefects: 0,
+  minorDefects: 0,
+  totalCertificates: 0,
+  blockedCertificates: 0,
+  validCertificates: 0,
+  expiredCertificates: 0
+};
 let loadError = "";
 const sectionErrors: string[] = [];
 const today = new Date().toISOString().slice(0, 10);
@@ -99,8 +127,6 @@ try {
   if (siteIds.length === 0) {
     loadError = "This client account is not mapped to a site.";
   } else {
-    const sitePlaceholders = inClause(siteIds);
-
     try {
       // Get systems with compliance data
       systems = (await db.prepare(
@@ -126,7 +152,7 @@ try {
          )
          ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC
          LIMIT 200`
-      ).bind(user?.id || "", user?.siteId || null).all()).results as ClientSystem[] || [];
+      ).bind(user?.id || "", user?.siteId || null).all()).results as unknown as ClientSystem[] || [];
     } catch (error) {
       await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_systems" });
       sectionErrors.push("System records could not be loaded.");
@@ -151,7 +177,7 @@ try {
          ORDER BY CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 ELSE 3 END,
                   defects.created_at DESC
          LIMIT 200`
-      ).bind(user?.id || "", user?.siteId || null).all()).results as Defect[] || [];
+      ).bind(user?.id || "", user?.siteId || null).all()).results as unknown as Defect[] || [];
     } catch (error) {
       await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_defects" });
       sectionErrors.push("Defect register could not be loaded.");
@@ -176,7 +202,7 @@ try {
          )
          ORDER BY certificates.status DESC, COALESCE(certificates.expiry_date, certificates.issued_date) DESC
          LIMIT 200`
-      ).bind(user?.id || "", user?.siteId || null).all()).results as Certificate[] || [];
+      ).bind(user?.id || "", user?.siteId || null).all()).results as unknown as Certificate[] || [];
     } catch (error) {
       await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_certificates" });
       sectionErrors.push("Certificate register could not be loaded.");

@@ -15,9 +15,9 @@ export async function validateSession(sessionId: string): Promise<boolean> {
   const db = getDatabase();
   
   try {
-    const session = await db.prepare(
+    const session = (await db.prepare(
       `SELECT id, user_id, expires_at, created_at, csrf_token FROM sessions WHERE id = ?1`
-    ).bind(sessionId).first();
+    ).bind(sessionId).first()) as { id: string; user_id: string; expires_at: string; created_at: string; csrf_token: string } | null;
     
     if (!session) {
       return false;
@@ -101,9 +101,9 @@ export async function getSessionTimeoutInfo(sessionId: string): Promise<{
   const db = getDatabase();
   
   try {
-    const session = await db.prepare(
+    const session = (await db.prepare(
       `SELECT created_at FROM sessions WHERE id = ?1`
-    ).bind(sessionId).first();
+    ).bind(sessionId).first()) as { created_at: string } | null;
     
     if (!session) {
       return { timeRemaining: 0, isApproachingTimeout: true, absoluteTimeout: true };

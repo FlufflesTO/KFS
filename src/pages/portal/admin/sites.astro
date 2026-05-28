@@ -8,7 +8,16 @@
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
 import { requireAdmin } from "../../../lib/server/access";
-import type { DbSite, DbUser, DbClientSiteAccess } from "@sentinel/types";
+import type { DbSite, DbUser } from "@sentinel/types";
+
+interface ClientSiteAccessJoin {
+  user_id: string;
+  site_id: string;
+  granted_at: string;
+  user_name: string;
+  user_email: string;
+  owner_company_name: string;
+}
 
 export const prerender = false;
 
@@ -26,7 +35,7 @@ const offset = (page - 1) * perPage;
 
 let sites: DbSite[] = [];
 let clientUsers: DbUser[] = [];
-let clientSiteAccess: DbClientSiteAccess[] = [];
+let clientSiteAccess: ClientSiteAccessJoin[] = [];
 let sitesTotal = 0;
 let loadError = "";
 
@@ -53,9 +62,9 @@ try {
     LIMIT ? OFFSET ?
   `;
 
-  sites = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as DbSite[];
+  sites = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as unknown as DbSite[];
 
-  clientUsers = ((await db.prepare(`SELECT id, name, email FROM users WHERE role = 'client' AND is_active = 1`).all()).results ?? []) as DbUser[];
+  clientUsers = ((await db.prepare(`SELECT id, name, email FROM users WHERE role = 'client' AND is_active = 1`).all()).results ?? []) as unknown as DbUser[];
 
   clientSiteAccess = ((await db.prepare(
     `SELECT client_site_access.user_id, client_site_access.site_id, client_site_access.granted_at,
@@ -65,7 +74,7 @@ try {
      INNER JOIN sites ON sites.id = client_site_access.site_id
      ORDER BY users.name, sites.owner_company_name
      LIMIT 1000`
-  ).all()).results ?? []) as DbClientSiteAccess[];
+  ).all()).results ?? []) as unknown as ClientSiteAccessJoin[];
 
 } catch (error) {
   loadError = "Sites data could not be loaded.";
@@ -74,6 +83,7 @@ try {
 const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
 ---
 
+<PortalLayout title="Site Management | Kharon Portal" active="sites" user={user}>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>

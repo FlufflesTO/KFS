@@ -32,10 +32,18 @@ export async function authenticateRequest(request: Request, requiredRole?: strin
   const db = getDatabase();
 
   try {
+    interface SessionRow {
+      user_id: string;
+      expires_at: string;
+      csrf_token: string;
+      created_at: string;
+      mfa_verified: number | null;
+    }
+
     // Verify session exists and is not expired
-    const session = await db.prepare(
+    const session = (await db.prepare(
       `SELECT user_id, expires_at, csrf_token, created_at, mfa_verified FROM sessions WHERE id = ?1 AND expires_at > datetime('now')`
-    ).bind(sessionId).first();
+    ).bind(sessionId).first()) as SessionRow | null;
     
     if (!session) {
       return { user: null, isValid: false, error: "Invalid or expired session" };
@@ -50,9 +58,9 @@ export async function authenticateRequest(request: Request, requiredRole?: strin
     }
 
     // Fetch user details
-    const user = await db.prepare(
+    const user = (await db.prepare(
       `SELECT id, email, name, role, is_active, mfa_secret_encrypted FROM users WHERE id = ?1 AND is_active = 1`
-    ).bind(session.user_id).first();
+    ).bind(session.user_id).first()) as AuthUser | null;
     
     if (!user) {
       return { user: null, isValid: false, error: "User no longer exists" };

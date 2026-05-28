@@ -51,7 +51,7 @@ try {
     LIMIT ? OFFSET ?
   `;
 
-  contactEnquiries = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as DbContactEnquiry[];
+  contactEnquiries = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as unknown as DbContactEnquiry[];
 
 } catch (error) {
   loadError = "Enquiries could not be loaded.";

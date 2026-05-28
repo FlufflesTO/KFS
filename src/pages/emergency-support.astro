@@ -59,63 +59,21 @@ const emergencyRoutes = [
       />
       
       <div class="mt-12 grid gap-8 md:grid-cols-2">
-        <div class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
-          <div class="bg-kharon-surface-elevated rounded-xl p-6">
-            <h3 class="text-xl font-bold text-white mb-4">System Fault Response</h3>
-            <p class="text-kharon-light/70 mb-4">
-              Immediate response protocols for protection system faults that could compromise safety or operational continuity.
-            </p>
-            <ul class="space-y-2">
-              <li class="flex items-start">
-                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-kharon-light/80">24/7 emergency response team</span>
-              </li>
-              <li class="flex items-start">
-                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-kharon-light/80">On-site response within 4 hours</span>
-              </li>
-              <li class="flex items-start">
-                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-kharon-light/80">System restoration prioritization</span>
-              </li>
-            </ul>
+        {emergencyRoutes.map((route) => (
+          <div class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+            <div class="bg-kharon-surface-elevated rounded-xl p-6 flex flex-col justify-between h-full">
+              <div>
+                <h3 class="text-xl font-bold text-white mb-4">{route.title}</h3>
+                <p class="text-kharon-light/70 mb-6">
+                  {route.text}
+                </p>
+              </div>
+              <a href={route.href} class="inline-flex items-center justify-center rounded bg-gradient-to-r from-kharon-purple to-kharon-blue px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all self-start">
+                {route.action}
+              </a>
+            </div>
           </div>
-        </div>
-        
-        <div class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
-          <div class="bg-kharon-surface-elevated rounded-xl p-6">
-            <h3 class="text-xl font-bold text-white mb-4">Compliance Interventions</h3>
-            <p class="text-kharon-light/70 mb-4">
-              Escalation procedures for compliance issues that require immediate attention to maintain regulatory standing.
-            </p>
-            <ul class="space-y-2">
-              <li class="flex items-start">
-                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-kharon-light/80">Priority intervention for critical defects</span>
-              </li>
-              <li class="flex items-start">
-                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-kharon-light/80">Regulatory liaison support</span>
-              </li>
-              <li class="flex items-start">
-                <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-kharon-light/80">Documentation remediation</span>
-              </li>
-            </ul>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   </section>

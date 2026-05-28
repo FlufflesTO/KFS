@@ -74,7 +74,7 @@ try {
          )
          WHERE systems.deleted_at IS NULL AND systems.site_id IN (${sitePlaceholders})
          ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC`
-      ).bind(...siteIds).all()).results as ClientSystem[] || [];
+      ).bind(...siteIds).all()).results as unknown as ClientSystem[] || [];
     } catch (error) {
       await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_systems" });
       sectionErrors.push("System records could not be loaded.");
@@ -92,7 +92,7 @@ try {
            AND financial_records.item_type = 'Quote'
            AND financial_records.payment_status = 'Pending Approval'
          ORDER BY financial_records.distribution_date ASC`
-      ).bind(...siteIds).all()).results as ClientQuote[] || [];
+      ).bind(...siteIds).all()).results as unknown as ClientQuote[] || [];
     } catch (error) {
       await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "client_quotes" });
       sectionErrors.push("Quote approvals could not be loaded.");
@@ -241,7 +241,7 @@ const compliantCount = systems.filter((s) => !s.next_due_date || s.next_due_date
           
           {/* Section: Systems under management */}
           <KharonCard title="Systems & Cadence Records" subtitle="Asset Lifecycle">
-            <KharonButton href="/compliance" variant="ghost" size="sm">Standards reference →</KharonButton>
+            <KharonButton href="/compliance" variant="secondary" size="sm">Standards reference →</KharonButton>
             
             <div class="mt-4 grid gap-6 sm:grid-cols-2">
               {systems.map((system) => (
@@ -251,10 +251,10 @@ const compliantCount = systems.filter((s) => !s.next_due_date || s.next_due_date
                       <span class="rounded bg-kharon-purple/10 px-2 py-0.5 text-[10px] font-bold uppercase text-kharon-purple">{system.system_type}</span>
                       <span class={`rounded px-2 py-0.5 text-[10px] font-bold uppercase border ${
                         system.next_due_date && system.next_due_date < today
-                          ? "border-red-200 bg-red-50 text-kharon-red"
-                          : system.next_due_date && system.next_due_date <= soonDate
-                          ? "border-amber-200 bg-amber-50 text-kharon-amber"
-                          : "border-kharon-border bg-white text-kharon-grey"
+                           ? "border-red-200 bg-red-50 text-kharon-red"
+                           : system.next_due_date && system.next_due_date <= soonDate
+                           ? "border-amber-200 bg-amber-50 text-kharon-amber"
+                           : "border-kharon-border bg-white text-kharon-grey"
                       }`}>
                         {system.next_due_date && system.next_due_date < today ? "Overdue  -  " : "Due "}{system.next_due_date || "Not scheduled"}
                       </span>
@@ -336,7 +336,7 @@ const compliantCount = systems.filter((s) => !s.next_due_date || s.next_due_date
           <KharonCard title="Outstanding Quotes" subtitle="Finance">
             <div class="mb-3 flex items-center justify-between gap-3 rounded-lg border border-kharon-border bg-white px-3 py-2 text-xs" data-approval-endpoint="/portal/api/approve-quote">
               <span class="font-semibold text-kharon-grey">Mapped client sites: {sites.length}</span>
-              <KharonButton href="/portal/client/quotes" variant="ghost" size="sm">Review approvals</KharonButton>
+              <KharonButton href="/portal/client/quotes" variant="secondary" size="sm">Review approvals</KharonButton>
             </div>
             <div class="mt-4 space-y-4">
               {quotes.length === 0 && <p class="text-sm text-kharon-grey italic py-2">No outstanding quotes require your approval.</p>}
@@ -410,3 +410,6 @@ const compliantCount = systems.filter((s) => !s.next_due_date || s.next_due_date
           </KharonCard>
         </div>
       </div>
+    </div>
+  </section>
+</PortalLayout>

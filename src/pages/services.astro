@@ -4,7 +4,7 @@ import ServiceGrid from "../components/sections/ServiceGrid.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import { pageMeta, solutionLinks } from "../data/site.js";
 
-const services = solutionLinks.map((link, index) => ({
+const services = solutionLinks.map((link) => ({
   ...link,
   title: link.label,
   summary: link.summary
