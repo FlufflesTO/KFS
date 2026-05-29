@@ -2,7 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "kharon-website",
   "compatibility_date": "2026-05-20",
-  "main": "src/server.ts",
+  "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
       "pattern": "tequit.co.za/*",
