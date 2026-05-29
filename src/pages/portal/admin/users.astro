@@ -77,6 +77,7 @@ try {
 }
 
 const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="User Management | Kharon Portal" active="users" user={user}>
@@ -98,6 +99,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
           Users <span class="ml-2 text-sm font-normal text-white/60">({usersTotal})</span>
         </h2>
         <form class="flex flex-wrap items-end gap-3" method="get">
+          <CsrfInput />
           <div class="grid gap-1">
             <label for="users-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search Name/Email</label>
             <input
@@ -132,6 +134,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
             class="admin-form grid gap-4 bg-surface-charcoal/40 border border-line-cyan-soft/50 p-4 lg:grid-cols-6 rounded-md"
             data-endpoint="/portal/api/admin/users"
           >
+          <CsrfInput />
             <input type="hidden" name="action" value="update" />
             <input type="hidden" name="id" value={record.id} />
             
@@ -223,6 +226,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
     <article class="kharon-surface p-6 sm:p-8">
       <h2 class="text-xl font-bold text-white font-heading">Create new user</h2>
       <form class="admin-form mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-endpoint="/portal/api/admin/users">
+          <CsrfInput />
         <input type="hidden" name="action" value="create" />
         
         <div class="grid gap-1">

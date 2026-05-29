@@ -26,6 +26,7 @@ try {
   await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "mfa_page" });
   loadError = "MFA status could not be loaded.";
 }
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="MFA Control | Kharon Portal" active="mfa" user={user}>
@@ -84,6 +85,7 @@ try {
                 </div>
                 
                 <form id="enable-mfa-form" class="grid gap-4 border-t border-kharon-purple/10 pt-4">
+          <CsrfInput />
                   <div class="grid gap-1.5">
                     <label for="mfa-code" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">6-digit Code</label>
                     <input id="mfa-code" class="kharon-field" name="code" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" required placeholder="000000" />
@@ -98,6 +100,7 @@ try {
 
           {mfa.enabled && (
             <form id="disable-mfa-form" class="mt-6 grid gap-5 rounded border border-kharon-red/20 bg-kharon-red/5 p-5">
+          <CsrfInput />
               <p class="text-sm font-semibold text-red-200">Disabling MFA requires verification code and confirmation.</p>
               
               <div class="grid gap-1.5">

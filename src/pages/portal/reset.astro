@@ -4,6 +4,7 @@ import "../../styles/global.css";
 export const prerender = false;
 
 const token = Astro.url.searchParams.get("token") || "";
+import CsrfInput from "../../components/ui/CsrfInput.astro";
 ---
 
 <!doctype html>
@@ -26,6 +27,7 @@ const token = Astro.url.searchParams.get("token") || "";
         </p>
 
         <form id="reset-form" class="mt-6 grid gap-5">
+          <CsrfInput />
           <input type="hidden" name="token" value={token} />
           
           <div class="grid gap-1.5">

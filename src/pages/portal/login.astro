@@ -6,6 +6,7 @@ import { isLoggedIn } from "../../lib/server/middleware/auth";
 if (await isLoggedIn(Astro.request)) {
   return Astro.redirect("/portal");
 }
+import CsrfInput from "../../components/ui/CsrfInput.astro";
 ---
 
 <BaseLayout title="Login - Kharon Operations Portal" description="Secure login to the Kharon operations portal">
@@ -23,6 +24,7 @@ if (await isLoggedIn(Astro.request)) {
 
       <KharonCard variant="command" className="kharon-surface-strong">
         <form method="post" action="/portal/api/auth" class="space-y-5">
+          <CsrfInput />
           <div>
             <label class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Email Address</label>
             <input 

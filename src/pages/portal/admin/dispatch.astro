@@ -186,6 +186,7 @@ const techGroups: TechGroup[] = Array.from(techGroupMap.values()).sort((a, b) =>
 const unassignedAlert = stats.unassigned > 0;
 const emergencyAlert  = stats.emergency > 0;
 const slaAlert        = stats.slaWarning > 0;
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Dispatch Board | Kharon Portal" active="dispatch" user={user}>
@@ -313,6 +314,7 @@ const slaAlert        = stats.slaWarning > 0;
               )}
               <!-- Assign form -->
               <form class="dispatch-form mt-3 flex flex-wrap gap-2" data-action="assign">
+          <CsrfInput />
                 <input type="hidden" name="jobId" value={job.id} />
                 <select
                   name="technicianId"
@@ -335,6 +337,7 @@ const slaAlert        = stats.slaWarning > 0;
                   Edit dispatch settings
                 </summary>
                 <form class="dispatch-form mt-2 grid gap-2 sm:grid-cols-4 sm:items-end" data-action="setDispatch">
+          <CsrfInput />
                   <input type="hidden" name="jobId" value={job.id} />
                   <div>
                     <label class="mb-1 block text-xs text-kharon-grey">Priority</label>
@@ -452,6 +455,7 @@ const slaAlert        = stats.slaWarning > 0;
                   Reassign technician
                 </summary>
                 <form class="dispatch-form mt-2 flex flex-wrap gap-2" data-action="assign">
+          <CsrfInput />
                   <input type="hidden" name="jobId" value={job.id} />
                   <select
                     name="technicianId"
@@ -475,6 +479,7 @@ const slaAlert        = stats.slaWarning > 0;
                   Edit dispatch settings
                 </summary>
                 <form class="dispatch-form mt-2 grid gap-2 sm:grid-cols-4 sm:items-end" data-action="setDispatch">
+          <CsrfInput />
                   <input type="hidden" name="jobId" value={job.id} />
                   <div>
                     <label class="mb-1 block text-xs text-kharon-grey">Priority</label>

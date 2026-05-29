@@ -1,0 +1,12 @@
+---
+/**
+ * Project Sentinel - CSRF Input Component
+ * Purpose: Global component to inject CSRF tokens into forms
+ * Dependencies: Astro.locals.csrfToken
+ * Structural Role: Security enforcement for form mutations
+ */
+
+const csrfToken = Astro.locals.csrfToken || '';
+---
+
+{csrfToken && <input type="hidden" name="csrf_token" value={csrfToken} />}

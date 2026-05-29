@@ -24,6 +24,8 @@ const robotsContent = noindex || isStagingDomain ? "noindex, nofollow" : "index,
 
 // Only load analytics on non-portal pages
 const shouldLoadAnalytics = !Astro.url.pathname.startsWith('/portal');
+const hasForms = Astro.url.pathname === '/contact' || Astro.url.pathname.startsWith('/portal');
+const nonce = Astro.locals.nonce;
 const organizationJsonLd = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -93,13 +95,14 @@ const organizationJsonLd = JSON.stringify({
   <link rel="stylesheet" media="print" href="/print.css" />
   
   <!-- Schema.org JSON-LD -->
-  <script type="application/ld+json" set:html={organizationJsonLd}></script>
+  <script nonce={nonce} type="application/ld+json" set:html={organizationJsonLd}></script>
   
   <!-- POPIA-Compliant Analytics - Only load on non-portal pages -->
   {shouldLoadAnalytics && (
     <>
       {/* Plausible Analytics - Privacy-friendly */}
       <script 
+        nonce={nonce}
         defer 
         src="https://plausible.io/js/script.js" 
         data-domain={SITE_CONFIG.url.replace('https://', '')}
@@ -108,6 +111,7 @@ const organizationJsonLd = JSON.stringify({
       {/* Alternative: Fathom Analytics - uncomment if using instead of Plausible */}
       {/* 
       <script 
+        nonce={nonce}
         src="https://cdn.usefathom.com/script.js" 
         data-site="YOUR_FATHOM_SITE_ID" 
         defer
@@ -116,18 +120,14 @@ const organizationJsonLd = JSON.stringify({
     </>
   )}
   
-  <script 
-    type="module" 
-    src="https://cdn.skypack.dev/@supabase/supabase-js" 
-    async 
-    defer
-  ></script>
-  
-  <script 
-    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" 
-    async 
-    defer
-  ></script>
+  {hasForms && (
+    <script 
+      nonce={nonce}
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" 
+      async 
+      defer
+    ></script>
+  )}
   
 </head>
 <body class="kharon-page-shell kharon-environment">

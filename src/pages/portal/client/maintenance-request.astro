@@ -54,6 +54,7 @@ try {
 
 const requestTypes = ["Maintenance", "Fault", "Compliance Documentation", "Quote Request", "Emergency Follow-up"];
 const priorities = ["Routine", "Urgent", "Critical"];
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Submit Service Request | Kharon Portal" active="client" user={user}>
@@ -78,6 +79,7 @@ const priorities = ["Routine", "Urgent", "Critical"];
       {!loadError && (
         <div class="kharon-surface p-6 sm:p-8">
           <form id="maintenance-request-form" class="grid gap-5">
+          <CsrfInput />
             <div class="grid gap-1.5">
               <label for="req-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Select Site *</label>
               <select id="req-siteId" class="kharon-field" name="siteId" required>

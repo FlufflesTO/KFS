@@ -37,7 +37,7 @@ function securityHeaders(nonce: string): Record<string, string> {
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Content-Security-Policy":
-      `default-src 'none'; script-src 'strict-dynamic' 'nonce-${nonce}' https://static.cloudflareinsights.com https://challenges.cloudflare.com https://plausible.io https://cdn.skypack.dev; script-src-attr 'none'; style-src 'self' 'nonce-${nonce}'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com https://plausible.io; frame-src https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests; manifest-src 'self'`,
+      `default-src 'none'; script-src 'strict-dynamic' 'nonce-${nonce}' https://static.cloudflareinsights.com https://challenges.cloudflare.com https://plausible.io; script-src-attr 'none'; style-src 'self' 'nonce-${nonce}'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com https://plausible.io; frame-src https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests; manifest-src 'self'`,
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Cross-Origin-Opener-Policy": "same-origin",
     "Cross-Origin-Resource-Policy": "same-origin",

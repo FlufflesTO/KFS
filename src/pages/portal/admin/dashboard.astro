@@ -184,6 +184,7 @@ try {
   loadError = "Admin matrix data could not be loaded.";
 }
 
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Admin Control Panel | Kharon Portal" active="admin" user={user}>
@@ -335,6 +336,7 @@ try {
                 </div>
                 <div class="mt-6 pt-5 border-t border-kharon-border/40 grid gap-4">
                   <form class="request-status-form flex flex-wrap gap-2" data-request-id={item.id}>
+          <CsrfInput />
                     <input type="hidden" name="requestId" value={item.id} />
                     <select class="portal-field sm:w-auto rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="status">
                       {["New", "Reviewing", "Closed"].map((status) => <option value={status} selected={item.status === status}>{status}</option>)}
@@ -344,6 +346,7 @@ try {
                   </form>
                   {!item.linked_job_id && (
                     <form class="request-schedule-form grid gap-4 border-t border-kharon-border/40 pt-5" data-request-id={item.id}>
+          <CsrfInput />
                       <input type="hidden" name="requestId" value={item.id} />
                       <div class="grid gap-3 sm:grid-cols-2">
                         <div class="grid gap-1.5">

@@ -105,6 +105,7 @@ try {
 } catch (error) {
   loadError = "Audit data could not be loaded.";
 }
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Audit Console | Kharon Portal" active="audit" user={user}>
@@ -126,6 +127,7 @@ try {
 
       <!-- ─── Filter form ─────────────────────────────────────────────── -->
       <form method="GET" action="/portal/admin/audit" class="mb-6 kharon-surface p-4 sm:p-5">
+          <CsrfInput />
         <p class="mb-4 text-xs font-bold uppercase tracking-widest text-kharon-purple">Filter telemetry events</p>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <label class="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-white/85">

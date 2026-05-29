@@ -56,6 +56,7 @@ if (jobId && user) {
 
 const visitStatuses = ["Travelling", "Arrived", "In Progress", "Completed", "Unable To Complete", "Follow-up Required", "Quote Required"];
 const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "Parts Required", "System Isolated", "Quote Required", "Return Visit Required", "Cancelled On Site"];
+import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title={`Log Visit for Job ${jobId} | Kharon Portal`} active="tech" user={user}>
@@ -106,6 +107,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
 
           <!-- Phase 1: Log Arrival -->
           <form class="log-arrival-form space-y-6" data-job-id={job.id}>
+          <CsrfInput />
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="grid gap-1">
                 <label for="visit-date-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Visit Date</label>
@@ -202,6 +204,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
 
           <!-- Phase 2: Log Outcome (hidden until arrival is confirmed) -->
           <form class="log-outcome-form space-y-6 mt-8 hidden" data-job-id={job.id}>
+          <CsrfInput />
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="grid gap-1">
                 <label for="departure-time-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Departure Time</label>

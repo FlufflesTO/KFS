@@ -93,6 +93,7 @@ try {
 }
 
 const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Job Management | Kharon Portal" active="jobs" user={user}>
@@ -114,6 +115,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
           Jobs <span class="ml-2 text-sm font-normal text-white/60">({jobsTotal})</span>
         </h2>
         <form class="flex flex-wrap items-end gap-3" method="get">
+          <CsrfInput />
           <div class="grid gap-1">
             <label for="jobs-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search</label>
             <input
@@ -148,6 +150,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
             class="admin-form grid gap-4 bg-surface-charcoal/40 border border-line-cyan-soft/50 p-4 lg:grid-cols-7 rounded-md"
             data-endpoint="/portal/api/admin/jobs"
           >
+          <CsrfInput />
             <input type="hidden" name="action" value="update" />
             <input type="hidden" name="id" value={record.id} />
             
@@ -243,6 +246,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
     <article class="kharon-surface p-6 sm:p-8">
       <h2 class="text-xl font-bold text-white font-heading">Create job</h2>
       <form class="admin-form mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-endpoint="/portal/api/admin/jobs">
+          <CsrfInput />
         <input type="hidden" name="action" value="create" />
         
         <div class="grid gap-1">

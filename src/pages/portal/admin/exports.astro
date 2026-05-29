@@ -9,6 +9,7 @@ const adminError = requireAdmin(user);
 if (adminError) {
   return adminError;
 }
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Data Import & Export | Kharon Portal" active="exports" user={user}>
@@ -78,6 +79,7 @@ if (adminError) {
         <div class="grid gap-5 xl:grid-cols-2">
           <!-- Sites Import -->
           <form class="import-form grid gap-3 border border-line-cyan-soft/50 p-4 bg-surface-charcoal/40 rounded" data-type="sites">
+          <CsrfInput />
             <h3 class="font-bold text-white">Import sites</h3>
             <p class="overflow-x-auto rounded-md bg-surface-obsidian border border-line-cyan-soft/30 px-3 py-2 font-mono text-xs whitespace-nowrap text-white/70">
               id,owner_company_name,physical_address,site_contact_person,site_contact_email,site_contact_phone,billing_emails
@@ -100,6 +102,7 @@ if (adminError) {
 
           <!-- Systems Import -->
           <form class="import-form grid gap-3 border border-line-cyan-soft/50 p-4 bg-surface-charcoal/40 rounded" data-type="systems">
+          <CsrfInput />
             <h3 class="font-bold text-white">Import systems</h3>
             <p class="overflow-x-auto rounded-md bg-surface-obsidian border border-line-cyan-soft/30 px-3 py-2 font-mono text-xs whitespace-nowrap text-white/70">
               id,site_id,system_type,coverage_area,manufacturer,model_reference,next_due_date

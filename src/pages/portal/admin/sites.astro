@@ -81,6 +81,7 @@ try {
 }
 
 const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Site Management | Kharon Portal" active="sites" user={user}>
@@ -102,6 +103,7 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
           Sites <span class="ml-2 text-sm font-normal text-white/60">({sitesTotal})</span>
         </h2>
         <form class="flex flex-wrap items-end gap-3" method="get">
+          <CsrfInput />
           <div class="grid gap-1">
             <label for="sites-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search Company</label>
             <input
@@ -127,6 +129,7 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
             class="admin-form grid gap-4 bg-surface-charcoal/40 border border-line-cyan-soft/50 p-4 lg:grid-cols-6 rounded-md"
             data-endpoint="/portal/api/admin/sites"
           >
+          <CsrfInput />
             <input type="hidden" name="action" value="update" />
             <input type="hidden" name="id" value={record.id} />
             
@@ -191,6 +194,7 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
       <article class="kharon-surface p-5">
         <h2 class="text-xl font-bold text-white font-heading">Create site</h2>
         <form class="admin-form mt-5 grid gap-4" data-endpoint="/portal/api/admin/sites">
+          <CsrfInput />
           <input type="hidden" name="action" value="create" />
           
           <div class="grid gap-1">
@@ -237,6 +241,7 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
         </div>
 
         <form class="client-site-access-form mt-5 grid gap-4 lg:grid-cols-3" data-endpoint="/portal/api/admin/client-site-access">
+          <CsrfInput />
           <input type="hidden" name="action" value="grant" />
           
           <div class="grid gap-1">
@@ -274,6 +279,7 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
               data-user-name={mapping.user_name}
               data-site-name={mapping.owner_company_name}
             >
+          <CsrfInput />
               <div>
                 <p class="font-semibold text-white">{mapping.user_name} / {mapping.owner_company_name}</p>
                 <p class="text-xs text-white/60">{mapping.user_email} / granted {mapping.granted_at}</p>
