@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent, auditError } from "../../../../lib/server/audit";
 import { badRequest, forbidden, json, unauthorized } from "../../../../lib/server/http.ts";
@@ -39,7 +39,11 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     let body = {};
     try {
-      body = await request.json() as any;
+      try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     } catch {
       return badRequest("Request body must be valid JSON.");
     }

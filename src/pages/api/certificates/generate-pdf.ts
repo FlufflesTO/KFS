@@ -5,7 +5,12 @@ export const prerender = false;
 
 export async function POST({ request }: { request: Request }) {
   try {
-    const body = await request.json();
+    let body: Record<string, any>;
+    try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     
     // Validate required fields
     if (!body.id || !body.certificateType || !body.issuedDate || !body.companyName) {

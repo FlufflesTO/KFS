@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { getDatabase } from "../../../../lib/server/bindings";
 import { verifyCsrfToken } from "../../../../lib/server/csrf";
 import { requireAdminOrFinance } from "../../../../lib/server/access";
@@ -83,7 +83,12 @@ export async function PATCH({ request, locals }: import('astro').APIContext) {
     const authError = requireAdminOrFinance(user);
     if (authError) return authError;
 
-    const body = await request.json() as any;
+    let body: Record<string, any>;
+    try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     const db = getDatabase();
     const financeService = new FinanceService(db);
 

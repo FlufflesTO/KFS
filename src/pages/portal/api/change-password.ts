@@ -14,7 +14,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     if (!user) return unauthorized();
 
-    const body = await request.json();
+    let body: Record<string, any>;
+    try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     const currentPassword = String(body.currentPassword || "");
     const newPassword = String(body.newPassword || "");
     const confirmPassword = String(body.confirmPassword || "");

@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { auditError } from "../../../lib/server/audit";
 import { getDatabase } from "../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../lib/server/audit";
@@ -20,7 +20,12 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     if (!user) return unauthorized();
     if (user.role !== "tech") return forbidden("Only technician accounts can update dispatch status from the field workspace.");
 
-    const body = await request.json() as any;
+    let body: Record<string, any>;
+    try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     const jobId = cleanId(body.jobId, "jobId");
     const status = String(body.status || "").trim();
 

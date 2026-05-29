@@ -87,7 +87,12 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       return badRequest("Invalid CSRF token");
     }
 
-    const payload = await request.json();
+    let payload: Record<string, any>;
+    try {
+      payload = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     const parsed = JobCardSchema.safeParse(payload);
     
     if (!parsed.success) {

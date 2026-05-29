@@ -42,7 +42,12 @@ export async function POST({ request, locals }: APIContext) {
       return forbidden("Only finance or admin accounts can update Sage references.");
     }
 
-    const body = await request.json();
+    let body: Record<string, any>;
+    try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
 
     const recordId          = String(body.recordId          || "").trim();
     const sageInvoiceNumber = String(body.sageInvoiceNumber  || "").trim().slice(0, 60) || null;

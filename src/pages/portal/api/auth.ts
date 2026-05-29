@@ -35,7 +35,12 @@ async function readCredentials(request: Request): Promise<LoginCredentials> {
   const contentType = request.headers.get("content-type") || "";
 
   if (contentType.includes("application/json")) {
-    const parsedBody = await request.json() as Record<string, unknown>;
+    let parsedBody: Record<string, unknown>;
+    try {
+      parsedBody = await request.json() as Record<string, unknown>;
+    } catch(e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     return {
       email: parsedBody?.email,
       password: parsedBody?.password,

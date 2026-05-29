@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { auditError } from "../../../../lib/server/audit";
 /**
  * Project Sentinel - Credit Note API
@@ -29,7 +29,11 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     let body = {};
     try {
-      body = await request.json() as any;
+      try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     } catch {
       return badRequest("Request body must be valid JSON.");
     }

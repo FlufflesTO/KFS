@@ -30,7 +30,12 @@ export async function POST({ request }: { request: Request }) {
       );
     }
     
-    const payload = await request.json();
+    let payload: Record<string, any>;
+    try {
+      payload = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     
     // Validate webhook payload
     if (!payload.event || !payload.data) {

@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { auditError } from "../../../lib/server/audit";
 import { getDatabase } from "../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../lib/server/audit";
@@ -37,7 +37,12 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     if (!user) return unauthorized();
     if (user.role !== "client") return forbidden("Only client accounts can submit maintenance requests.");
 
-    const body = await request.json() as any;
+    let body: Record<string, any>;
+    try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     const id = crypto.randomUUID();
     const requestedSiteId = cleanOptionalId(body.siteId, "siteId");
     const systemId = cleanOptionalId(body.systemId, "systemId");

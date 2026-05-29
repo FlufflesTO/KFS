@@ -36,7 +36,12 @@ export async function POST({ request, locals }: APIContext) {
   }
 
   try {
-    const body = await request.json();
+    let body: Record<string, any>;
+    try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     const { taskId } = body;
     
     if (!taskId) {

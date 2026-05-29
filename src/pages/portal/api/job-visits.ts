@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { auditError } from "../../../lib/server/audit";
 import { getDatabase } from "../../../lib/server/bindings.ts";
 export const prerender = false;
@@ -44,7 +44,11 @@ export async function POST({ locals, request }: import('astro').APIContext) {
 
   let body;
   try {
-    body = await request.json() as any;
+    try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
   } catch {
     return json({ ok: false, message: "Invalid JSON." }, 400);
   }

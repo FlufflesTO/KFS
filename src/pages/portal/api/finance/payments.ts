@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { getDatabase } from "../../../../lib/server/bindings";
 import { auditEvent } from "../../../../lib/server/audit";
 import { requireAdminOrFinance } from "../../../../lib/server/access";
@@ -17,7 +17,12 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       return authError;
     }
 
-    const body = await request.json() as any;
+    let body: Record<string, any>;
+    try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     const financialRecordId = String(body.recordId || body.financialRecordId || "").trim();
     const sagePaymentRef = String(body.paymentReference || body.sagePaymentRef || "").trim();
 

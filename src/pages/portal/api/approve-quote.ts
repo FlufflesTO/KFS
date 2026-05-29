@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { getDatabase } from "../../../lib/server/bindings";
 import { auditEvent } from "../../../lib/server/audit";
 import { clientCanAccessSite } from "../../../lib/server/access";
@@ -14,7 +14,12 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     if (!user) return unauthorized();
     if (user.role !== "client" && user.role !== "admin") return forbidden("Only client or admin accounts can approve quotes.");
 
-    const body = await request.json() as any;
+    let body: Record<string, any>;
+    try {
+      body = await request.json() as Record<string, any>;
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+    }
     const parsed = QuoteApprovalSchema.safeParse({
       quoteId: body.recordId || body.quoteId,
       status: body.status

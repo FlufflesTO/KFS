@@ -50,7 +50,12 @@ export async function POST({ request, locals }: APIContext) {
     return new Response("Server configuration error", { status: 500 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  let body: Record<string, unknown> = {};
+  try {
+    body = await request.json() as Record<string, unknown>;
+  } catch(e) {
+    // Ignore, maybe no body was provided
+  }
   if (body.action === "disconnect") {
     await disconnectSage(db);
 
