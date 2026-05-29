@@ -70,7 +70,7 @@ Ensure a backup exists of the files being modified to allow for quick regression
 ## 3. Current Outstanding Items (as of May 2026)
 
 ### 🔴 Critical
-- **Cloudflare API Token Update on GitHub**: Update the GitHub repository secrets for `CLOUDFLARE_API_TOKEN` to use the newly rolled token (the `cfut_...` token provided in the request) so that the automated Pages deployment succeeds.
+- None. All critical items (including Cloudflare API token configuration, watermark overlays, typescript endpoints, and technician jobcard template recovery) have been fully resolved.
 
 ### 🟡 Recommended
 - **Expand End-to-End Testing**: Expand the newly integrated Playwright/visual test suite to cover the multi-step technician jobcard closure flow, defect sub-form, and canvas signature capture.
