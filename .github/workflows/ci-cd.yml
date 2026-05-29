@@ -45,7 +45,7 @@ jobs:
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || '1b6ad8d0efcc066f4689065f5f24f5f9' }}
           projectName: kharon-website
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
