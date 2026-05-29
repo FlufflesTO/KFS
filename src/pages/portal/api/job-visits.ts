@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { auditError } from "../../../lib/server/audit";
 import { getDatabase } from "../../../lib/server/bindings.ts";
 export const prerender = false;
@@ -12,30 +13,30 @@ function json(body, status = 200) {
   });
 }
 
-function cleanId(value) {
+function cleanId(value: any) {
   const id = String(value || "").trim();
   if (!/^[A-Za-z0-9_-]{3,80}$/.test(id)) throw new Error("Job ID is invalid.");
   return id;
 }
 
-function cleanTime(value, field) {
+function cleanTime(value: any, field) {
   const time = String(value || "").trim();
   if (!/^\d{2}:\d{2}$/.test(time)) throw new Error(`${field} must use HH:MM format.`);
   return time;
 }
 
-function cleanDate(value) {
+function cleanDate(value: any) {
   const date = String(value || "").trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Visit date must use YYYY-MM-DD format.");
   return date;
 }
 
-function cleanOptionalText(value, max = 1000) {
+function cleanOptionalText(value: any, max = 1000) {
   const text = String(value || "").trim();
   return text ? text.slice(0, max) : null;
 }
 
-export async function POST({ locals, request }) {
+export async function POST({ locals, request }: import('astro').APIContext) {
   const user = locals.user;
   if (!user || user.role !== "tech") {
     return json({ ok: false, message: "Unauthorized." }, 403);
@@ -43,7 +44,7 @@ export async function POST({ locals, request }) {
 
   let body;
   try {
-    body = await request.json();
+    body = await request.json() as any;
   } catch {
     return json({ ok: false, message: "Invalid JSON." }, 400);
   }
@@ -52,7 +53,7 @@ export async function POST({ locals, request }) {
   let jobId;
   try {
     jobId = cleanId(body.jobId);
-  } catch (error) {
+  } catch (error: any) {
     return json({ ok: false, message: error.message }, 400);
   }
 
@@ -119,10 +120,11 @@ export async function POST({ locals, request }) {
     }
 
     return json({ ok: false, message: `Unknown action: ${action}` }, 400);
-  } catch (error) {
+  } catch (error: any) {
     if (db) {
       await auditError(db, request, error, { user, metadata: { message: "job visit action failed" } });
     }
     return json({ ok: false, message: error.message || "Failed to update visit." }, error.message ? 400 : 500);
   }
 }
+

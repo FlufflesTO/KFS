@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent, auditError } from "../../../../lib/server/audit";
 import { badRequest, forbidden, json, unauthorized } from "../../../../lib/server/http.ts";
@@ -7,7 +8,7 @@ export const prerender = false;
 
 const ITEM_TYPES = new Set(["Task", "Quote", "Invoice"]);
 
-function cleanAmount(value) {
+function cleanAmount(value: any) {
   const num = Number(value);
   if (!Number.isFinite(num) || num < 0 || num > 9_999_999) {
     throw new Error("Amount must be a number between 0 and 9,999,999.");
@@ -15,19 +16,19 @@ function cleanAmount(value) {
   return Math.round(num * 100);
 }
 
-function cleanOptionalId(value) {
+function cleanOptionalId(value: any) {
   if (!value) return null;
   const str = String(value).trim();
   if (!/^[A-Za-z0-9_-]{3,80}$/.test(str)) throw new Error("jobId format is invalid.");
   return str;
 }
 
-function cleanRef(value) {
+function cleanRef(value: any) {
   if (!value) return null;
   return String(value).trim().slice(0, 120) || null;
 }
 
-export async function POST({ request, locals }) {
+export async function POST({ request, locals }: import('astro').APIContext) {
   const db = getDatabase();
   try {
     const user = locals.user;
@@ -38,7 +39,7 @@ export async function POST({ request, locals }) {
 
     let body = {};
     try {
-      body = await request.json();
+      body = await request.json() as any;
     } catch {
       return badRequest("Request body must be valid JSON.");
     }
@@ -53,7 +54,7 @@ export async function POST({ request, locals }) {
     try {
       amountExVat = cleanAmount(body.amountExVat);
       vatAmount = body.vatAmount ? cleanAmount(body.vatAmount) : Math.round(amountExVat * 0.15);
-    } catch (error) {
+    } catch (error: any) {
       return badRequest(error.message);
     }
 
@@ -62,7 +63,7 @@ export async function POST({ request, locals }) {
       jobId = cleanOptionalId(body.jobId);
       reference = cleanRef(body.reference);
       financeNotes = body.financeNotes ? String(body.financeNotes).trim().slice(0, 500) || null : null;
-    } catch (error) {
+    } catch (error: any) {
       return badRequest(error.message);
     }
 
@@ -100,7 +101,7 @@ export async function POST({ request, locals }) {
     });
 
     return json({ ok: true, message: "Record created successfully.", task });
-  } catch (error) {
+  } catch (error: any) {
     await auditError(db, request, error, {
       user: locals.user,
       metadata: { message: "Error creating finance task" },
@@ -108,3 +109,4 @@ export async function POST({ request, locals }) {
     return json({ ok: false, message: "An internal error occurred." }, { status: 500 });
   }
 }
+

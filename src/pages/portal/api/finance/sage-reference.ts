@@ -2,6 +2,7 @@ import { auditError } from "../../../../lib/server/audit";
 import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.ts";
+import type { APIContext } from "astro";
 
 export const prerender = false;
 
@@ -33,7 +34,7 @@ const VALID_TASK_STATUSES = [
  * Accepts: { recordId, sageInvoiceNumber?, sageQuoteNumber?, sageCustomerCode?, financeTaskStatus? }
  * Saves Sage manual reference fields to financial_records and audit logs the change.
  */
-export async function POST({ request, locals }) {
+export async function POST({ request, locals }: APIContext) {
   try {
     const user = locals.user;
     if (!user) return unauthorized();
@@ -132,7 +133,7 @@ export async function POST({ request, locals }) {
     if (error instanceof SyntaxError) {
       return badRequest("Request body must be valid JSON.");
     }
-    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "sage reference update failed" } });
+    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "sage reference update failed" } });
     return serverError("Sage reference update could not be completed.");
   }
 }

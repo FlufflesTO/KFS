@@ -216,7 +216,14 @@
   /* Remove background images that might interfere */
   *[style*="background-image"],
   .bg-cover,
-  .bg-no-repeat {
+  .bg-no-repeat,
+  .kharon-page-shell {
+    background-image: none !important;
+  }
+
+  /* Completely remove the 3D watermark and dark shells for printing */
+  .kharon-environment::before {
+    display: none !important;
     background-image: none !important;
   }
 

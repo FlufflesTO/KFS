@@ -165,3 +165,21 @@ Scope: browser-side DOM safety, portal/public form success states, finance selec
 - [ ] Full responsive screenshot QA across desktop, tablet and mobile.
 - [ ] Production domain migration plan for `www.kharon.co.za` and `portal.kharon.co.za`.
 - [ ] Approved public imagery to replace schematic visuals.
+
+---
+
+## Audit Update - 2026-05-29 API & Frontend Hardening Pass
+
+Scope: API layer type safety, context boundary hardening, and frontend theme/accessibility compliance.
+
+### API Migration & Context Hardening
+- **TypeScript Strictness:** Completely migrated all 19 legacy `.js` API routes in `src/pages/portal/api/` to strict `.ts`. Added Astro `APIContext` definitions.
+- **Context Handling Bug Fix:** Identified and patched a hallucinated `context.locals.db` error handling sequence across all API endpoints, securing the error boundary.
+- **Build Integrity:** `npm run build` safely compiles all API endpoints with zero `noImplicitAny` exceptions blocking compilation.
+
+### Frontend Theme & Layout Compliance
+- **Dotted Matrix Purge:** Entirely removed the non-compliant turquoise dotted matrix background.
+- **3D Watermark:** Verified `.kharon-environment` natively renders the 3D-filtered Kharon mark as a massive background watermark.
+- **Accessibility:** `PortalLayout.astro` `<main>` element now correctly features `id="main-content"`, properly enabling skip-to-content links.
+- **JSON-LD SEO:** Injected fully populated `ProfessionalService` structured data into `index.astro` (address, geo-coordinates, hours) for local SEO.
+- **Print Stylesheets:** Validated `print.css` correctly strips out dark mode and 3D backgrounds for physical ink-saving prints.

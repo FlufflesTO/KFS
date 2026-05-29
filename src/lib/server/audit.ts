@@ -19,13 +19,15 @@ export interface AuditEvent {
     role: string;
     siteId?: string | null;
   } | null;
-  subject: string;
+  subject?: string;
   metadata?: Record<string, unknown>;
 }
 
 export interface AuditError {
   entityType?: string;
   entityId?: string;
+  user?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export async function auditEvent(db: D1Database, request: Request, event: AuditEvent): Promise<void> {

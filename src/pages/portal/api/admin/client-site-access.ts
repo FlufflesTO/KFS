@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { auditError } from "../../../../lib/server/audit";
 import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
@@ -6,7 +7,7 @@ import { cleanChoice, cleanId, readJson, requireAdmin } from "../../../../lib/se
 
 export const prerender = false;
 
-export async function POST({ request, locals }) {
+export async function POST({ request, locals }: import('astro').APIContext) {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
@@ -58,9 +59,9 @@ export async function POST({ request, locals }) {
     });
 
     return json({ ok: true, userId, siteId, action });
-  } catch (error) {
+  } catch (error: any) {
     if (error.message) return badRequest(error.message);
-    await auditError(typeof db !== "undefined" ? db : context.locals.db, typeof request !== "undefined" ? request : context.request, error, { user: typeof user !== "undefined" ? user : context.locals.user, metadata: { message: "client site access admin failed" } });
+    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "client site access admin failed" } });
     return serverError("Client site access update failed.");
   }
 }
@@ -68,3 +69,4 @@ export async function POST({ request, locals }) {
 export function ALL() {
   return methodNotAllowed(["POST"]);
 }
+

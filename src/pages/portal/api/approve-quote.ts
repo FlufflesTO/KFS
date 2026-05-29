@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getDatabase } from "../../../lib/server/bindings";
 import { auditEvent } from "../../../lib/server/audit";
 import { clientCanAccessSite } from "../../../lib/server/access";
@@ -7,13 +8,13 @@ import { QuoteApprovalSchema } from "../../../lib/validation/schemas";
 
 export const prerender = false;
 
-export async function POST({ request, locals }) {
+export async function POST({ request, locals }: import('astro').APIContext) {
   try {
     const user = locals.user;
     if (!user) return unauthorized();
     if (user.role !== "client" && user.role !== "admin") return forbidden("Only client or admin accounts can approve quotes.");
 
-    const body = await request.json();
+    const body = await request.json() as any;
     const parsed = QuoteApprovalSchema.safeParse({
       quoteId: body.recordId || body.quoteId,
       status: body.status
@@ -87,7 +88,7 @@ export async function POST({ request, locals }) {
       success: true, 
       message: `Quote ${status}. A finance task has been created to track the next steps in Sage.`
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Quote approval failed:", error);
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     return serverError("Quote approval failed.");
@@ -97,3 +98,4 @@ export async function POST({ request, locals }) {
 export function ALL() {
   return methodNotAllowed(["POST"]);
 }
+

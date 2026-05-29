@@ -81,6 +81,22 @@ Immediate refinements recommended:
 - Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
 - Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
 
+## Review Update - 2026-05-29 Comprehensive API & Frontend Overhaul
+
+Verified current state:
+
+- The entire legacy `.js` API layer (`/portal/api/*`) has been successfully migrated to strict `.ts`. All endpoints now correctly import Astro's `APIContext` and utilize strict typing and data boundary isolation.
+- A critical hallucinated error-handling bug involving `context.locals.db` was discovered and fully patched across all API route files.
+- The previous generic turquoise dotted matrix background has been entirely purged.
+- The UI now correctly enforces a Charcoal Obsidian gradient (`#0B0D0F` to `#15191D`) using `.kharon-environment`.
+- The massive 3D-filtered Kharon watermark now natively renders via CSS `::before` pseudo-elements.
+- The portal layouts now fully support skipped accessibility targeting (`id="main-content"`).
+- The PWA manifest now strictly respects `#0B0D0F` as the `theme-color`.
+- Public landing pages have been injected with proper `ProfessionalService` JSON-LD schema referencing the correct Ndabeni, Maitland location coordinates and opening hours.
+- A dedicated `print.css` ensures physical jobcards and compliance certificates strip out the dark mode styling for clean, ink-efficient white backgrounds.
+- The build is stable and the TS API layer no longer throws compilation errors.
+
+
 ## Review Update - 2026-05-25 Verified Kharon Branding Integration
 
 Verified brand source assets are available in `docs/roadmap/KHARON_BRANDING`:

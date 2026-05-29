@@ -4,12 +4,44 @@ import CinematicHero from "../components/sections/CinematicHero.astro";
 import RouteMatrix from "../components/sections/RouteMatrix.astro";
 import AuthorityEvidence from "../components/sections/AuthorityEvidence.astro";
 import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
+import Testimonials from "../components/trust/Testimonials.astro";
 import { pageMeta } from "../data/site.js";
+
+const localBusinessJsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "Kharon Fire & Security",
+  "image": "https://www.tequit.co.za/og/kharon-og.png",
+  "@id": "https://www.tequit.co.za",
+  "url": "https://www.tequit.co.za",
+  "telephone": "+27615458830",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd",
+    "addressLocality": "Ndabeni, Maitland",
+    "addressRegion": "Western Cape",
+    "postalCode": "7405",
+    "addressCountry": "ZA"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": -33.9298,
+    "longitude": 18.4907
+  },
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    "opens": "08:00",
+    "closes": "17:00"
+  }
+});
 ---
 
 <BaseLayout title={pageMeta.home.title} description={pageMeta.home.description}>
+  <script type="application/ld+json" set:html={localBusinessJsonLd}></script>
   <CinematicHero />
   <ComplianceStrip />
+  <Testimonials />
   <RouteMatrix />
   <AuthorityEvidence />
 </BaseLayout>

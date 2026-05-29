@@ -6,14 +6,15 @@
  */
 
 import { getBindings } from "../../../../lib/server/bindings.ts";
-import { getSageConnectionStatus, disconnectSage } from "../../../../lib/server/sage.js";
+import { getSageConnectionStatus, disconnectSage } from "../../../../lib/server/sage.ts";
 import { auditEvent } from "../../../../lib/server/audit";
-import { verifyCsrfRequest, csrfErrorResponse } from "../../../../lib/server/csrf.js";
+import { verifyCsrfRequest, csrfErrorResponse } from "../../../../lib/server/csrf.ts";
 import { forbidden, json, methodNotAllowed, unauthorized } from "../../../../lib/server/http.ts";
+import type { APIContext } from "astro";
 
 export const prerender = false;
 
-export async function GET({ locals }) {
+export async function GET({ locals }: APIContext) {
   const user = locals.user;
   if (!user) return unauthorized();
   if (!["finance", "admin"].includes(user.role)) {
@@ -31,7 +32,7 @@ export async function GET({ locals }) {
   return json({ ok: true, ...status });
 }
 
-export async function POST({ request, locals }) {
+export async function POST({ request, locals }: APIContext) {
   const user = locals.user;
   if (!user) return unauthorized();
   if (!["finance", "admin"].includes(user.role)) {

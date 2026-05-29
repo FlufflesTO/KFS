@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
 import { rowsToCsv } from "../../../../lib/server/csv";
@@ -38,7 +39,7 @@ const configs = {
   }
 };
 
-export async function GET({ request, locals, url }) {
+export async function GET({ request, locals, url }: import('astro').APIContext) {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 

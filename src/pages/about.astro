@@ -77,13 +77,39 @@ const capabilityProof = [
   </section>
 
   <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
-    <div class="mx-auto max-w-4xl px-6 text-center">
-      <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 kharon-h2">
-        Registered Fire-System Work
-      </h2>
-      <p class="text-kharon-light/80 text-lg leading-relaxed max-w-2xl mx-auto">
-        Our company is registered to design, install, commission and maintain fire alarm and evacuation systems, with all work structured around relevant industry regulations and installation standards.
-      </p>
+    <div class="mx-auto max-w-4xl px-6">
+      <SectionHeading
+        title="Compliance & Accreditation"
+        subtitle="Operational Integrity"
+        description="Our work is strictly governed by South African national standards and recognized industry bodies."
+        center={true}
+      />
+      
+      <div class="mt-12 grid gap-6 md:grid-cols-3">
+        <div class="rounded-lg border border-kharon-cyan/30 bg-kharon-black p-6 flex flex-col items-center text-center">
+          <div class="h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-kharon-cyan/10">
+            <span class="text-kharon-cyan font-bold text-xl">SAQCC</span>
+          </div>
+          <h3 class="text-lg font-semibold text-white mb-2">SAQCC Fire & Gas</h3>
+          <p class="text-kharon-light/70 text-sm">All technicians are registered and certified for authorized fire and gas suppression work.</p>
+        </div>
+        
+        <div class="rounded-lg border border-kharon-cyan/30 bg-kharon-black p-6 flex flex-col items-center text-center">
+          <div class="h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-kharon-cyan/10">
+            <span class="text-kharon-cyan font-bold text-xl">SABS</span>
+          </div>
+          <h3 class="text-lg font-semibold text-white mb-2">SANS Compliant</h3>
+          <p class="text-kharon-light/70 text-sm">Installations strictly adhere to SANS 10139, 14520, and 369 national standards.</p>
+        </div>
+
+        <div class="rounded-lg border border-kharon-cyan/30 bg-kharon-black p-6 flex flex-col items-center text-center">
+          <div class="h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-kharon-cyan/10">
+            <span class="text-kharon-cyan font-bold text-xl">BEE</span>
+          </div>
+          <h3 class="text-lg font-semibold text-white mb-2">B-BBEE Certified</h3>
+          <p class="text-kharon-light/70 text-sm">Committed to South African economic empowerment and inclusive business growth.</p>
+        </div>
+      </div>
     </div>
   </section>
 </BaseLayout>

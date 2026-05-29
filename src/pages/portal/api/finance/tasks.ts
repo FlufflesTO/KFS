@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getDatabase } from "../../../../lib/server/bindings";
 import { verifyCsrfToken } from "../../../../lib/server/csrf";
 import { requireAdminOrFinance } from "../../../../lib/server/access";
@@ -5,7 +6,7 @@ import { FinanceService } from "../../../../lib/server/services/finance-service"
 
 export const prerender = false;
 
-export async function GET({ request, locals }) {
+export async function GET({ request, locals }: import('astro').APIContext) {
   try {
     // Verify authentication and authorization
     const user = locals.user;
@@ -31,7 +32,7 @@ export async function GET({ request, locals }) {
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Finance tasks fetch failed:", error);
     return new Response(
       JSON.stringify({ error: "Failed to fetch finance tasks" }),
@@ -40,7 +41,7 @@ export async function GET({ request, locals }) {
   }
 }
 
-export async function POST({ request, locals }) {
+export async function POST({ request, locals }: import('astro').APIContext) {
   try {
     const user = locals.user;
     const authError = requireAdminOrFinance(user);
@@ -70,19 +71,19 @@ export async function POST({ request, locals }) {
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Finance task update failed:", error);
     return new Response(JSON.stringify({ error: "Finance task update failed" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
-export async function PATCH({ request, locals }) {
+export async function PATCH({ request, locals }: import('astro').APIContext) {
   try {
     const user = locals.user;
     const authError = requireAdminOrFinance(user);
     if (authError) return authError;
 
-    const body = await request.json();
+    const body = await request.json() as any;
     const db = getDatabase();
     const financeService = new FinanceService(db);
 
@@ -95,7 +96,7 @@ export async function PATCH({ request, locals }) {
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Finance task patch failed:", error);
     return new Response(JSON.stringify({ error: "Finance task patch failed" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }

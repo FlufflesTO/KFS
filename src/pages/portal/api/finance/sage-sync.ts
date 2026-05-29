@@ -7,13 +7,14 @@
 
 import { getBindings } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
-import { verifyCsrfRequest, csrfErrorResponse } from "../../../../lib/server/csrf.js";
+import { verifyCsrfRequest, csrfErrorResponse } from "../../../../lib/server/csrf.ts";
 import { forbidden, json, methodNotAllowed, unauthorized } from "../../../../lib/server/http.ts";
-import { FinanceService } from "../../../../lib/server/services/finance-service.js";
+import { FinanceService } from "../../../../lib/server/services/finance-service.ts";
+import type { APIContext } from "astro";
 
 export const prerender = false;
 
-export async function POST({ request, locals }) {
+export async function POST({ request, locals }: APIContext) {
   const user = locals.user;
   if (!user) return unauthorized();
   

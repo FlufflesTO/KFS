@@ -13,6 +13,7 @@ import { createSessionToken, sessionCookie, verifyPassword } from "../../../lib/
 import { decryptMfaSecret, verifyTotpCode } from "../../../lib/server/mfa.ts";
 import { consumeRateLimit, resetRateLimit } from "../../../lib/server/rateLimit.js";
 import { badRequest, json, methodNotAllowed, serverError, tooManyRequests, unauthorized } from "../../../lib/server/http.ts";
+import { UserRepository } from "../../../lib/server/db/user-repository.ts";
 
 export const prerender = false;
 
@@ -22,18 +23,6 @@ interface LoginCredentials {
   mfaCode?: unknown;
 }
 
-interface DbUserQueryResult {
-  id: string;
-  name: string;
-  email: string;
-  password_hash: string;
-  role: "tech" | "admin" | "client" | "finance";
-  site_id: string | null;
-  force_password_change: number | boolean;
-  mfa_required: number | boolean;
-  mfa_enabled: number | boolean;
-  mfa_secret_encrypted: string | null;
-}
 
 const roleDestinations: Record<string, string> = {
   tech: "/portal/tech/dashboard",
@@ -99,16 +88,8 @@ export async function POST({ request }: APIContext): Promise<Response> {
       return tooManyRequests("Too many sign-in attempts. Try again later.", rateLimit.retryAfter);
     }
 
-    const user = await db!
-      .prepare(
-        `SELECT id, name, email, password_hash, role, site_id, force_password_change,
-                mfa_required, mfa_enabled, mfa_secret_encrypted
-         FROM users
-         WHERE email = ?1 AND is_active = 1
-         LIMIT 1`
-      )
-      .bind(email)
-      .first<DbUserQueryResult>();
+    const userRepo = new UserRepository(db!);
+    const user = await userRepo.findWithSecretsByEmail(email);
 
     if (!user) {
       await auditEvent(db!, request, {

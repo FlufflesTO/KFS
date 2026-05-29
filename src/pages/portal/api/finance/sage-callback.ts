@@ -7,16 +7,17 @@
 
 import { getBindings } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
-import { badRequest, forbidden, unauthorized } from "../../../../lib/server/http.js";
-import { encryptText } from "../../../../lib/server/crypto.js";
+import { badRequest, forbidden, unauthorized } from "../../../../lib/server/http.ts";
+import { encryptText } from "../../../../lib/server/crypto.ts";
+import type { APIContext } from "astro";
 
 export const prerender = false;
 
-function clearStateCookie() {
+function clearStateCookie(): string {
   return "kharon_sage_oauth_state=; Path=/portal/api/finance; HttpOnly; Secure; SameSite=Strict; Max-Age=0";
 }
 
-function redirectToFinance(location) {
+function redirectToFinance(location: string) {
   return new Response(null, {
     status: 302,
     headers: {
@@ -26,7 +27,7 @@ function redirectToFinance(location) {
   });
 }
 
-export async function GET({ request, locals, url, cookies }) {
+export async function GET({ request, locals, url, cookies }: APIContext) {
   const user = locals.user;
   if (!user) return unauthorized();
   if (!["finance", "admin"].includes(user.role)) {
