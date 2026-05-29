@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  validate-and-build:
+  build-test-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -40,15 +40,8 @@ jobs:
       - name: Site Audit (Security & Performance)
         run: npm run audit:site
 
-  deploy-to-cloudflare:
-    needs: validate-and-build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
       - name: Deploy to Cloudflare Pages
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging') && github.event_name == 'push'
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
