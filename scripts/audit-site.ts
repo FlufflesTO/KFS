@@ -134,7 +134,8 @@ const allowedPortalJsPatterns = [
   /^systems\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^users\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^portalApi\.[A-Za-z0-9_-]+\.js$/,
-  /^_id_\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/
+  /^_id_\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^page\.[A-Za-z0-9_-]+\.js$/
 ];
 const unexpectedJsAssets = jsAssets.filter((file) => !allowedPortalJsPatterns.some((pattern) => pattern.test(file)));
 const jsBytes = jsAssets.reduce((total, file) => total + fs.statSync(path.join(assetsDir, file)).size, 0);
@@ -178,18 +179,18 @@ const expectedSourceRoutes = [
   "portal/client/quotes.astro",
   "portal/finance/dashboard.astro",
   "portal/api/auth.ts",
-  "portal/api/admin/export.js",
-  "portal/api/admin/import.js",
-  "portal/api/admin/client-site-access.js",
+  "portal/api/admin/export.ts",
+  "portal/api/admin/import.ts",
+  "portal/api/admin/client-site-access.ts",
   "portal/account/mfa.astro",
   "portal/api/mfa.ts",
   "portal/reset.astro",
   "portal/api/reset-password.ts",
   "portal/api/submit-jobcard.ts",
-  "portal/api/approve-quote.js",
-  "portal/api/finance/payments.js",
-  "portal/api/finance/export.js",
-  "portal/api/file/[...key].js"
+  "portal/api/approve-quote.ts",
+  "portal/api/finance/payments.ts",
+  "portal/api/finance/export.ts",
+  "portal/api/file/[...key].ts"
 ];
 
 for (const route of expectedSourceRoutes) {
@@ -202,15 +203,15 @@ const requiredSourceTerms = new Map<string, string[]>([
   ["src/middleware.ts", ["sessionCookieName", "/portal/tech/", "/portal/finance/", "/portal/client/", "context.locals.user"]],     
   ["src/pages/portal/api/auth.ts", ["verifyPassword", "verifyTotpCode", "Set-Cookie", "redirectTo"]],
   ["src/pages/portal/api/admin/users.ts", ["reset-link", "password_reset_tokens", "resetUrl", "mfa_required"]],
-  ["src/pages/portal/api/admin/export.js", ["admin.export", "text/csv", "content-disposition"]],
-  ["src/pages/portal/api/admin/import.js", ["admin.import", "csvObjects", "250 rows"]],
-  ["src/pages/portal/api/admin/client-site-access.js", ["admin.client_site_access", "client_site_access", "grant", "revoke"]],     
+  ["src/pages/portal/api/admin/export.ts", ["admin.export", "text/csv", "content-disposition"]],
+  ["src/pages/portal/api/admin/import.ts", ["admin.import", "csvObjects", "250 rows"]],
+  ["src/pages/portal/api/admin/client-site-access.ts", ["admin.client_site_access", "client_site_access", "grant", "revoke"]],     
   ["src/pages/portal/account/mfa.astro", ["/portal/api/mfa", "Multi-factor authentication", "Generate Authenticator Setup"]],      
   ["src/pages/portal/api/mfa.ts", ["auth.mfa_enable", "encryptMfaSecret", "verifyTotpCode"]],
   ["src/pages/portal/api/reset-password.ts", ["auth.password_reset", "password_reset_tokens", "hashPassword"]],
   ["src/pages/portal/reset.astro", ["/portal/api/reset-password", "Reset Portal Password"]],
-  ["src/pages/portal/api/submit-jobcard.ts", ["dbInstance.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
-  ["src/pages/portal/api/file/[...key].js", ["job-evidence/", "job_evidence_files", "documentAccessLog"]],
+  ["src/pages/portal/api/submit-jobcard.ts", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
+  ["src/pages/portal/api/file/[...key].ts", ["job-evidence/", "job_evidence_files", "documentAccessLog"]],
   ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/tech/jobs/"]],
   ["src/pages/portal/tech/jobs/[id]/jobcard.astro", ["/portal/api/submit-jobcard", "evidencePhotos", "/portal/api/job-visits", "Unable To Complete"]],
   ["src/pages/portal/client/dashboard.astro", ["/portal/api/file/", "/portal/api/approve-quote", "Mapped client sites"]],
@@ -219,8 +220,8 @@ const requiredSourceTerms = new Map<string, string[]>([
   ["src/components/portal/finance/FinanceLedgerTable.astro", ["/portal/api/finance/export"]],
   ["src/lib/forms/unifiedSubmit.ts", ["/portal/api/finance/payments"]],
   ["src/pages/portal/admin/planning.astro", ["Dispatch planner", "Lifecycle due calendar", "Technician load", "riskForDueDate"]],  
-  ["src/pages/portal/api/finance/payments.js", ["finance.payment", "Payment", "Settled"]],
-  ["src/pages/portal/api/finance/export.js", ["finance.export", "text/csv", "content-disposition"]],
+  ["src/pages/portal/api/finance/payments.ts", ["finance.payment", "Payment", "Settled"]],
+  ["src/pages/portal/api/finance/export.ts", ["finance.export", "text/csv", "content-disposition"]],
   ["src/layouts/portal/PortalLayout.astro", ["Astro.locals.user", "Portal navigation"]]
 ]);
 

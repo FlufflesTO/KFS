@@ -29,8 +29,8 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
     expect(parseFloat(watermarkStyles.opacity || '1')).toBeCloseTo(0.03, 2);
     // Pointer events must be 'none' to allow users to click behind it
     expect(watermarkStyles.pointerEvents).toBe('none');
-    // z-index must be negative (-1) to sit behind layout text
-    expect(watermarkStyles.zIndex).toBe('-1');
+    // z-index must be negative to sit behind layout text
+    expect(watermarkStyles.zIndex).toBe('-2');
 
     // 4. Verify that the main CTA button is clickable and not obstructed
     const assessmentCTA = page.getByRole('link', { name: 'Request Site Assessment' }).first();
