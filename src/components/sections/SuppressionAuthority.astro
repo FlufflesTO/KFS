@@ -22,10 +22,10 @@ const { capabilities = [] } = Astro.props;
     <div class="mt-12">
       <div class="grid gap-8 md:grid-cols-2">
         {capabilities.map((capability: any, index: number) => (
-          <div class="rounded-xl border border-kharon-cyan/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+          <div class="rounded-xl border border-kharon-purple/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
             <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
               <h3 class="text-xl font-bold text-white mb-4 flex items-center">
-                <span class="mr-3 w-8 h-8 rounded-md bg-kharon-purple/20 flex items-center justify-center text-kharon-cyan text-sm">
+                <span class="mr-3 w-8 h-8 rounded-md bg-kharon-purple/20 flex items-center justify-center text-kharon-purple text-sm">
                   {index + 1}
                 </span>
                 {capability.title}
@@ -33,7 +33,7 @@ const { capabilities = [] } = Astro.props;
               <ul class="space-y-2">
                 {capability.items?.map((item: string) => (
                   <li class="flex items-start">
-                    <svg class="w-5 h-5 text-kharon-cyan mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-5 h-5 text-kharon-purple mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                     </svg>
                     <span class="text-kharon-light/80">{item}</span>

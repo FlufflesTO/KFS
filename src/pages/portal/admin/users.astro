@@ -99,7 +99,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
         </h2>
         <form class="flex flex-wrap items-end gap-3" method="get">
           <div class="grid gap-1">
-            <label for="users-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Search Name/Email</label>
+            <label for="users-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search Name/Email</label>
             <input
               id="users-q"
               name="q"
@@ -110,7 +110,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
             />
           </div>
           <div class="grid gap-1">
-            <label for="users-role" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Role</label>
+            <label for="users-role" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Role</label>
             <select id="users-role" name="role" class="kharon-field">
               <option value="">All roles</option>
               {["tech", "admin", "client", "finance"].map((r) => (
@@ -136,17 +136,17 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
             <input type="hidden" name="id" value={record.id} />
             
             <div class="grid gap-1">
-              <label for={`name-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Full Name</label>
+              <label for={`name-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Full Name</label>
               <input id={`name-${record.id}`} class="kharon-field" name="name" value={record.name} required />
             </div>
             
             <div class="grid gap-1">
-              <label for={`email-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Email Address</label>
+              <label for={`email-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Email Address</label>
               <input id={`email-${record.id}`} class="kharon-field opacity-60 cursor-not-allowed" value={record.email} disabled />
             </div>
             
             <div class="grid gap-1">
-              <label for={`role-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">System Role</label>
+              <label for={`role-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">System Role</label>
               <select id={`role-${record.id}`} class="kharon-field" name="role">
                 {(["tech", "admin", "client", "finance"] as const).map((role) => (
                   <option value={role} selected={record.role === role}>{role}</option>
@@ -155,7 +155,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
             </div>
             
             <div class="grid gap-1">
-              <label for={`site-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Site Mapping</label>
+              <label for={`site-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Site Mapping</label>
               <select id={`site-${record.id}`} class="kharon-field" name="siteId">
                 <option value="">No site</option>
                 {sites.map((site) => (
@@ -170,12 +170,12 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
               {(record.role === "admin" || record.role === "finance") && (
                 <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
               )}
-              {record.mfa_enabled ? <span class="text-[10px] font-bold uppercase text-kharon-cyan">MFA enabled</span> : null}
+              {record.mfa_enabled ? <span class="text-[10px] font-bold uppercase text-kharon-purple">MFA enabled</span> : null}
             </div>
             
             <div class="grid gap-2">
               <div class="grid gap-1">
-                <label for={`password-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Reset Password</label>
+                <label for={`password-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Reset Password</label>
                 <input id={`password-${record.id}`} class="kharon-field py-1" name="password" type="password" placeholder="Optional reset password" />
               </div>
               <div class="flex gap-2">
@@ -226,17 +226,17 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
         <input type="hidden" name="action" value="create" />
         
         <div class="grid gap-1">
-          <label for="create-name" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Full Name *</label>
+          <label for="create-name" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Full Name *</label>
           <input id="create-name" class="kharon-field" name="name" placeholder="John Doe" required />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-email" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Email Address *</label>
+          <label for="create-email" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Email Address *</label>
           <input id="create-email" class="kharon-field" name="email" type="email" placeholder="email@domain.co.za" required />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-role" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">System Role *</label>
+          <label for="create-role" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">System Role *</label>
           <select id="create-role" class="kharon-field" name="role" required>
             <option value="tech">Technician</option>
             <option value="admin">Admin</option>
@@ -246,7 +246,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
         </div>
 
         <div class="grid gap-1">
-          <label for="create-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Site Mapping (Optional)</label>
+          <label for="create-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Site Mapping (Optional)</label>
           <select id="create-siteId" class="kharon-field" name="siteId">
             <option value="">No site mapping</option>
             {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
@@ -254,7 +254,7 @@ const totalPages = Math.max(1, Math.ceil(usersTotal / perPage));
         </div>
 
         <div class="grid gap-1">
-          <label for="create-password" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Temporary Password *</label>
+          <label for="create-password" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Temporary Password *</label>
           <input id="create-password" class="kharon-field" name="password" type="password" minlength="14" placeholder="Temporary password" required />
         </div>
 

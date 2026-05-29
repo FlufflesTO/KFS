@@ -289,4 +289,4 @@ export function createResetToken(): string {
 
 export function resetTokenExpiry(hours: number = 1): string {
   return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
-}
+}

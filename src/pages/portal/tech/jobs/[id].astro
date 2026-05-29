@@ -88,7 +88,7 @@ try {
 function priorityBadgeClass(priority: string): string {
   if (priority === "Critical") return "bg-kharon-red/20 text-kharon-red";
   if (priority === "High") return "bg-kharon-amber/20 text-kharon-amber";
-  return "bg-kharon-cyan/20 text-kharon-cyan";
+  return "bg-kharon-purple/20 text-kharon-purple";
 }
 ---
 
@@ -97,12 +97,12 @@ function priorityBadgeClass(priority: string): string {
   <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment kharon-logo-watermark">
     <div class="mx-auto max-w-4xl">
       <div class="flex items-center gap-3 mb-4">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-cyan/10 ring-1 ring-kharon-cyan/20">
-          <svg class="h-4 w-4 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+          <svg class="h-4 w-4 text-kharon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
         </div>
-        <p class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Job Detail</p>
+        <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Job Detail</p>
       </div>
       <h1 class="text-2xl font-bold sm:text-3xl">Job #{job?.id}</h1>
       <p class="mt-2 text-sm text-white/70">ID: {job?.id} • Status: {job?.status}</p>
@@ -116,7 +116,7 @@ function priorityBadgeClass(priority: string): string {
       {job && (
         <div class="space-y-6">
           {/* Job Status Card */}
-          <div class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-4 kharon-surface">
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-4 kharon-surface">
             <div class="flex flex-wrap items-center gap-3 mb-4">
               <span class={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest ${priorityBadgeClass(job.priority || "Normal")}`}>{job.priority || "Normal"}</span>
               <span class="rounded-full bg-kharon-blue/20 text-kharon-blue px-3 py-1 text-xs font-bold uppercase tracking-widest">{job.status}</span>
@@ -125,41 +125,41 @@ function priorityBadgeClass(priority: string): string {
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
-                <p class="text-xs text-kharon-cyan uppercase tracking-widest">Job Type</p>
+                <p class="text-xs text-kharon-purple uppercase tracking-widest">Job Type</p>
                 <p class="text-sm font-bold text-white">{job.job_type}</p>
               </div>
               <div>
-                <p class="text-xs text-kharon-cyan uppercase tracking-widest">Scheduled Date</p>
+                <p class="text-xs text-kharon-purple uppercase tracking-widest">Scheduled Date</p>
                 <p class="text-sm font-bold text-white">{job.scheduled_date}</p>
               </div>
               <div>
-                <p class="text-xs text-kharon-cyan uppercase tracking-widest">Required By</p>
+                <p class="text-xs text-kharon-purple uppercase tracking-widest">Required By</p>
                 <p class="text-sm font-bold text-white">{job.required_by_date || 'Not specified'}</p>
               </div>
               <div>
-                <p class="text-xs text-kharon-cyan uppercase tracking-widest">Assigned Technician</p>
+                <p class="text-xs text-kharon-purple uppercase tracking-widest">Assigned Technician</p>
                 <p class="text-sm font-bold text-white">{job.technician_first_name} {job.technician_last_name}</p>
               </div>
             </div>
           </div>
 
           {/* Site Information */}
-          <div class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-4 kharon-surface">
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-4 kharon-surface">
             <h2 class="text-lg font-bold text-white mb-3">Site Information</h2>
             
             <div class="space-y-4">
               <div>
-                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">Company</p>
+                <p class="text-xs text-kharon-purple uppercase tracking-widest mb-1">Company</p>
                 <p class="text-lg font-bold text-white">{job.owner_company_name}</p>
               </div>
               
               <div>
-                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">Address</p>
+                <p class="text-xs text-kharon-purple uppercase tracking-widest mb-1">Address</p>
                 <p class="text-sm text-white">{job.physical_address}</p>
               </div>
               
               <div>
-                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">System</p>
+                <p class="text-xs text-kharon-purple uppercase tracking-widest mb-1">System</p>
                 <p class="text-sm font-bold text-kharon-purple">{job.system_type} | {job.coverage_area}</p>
               </div>
               
@@ -173,39 +173,39 @@ function priorityBadgeClass(priority: string): string {
           </div>
 
           {/* System Information */}
-          <div class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-4 kharon-surface">
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-4 kharon-surface">
             <h2 class="text-lg font-bold text-white mb-3">System Information</h2>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">System Type</p>
+                <p class="text-xs text-kharon-purple uppercase tracking-widest mb-1">System Type</p>
                 <p class="text-sm font-bold text-white">{job.system_type}</p>
               </div>
               <div>
-                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">Coverage Area</p>
+                <p class="text-xs text-kharon-purple uppercase tracking-widest mb-1">Coverage Area</p>
                 <p class="text-sm font-bold text-white">{job.coverage_area}</p>
               </div>
               <div>
-                <p class="text-xs text-kharon-cyan uppercase tracking-widest mb-1">Protocol Version</p>
+                <p class="text-xs text-kharon-purple uppercase tracking-widest mb-1">Protocol Version</p>
                 <p class="text-sm font-bold text-white">{job.protocol_version || 'Not specified'}</p>
               </div>
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-4 kharon-surface">
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-4 kharon-surface">
             <h2 class="text-lg font-bold text-white mb-3">Quick Actions</h2>
             
             <div class="grid grid-cols-1 gap-3">
-              <a href={`/portal/tech/jobs/${job.id}/log-visit`} class="w-full px-4 py-3 bg-gradient-to-r from-kharon-cyan to-kharon-blue text-white font-bold uppercase tracking-widest rounded-md text-center hover:shadow-lg hover:shadow-kharon-cyan/30 transition-all kharon-command-button">
+              <a href={`/portal/tech/jobs/${job.id}/log-visit`} class="w-full px-4 py-3 bg-gradient-to-r from-kharon-purple to-kharon-blue text-white font-bold uppercase tracking-widest rounded-md text-center hover:shadow-lg hover:shadow-kharon-purple/30 transition-all kharon-command-button">
                 Log Visit
               </a>
               
-              <a href={`/portal/tech/jobs/${job.id}/jobcard`} class="w-full px-4 py-3 border border-kharon-cyan/30 text-kharon-cyan font-bold uppercase tracking-widest rounded-md text-center hover:bg-kharon-cyan/10 transition-colors">
+              <a href={`/portal/tech/jobs/${job.id}/jobcard`} class="w-full px-4 py-3 border border-kharon-purple/30 text-kharon-purple font-bold uppercase tracking-widest rounded-md text-center hover:bg-kharon-purple/10 transition-colors">
                 Complete Jobcard
               </a>
               
-              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`} target="_blank" rel="noopener noreferrer" class="w-full px-4 py-3 border border-kharon-cyan/30 text-kharon-cyan font-bold uppercase tracking-widest rounded-md text-center hover:bg-kharon-cyan/10 transition-colors">
+              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`} target="_blank" rel="noopener noreferrer" class="w-full px-4 py-3 border border-kharon-purple/30 text-kharon-purple font-bold uppercase tracking-widest rounded-md text-center hover:bg-kharon-purple/10 transition-colors">
                 Navigate to Site
               </a>
             </div>
@@ -213,12 +213,12 @@ function priorityBadgeClass(priority: string): string {
 
           {/* Job History */}
           {jobHistory.length > 0 && (
-            <div class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-4 kharon-surface">
+            <div class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-4 kharon-surface">
               <h2 class="text-lg font-bold text-white mb-3">Job History</h2>
               
               <div class="space-y-3">
                 {jobHistory.map((entry: any) => (
-                  <div class="border-b border-kharon-cyan/10 pb-3 last:border-0 last:pb-0">
+                  <div class="border-b border-kharon-purple/10 pb-3 last:border-0 last:pb-0">
                     <div class="flex justify-between items-start">
                       <div>
                         <p class="text-sm font-bold text-white">{entry.action}</p>

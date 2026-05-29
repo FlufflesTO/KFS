@@ -21,7 +21,7 @@ const { sectors = [] } = Astro.props;
 
     <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {sectors.map((sector: any) => (
-        <div class="rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
+        <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
           <h3 class="text-lg font-semibold text-white">{sector.title}</h3>
           <p class="mt-2 text-kharon-light/70">{sector.risk}</p>
           <div class="mt-4 flex items-center justify-between">
@@ -30,7 +30,7 @@ const { sectors = [] } = Astro.props;
             </span>
             <div class="h-2 flex-grow mx-2 bg-kharon-graphite rounded-full overflow-hidden">
               <div 
-                class="h-full bg-kharon-cyan rounded-full" 
+                class="h-full bg-kharon-purple rounded-full" 
                 style={{ width: `${Math.min(100, Math.max(0, sector.riskLevel || 75))}%` }}
               ></div>
             </div>

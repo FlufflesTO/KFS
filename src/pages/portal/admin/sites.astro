@@ -103,7 +103,7 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
         </h2>
         <form class="flex flex-wrap items-end gap-3" method="get">
           <div class="grid gap-1">
-            <label for="sites-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Search Company</label>
+            <label for="sites-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search Company</label>
             <input
               id="sites-q"
               name="q"
@@ -131,27 +131,27 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
             <input type="hidden" name="id" value={record.id} />
             
             <div class="grid gap-1">
-              <label for={`comp-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Company Name</label>
+              <label for={`comp-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Company Name</label>
               <input id={`comp-${record.id}`} class="kharon-field" name="ownerCompanyName" value={record.owner_company_name} required />
             </div>
             
             <div class="grid gap-1">
-              <label for={`contact-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Contact Person</label>
+              <label for={`contact-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Contact Person</label>
               <input id={`contact-${record.id}`} class="kharon-field" name="siteContactPerson" value={record.site_contact_person ?? ""} required />
             </div>
             
             <div class="grid gap-1">
-              <label for={`email-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Contact Email</label>
+              <label for={`email-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Contact Email</label>
               <input id={`email-${record.id}`} class="kharon-field" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
             </div>
             
             <div class="grid gap-1">
-              <label for={`phone-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Contact Phone</label>
+              <label for={`phone-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Contact Phone</label>
               <input id={`phone-${record.id}`} class="kharon-field" name="siteContactPhone" value={record.site_contact_phone || ""} />
             </div>
             
             <div class="grid gap-1">
-              <label for={`billing-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Billing Email(s)</label>
+              <label for={`billing-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Billing Email(s)</label>
               <input id={`billing-${record.id}`} class="kharon-field" name="billingEmails" value={record.billing_emails} required />
             </div>
             
@@ -160,11 +160,11 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
             </div>
             
             <div class="grid gap-1 lg:col-span-6">
-              <label for={`address-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Physical Address</label>
+              <label for={`address-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Physical Address</label>
               <textarea id={`address-${record.id}`} class="min-h-20 kharon-field" name="physicalAddress" required>{record.physical_address}</textarea>
             </div>
             
-            <a href={`/portal/admin/systems?q=${encodeURIComponent(record.owner_company_name)}`} class="text-left text-xs font-semibold text-kharon-cyan hover:underline lg:col-span-6">
+            <a href={`/portal/admin/systems?q=${encodeURIComponent(record.owner_company_name)}`} class="text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-6">
               &rarr; View Systems for {record.owner_company_name}
             </a>
             <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
@@ -194,32 +194,32 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
           <input type="hidden" name="action" value="create" />
           
           <div class="grid gap-1">
-            <label for="create-company" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Company Name *</label>
+            <label for="create-company" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Company Name *</label>
             <input id="create-company" class="kharon-field" name="ownerCompanyName" placeholder="Owner company" required />
           </div>
 
           <div class="grid gap-1">
-            <label for="create-address" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Physical Address *</label>
+            <label for="create-address" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Physical Address *</label>
             <textarea id="create-address" class="min-h-20 kharon-field" name="physicalAddress" placeholder="Physical address" required></textarea>
           </div>
 
           <div class="grid gap-1">
-            <label for="create-contact" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Contact Person *</label>
+            <label for="create-contact" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Contact Person *</label>
             <input id="create-contact" class="kharon-field" name="siteContactPerson" placeholder="Site contact person" required />
           </div>
 
           <div class="grid gap-1">
-            <label for="create-email" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Contact Email</label>
+            <label for="create-email" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Contact Email</label>
             <input id="create-email" class="kharon-field" name="siteContactEmail" type="email" placeholder="site.contact@example.com" />
           </div>
 
           <div class="grid gap-1">
-            <label for="create-phone" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Contact Phone</label>
+            <label for="create-phone" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Contact Phone</label>
             <input id="create-phone" class="kharon-field" name="siteContactPhone" placeholder="Site phone" />
           </div>
 
           <div class="grid gap-1">
-            <label for="create-billing" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Billing Email(s) *</label>
+            <label for="create-billing" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Billing Email(s) *</label>
             <input id="create-billing" class="kharon-field" name="billingEmails" placeholder="billing@example.com" required />
           </div>
 
@@ -231,7 +231,7 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
       <article class="kharon-surface p-5">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Client account access</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Client account access</p>
             <h2 class="mt-2 text-xl font-bold text-white font-heading">Multi-site record mapping</h2>
           </div>
         </div>
@@ -240,7 +240,7 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
           <input type="hidden" name="action" value="grant" />
           
           <div class="grid gap-1">
-            <label for="grant-user" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Client User *</label>
+            <label for="grant-user" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Client User *</label>
             <select id="grant-user" class="kharon-field" name="userId" required>
               <option value="">Select client user</option>
               {clientUsers.map((client) => (
@@ -250,7 +250,7 @@ const totalPages = Math.max(1, Math.ceil(sitesTotal / perPage));
           </div>
           
           <div class="grid gap-1">
-            <label for="grant-site" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Site *</label>
+            <label for="grant-site" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Site *</label>
             <select id="grant-site" class="kharon-field" name="siteId" required>
               <option value="">Select site</option>
               {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}

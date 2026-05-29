@@ -115,7 +115,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
         </h2>
         <form class="flex flex-wrap items-end gap-3" method="get">
           <div class="grid gap-1">
-            <label for="jobs-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Search</label>
+            <label for="jobs-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search</label>
             <input
               id="jobs-q"
               name="q"
@@ -126,7 +126,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
             />
           </div>
           <div class="grid gap-1">
-            <label for="jobs-status" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Status</label>
+            <label for="jobs-status" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Status</label>
             <select id="jobs-status" name="status" class="kharon-field">
               <option value="">All statuses</option>
               {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
@@ -152,7 +152,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
             <input type="hidden" name="id" value={record.id} />
             
             <div class="grid gap-1 lg:col-span-2">
-              <label for={`system-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">System Scope</label>
+              <label for={`system-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">System Scope</label>
               <select id={`system-${record.id}`} class="kharon-field" name="systemId">
                 {systems.map((system) => (
                   <option value={system.id} selected={record.system_id === system.id}>
@@ -163,7 +163,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
             </div>
 
             <div class="grid gap-1">
-              <label for={`tech-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Assign Technician</label>
+              <label for={`tech-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Assign Technician</label>
               <select id={`tech-${record.id}`} class="kharon-field" name="assignedTechnicianId">
                 <option value="">Unassigned</option>
                 {technicians.map((tech) => (
@@ -173,12 +173,12 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
             </div>
 
             <div class="grid gap-1">
-              <label for={`date-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Scheduled Date</label>
+              <label for={`date-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Scheduled Date</label>
               <input id={`date-${record.id}`} class="kharon-field" name="scheduledDate" type="date" value={record.scheduled_date} />
             </div>
 
             <div class="grid gap-1">
-              <label for={`status-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Job Status</label>
+              <label for={`status-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Job Status</label>
               <select id={`status-${record.id}`} class="kharon-field" name="status">
                 {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
                   <option value={s} selected={record.status === s}>{s}</option>
@@ -187,7 +187,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
             </div>
 
             <div class="grid gap-1">
-              <label for={`type-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Job Type</label>
+              <label for={`type-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Job Type</label>
               <input id={`type-${record.id}`} class="kharon-field" name="jobType" value={record.job_type} required />
             </div>
 
@@ -196,12 +196,12 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
             </div>
 
             <div class="grid gap-1 lg:col-span-3">
-              <label for={`notes-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Site Operational Notes</label>
+              <label for={`notes-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Site Operational Notes</label>
               <input id={`notes-${record.id}`} class="kharon-field" name="siteNotes" value={record.site_notes || ""} />
             </div>
 
             <div class="grid gap-1">
-              <label for={`priority-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Priority</label>
+              <label for={`priority-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Priority</label>
               <select id={`priority-${record.id}`} class="kharon-field" name="priority">
                 {["Critical", "High", "Normal", "Low"].map((p) => (
                   <option value={p} selected={record.priority === p}>{p}</option>
@@ -210,7 +210,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
             </div>
 
             <div class="grid gap-1 lg:col-span-2">
-              <label for={`reqby-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Required By Date</label>
+              <label for={`reqby-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Required By Date</label>
               <input id={`reqby-${record.id}`} class="kharon-field" name="requiredByDate" type="date" value={record.required_by_date || ""} />
             </div>
 
@@ -246,7 +246,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
         <input type="hidden" name="action" value="create" />
         
         <div class="grid gap-1">
-          <label for="create-systemId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Select Protected System *</label>
+          <label for="create-systemId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Select Protected System *</label>
           <select id="create-systemId" class="kharon-field" name="systemId" required>
             <option value="">Select system</option>
             {systems.map((system) => (
@@ -256,7 +256,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
         </div>
 
         <div class="grid gap-1">
-          <label for="create-assignedTechnicianId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Assign Technician</label>
+          <label for="create-assignedTechnicianId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Assign Technician</label>
           <select id="create-assignedTechnicianId" class="kharon-field" name="assignedTechnicianId">
             <option value="">Unassigned</option>
             {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
@@ -264,12 +264,12 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
         </div>
 
         <div class="grid gap-1">
-          <label for="create-scheduledDate" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Scheduled Date *</label>
+          <label for="create-scheduledDate" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Scheduled Date *</label>
           <input id="create-scheduledDate" class="kharon-field" name="scheduledDate" type="date" value={today} required />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-status" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Job Status *</label>
+          <label for="create-status" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Job Status *</label>
           <select id="create-status" class="kharon-field" name="status" required>
             <option value="Scheduled">Scheduled</option>
             <option value="In Progress">In Progress</option>
@@ -277,12 +277,12 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
         </div>
 
         <div class="grid gap-1">
-          <label for="create-jobType" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Job Type *</label>
+          <label for="create-jobType" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Job Type *</label>
           <input id="create-jobType" class="kharon-field" name="jobType" value="Maintenance" required />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-priority" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Priority Level *</label>
+          <label for="create-priority" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Priority Level *</label>
           <select id="create-priority" class="kharon-field" name="priority" required>
             <option value="Normal">Normal priority</option>
             <option value="High">High priority</option>
@@ -292,7 +292,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
         </div>
 
         <div class="grid gap-1">
-          <label for="create-requiredByDate" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Required By Date</label>
+          <label for="create-requiredByDate" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Required By Date</label>
           <input id="create-requiredByDate" class="kharon-field" name="requiredByDate" type="date" placeholder="Required by date (optional)" />
         </div>
 
@@ -303,7 +303,7 @@ const totalPages = Math.max(1, Math.ceil(jobsTotal / perPage));
         </div>
 
         <div class="md:col-span-2 lg:col-span-3">
-          <label for="create-siteNotes" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Site Operations Notes</label>
+          <label for="create-siteNotes" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Site Operations Notes</label>
           <textarea id="create-siteNotes" class="min-h-20 kharon-field" name="siteNotes" placeholder="Provide task list or instructions..."></textarea>
         </div>
 

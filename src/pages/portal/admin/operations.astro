@@ -105,7 +105,7 @@ const groups = [
 <PortalLayout title="Operations Hub | Kharon Portal" active="operations" user={user}>
   <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment kharon-logo-watermark">
     <div class="mx-auto max-w-7xl">
-      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Admin operations</p>
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Admin operations</p>
       <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Operations Command Center</h1>
       <p class="mt-4 max-w-3xl text-sm leading-6 text-white/65">
         The original operations workspace has been split into focused admin pages. This hub keeps the operational entrypoint stable while routing each task to the right surface.
@@ -119,12 +119,12 @@ const groups = [
 
       <div class="grid gap-5 lg:grid-cols-3 mb-8">
         {groups.map((group) => (
-          <article class="rounded-xl border border-kharon-cyan/20 bg-kharon-surface-elevated p-5 shadow-sm kharon-surface">
+          <article class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-5 shadow-sm kharon-surface">
             <h2 class="text-lg font-bold text-white">{group.title}</h2>
             <p class="mt-2 min-h-12 text-sm leading-6 text-kharon-light/70">{group.description}</p>
             <div class="mt-5 grid gap-3">
               {group.links.map((link) => (
-                <a class="flex items-center justify-between rounded-lg border border-kharon-cyan/30 px-4 py-3 text-sm font-semibold text-white transition hover:border-kharon-purple hover:bg-kharon-cyan/10 kharon-surface kharon-focus-ring" href={link.href}>
+                <a class="flex items-center justify-between rounded-lg border border-kharon-purple/30 px-4 py-3 text-sm font-semibold text-white transition hover:border-kharon-purple hover:bg-kharon-purple/10 kharon-surface kharon-focus-ring" href={link.href}>
                   <span>{link.label}</span>
                   <span class="rounded bg-kharon-graphite px-2 py-1 text-xs uppercase tracking-wide text-kharon-light/70">{link.metric}</span>
                 </a>
@@ -141,8 +141,8 @@ const groups = [
         </p>
         <div class="mt-4 flex flex-wrap gap-3">
           <a href="/portal/admin/compliance" class="rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue px-4 py-2 text-sm font-semibold text-white hover:shadow-lg hover:shadow-kharon-purple/30 transition-all">Open compliance</a>
-          <a href="/portal/admin/jobs" class="rounded-md border border-kharon-cyan/30 bg-kharon-surface-elevated px-4 py-2 text-sm font-semibold text-kharon-cyan hover:bg-kharon-cyan/10 transition-colors">Open jobs</a>
-          <a href="/portal/admin/systems" class="rounded-md border border-kharon-cyan/30 bg-kharon-surface-elevated px-4 py-2 text-sm font-semibold text-kharon-cyan hover:bg-kharon-cyan/10 transition-colors">Open systems</a>
+          <a href="/portal/admin/jobs" class="rounded-md border border-kharon-purple/30 bg-kharon-surface-elevated px-4 py-2 text-sm font-semibold text-kharon-purple hover:bg-kharon-purple/10 transition-colors">Open jobs</a>
+          <a href="/portal/admin/systems" class="rounded-md border border-kharon-purple/30 bg-kharon-surface-elevated px-4 py-2 text-sm font-semibold text-kharon-purple hover:bg-kharon-purple/10 transition-colors">Open systems</a>
         </div>
       </article>
     </div>

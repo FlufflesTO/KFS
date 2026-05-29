@@ -24,7 +24,7 @@ const solutionHrefs = new Set(solutionLinks.map((l) => l.href));
 const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
 ---
 
-<header class="fixed inset-x-0 top-0 z-50 border-b border-kharon-cyan/20 bg-kharon-black/85 backdrop-blur-md shadow-lg shadow-kharon-black/30">
+<header class="fixed inset-x-0 top-0 z-50 border-b border-kharon-purple/20 bg-kharon-black/85 backdrop-blur-md shadow-lg shadow-kharon-black/30">
   <a
     href="#main-content"
     class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:bg-kharon-charcoal focus:px-4 focus:py-2 focus:text-white"
@@ -35,23 +35,23 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
   <div class="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between gap-3 sm:gap-4 px-3 sm:px-4 lg:px-8">
     <a href="/" class="group flex shrink-0 items-center gap-2 sm:gap-4 text-white">
       <div class="relative flex h-10 w-8 items-center justify-center">
-        <div class="absolute inset-0 bg-kharon-cyan/10 blur-md group-hover:bg-kharon-cyan/20 transition-colors duration-500"></div>
+        <div class="absolute inset-0 bg-kharon-purple/10 blur-md group-hover:bg-kharon-purple/20 transition-colors duration-500"></div>
         <img src="/brand/letterhead/kharon-letterhead.svg" alt="" aria-hidden="true" width="110" height="38" class="relative z-10 flex-none transition-transform duration-300 group-hover:scale-105" />
       </div>
       <div class="hidden sm:block">
-        <span class="block whitespace-nowrap text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-kharon-cyan">{site.shortName}</span>
-        <span class="hidden xs:block whitespace-nowrap text-[0.55rem] sm:text-[0.625rem] font-bold uppercase tracking-[0.3em] text-white/40 group-hover:text-kharon-cyan/60 transition-colors">Fire &amp; Security</span>
+        <span class="block whitespace-nowrap text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-kharon-purple">{site.shortName}</span>
+        <span class="hidden xs:block whitespace-nowrap text-[0.55rem] sm:text-[0.625rem] font-bold uppercase tracking-[0.3em] text-white/40 group-hover:text-kharon-purple/60 transition-colors">Fire &amp; Security</span>
       </div>
     </a>
 
     <nav class="hidden items-center gap-5 xl:gap-8 lg:flex" aria-label="Primary navigation">
-      <a href="/" class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-cyan" : "text-white/70 hover:text-white"}`} aria-current={isLinkActive("/") ? "page" : undefined}>
+      <a href="/" class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-purple" : "text-white/70 hover:text-white"}`} aria-current={isLinkActive("/") ? "page" : undefined}>
         Home
       </a>
 
       <details class="group relative">
         <summary
-          class={`flex cursor-pointer list-none items-center gap-1.5 whitespace-nowrap text-[0.75rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest marker:hidden transition-colors ${isSolutionsActive ? "text-kharon-cyan" : "text-white/70 hover:text-white"}`}
+          class={`flex cursor-pointer list-none items-center gap-1.5 whitespace-nowrap text-[0.75rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest marker:hidden transition-colors ${isSolutionsActive ? "text-kharon-purple" : "text-white/70 hover:text-white"}`}
         >
           Solutions
           <svg aria-hidden="true" viewBox="0 0 24 24" class="h-3 w-3 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="4">
@@ -61,7 +61,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
 
         <nav
           aria-label="Solutions"
-          class="absolute left-1/2 -translate-x-1/2 top-11 w-72 rounded-lg border border-kharon-cyan/20 bg-kharon-charcoal/90 p-1.5 shadow-xl backdrop-blur-xl shadow-kharon-black/40"
+          class="absolute left-1/2 -translate-x-1/2 top-11 w-72 rounded-lg border border-kharon-purple/20 bg-kharon-charcoal/90 p-1.5 shadow-xl backdrop-blur-xl shadow-kharon-black/40"
         >
           <div class="grid gap-0.5">
             {
@@ -71,10 +71,10 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
                   <a
                     href={link.href}
                     aria-current={active ? "page" : undefined}
-                    class={`flex items-center justify-between rounded-md px-4 py-2.5 text-[0.75rem] font-bold uppercase tracking-wider transition-all ${active ? "bg-kharon-purple text-white shadow-sm" : "text-white/60 hover:bg-kharon-cyan/10 hover:text-white"}`}
+                    class={`flex items-center justify-between rounded-md px-4 py-2.5 text-[0.75rem] font-bold uppercase tracking-wider transition-all ${active ? "bg-kharon-purple text-white shadow-sm" : "text-white/60 hover:bg-kharon-purple/10 hover:text-white"}`}
                   >
                     {link.label}
-                    {active && <div class="h-1 w-1 rounded-full bg-kharon-cyan"></div>}
+                    {active && <div class="h-1 w-1 rounded-full bg-kharon-purple"></div>}
                   </a>
                 );
               })
@@ -87,7 +87,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
         mainLinks.slice(1).map((link) => {
           const active = isLinkActive(link.href);
           return (
-            <a href={link.href} class={`whitespace-nowrap text-[0.75rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${active ? "text-kharon-cyan" : "text-white/70 hover:text-white"}`} aria-current={active ? "page" : undefined}>
+            <a href={link.href} class={`whitespace-nowrap text-[0.75rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${active ? "text-kharon-purple" : "text-white/70 hover:text-white"}`} aria-current={active ? "page" : undefined}>
               {link.label}
             </a>
           );
@@ -100,9 +100,9 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
         href={site.portalLoginPath}
         aria-label="Open the secure Kharon portal."
         title={site.portalStatus}
-        class="group flex items-center gap-2 rounded-md border border-kharon-cyan/30 px-4 py-2 text-[0.75rem] font-bold uppercase tracking-widest text-white/80 transition-all hover:border-kharon-cyan hover:text-white bg-kharon-charcoal/50 hover:bg-kharon-charcoal/70 backdrop-blur-sm shadow-sm"
+        class="group flex items-center gap-2 rounded-md border border-kharon-purple/30 px-4 py-2 text-[0.75rem] font-bold uppercase tracking-widest text-white/80 transition-all hover:border-kharon-purple hover:text-white bg-kharon-charcoal/50 hover:bg-kharon-charcoal/70 backdrop-blur-sm shadow-sm"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-kharon-cyan transition-colors"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-kharon-purple transition-colors"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
         Secure Portal
       </a>
 
@@ -114,7 +114,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
 
     <details class="mobile-menu lg:hidden">
       <summary
-        class="inline-flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-lg border border-kharon-cyan/20 text-white hover:bg-kharon-charcoal/50 active:scale-95 transition-all backdrop-blur-sm"
+        class="inline-flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-lg border border-kharon-purple/20 text-white hover:bg-kharon-charcoal/50 active:scale-95 transition-all backdrop-blur-sm"
         aria-label="Toggle menu"
       >
         <svg aria-hidden="true" viewBox="0 0 24 24" class="h-5 w-5 mobile-menu__open" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -125,7 +125,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
         </svg>
       </summary>
 
-      <div class="fixed inset-x-0 top-[var(--header-height)] z-[90] max-h-[calc(100vh-var(--header-height))] overflow-y-auto border-t border-kharon-cyan/10 bg-kharon-black/95 px-6 py-10 shadow-2xl backdrop-blur-xl animate-reveal-down bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+      <div class="fixed inset-x-0 top-[var(--header-height)] z-[90] max-h-[calc(100vh-var(--header-height))] overflow-y-auto border-t border-kharon-purple/10 bg-kharon-black/95 px-6 py-10 shadow-2xl backdrop-blur-xl animate-reveal-down bg-gradient-to-b from-kharon-black to-kharon-charcoal">
         <nav class="flex flex-col gap-2" aria-label="Mobile navigation">
           {
             [...mobilePrimaryLinks.slice(0, 1), ...solutionLinks, ...mobilePrimaryLinks.slice(1)].map((link) => {
@@ -134,10 +134,10 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
                 <a
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  class={`flex items-center justify-between border-b border-kharon-cyan/10 py-5 text-sm font-bold uppercase tracking-[0.15em] transition-colors min-h-[44px] ${active ? "text-kharon-cyan" : "text-white/80"}`}
+                  class={`flex items-center justify-between border-b border-kharon-purple/10 py-5 text-sm font-bold uppercase tracking-[0.15em] transition-colors min-h-[44px] ${active ? "text-kharon-purple" : "text-white/80"}`}
                 >
                   {link.label}
-                  {active && <div class="h-2 w-2 rounded-full bg-kharon-cyan"></div>}
+                  {active && <div class="h-2 w-2 rounded-full bg-kharon-purple"></div>}
                 </a>
               );
             })
@@ -149,7 +149,7 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
               <div class="absolute inset-0 bg-gradient-to-r from-kharon-purple/20 to-kharon-blue/20 opacity-0 hover:opacity-100 transition-opacity"></div>
             </a>
 
-            <a href={site.portalLoginPath} class="rounded-md border border-kharon-cyan/20 py-4 sm:py-5 text-center text-sm font-bold uppercase tracking-widest text-white/80 backdrop-blur-sm active:scale-[0.98] transition-all bg-kharon-charcoal/50 hover:bg-kharon-charcoal/70 hover:border-kharon-cyan/40">
+            <a href={site.portalLoginPath} class="rounded-md border border-kharon-purple/20 py-4 sm:py-5 text-center text-sm font-bold uppercase tracking-widest text-white/80 backdrop-blur-sm active:scale-[0.98] transition-all bg-kharon-charcoal/50 hover:bg-kharon-charcoal/70 hover:border-kharon-purple/40">
               Secure Portal Access
             </a>
           </div>

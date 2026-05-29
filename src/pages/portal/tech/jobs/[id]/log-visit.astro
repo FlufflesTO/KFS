@@ -62,12 +62,12 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
   <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
     <div class="mx-auto max-w-4xl">
       <div class="flex items-center gap-3 mb-2">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-cyan/10 ring-1 ring-kharon-cyan/20">
-          <svg class="h-4 w-4 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+          <svg class="h-4 w-4 text-kharon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Field Operations</p>
+        <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Field Operations</p>
       </div>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Log Site Visit Details</h1>
       <p class="mt-3 max-w-3xl text-sm text-white/60">Record your arrival, departure, and job outcomes for accurate tracking.</p>
@@ -98,7 +98,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
                 <p class="text-xs text-white/60">{job.system_type} / {job.coverage_area}</p>
               </div>
               <div class="sm:text-right">
-                <p class="text-xs text-kharon-cyan font-mono uppercase">Job ID: {job.id}</p>
+                <p class="text-xs text-kharon-purple font-mono uppercase">Job ID: {job.id}</p>
                 <p class="text-xs text-white/50 font-mono uppercase">Scheduled: {job.scheduled_date}</p>
               </div>
             </div>
@@ -108,7 +108,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
           <form class="log-arrival-form space-y-6" data-job-id={job.id}>
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="grid gap-1">
-                <label for="visit-date-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Visit Date</label>
+                <label for="visit-date-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Visit Date</label>
                 <input
                   id="visit-date-input"
                   type="date"
@@ -120,7 +120,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
               </div>
 
               <div class="grid gap-1">
-                <label for="arrival-time-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Arrival Time</label>
+                <label for="arrival-time-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Arrival Time</label>
                 <input
                   id="arrival-time-input"
                   type="time"
@@ -133,7 +133,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
 
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="grid gap-1">
-                <label for="gps-lat-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">GPS Latitude (optional)</label>
+                <label for="gps-lat-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">GPS Latitude (optional)</label>
                 <input
                   id="gps-lat-input"
                   type="number"
@@ -145,7 +145,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
               </div>
 
               <div class="grid gap-1">
-                <label for="gps-lng-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">GPS Longitude (optional)</label>
+                <label for="gps-lng-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">GPS Longitude (optional)</label>
                 <input
                   id="gps-lng-input"
                   type="number"
@@ -159,7 +159,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
 
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="grid gap-1">
-                <label for="customer-name-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Customer Name (optional)</label>
+                <label for="customer-name-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Customer Name (optional)</label>
                 <input
                   id="customer-name-input"
                   type="text"
@@ -170,7 +170,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
               </div>
 
               <div class="grid gap-1">
-                <label for="customer-title-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Customer Title (optional)</label>
+                <label for="customer-title-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Customer Title (optional)</label>
                 <input
                   id="customer-title-input"
                   type="text"
@@ -182,7 +182,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
             </div>
 
             <div class="grid gap-1">
-              <label for="arrival-notes-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Notes (optional)</label>
+              <label for="arrival-notes-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Notes (optional)</label>
               <textarea
                 id="arrival-notes-input"
                 name="notes"
@@ -204,7 +204,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
           <form class="log-outcome-form space-y-6 mt-8 hidden" data-job-id={job.id}>
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="grid gap-1">
-                <label for="departure-time-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Departure Time</label>
+                <label for="departure-time-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Departure Time</label>
                 <input
                   id="departure-time-input"
                   type="time"
@@ -215,7 +215,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
               </div>
 
               <div class="grid gap-1">
-                <label for="visit-status-select" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Visit Outcome</label>
+                <label for="visit-status-select" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Visit Outcome</label>
                 <select
                   id="visit-status-select"
                   name="visitStatus"
@@ -231,7 +231,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
             </div>
 
             <div class="unable-reason-section hidden grid gap-1">
-              <label for="unable-reason-select" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Unable-to-Complete Reason</label>
+              <label for="unable-reason-select" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Unable-to-Complete Reason</label>
               <select
                 id="unable-reason-select"
                 name="unableReason"
@@ -245,7 +245,7 @@ const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "
             </div>
 
             <div class="grid gap-1">
-              <label for="outcome-notes-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-cyan">Outcome Notes (optional)</label>
+              <label for="outcome-notes-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Outcome Notes (optional)</label>
               <textarea
                 id="outcome-notes-input"
                 name="notes"

@@ -106,7 +106,7 @@ const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
         </h2>
         <form class="flex flex-wrap items-end gap-3" method="get">
           <div class="grid gap-1">
-            <label for="systems-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Search</label>
+            <label for="systems-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search</label>
             <input
               id="systems-q"
               name="q"
@@ -117,7 +117,7 @@ const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
             />
           </div>
           <div class="grid gap-1">
-            <label for="systems-type" class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Type</label>
+            <label for="systems-type" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Type</label>
             <select id="systems-type" name="type" class="kharon-field">
               <option value="">All types</option>
               <option value="Gas Suppression" selected={typeFilter === "Gas Suppression"}>Gas Suppression</option>
@@ -142,7 +142,7 @@ const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
             <input type="hidden" name="id" value={record.id} />
             
             <div class="grid gap-1">
-              <label for={`site-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Site</label>
+              <label for={`site-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Site</label>
               <select id={`site-${record.id}`} class="kharon-field" name="siteId">
                 {sites.map((site) => (
                   <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>
@@ -151,7 +151,7 @@ const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
             </div>
 
             <div class="grid gap-1">
-              <label for={`type-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">System Type</label>
+              <label for={`type-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">System Type</label>
               <select id={`type-${record.id}`} class="kharon-field" name="systemType">
                 {["Gas Suppression", "Fire Detection"].map((type) => (
                   <option value={type} selected={record.system_type === type}>{type}</option>
@@ -160,27 +160,27 @@ const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
             </div>
 
             <div class="grid gap-1">
-              <label for={`area-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Coverage Area</label>
+              <label for={`area-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Coverage Area</label>
               <input id={`area-${record.id}`} class="kharon-field" name="coverageArea" value={record.coverage_area} required />
             </div>
 
             <div class="grid gap-1">
-              <label for={`mfr-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Manufacturer</label>
+              <label for={`mfr-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Manufacturer</label>
               <input id={`mfr-${record.id}`} class="kharon-field" name="manufacturer" value={record.manufacturer || ""} />
             </div>
 
             <div class="grid gap-1">
-              <label for={`model-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Model Ref</label>
+              <label for={`model-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Model Ref</label>
               <input id={`model-${record.id}`} class="kharon-field" name="modelReference" value={record.model_reference || ""} />
             </div>
 
             <div class="grid gap-1">
-              <label for={`due-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Next Due Date</label>
+              <label for={`due-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Next Due Date</label>
               <input id={`due-${record.id}`} class="kharon-field" name="nextDueDate" type="date" value={record.next_due_date} />
             </div>
 
             <div class="grid gap-1">
-              <label for={`interval-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-cyan">Interval (Mo.)</label>
+              <label for={`interval-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Interval (Mo.)</label>
               <div class="flex gap-2">
                 <input id={`interval-${record.id}`} class="kharon-field" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} required />
                 <button class="kharon-command-button px-4 py-2 text-xs">Save</button>
@@ -197,7 +197,7 @@ const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
                 Service due {record.next_due_date} — within 30 days.
               </p>
             )}
-            <a href={`/portal/admin/jobs?q=${encodeURIComponent(record.owner_company_name + " " + record.coverage_area)}`} class="text-left text-xs font-semibold text-kharon-cyan hover:underline lg:col-span-7">
+            <a href={`/portal/admin/jobs?q=${encodeURIComponent(record.owner_company_name + " " + record.coverage_area)}`} class="text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-7">
               &rarr; View Jobs for {record.coverage_area}
             </a>
             <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
@@ -226,7 +226,7 @@ const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
         <input type="hidden" name="action" value="create" />
         
         <div class="grid gap-1">
-          <label for="create-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Mapped Site *</label>
+          <label for="create-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Mapped Site *</label>
           <select id="create-siteId" class="kharon-field" name="siteId" required>
             <option value="">Select site</option>
             {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
@@ -234,7 +234,7 @@ const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
         </div>
 
         <div class="grid gap-1">
-          <label for="create-systemType" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">System Type *</label>
+          <label for="create-systemType" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">System Type *</label>
           <select id="create-systemType" class="kharon-field" name="systemType" required>
             <option value="Gas Suppression">Gas Suppression</option>
             <option value="Fire Detection">Fire Detection</option>
@@ -242,27 +242,27 @@ const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
         </div>
 
         <div class="grid gap-1">
-          <label for="create-coverageArea" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Coverage Area *</label>
+          <label for="create-coverageArea" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Coverage Area *</label>
           <input id="create-coverageArea" class="kharon-field" name="coverageArea" placeholder="Server Room 01" required />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-manufacturer" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Manufacturer</label>
+          <label for="create-manufacturer" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Manufacturer</label>
           <input id="create-manufacturer" class="kharon-field" name="manufacturer" placeholder="e.g. Inergen" />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-modelReference" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Model/Reference</label>
+          <label for="create-modelReference" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Model/Reference</label>
           <input id="create-modelReference" class="kharon-field" name="modelReference" placeholder="e.g. V-100" />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-nextDueDate" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Next Service Due *</label>
+          <label for="create-nextDueDate" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Next Service Due *</label>
           <input id="create-nextDueDate" class="kharon-field" name="nextDueDate" type="date" value={today} required />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-serviceIntervalMonths" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Service Interval (months) *</label>
+          <label for="create-serviceIntervalMonths" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Service Interval (months) *</label>
           <input id="create-serviceIntervalMonths" class="kharon-field" name="serviceIntervalMonths" type="number" min="1" max="36" value="6" required />
         </div>
 

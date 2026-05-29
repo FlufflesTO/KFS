@@ -2,17 +2,17 @@
 import { site, solutionLinks } from "../../data/site.js";
 ---
 
-<footer class="bg-gradient-to-b from-kharon-black to-kharon-charcoal text-white border-t border-kharon-cyan/10 pt-12 pb-8">
+<footer class="bg-gradient-to-b from-kharon-black to-kharon-charcoal text-white border-t border-kharon-purple/10 pt-12 pb-8">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
       <div class="lg:col-span-2">
         <a href="/" class="flex shrink-0 items-center gap-3.5 group">
           <div class="relative flex h-10 w-8 items-center justify-center">
-            <div class="absolute inset-0 bg-kharon-cyan/10 blur-md group-hover:bg-kharon-cyan/20 transition-colors duration-500"></div>
+            <div class="absolute inset-0 bg-kharon-purple/10 blur-md group-hover:bg-kharon-purple/20 transition-colors duration-500"></div>
             <img src="/brand/letterhead/kharon-letterhead.svg" alt="" aria-hidden="true" width="110" height="38" class="relative z-10 flex-none transition-transform duration-300 group-hover:scale-105" />
           </div>
           <span>
-            <span class="block whitespace-nowrap text-sm font-bold uppercase tracking-[0.15em] text-kharon-cyan">{site.shortName}</span>
+            <span class="block whitespace-nowrap text-sm font-bold uppercase tracking-[0.15em] text-kharon-purple">{site.shortName}</span>
             <span class="block whitespace-nowrap text-[0.6875rem] font-bold uppercase tracking-[0.25em] text-white/70">Fire &amp; Security Operations</span>
           </span>
         </a>
@@ -22,51 +22,51 @@ import { site, solutionLinks } from "../../data/site.js";
       </div>
 
       <div class="space-y-4">
-        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-3">Contact</h3>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-3">Contact</h3>
         <p class="font-bold text-white/90 tracking-wide text-sm">{site.phone}</p>
         <p class="tracking-tight text-sm">
-          <a href={`mailto:${site.email}`} class="hover:text-kharon-cyan transition-colors hover:underline">{site.email}</a>
+          <a href={`mailto:${site.email}`} class="hover:text-kharon-purple transition-colors hover:underline">{site.email}</a>
         </p>
         <p class="mt-2 text-xs leading-relaxed text-white/70 max-w-xs">{site.address}</p>
       </div>
 
       <div class="space-y-4">
-        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-3">Corporate</h3>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-3">Corporate</h3>
         <p class="text-xs font-bold uppercase tracking-widest text-white/70">Reg. {site.registration}</p>
         <p class="text-xs font-bold uppercase tracking-widest text-white/70 mt-2">B-BBEE Level 4</p>
         <p class="text-xs font-bold uppercase tracking-widest text-white/70">SAQCC FIRE-2024-0847</p>
       </div>
     </div>
 
-    <div class="mt-12 pt-8 border-t border-kharon-cyan/5 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="mt-12 pt-8 border-t border-kharon-purple/5 grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-4">Services</h3>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-4">Services</h3>
         <div class="grid grid-cols-2 gap-2">
           {solutionLinks.slice(0, 4).map((link) => (
-            <a href={link.href} class="text-xs font-medium uppercase tracking-wide text-white/70 hover:text-kharon-cyan transition-colors py-1 block">{link.label}</a>
+            <a href={link.href} class="text-xs font-medium uppercase tracking-wide text-white/70 hover:text-kharon-purple transition-colors py-1 block">{link.label}</a>
           ))}
           {solutionLinks.slice(4).map((link) => (
-            <a href={link.href} class="text-xs font-medium uppercase tracking-wide text-white/70 hover:text-kharon-cyan transition-colors py-1 block">{link.label}</a>
+            <a href={link.href} class="text-xs font-medium uppercase tracking-wide text-white/70 hover:text-kharon-purple transition-colors py-1 block">{link.label}</a>
           ))}
         </div>
       </div>
 
       <div class="space-y-4">
         <div class="flex flex-wrap gap-x-6 gap-y-3 text-xs font-medium uppercase tracking-wide text-white/70">
-          <a href="/" class="hover:text-kharon-cyan transition-colors">Home</a>
-          <a href="/about" class="hover:text-kharon-cyan transition-colors">About</a>
-          <a href="/compliance" class="hover:text-kharon-cyan transition-colors">Compliance</a>
-          <a href="/contact?intent=site-assessment" class="hover:text-kharon-cyan transition-colors">Site Assessment</a>
-          <a href={site.portalLoginPath} title={site.portalStatus} class="hover:text-kharon-cyan transition-colors">Secure Portal</a>
+          <a href="/" class="hover:text-kharon-purple transition-colors">Home</a>
+          <a href="/about" class="hover:text-kharon-purple transition-colors">About</a>
+          <a href="/compliance" class="hover:text-kharon-purple transition-colors">Compliance</a>
+          <a href="/contact?intent=site-assessment" class="hover:text-kharon-purple transition-colors">Site Assessment</a>
+          <a href={site.portalLoginPath} title={site.portalStatus} class="hover:text-kharon-purple transition-colors">Secure Portal</a>
         </div>
         
-        <div class="pt-4 border-t border-kharon-cyan/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="pt-4 border-t border-kharon-purple/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-white/60">
             &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
           </p>
           <div class="flex flex-wrap gap-4">
-            <a href="/legal/paia-manual.html" class="text-[0.6875rem] font-bold uppercase tracking-widest text-white/70 hover:text-kharon-cyan transition-colors hover:underline" target="_blank" rel="noopener noreferrer">PAIA Manual</a>
-            <a href="/compliance" class="text-[0.6875rem] font-bold uppercase tracking-widest text-white/70 hover:text-kharon-cyan transition-colors hover:underline">SANS Compliance</a>
+            <a href="/legal/paia-manual.html" class="text-[0.6875rem] font-bold uppercase tracking-widest text-white/70 hover:text-kharon-purple transition-colors hover:underline" target="_blank" rel="noopener noreferrer">PAIA Manual</a>
+            <a href="/compliance" class="text-[0.6875rem] font-bold uppercase tracking-widest text-white/70 hover:text-kharon-purple transition-colors hover:underline">SANS Compliance</a>
           </div>
         </div>
       </div>

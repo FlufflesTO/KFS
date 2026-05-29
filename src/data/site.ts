@@ -269,7 +269,7 @@ export const trustModules: TrustModule[] = [
     title: "Compliance records",
     text: "Inspection and service records remain available for responsible persons, insurers and operational review.",
     status: "Records",
-    tone: "cyan"
+    tone: "purple"
   },
   {
     title: "Maintenance cadence",
@@ -287,7 +287,7 @@ export const trustModules: TrustModule[] = [
     title: "Documentation outputs",
     text: "System plans, service notes, faults and lifecycle actions are captured as an operational evidence layer.",
     status: "Outputs",
-    tone: "cyan"
+    tone: "blue"
   }
 ];
 

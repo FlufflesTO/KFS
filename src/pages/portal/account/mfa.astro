@@ -31,7 +31,7 @@ try {
 <PortalLayout title="MFA Control | Kharon Portal" active="mfa" user={user}>
   <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
     <div class="mx-auto max-w-4xl">
-      <p class="text-xs font-bold uppercase text-kharon-cyan">Account control</p>
+      <p class="text-xs font-bold uppercase text-kharon-purple">Account control</p>
       <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Multi-factor authentication</h1>
       <p class="mt-4 max-w-2xl text-white/65">
         Admin, finance and technician accounts can enrol an authenticator app before accessing sensitive operational, ledger and field workflows.
@@ -54,12 +54,12 @@ try {
 
       {mfa.eligible && (
         <article class="kharon-surface p-6 sm:p-8">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-kharon-cyan/10 pb-5 mb-5">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-kharon-purple/10 pb-5 mb-5">
             <div>
-              <p class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Current Status</p>
+              <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Current Status</p>
               <h2 class="mt-2 text-xl font-bold text-white">{mfa.enabled ? "MFA Enabled" : mfa.required ? "MFA Required" : "MFA Available"}</h2>
             </div>
-            <span class={`rounded px-3 py-1 text-xs font-bold uppercase border tracking-widest ${mfa.enabled ? "border-kharon-green bg-kharon-green/10 text-kharon-green" : mfa.required ? "border-kharon-amber bg-kharon-amber/10 text-kharon-amber" : "border-kharon-cyan/20 bg-kharon-graphite text-kharon-light/60"}`}>
+            <span class={`rounded px-3 py-1 text-xs font-bold uppercase border tracking-widest ${mfa.enabled ? "border-kharon-green bg-kharon-green/10 text-kharon-green" : mfa.required ? "border-kharon-amber bg-kharon-amber/10 text-kharon-amber" : "border-kharon-purple/20 bg-kharon-graphite text-kharon-light/60"}`}>
               {mfa.enabled ? "Protected" : mfa.required ? "Setup required" : "Optional"}
             </span>
           </div>
@@ -70,22 +70,22 @@ try {
                 Generate Authenticator Setup
               </button>
 
-              <div id="mfa-setup" class="hidden grid gap-5 rounded border border-kharon-cyan/10 bg-kharon-black/30 p-5">
+              <div id="mfa-setup" class="hidden grid gap-5 rounded border border-kharon-purple/10 bg-kharon-black/30 p-5">
                 <p class="text-sm font-semibold text-white">Add this account manually in your authenticator app.</p>
                 
                 <div class="grid gap-1.5">
-                  <label for="mfa-secret" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Setup Key</label>
+                  <label for="mfa-secret" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Setup Key</label>
                   <input id="mfa-secret" class="kharon-field font-mono text-sm" readonly />
                 </div>
                 
                 <div class="grid gap-1.5">
-                  <label for="mfa-uri" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Authenticator URI</label>
+                  <label for="mfa-uri" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Authenticator URI</label>
                   <textarea id="mfa-uri" class="kharon-field min-h-24 font-mono text-xs" readonly></textarea>
                 </div>
                 
-                <form id="enable-mfa-form" class="grid gap-4 border-t border-kharon-cyan/10 pt-4">
+                <form id="enable-mfa-form" class="grid gap-4 border-t border-kharon-purple/10 pt-4">
                   <div class="grid gap-1.5">
-                    <label for="mfa-code" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">6-digit Code</label>
+                    <label for="mfa-code" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">6-digit Code</label>
                     <input id="mfa-code" class="kharon-field" name="code" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" required placeholder="000000" />
                   </div>
                   <button class="w-full kharon-command-button py-3.5" type="submit">
@@ -101,7 +101,7 @@ try {
               <p class="text-sm font-semibold text-red-200">Disabling MFA requires verification code and confirmation.</p>
               
               <div class="grid gap-1.5">
-                <label for="mfa-disable-code" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">6-digit Verification Code</label>
+                <label for="mfa-disable-code" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">6-digit Verification Code</label>
                 <input id="mfa-disable-code" class="kharon-field" name="code" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" required placeholder="000000" />
               </div>
               

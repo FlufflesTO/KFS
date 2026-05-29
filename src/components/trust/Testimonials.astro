@@ -42,9 +42,9 @@ const testimonials: Testimonial[] = [
     
     <div class="mt-16 grid gap-8 md:grid-cols-3">
       {testimonials.map((testimonial) => (
-        <div class="rounded-lg border border-kharon-cyan/20 bg-kharon-surface-elevated p-8 relative flex flex-col justify-between">
+        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-8 relative flex flex-col justify-between">
           <!-- Quote Icon -->
-          <div class="absolute -top-4 left-8 bg-kharon-charcoal border border-kharon-cyan/30 rounded-full p-2 text-kharon-cyan">
+          <div class="absolute -top-4 left-8 bg-kharon-charcoal border border-kharon-purple/30 rounded-full p-2 text-kharon-purple">
             <svg xmlns="http://www.w3.org/-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/>
               <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
@@ -56,9 +56,9 @@ const testimonials: Testimonial[] = [
           </p>
           
           <div class="mt-auto">
-            <div class="h-px w-full bg-kharon-cyan/20 mb-4"></div>
+            <div class="h-px w-full bg-kharon-purple/20 mb-4"></div>
             <p class="text-white font-semibold">{testimonial.author}</p>
-            <p class="text-kharon-cyan text-xs mt-1">{testimonial.role}</p>
+            <p class="text-kharon-purple text-xs mt-1">{testimonial.role}</p>
             <p class="text-kharon-light/60 text-xs">{testimonial.company}</p>
           </div>
         </div>

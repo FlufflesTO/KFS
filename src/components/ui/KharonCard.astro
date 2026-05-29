@@ -25,12 +25,12 @@ const {
 } = Astro.props;
 
 const variantClasses = {
-  default: 'border-kharon-cyan/20 bg-kharon-surface-elevated backdrop-blur-sm',
+  default: 'border-kharon-purple/20 bg-kharon-surface-elevated backdrop-blur-sm',
   primary: 'border-kharon-purple/30 bg-kharon-surface-elevated backdrop-blur-sm',
   warning: 'border-kharon-amber/30 bg-kharon-surface-elevated backdrop-blur-sm',
   danger: 'border-kharon-red/30 bg-kharon-surface-elevated backdrop-blur-sm',
   success: 'border-kharon-green/30 bg-kharon-surface-elevated backdrop-blur-sm',
-  command: 'border-kharon-cyan/30 bg-kharon-surface-charcoal/80 backdrop-blur-md shadow-lg shadow-kharon-black/30'
+  command: 'border-kharon-purple/30 bg-kharon-surface-charcoal/80 backdrop-blur-md shadow-lg shadow-kharon-black/30'
 };
 
 const paddingClasses = {
@@ -51,10 +51,10 @@ const classes = [
 
 <div class={classes}>
   {title && (
-    <div class="mb-5 border-b border-kharon-cyan/10 pb-4">
-      {subtitle && <p class="mb-1.5 text-xs font-semibold uppercase tracking-widest text-kharon-cyan/70">{subtitle}</p>}
+    <div class="mb-5 border-b border-kharon-purple/10 pb-4">
+      {subtitle && <p class="mb-1.5 text-xs font-semibold uppercase tracking-widest text-kharon-purple/70">{subtitle}</p>}
       <h2 class="text-base font-semibold tracking-tight text-white">{title}</h2>
-      <div class="mt-3 h-[1px] w-6 bg-kharon-cyan/30"></div>
+      <div class="mt-3 h-[1px] w-6 bg-kharon-purple/30"></div>
     </div>
   )}
   <div class="text-kharon-light/80 text-sm leading-relaxed font-normal">

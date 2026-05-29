@@ -9,13 +9,13 @@ const {
 
 const Element = href ? "a" : "div";
 const baseClass = dark
-  ? "group block rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-6 text-white hover:border-kharon-cyan/40 backdrop-blur-sm kharon-surface"
-  : "group block rounded-lg border border-kharon-cyan/15 bg-kharon-surface-elevated p-6 text-white hover:border-kharon-cyan/40 backdrop-blur-sm kharon-surface";
+  ? "group block rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 text-white hover:border-kharon-purple/40 backdrop-blur-sm kharon-surface"
+  : "group block rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 text-white hover:border-kharon-purple/40 backdrop-blur-sm kharon-surface";
 ---
 
 <Element href={href} class={baseClass}>
   {status && (
-    <p class={`mb-4 text-xs font-bold uppercase ${dark ? "text-kharon-cyan" : "text-kharon-cyan"}`}>
+    <p class={`mb-4 text-xs font-bold uppercase ${dark ? "text-kharon-purple" : "text-kharon-purple"}`}>
       {status}
     </p>
   )}

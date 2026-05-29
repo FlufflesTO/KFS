@@ -130,4 +130,4 @@ export async function documentAccessLog(
   } catch (error) {
     console.error("Document access logging failed", error);
   }
-}
+}

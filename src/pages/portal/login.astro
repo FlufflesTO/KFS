@@ -12,7 +12,7 @@ if (await isLoggedIn(Astro.request)) {
   <section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
     <div class="w-full max-w-sm px-4">
       <div class="text-center mb-6">
-        <div class="inline-block p-1 rounded-lg bg-gradient-to-r from-kharon-cyan to-kharon-blue mb-3">
+        <div class="inline-block p-1 rounded-lg bg-gradient-to-r from-kharon-purple to-kharon-blue mb-3">
           <div class="bg-kharon-black rounded-md p-3">
             <img src="/brand/letterhead/kharon-letterhead.svg" alt="Kharon Logo" class="h-10 mx-auto">
           </div>
@@ -24,24 +24,24 @@ if (await isLoggedIn(Astro.request)) {
       <KharonCard variant="command" className="kharon-surface-strong">
         <form method="post" action="/portal/api/auth" class="space-y-5">
           <div>
-            <label class="block text-kharon-cyan text-xs font-bold uppercase tracking-widest mb-2">Email Address</label>
+            <label class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Email Address</label>
             <input 
               type="email" 
               name="email"
               required
               placeholder="Enter your email"
-              class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-cyan/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-cyan focus:border-transparent kharon-field kharon-focus-ring"
+              class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-purple/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-purple focus:border-transparent kharon-field kharon-focus-ring"
             />
           </div>
           
           <div>
-            <label class="block text-kharon-cyan text-xs font-bold uppercase tracking-widest mb-2">Password</label>
+            <label class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Password</label>
             <input 
               type="password" 
               name="password"
               required
               placeholder="Enter your password"
-              class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-cyan/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-cyan focus:border-transparent kharon-field kharon-focus-ring"
+              class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-purple/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-purple focus:border-transparent kharon-field kharon-focus-ring"
             />
           </div>
           
@@ -51,21 +51,21 @@ if (await isLoggedIn(Astro.request)) {
                 id="remember-me" 
                 name="remember-me" 
                 type="checkbox" 
-                class="h-4 w-4 text-kharon-cyan focus:ring-kharon-cyan border-kharon-cyan/20 rounded bg-kharon-graphite kharon-checkbox"
+                class="h-4 w-4 text-kharon-purple focus:ring-kharon-purple border-kharon-purple/20 rounded bg-kharon-graphite kharon-checkbox"
               />
               <label for="remember-me" class="ml-2 block text-sm text-kharon-light/80">
                 Remember me
               </label>
             </div>
             
-            <a href="/portal/reset" class="text-sm font-medium text-kharon-cyan hover:text-kharon-cyan/80 text-center sm:text-right">
+            <a href="/portal/reset" class="text-sm font-medium text-kharon-purple hover:text-kharon-purple/80 text-center sm:text-right">
               Forgot password?
             </a>
           </div>
           
           <button 
             type="submit"
-            class="w-full px-4 py-4 bg-gradient-to-r from-kharon-cyan to-kharon-blue text-white font-bold uppercase tracking-widest rounded-md hover:shadow-lg hover:shadow-kharon-cyan/30 transition-all kharon-command-button"
+            class="w-full px-4 py-4 bg-gradient-to-r from-kharon-purple to-kharon-blue text-white font-bold uppercase tracking-widest rounded-md hover:shadow-lg hover:shadow-kharon-purple/30 transition-all kharon-command-button"
           >
             Secure Login
           </button>
@@ -74,7 +74,7 @@ if (await isLoggedIn(Astro.request)) {
 
       <div class="mt-5 text-center">
         <p class="text-kharon-light/70 text-sm">
-          Need access? <a href="/contact" class="font-medium text-kharon-cyan hover:text-kharon-cyan/80">Contact support</a>
+          Need access? <a href="/contact" class="font-medium text-kharon-purple hover:text-kharon-purple/80">Contact support</a>
         </p>
       </div>
     </div>

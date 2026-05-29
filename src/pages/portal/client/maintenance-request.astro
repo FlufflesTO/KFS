@@ -59,7 +59,7 @@ const priorities = ["Routine", "Urgent", "Critical"];
 <PortalLayout title="Submit Service Request | Kharon Portal" active="client" user={user}>
   <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-8 text-white sm:px-6 sm:py-10 shadow-inner">
     <div class="mx-auto max-w-4xl">
-      <p class="text-xs font-bold uppercase tracking-wider text-kharon-cyan">Support Intake Portal</p>
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Support Intake Portal</p>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Submit Maintenance & Service Request</h1>
       <p class="mt-3 max-w-2xl text-sm text-white/60 font-medium">
         Submit a technical request, log a fault, request compliance documentation, or request an emergency follow-up.
@@ -79,7 +79,7 @@ const priorities = ["Routine", "Urgent", "Critical"];
         <div class="kharon-surface p-6 sm:p-8">
           <form id="maintenance-request-form" class="grid gap-5">
             <div class="grid gap-1.5">
-              <label for="req-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Select Site *</label>
+              <label for="req-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Select Site *</label>
               <select id="req-siteId" class="kharon-field" name="siteId" required>
                 {sites.map((site) => (
                   <option value={site.id}>{site.owner_company_name}</option>
@@ -88,7 +88,7 @@ const priorities = ["Routine", "Urgent", "Critical"];
             </div>
 
             <div class="grid gap-1.5">
-              <label for="req-systemId" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Select System (Optional)</label>
+              <label for="req-systemId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Select System (Optional)</label>
               <select id="req-systemId" class="kharon-field" name="systemId">
                 <option value="">General Site Request (No specific system)</option>
                 {systems.map((system) => (
@@ -100,7 +100,7 @@ const priorities = ["Routine", "Urgent", "Critical"];
             </div>
 
             <div class="grid gap-1.5">
-              <label for="req-requestType" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Request Type *</label>
+              <label for="req-requestType" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Request Type *</label>
               <select id="req-requestType" class="kharon-field" name="requestType" required>
                 {requestTypes.map((type) => (
                   <option value={type}>{type}</option>
@@ -109,7 +109,7 @@ const priorities = ["Routine", "Urgent", "Critical"];
             </div>
 
             <div class="grid gap-1.5">
-              <label for="req-priority" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Priority Level *</label>
+              <label for="req-priority" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Priority Level *</label>
               <select id="req-priority" class="kharon-field" name="priority" required>
                 {priorities.map((prio) => (
                   <option value={prio}>{prio}</option>
@@ -118,12 +118,12 @@ const priorities = ["Routine", "Urgent", "Critical"];
             </div>
 
             <div class="grid gap-1.5">
-              <label for="req-subject" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Subject *</label>
+              <label for="req-subject" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Subject *</label>
               <input id="req-subject" class="kharon-field" name="subject" type="text" minlength="3" maxlength="160" required placeholder="Brief description of the request" />
             </div>
 
             <div class="grid gap-1.5">
-              <label for="req-message" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Detailed Description *</label>
+              <label for="req-message" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Detailed Description *</label>
               <textarea id="req-message" class="kharon-field min-h-32" name="message" minlength="10" maxlength="2000" required placeholder="Provide details such as system symptoms, location details, fault indicators..."></textarea>
             </div>
 
