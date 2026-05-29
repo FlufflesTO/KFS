@@ -212,18 +212,29 @@ summary::-webkit-details-marker {
 
 /* Environmental background with subtle grid */
 .kharon-environment {
-  background: 
-    radial-gradient(circle at 1px 1px, var(--color-line-cyan-soft) 1px, transparent 0),
-    url('/brand/kharon-mark.svg');
-  background-position: 0 0, center;
-  background-size: 40px 40px, 30%;
-  background-color: var(--color-surface-obsidian);
-  opacity: 0.03;
+  position: relative;
+  isolation: isolate;
+}
+
+.kharon-environment::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(circle at 1px 1px, var(--color-line-cyan-soft) 1px, transparent 0);
+  background-repeat: repeat;
+  background-position: 0 0;
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: -2;
 }
 
 /* Logo watermark for environmental branding - using pseudo-element to avoid interaction issues */
 .kharon-logo-watermark {
   position: relative;
+  isolation: isolate;
 }
 
 .kharon-logo-watermark::before {

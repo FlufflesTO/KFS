@@ -129,3 +129,8 @@ Thumbs.db
 ehthumbs.db
 Icon?
 .CFUserTextEncoding
+
+# Local project directories to ignore
+backups/
+monitor-results/
+retention-reports/

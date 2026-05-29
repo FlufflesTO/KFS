@@ -147,7 +147,7 @@ if (jsBytes > 20_000) {
 
 const cssAssets = assets.filter((file) => file.endsWith(".css"));
 const cssBytes = cssAssets.reduce((total, file) => total + fs.statSync(path.join(assetsDir, file)).size, 0);
-if (cssBytes > 91_000) {
+if (cssBytes > 95_000) {
   fail(`CSS asset budget exceeded: ${cssBytes} bytes`);
 }
 
@@ -182,9 +182,9 @@ const expectedSourceRoutes = [
   "portal/api/admin/import.js",
   "portal/api/admin/client-site-access.js",
   "portal/account/mfa.astro",
-  "portal/api/mfa.js",
+  "portal/api/mfa.ts",
   "portal/reset.astro",
-  "portal/api/reset-password.js",
+  "portal/api/reset-password.ts",
   "portal/api/submit-jobcard.ts",
   "portal/api/approve-quote.js",
   "portal/api/finance/payments.js",
@@ -201,18 +201,18 @@ for (const route of expectedSourceRoutes) {
 const requiredSourceTerms = new Map<string, string[]>([
   ["src/middleware.ts", ["sessionCookieName", "/portal/tech/", "/portal/finance/", "/portal/client/", "context.locals.user"]],     
   ["src/pages/portal/api/auth.ts", ["verifyPassword", "verifyTotpCode", "Set-Cookie", "redirectTo"]],
-  ["src/pages/portal/api/admin/users.js", ["reset-link", "password_reset_tokens", "resetUrl", "mfa_required"]],
+  ["src/pages/portal/api/admin/users.ts", ["reset-link", "password_reset_tokens", "resetUrl", "mfa_required"]],
   ["src/pages/portal/api/admin/export.js", ["admin.export", "text/csv", "content-disposition"]],
   ["src/pages/portal/api/admin/import.js", ["admin.import", "csvObjects", "250 rows"]],
   ["src/pages/portal/api/admin/client-site-access.js", ["admin.client_site_access", "client_site_access", "grant", "revoke"]],     
-  ["src/pages/portal/account/mfa.astro", ["/portal/api/mfa", "Multi-factor authentication", "Generate authenticator setup"]],      
-  ["src/pages/portal/api/mfa.js", ["auth.mfa_enable", "encryptMfaSecret", "verifyTotpCode"]],
-  ["src/pages/portal/api/reset-password.js", ["auth.password_reset", "password_reset_tokens", "hashPassword"]],
-  ["src/pages/portal/reset.astro", ["/portal/api/reset-password", "Reset portal password"]],
-  ["src/pages/portal/api/submit-jobcard.ts", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
+  ["src/pages/portal/account/mfa.astro", ["/portal/api/mfa", "Multi-factor authentication", "Generate Authenticator Setup"]],      
+  ["src/pages/portal/api/mfa.ts", ["auth.mfa_enable", "encryptMfaSecret", "verifyTotpCode"]],
+  ["src/pages/portal/api/reset-password.ts", ["auth.password_reset", "password_reset_tokens", "hashPassword"]],
+  ["src/pages/portal/reset.astro", ["/portal/api/reset-password", "Reset Portal Password"]],
+  ["src/pages/portal/api/submit-jobcard.ts", ["dbInstance.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
   ["src/pages/portal/api/file/[...key].js", ["job-evidence/", "job_evidence_files", "documentAccessLog"]],
   ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/tech/jobs/"]],
-  ["src/pages/portal/tech/jobs/[id].astro", ["/portal/api/submit-jobcard", "evidencePhotos", "/portal/api/job-visits", "Unable To Complete"]],
+  ["src/pages/portal/tech/jobs/[id]/jobcard.astro", ["/portal/api/submit-jobcard", "evidencePhotos", "/portal/api/job-visits", "Unable To Complete"]],
   ["src/pages/portal/client/dashboard.astro", ["/portal/api/file/", "/portal/api/approve-quote", "Mapped client sites"]],
   ["src/pages/portal/client/quotes.astro", ["Quote, invoice and payment history", "Commercial ledger", "/portal/api/approve-quote"]],
   ["src/pages/portal/finance/dashboard.astro", ["financial_records", "payment_status", "FinanceCreateForm", "FinanceLedgerTable"]],

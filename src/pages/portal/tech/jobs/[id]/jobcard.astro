@@ -1,0 +1,741 @@
+---
+import PortalLayout from "../../../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../../../lib/server/bindings.js";
+import { auditError } from "../../../../../lib/server/audit";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+const jobId = Astro.params.id;
+const today = new Date().toISOString().slice(0, 10);
+let job: any = null;
+let visits: any[] = [];
+let loadError = "";
+
+try {
+  const db = getDatabase();
+  const query = user.role === "admin"
+    ? `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
+              jobs.site_notes, jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
+              jobs.estimated_duration_minutes,
+              systems.system_type, systems.coverage_area,
+              sites.owner_company_name, sites.physical_address, sites.site_contact_person, sites.site_contact_phone,
+              users.name AS technician_name
+       FROM jobs
+       INNER JOIN systems ON systems.id = jobs.system_id
+       INNER JOIN sites ON sites.id = systems.site_id
+       LEFT JOIN users ON users.id = jobs.assigned_technician_id
+       WHERE jobs.id = ?1 AND jobs.deleted_at IS NULL
+       LIMIT 1`
+    : `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
+              jobs.site_notes, jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
+              jobs.estimated_duration_minutes,
+              systems.system_type, systems.coverage_area,
+              sites.owner_company_name, sites.physical_address, sites.site_contact_person, sites.site_contact_phone,
+              users.name AS technician_name
+       FROM jobs
+       INNER JOIN systems ON systems.id = jobs.system_id
+       INNER JOIN sites ON sites.id = systems.site_id
+       LEFT JOIN users ON users.id = jobs.assigned_technician_id
+       WHERE jobs.id = ?1 AND jobs.assigned_technician_id = ?2 AND jobs.deleted_at IS NULL
+       LIMIT 1`;
+
+  job = user.role === "admin"
+    ? await db.prepare(query).bind(jobId).first()
+    : await db.prepare(query).bind(jobId, user.id).first();
+
+  if (!job) {
+    loadError = "Dispatch was not found or is not assigned to this account.";
+  } else {
+    const visitResult = await db.prepare(
+      `SELECT id, visit_date, arrival_time, departure_time, gps_latitude, gps_longitude,
+              customer_name, customer_title, notes, visit_status, unable_reason
+       FROM job_visits
+       WHERE job_id = ?1
+       ORDER BY visit_date DESC, arrival_time DESC`
+    ).bind(job.id).all();
+    visits = visitResult.results || [];
+  }
+} catch (error) {
+  console.error("technician job detail failed", error);
+  loadError = "Dispatch details could not be loaded.";
+}
+
+const isReadOnly = user.role === "admin";
+const canWork = user.role === "tech" && job && ["Scheduled", "In Progress"].includes(job.status);
+const checklist = job?.system_type === "Gas Suppression"
+  ? [
+      "Cylinder pressure / mass visually checked",
+      "Release panel status reviewed",
+      "Abort / manual release condition checked",
+      "Nozzle obstruction reviewed",
+      "Signage and protected-room readiness reviewed",
+      "Detection integration / isolation status recorded"
+    ]
+  : [
+      "Panel status reviewed",
+      "Loop faults checked",
+      "Battery / power condition reviewed",
+      "Detector / MCP condition checked",
+      "Sounder / strobe test status recorded",
+      "Cause-and-effect / isolation status reviewed"
+    ];
+---
+
+<PortalLayout title="Dispatch Detail | Kharon Portal" active="tech" user={user}>
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment kharon-logo-watermark">
+    <div class="mx-auto max-w-7xl">
+      <a href="/portal/tech/dashboard" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan hover:underline hover:text-white transition-colors">&larr; Back to Dashboard</a>
+      <h1 class="mt-3 text-2xl font-bold sm:text-3xl tracking-tight">Focused Dispatch Workflow</h1>
+      <p class="mt-2 max-w-3xl text-sm text-white/70">
+        Review the site package, record visit activity, capture structured evidence, and close the jobcard from one controlled workspace.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-4 py-6 sm:px-6">
+    <div class="mx-auto max-w-7xl gap-6">
+      {loadError && (
+        <div class="rounded-xl border border-kharon-red/30 bg-kharon-red/10 p-6 text-center mb-6">
+          <p class="font-bold text-red-200">{loadError}</p>
+          <a href="/portal/tech/dashboard" class="mt-4 inline-block kharon-secondary-button py-2 text-xs">Back to Dashboard</a>
+        </div>
+      )}
+
+      {job && (
+        <>
+          {/* Dispatch Site Package Card */}
+          <div class="grid gap-6 border border-kharon-cyan/20 bg-kharon-surface-elevated p-6 kharon-surface lg:grid-cols-[1.2fr_0.8fr] mb-6">
+            <div>
+              <div class="flex flex-wrap items-center gap-2 mb-3">
+                <span class="rounded bg-kharon-blue/20 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-kharon-cyan">{job.status}</span>
+                <span class="rounded bg-kharon-purple/20 px-2.5 py-0.5 text-xs font-bold text-kharon-purple uppercase tracking-wider">{job.priority || "Normal"}</span>
+                {job.is_emergency === 1 && <span class="rounded bg-kharon-red/20 px-2.5 py-0.5 text-xs font-bold text-kharon-red uppercase tracking-wider flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-kharon-red animate-pulse"></span>Emergency</span>}
+              </div>
+              <h2 class="text-xl font-bold text-white mb-2">{job.owner_company_name}</h2>
+              <p class="text-sm text-white/70 mb-4">{job.physical_address}</p>
+              <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
+                <div>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-0.5">System</dt>
+                  <dd class="text-white font-semibold">{job.system_type}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-0.5">Coverage</dt>
+                  <dd class="text-white font-semibold">{job.coverage_area}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-0.5">Job Type</dt>
+                  <dd class="text-white font-semibold">{job.job_type}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-0.5">Scheduled</dt>
+                  <dd class="text-white font-semibold">{job.scheduled_date}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-0.5">Required By</dt>
+                  <dd class="text-white font-semibold">{job.required_by_date || "Not set"}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-0.5">Estimated Duration</dt>
+                  <dd class="text-white font-semibold">{job.estimated_duration_minutes ? `${job.estimated_duration_minutes} minutes` : "Not set"}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-0.5">Site Contact</dt>
+                  <dd class="text-white font-semibold">{job.site_contact_person || "Not listed"}{job.site_contact_phone ? ` / ${job.site_contact_phone}` : ""}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-cyan mb-0.5">Job ID</dt>
+                  <dd class="text-white/60 font-mono break-all">{job.id}</dd>
+                </div>
+              </dl>
+              {job.site_notes && (
+                <div class="mt-4 rounded-lg border border-kharon-blue/20 bg-kharon-blue/10 p-4 text-sm text-white">
+                  <p class="font-bold text-xs text-kharon-blue uppercase tracking-widest mb-1">Site Notes</p>
+                  <p class="leading-relaxed">{job.site_notes}</p>
+                </div>
+              )}
+            </div>
+            <aside class="flex flex-col gap-3 content-start justify-center border-t lg:border-t-0 lg:border-l border-kharon-cyan/10 pt-4 lg:pt-0 lg:pl-6">
+              <p class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Field Package Actions</p>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address || ""))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full px-4 py-3 bg-kharon-secondary-button text-center text-sm font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <svg class="w-4 h-4 text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Navigate to Site
+              </a>
+              {canWork && job.status === "Scheduled" && (
+                <button class="start-job w-full px-4 py-3 bg-gradient-to-r from-kharon-cyan to-kharon-blue text-white font-bold uppercase tracking-widest rounded-md text-center hover:shadow-lg hover:shadow-kharon-cyan/30 transition-all kharon-command-button cursor-pointer" data-job-id={job.id}>
+                  Start Job
+                </button>
+              )}
+              {isReadOnly && <p class="text-xs text-white/50 italic text-center">Admin review only. Field actions are technician-controlled.</p>}
+            </aside>
+          </div>
+
+          <div class="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
+            {/* Visit Activity Side Panel */}
+            <article class="border border-kharon-cyan/20 bg-kharon-surface-elevated p-6 kharon-surface space-y-6 self-start">
+              <h2 class="text-lg font-bold text-white mb-2">Visit Activity Logs</h2>
+              
+              {canWork && (
+                <div class="space-y-6">
+                  <form class="log-arrival-form space-y-4" data-job-id={job.id}>
+                    <input type="hidden" name="jobId" value={job.id} />
+                    <p class="text-xs font-bold uppercase tracking-widest text-kharon-cyan border-b border-kharon-cyan/10 pb-1">Check In / Arrival</p>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">Visit Date</label>
+                        <input class="kharon-field" name="visitDate" type="date" value={today} required />
+                      </div>
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">Arrival Time</label>
+                        <input class="kharon-field" name="arrivalTime" type="time" required />
+                      </div>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">GPS Latitude (optional)</label>
+                        <input class="kharon-field" name="gpsLat" placeholder="Latitude" />
+                      </div>
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">GPS Longitude (optional)</label>
+                        <input class="kharon-field" name="gpsLng" placeholder="Longitude" />
+                      </div>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">On-Site Contact Name</label>
+                        <input class="kharon-field" name="customerName" placeholder="Witness name" />
+                      </div>
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">Title / Role</label>
+                        <input class="kharon-field" name="customerTitle" placeholder="e.g. Site Manager" />
+                      </div>
+                    </div>
+                    <div class="grid gap-1">
+                      <label class="text-xs text-white/70">Arrival Notes</label>
+                      <textarea class="kharon-field min-h-16" name="notes" maxlength="500" placeholder="E.g. System checked, keys handed over"></textarea>
+                    </div>
+                    <button class="w-full kharon-command-button cursor-pointer">Log Arrival</button>
+                    <p class="log-arrival-result hidden text-sm font-semibold p-2.5 rounded"></p>
+                  </form>
+
+                  <form class="visit-outcome-form space-y-4 border-t border-kharon-cyan/10 pt-6">
+                    <input type="hidden" name="jobId" value={job.id} />
+                    <p class="text-xs font-bold uppercase tracking-widest text-kharon-cyan border-b border-kharon-cyan/10 pb-1">Visit Outcome / Departure</p>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">Visit Date</label>
+                        <input class="kharon-field" name="visitDate" type="date" value={today} required />
+                      </div>
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">Departure Time</label>
+                        <input class="kharon-field" name="departureTime" type="time" required />
+                      </div>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">Visit Status</label>
+                        <select class="kharon-field" name="visitStatus" required>
+                          <option value="Completed">Completed</option>
+                          <option value="Follow-up Required">Follow-up Required</option>
+                          <option value="Quote Required">Quote Required</option>
+                          <option value="Unable To Complete">Unable To Complete</option>
+                        </select>
+                      </div>
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">Unable Reason</label>
+                        <select class="kharon-field hidden" name="unableReason">
+                          <option value="">Select reason</option>
+                          <option value="No Access">No Access</option>
+                          <option value="Client Unavailable">Client Unavailable</option>
+                          <option value="Unsafe To Proceed">Unsafe To Proceed</option>
+                          <option value="Parts Required">Parts Required</option>
+                          <option value="System Isolated">System Isolated</option>
+                          <option value="Quote Required">Quote Required</option>
+                          <option value="Return Visit Required">Return Visit Required</option>
+                          <option value="Cancelled On Site">Cancelled On Site</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="grid gap-1">
+                      <label class="text-xs text-white/70">Departure/Outcome Notes</label>
+                      <textarea class="kharon-field min-h-16" name="notes" maxlength="1000" placeholder="Describe the outcome of the visit..."></textarea>
+                    </div>
+                    <button class="w-full kharon-command-button cursor-pointer">Save Visit Outcome</button>
+                    <p class="visit-outcome-result hidden text-sm font-semibold p-2.5 rounded"></p>
+                  </form>
+                </div>
+              )}
+
+              <div class="space-y-3 border-t border-kharon-cyan/10 pt-6">
+                <p class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Visit History Logs</p>
+                {visits.length === 0 && <p class="text-xs text-white/50 italic">No visit records captured yet.</p>}
+                {visits.map((visit) => (
+                  <article class="rounded-lg border border-kharon-cyan/10 bg-kharon-charcoal/50 p-3 text-sm space-y-1">
+                    <div class="flex justify-between">
+                      <p class="font-semibold text-white">{visit.visit_date} • {visit.arrival_time || "N/A"}</p>
+                      <span class="text-xs text-kharon-cyan uppercase tracking-wider font-semibold">{visit.visit_status || "Arrived"}</span>
+                    </div>
+                    {visit.departure_time && <p class="text-xs text-white/70">Departed: {visit.departure_time}</p>}
+                    {visit.unable_reason && <p class="text-xs text-kharon-amber font-semibold">Reason: {visit.unable_reason}</p>}
+                    {visit.gps_latitude && visit.gps_longitude && <p class="text-xs text-white/60 font-mono">GPS: {visit.gps_latitude}, {visit.gps_longitude}</p>}
+                    {visit.customer_name && <p class="text-xs text-white/70">Contact: {visit.customer_name}{visit.customer_title ? ` (${visit.customer_title})` : ""}</p>}
+                    {visit.notes && <p class="mt-2 text-xs text-white/60 border-l border-kharon-cyan/30 pl-2 italic">{visit.notes}</p>}
+                  </article>
+                ))}
+              </div>
+            </article>
+
+            {/* Jobcard Closure Main Form */}
+            <article class="border border-kharon-cyan/20 bg-kharon-surface-elevated p-6 kharon-surface space-y-6">
+              <h2 class="text-lg font-bold text-white mb-2">Jobcard Closure</h2>
+              <div class="rounded-lg border border-kharon-purple/20 bg-kharon-purple/5 p-4">
+                <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-2">{job.system_type} Checklist Foundation</p>
+                <ul class="grid gap-2 text-xs text-white/80 sm:grid-cols-2">
+                  {checklist.map((item) => (
+                    <li class="flex gap-2 items-start">
+                      <span class="text-kharon-cyan font-bold">&bull;</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {canWork ? (
+                <form class="jobcard-form space-y-5 animate-fadeIn" data-job-id={job.id} data-system-id={job.system_id}>
+                  <input type="hidden" name="jobId" value={job.id} />
+                  <input type="hidden" name="systemId" value={job.system_id} />
+                  
+                  <div class="grid gap-1">
+                    <label class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Fault / Work Category</label>
+                    <select name="faultCategory" class="kharon-field">
+                      <option value="Routine service">Routine service</option>
+                      <option value="Fault response">Fault response</option>
+                      <option value="Compliance inspection">Compliance inspection</option>
+                      <option value="Panel issue">Panel issue</option>
+                      <option value="Detection device issue">Detection device issue</option>
+                      <option value="Suppression release infrastructure">Suppression release infrastructure</option>
+                      <option value="Follow-up required">Follow-up required</option>
+                    </select>
+                  </div>
+
+                  <div class="grid gap-1">
+                    <label class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Technician Comments <span class="text-kharon-red">*</span></label>
+                    <textarea name="techComments" class="kharon-field min-h-24" maxlength="3000" required placeholder="Describe details of work performed..."></textarea>
+                  </div>
+
+                  <div class="grid gap-1">
+                    <label class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Parts Used</label>
+                    <input name="partsUsed" class="kharon-field" maxlength="500" placeholder="None / list parts replaced or installed" />
+                  </div>
+
+                  <div class="grid gap-1">
+                    <label class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Follow-Up Actions</label>
+                    <textarea name="followUpActions" class="kharon-field min-h-16" maxlength="1000" placeholder="Describe further work or quotes required, or enter 'No follow-up action required'"></textarea>
+                  </div>
+
+                  <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="grid gap-1">
+                      <label class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Customer Signatory Name <span class="text-kharon-red">*</span></label>
+                      <input name="customerName" class="kharon-field" maxlength="120" placeholder="Full name of client witness" required />
+                    </div>
+                    <div class="grid gap-1">
+                      <label class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Witness Title / Role</label>
+                      <input name="customerTitle" class="kharon-field" maxlength="80" placeholder="e.g. Facilities Manager" />
+                    </div>
+                  </div>
+
+                  <div class="grid gap-2 border border-kharon-cyan/10 bg-kharon-charcoal/50 p-4 rounded-lg">
+                    <label class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Photo Evidence (Optional)</label>
+                    <p class="text-xs text-white/50">Attach up to 3 JPEG, PNG or WebP images (max 1.5 MB each).</p>
+                    <div class="grid gap-2 sm:grid-cols-2 mt-1">
+                      <select name="evidenceCategory" class="kharon-field">
+                        <option value="General Evidence">General Evidence</option>
+                        <option value="Before">Before</option>
+                        <option value="After">After</option>
+                        <option value="Defect">Defect</option>
+                        <option value="Panel">Panel</option>
+                        <option value="Label">Label</option>
+                        <option value="Cylinder">Cylinder</option>
+                      </select>
+                      <input name="evidencePhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple class="kharon-field bg-transparent" />
+                    </div>
+                  </div>
+
+                  {/* Defects sub-form */}
+                  <div class="grid gap-3 rounded-lg border border-kharon-cyan/10 bg-kharon-charcoal/30 p-4">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm font-bold text-white">Remediation Defects Found</p>
+                      <button type="button" class="add-defect-btn kharon-secondary-button py-1 text-xs cursor-pointer">+ Add Defect</button>
+                    </div>
+                    <div class="defect-list grid gap-2"></div>
+                    
+                    <div class="defect-form hidden grid gap-3 rounded-lg border border-kharon-red/40 bg-kharon-charcoal/50 p-4 sm:grid-cols-2">
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">Severity</label>
+                        <select class="defect-severity kharon-field" required>
+                          <option value="Critical">Critical</option>
+                          <option value="Major">Major</option>
+                          <option value="Minor" selected>Minor</option>
+                          <option value="Observation">Observation</option>
+                        </select>
+                      </div>
+                      <div class="grid gap-1">
+                        <label class="text-xs text-white/70">SANS Clause Reference</label>
+                        <input class="defect-sans kharon-field" placeholder="e.g. SANS 10139-8.3" />
+                      </div>
+                      <div class="grid gap-1 sm:col-span-2">
+                        <label class="text-xs text-white/70">Defect Description</label>
+                        <textarea class="defect-desc kharon-field min-h-16" maxlength="2000" placeholder="Describe the defect and required remediation..." required></textarea>
+                      </div>
+                      <label class="flex items-center gap-2 text-xs font-semibold text-white/80 select-none cursor-pointer">
+                        <input type="checkbox" class="defect-blocking rounded border-kharon-cyan/20 bg-kharon-graphite text-kharon-purple focus:ring-kharon-cyan h-4 w-4" />
+                        Blocks Certificate Issuance
+                      </label>
+                      <div class="flex gap-2 sm:col-span-2 mt-2">
+                        <button type="button" class="save-defect rounded-md bg-kharon-purple hover:bg-kharon-blue px-3 py-2 text-xs font-semibold text-white cursor-pointer">Save Defect</button>
+                        <button type="button" class="cancel-defect rounded-md border border-kharon-cyan/20 px-3 py-2 text-xs font-semibold text-white/80 cursor-pointer">Cancel</button>
+                      </div>
+                    </div>
+                    <p class="defect-count text-xs text-white/50">No defects recorded.</p>
+                  </div>
+
+                  <div class="grid gap-2">
+                    <label class="text-xs font-bold uppercase tracking-widest text-kharon-cyan">Customer Signature Capture <span class="text-kharon-red">*</span></label>
+                    <span class="text-xs text-white/50">Sign with finger or stylus inside the area below. Clear and sign again if not legible.</span>
+                    <canvas class="signature-pad h-36 w-full touch-none rounded-lg border border-kharon-cyan/30 bg-white sm:h-40" width="720" height="220" aria-label="Signature capture area"></canvas>
+                    <input type="hidden" name="signatureBase64" required />
+                    <input type="hidden" name="signatureStrokes" />
+                  </div>
+                  
+                  <div class="flex gap-3">
+                    <button type="button" class="clear-signature w-1/3 kharon-secondary-button cursor-pointer">Clear Signature</button>
+                    <button class="w-2/3 kharon-command-button cursor-pointer">Submit Completed Jobcard</button>
+                  </div>
+                  <p class="jobcard-result hidden text-sm font-semibold p-2.5 rounded"></p>
+                </form>
+              ) : (
+                <div class="rounded-lg border border-kharon-cyan/10 bg-kharon-charcoal/30 p-4 text-center">
+                  <p class="text-sm text-white/50 italic">Jobcard closure is unavailable for this account or job status.</p>
+                </div>
+              )}
+            </article>
+          </div>
+        </>
+      )}
+    </div>
+  </section>
+
+  <script is:inline>
+    async function postJson(url, payload) {
+      const response = await window.kharonPortalFetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const body = await response.json();
+      if (!response.ok || !body.ok) throw new Error(body.message || "Request failed.");
+      return body;
+    }
+
+    function pointFromEvent(canvas, event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
+        y: Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height))
+      };
+    }
+
+    function drawStroke(canvas, stroke) {
+      if (stroke.length < 2) return;
+      const context = canvas.getContext("2d");
+      context.lineWidth = 3;
+      context.lineCap = "round";
+      context.lineJoin = "round";
+      context.strokeStyle = "#0B0D0F";
+      context.beginPath();
+      context.moveTo(stroke[0].x * canvas.width, stroke[0].y * canvas.height);
+      for (const point of stroke.slice(1)) context.lineTo(point.x * canvas.width, point.y * canvas.height);
+      context.stroke();
+    }
+
+    for (const form of document.querySelectorAll(".jobcard-form")) {
+      const canvas = form.querySelector(".signature-pad");
+      const clearButton = form.querySelector(".clear-signature");
+      const signatureInput = form.querySelector('input[name="signatureBase64"]');
+      const strokesInput = form.querySelector('input[name="signatureStrokes"]');
+      if (!canvas || !clearButton || !signatureInput || !strokesInput) continue;
+
+      const context = canvas.getContext("2d");
+      const strokes = [];
+      let activeStroke = null;
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      canvas.addEventListener("pointerdown", (event) => {
+        canvas.setPointerCapture(event.pointerId);
+        activeStroke = [pointFromEvent(canvas, event)];
+      });
+      canvas.addEventListener("pointermove", (event) => {
+        if (!activeStroke) return;
+        activeStroke.push(pointFromEvent(canvas, event));
+        drawStroke(canvas, activeStroke.slice(-2));
+      });
+      function finishSignature() {
+        if (activeStroke && activeStroke.length > 1) {
+          strokes.push(activeStroke);
+          signatureInput.value = canvas.toDataURL("image/png");
+          strokesInput.value = JSON.stringify(strokes);
+        }
+        activeStroke = null;
+      }
+      canvas.addEventListener("pointerup", finishSignature);
+      canvas.addEventListener("pointercancel", finishSignature);
+      clearButton.addEventListener("click", () => {
+        strokes.length = 0;
+        activeStroke = null;
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        signatureInput.value = "";
+        strokesInput.value = "";
+      });
+    }
+
+    for (const button of document.querySelectorAll(".start-job")) {
+      button.addEventListener("click", async () => {
+        button.disabled = true;
+        try {
+          await postJson("/portal/api/job-status", { jobId: button.dataset.jobId, status: "In Progress" });
+          window.location.reload();
+        } catch (error) {
+          button.disabled = false;
+          button.textContent = error.message || "Start failed";
+        }
+      });
+    }
+
+    for (const form of document.querySelectorAll(".log-arrival-form")) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const result = form.querySelector(".log-arrival-result");
+        result.classList.add("hidden");
+        const data = new FormData(form);
+        try {
+          const body = await postJson("/portal/api/job-visits", {
+            action: "logArrival",
+            jobId: data.get("jobId"),
+            visitDate: data.get("visitDate"),
+            arrivalTime: data.get("arrivalTime"),
+            gpsLat: data.get("gpsLat") || null,
+            gpsLng: data.get("gpsLng") || null,
+            customerName: data.get("customerName") || null,
+            customerTitle: data.get("customerTitle") || null,
+            notes: data.get("notes") || null
+          });
+          result.textContent = `Arrival logged successfully.`;
+          result.className = "log-arrival-result text-sm font-semibold text-kharon-cyan bg-kharon-cyan/10 p-2 mt-2";
+          result.classList.remove("hidden");
+          setTimeout(() => window.location.reload(), 700);
+        } catch (error) {
+          result.textContent = error.message;
+          result.className = "log-arrival-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2 mt-2";
+          result.classList.remove("hidden");
+        }
+      });
+    }
+
+    for (const form of document.querySelectorAll(".visit-outcome-form")) {
+      const statusSelect = form.querySelector('select[name="visitStatus"]');
+      const unableSelect = form.querySelector('select[name="unableReason"]');
+      statusSelect?.addEventListener("change", () => {
+        const showReason = statusSelect.value === "Unable To Complete";
+        unableSelect?.classList.toggle("hidden", !showReason);
+        if (!showReason) unableSelect.value = "";
+      });
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const result = form.querySelector(".visit-outcome-result");
+        result.classList.add("hidden");
+        const data = new FormData(form);
+        try {
+          const body = await postJson("/portal/api/job-visits", {
+            action: "logOutcome",
+            jobId: data.get("jobId"),
+            visitDate: data.get("visitDate"),
+            departureTime: data.get("departureTime"),
+            visitStatus: data.get("visitStatus"),
+            unableReason: data.get("unableReason") || null,
+            notes: data.get("notes") || null
+          });
+          result.textContent = `Visit outcome saved.`;
+          result.className = "visit-outcome-result text-sm font-semibold text-kharon-cyan bg-kharon-cyan/10 p-2 mt-2";
+          result.classList.remove("hidden");
+          setTimeout(() => window.location.reload(), 700);
+        } catch (error) {
+          result.textContent = error.message;
+          result.className = "visit-outcome-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2 mt-2";
+          result.classList.remove("hidden");
+        }
+      });
+    }
+
+    for (const form of document.querySelectorAll(".jobcard-form")) {
+      const defectList = form.querySelector(".defect-list");
+      const defectFormEl = form.querySelector(".defect-form");
+      const addBtn = form.querySelector(".add-defect-btn");
+      const saveBtn = form.querySelector(".save-defect");
+      const cancelBtn = form.querySelector(".cancel-defect");
+      const defectCountEl = form.querySelector(".defect-count");
+      const defects = [];
+
+      function renderDefects() {
+        if (!defectList) return;
+        defectList.replaceChildren();
+        if (defects.length === 0) {
+          if (defectCountEl) defectCountEl.textContent = "No defects recorded.";
+          return;
+        }
+        if (defectCountEl) defectCountEl.textContent = `${defects.length} defect(s) recorded.`;
+        for (let i = 0; i < defects.length; i++) {
+          const d = defects[i];
+          const card = document.createElement("article");
+          card.className = "flex items-start justify-between gap-3 rounded border border-kharon-cyan/10 bg-kharon-charcoal/50 p-3 text-sm";
+          const body = document.createElement("div");
+          body.className = "min-w-0";
+          const severity = document.createElement("span");
+          severity.className = "rounded bg-kharon-purple/20 px-1.5 py-0.5 text-xs font-bold text-kharon-cyan";
+          severity.textContent = d.severity;
+          body.appendChild(severity);
+          if (d.sansClauseRef) {
+            const sans = document.createElement("span");
+            sans.className = "ml-2 text-xs text-white/50";
+            sans.textContent = `[${d.sansClauseRef}]`;
+            body.appendChild(sans);
+          }
+          const description = document.createElement("p");
+          description.className = "mt-1 text-xs text-white/80";
+          description.textContent = d.description;
+          body.appendChild(description);
+          if (d.certificateBlocking) {
+            const blocking = document.createElement("p");
+            blocking.className = "mt-1 text-xs font-bold text-kharon-amber";
+            blocking.textContent = "Blocks certificate";
+            body.appendChild(blocking);
+          }
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "remove-defect rounded border border-kharon-red/40 px-2 py-1 text-xs font-semibold text-kharon-red cursor-pointer";
+          remove.dataset.index = String(i);
+          remove.textContent = "Remove";
+          card.append(body, remove);
+          defectList.appendChild(card);
+        }
+        for (const rm of defectList.querySelectorAll(".remove-defect")) {
+          rm.addEventListener("click", () => {
+            defects.splice(Number(rm.dataset.index), 1);
+            renderDefects();
+          });
+        }
+      }
+
+      addBtn?.addEventListener("click", () => defectFormEl?.classList.remove("hidden"));
+      cancelBtn?.addEventListener("click", () => defectFormEl?.classList.add("hidden"));
+      saveBtn?.addEventListener("click", () => {
+        const severity = form.querySelector(".defect-severity")?.value || "Minor";
+        const sansClauseRef = form.querySelector(".defect-sans")?.value.trim() || "";
+        const description = form.querySelector(".defect-desc")?.value.trim() || "";
+        const certificateBlocking = Boolean(form.querySelector(".defect-blocking")?.checked);
+        if (description.length < 5) {
+          alert("Defect description must be at least 5 characters.");
+          return;
+        }
+        defects.push({ severity, sansClauseRef, description, certificateBlocking });
+        renderDefects();
+        defectFormEl?.classList.add("hidden");
+        // Clear fields
+        form.querySelector(".defect-sans").value = "";
+        form.querySelector(".defect-desc").value = "";
+        form.querySelector(".defect-blocking").checked = false;
+      });
+      renderDefects();
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const result = form.querySelector(".jobcard-result");
+        result.classList.add("hidden");
+        const data = new FormData(form);
+        const evidenceInput = form.querySelector('input[name="evidencePhotos"]');
+        const evidenceFiles = Array.from(evidenceInput?.files || []);
+        if (evidenceFiles.length > 3) {
+          result.textContent = "A maximum of 3 evidence photos can be attached.";
+          result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
+          result.classList.remove("hidden");
+          return;
+        }
+        const evidenceCategory = data.get("evidenceCategory") || "General Evidence";
+        const evidencePhotos = [];
+        for (const [index, file] of evidenceFiles.entries()) {
+          if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 1572864) {
+            result.textContent = `Evidence photo ${index + 1} must be JPEG, PNG or WebP and 1.5 MB or smaller.`;
+            result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
+            result.classList.remove("hidden");
+            return;
+          }
+          const dataUri = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ""));
+            reader.onerror = () => reject(new Error("Photo could not be read."));
+            reader.readAsDataURL(file);
+          });
+          evidencePhotos.push({ dataUri, caption: `${evidenceCategory}: ${file.name || `Evidence photo ${index + 1}`}` });
+        }
+        if (!data.get("signatureBase64")) {
+          result.textContent = "A captured signature is required.";
+          result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
+          result.classList.remove("hidden");
+          return;
+        }
+        try {
+          const response = await window.kharonPortalFetch("/portal/api/submit-jobcard", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              jobId: data.get("jobId"),
+              systemId: data.get("systemId"),
+              techComments: data.get("techComments"),
+              faultCategory: data.get("faultCategory"),
+              partsUsed: data.get("partsUsed"),
+              followUpActions: data.get("followUpActions"),
+              signatureBase64: data.get("signatureBase64"),
+              signatureStrokes: JSON.parse(data.get("signatureStrokes") || "[]"),
+              customerName: data.get("customerName"),
+              customerTitle: data.get("customerTitle"),
+              evidencePhotos,
+              defects: defects.map((defect) => ({ ...defect }))
+            })
+          });
+          const body = await response.json();
+          result.textContent = body.ok ? `Completed successfully. Document path: ${body.documentationPath || "jobcards/job-" + data.get("jobId") + "-completed.pdf"}` : body.message || "Submission failed.";
+          result.className = `jobcard-result text-sm font-semibold p-2.5 mt-4 ${body.ok ? "text-kharon-cyan bg-kharon-cyan/10" : "text-kharon-red bg-kharon-red/10"}`;
+          result.classList.remove("hidden");
+          if (body.ok) {
+            setTimeout(() => {
+              window.location.href = "/portal/tech/dashboard";
+            }, 1500);
+          }
+        } catch (error) {
+          result.textContent = error.message || "An unexpected error occurred during submission.";
+          result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
+          result.classList.remove("hidden");
+        }
+      });
+    }
+  </script>
+</PortalLayout>

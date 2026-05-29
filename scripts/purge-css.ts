@@ -273,6 +273,7 @@ output = output
   .replace(/\s*([{};:,])\s*/g, '$1') // remove space around separators
   .replace(/;}/g, '}')              // remove trailing semicolons
   .replace(/([: ,\(])0(?:px|em|rem|%|vw|vh)/g, '$10') // remove zero units
+  .replace(/([: ,\(])0\.([0-9]+)/g, '$1.$2') // Minify decimals (0.5 -> .5)
   .replace(/#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3/g, '#$1$2$3') // Shorten hex colors
   .trim();
 
