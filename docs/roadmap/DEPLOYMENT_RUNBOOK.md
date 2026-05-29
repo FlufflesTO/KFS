@@ -167,14 +167,15 @@ To ensure GitHub Actions CI/CD can deploy to Cloudflare, you must define the `CL
 3. Under the **Security** section on the left sidebar, click **Secrets and variables**, then select **Actions**.
 4. In the **Repository secrets** list, locate the secret named `CLOUDFLARE_API_TOKEN`.
 5. Click the edit icon (pencil) or click **Update**, paste the new Cloudflare API token value, and click **Update secret**.
-6. Ensure the Cloudflare API User Token has the following scopes enabled in the Cloudflare dashboard:
+6. Ensure you use a **User API Token** (not an Account API Token), because custom domain routing routes are zone-level resources that Account tokens cannot write to. The token must have the following scopes enabled in the Cloudflare dashboard:
    - **Account** -> **Workers Scripts** -> **Edit**
    - **User** -> **User Details** -> **Read**
    - **Zone** -> **Workers Routes** -> **Edit** (Required to bind custom domains)
    - **Zone** -> **Zone** -> **Read** (Required to read custom zone metadata)
    - **Account** -> **D1** -> **Edit** (Required to bind D1 databases)
    - **Account** -> **R2** -> **Edit** (Required to bind R2 buckets)
-7. Trigger the workflow (e.g., by pushing a commit or manually re-running a failed job) to redeploy.
+7. Set the token's **Zone Resources** to **All zones** (or explicitly add `tequit.co.za` and `kharon.co.za`).
+8. Trigger the workflow (e.g., by pushing a commit or manually re-running a failed job) to redeploy.
 
 ### Final Kharon DNS
 
