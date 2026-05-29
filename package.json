@@ -12,7 +12,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/purge-css.mjs",
+    "build": "astro build && node scripts/purge-css.ts",
     "build:staging": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 staging",
     "build:production:kharon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 production",
     "lint": "eslint .",
