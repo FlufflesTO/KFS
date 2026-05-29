@@ -26,7 +26,9 @@ const mfaApiPath = "/portal/api/mfa";
 const portalRootPath = "/portal";
 
 function createCspNonce(): string {
-  return crypto.randomUUID().replaceAll("-", "");
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 function securityHeaders(nonce: string): Record<string, string> {
@@ -311,10 +313,35 @@ const rbacMiddleware: MiddlewareHandler = async (context, next) => {
   return await next();
 };
 
-export const onRequest = sequence(
+const middlewareChain = sequence(
   setupMiddleware,
   authMiddleware,
   csrfAndRateLimitMiddleware,
   rbacMiddleware,
   securityMiddleware
 );
+
+export const onRequest: MiddlewareHandler = async (context, next) => {
+  try {
+    return await middlewareChain(context, next);
+  } catch (error) {
+    console.error("Critical Middleware Error:", error);
+    
+    // Structured error for Cloudflare Logs/Tail
+    const errorData = {
+      timestamp: new Date().toISOString(),
+      url: context.url.toString(),
+      method: context.request.method,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      user: context.locals.user?.id || "anonymous"
+    };
+    
+    console.error(JSON.stringify(errorData));
+
+    return new Response("A critical system error occurred. Please contact admin@kharon.co.za if this persists.", { 
+      status: 500,
+      headers: { "Content-Type": "text/plain" }
+    });
+  }
+};

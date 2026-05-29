@@ -4,6 +4,7 @@ import { getDatabase } from "../../lib/server/bindings";
 import { consumeRateLimit } from "../../lib/server/rateLimit";
 import { sha256Text } from "../../lib/server/request";
 import { ContactSubmissionSchema, ALLOWED_REQUEST_TYPES } from "../../lib/validation/schemas";
+import { json, badRequest, tooManyRequests, serverError } from "../../lib/server/http";
 
 export const prerender = false;
 
@@ -13,12 +14,7 @@ function sanitizeForCsvInjection(text: string): string {
   return text.replace(/^([=+\-@])/g, "'$1");
 }
 
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
-  });
-}
+
 
 export const POST: APIRoute = async ({ request }) => {
   let rawBody: Record<string, any> = {};
@@ -27,17 +23,17 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       rawBody = await request.json();
     } catch {
-      return json({ ok: false, message: "Invalid JSON request." }, 400);
+      return badRequest("Invalid JSON request.");
     }
   } else if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
     try {
       const form = await request.formData();
       rawBody = Object.fromEntries(form.entries());
     } catch {
-      return json({ ok: false, message: "Invalid form request." }, 400);
+      return badRequest("Invalid form request.");
     }
   } else {
-    return json({ ok: false, message: "Unsupported content type." }, 400);
+    return badRequest("Unsupported content type.");
   }
 
   // Honeypot check
@@ -57,14 +53,14 @@ export const POST: APIRoute = async ({ request }) => {
 
   const parsed = ContactSubmissionSchema.safeParse(dataToValidate);
   if (!parsed.success) {
-    return json({ ok: false, message: parsed.error.issues[0]?.message || "Validation failed." }, 422);
+    return json({ ok: false, message: parsed.error.issues[0]?.message || "Validation failed." }, { status: 422 });
   }
 
   let { name, email, requestType, message } = parsed.data;
 
   // Strict check against allowed types (since Zod fallback allows any string)
   if (!ALLOWED_REQUEST_TYPES.includes(requestType)) {
-      return json({ ok: false, message: "Invalid request type." }, 422);
+      return json({ ok: false, message: "Invalid request type." }, { status: 422 });
   }
 
   // Apply CSV injection sanitization
@@ -82,7 +78,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     db = getDatabase();
   } catch {
-    return json({ ok: false, message: "Service temporarily unavailable." }, 503);
+    return serverError("Service temporarily unavailable.");
   }
 
   const limit = await consumeRateLimit(db, request, {
@@ -92,17 +88,7 @@ export const POST: APIRoute = async ({ request }) => {
     windowSeconds: 15 * 60
   });
   if (!limit.allowed) {
-    return new Response(
-      JSON.stringify({ ok: false, message: "Too many submissions. Try again shortly." }),
-      {
-        status: 429,
-        headers: {
-          "content-type": "application/json; charset=utf-8",
-          "cache-control": "no-store",
-          "retry-after": String(limit.retryAfter)
-        }
-      }
-    );
+    return tooManyRequests("Too many submissions. Try again shortly.", limit.retryAfter);
   }
 
   const id = `cq-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -117,10 +103,7 @@ export const POST: APIRoute = async ({ request }) => {
       .run();
   } catch (error) {
     await auditError(db, request, error as Error, { metadata: { message: "contact submission failed" } });
-    return json(
-      { ok: false, message: "Submission could not be saved. Email admin@kharon.co.za directly." },
-      500
-    );
+    return serverError("Submission could not be saved. Email admin@kharon.co.za directly.");
   }
 
   return json({ ok: true });

@@ -1,7 +1,9 @@
 import { getDatabase } from "../../../lib/server/bindings";
 import { auditEvent } from "../../../lib/server/audit";
+import { clientCanAccessSite } from "../../../lib/server/access";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http.ts";
 import { FinanceService } from "../../../lib/server/services/finance-service";
+import { QuoteApprovalSchema } from "../../../lib/validation/schemas";
 
 export const prerender = false;
 
@@ -12,11 +14,16 @@ export async function POST({ request, locals }) {
     if (user.role !== "client" && user.role !== "admin") return forbidden("Only client or admin accounts can approve quotes.");
 
     const body = await request.json();
-    const quoteId = String(body.recordId || body.quoteId || "").trim();
-    const status = String(body.status || "approved").trim();
+    const parsed = QuoteApprovalSchema.safeParse({
+      quoteId: body.recordId || body.quoteId,
+      status: body.status
+    });
 
-    if (!quoteId) return badRequest("Quote ID is required.");
-    if (!["approved", "rejected"].includes(status)) return badRequest("Invalid status value.");
+    if (!parsed.success) {
+      return badRequest(parsed.error.issues[0]?.message || "Validation failed.");
+    }
+
+    const { quoteId, status } = parsed.data;
 
     const db = getDatabase();
     const financeService = new FinanceService(db);
@@ -30,6 +37,11 @@ export async function POST({ request, locals }) {
 
     if (!financialRecord) {
       return badRequest("Quote not found.");
+    }
+
+    // Security: Check if client has access to this site
+    if (user.role === "client" && !(await clientCanAccessSite(db, user, financialRecord.site_id))) {
+      return forbidden("You do not have access to approve quotes for this site.");
     }
 
     if (status === 'approved') {

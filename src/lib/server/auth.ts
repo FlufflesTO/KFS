@@ -212,7 +212,12 @@ export async function revokeSessionToken(db: D1Database, token: string): Promise
   }
 }
 
-export async function hashPassword(password: string, salt: string = crypto.randomUUID()): Promise<string> {
+export async function hashPassword(password: string, salt?: string): Promise<string> {
+  if (!salt) {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    salt = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
   if (typeof password !== "string" || password.length < 12) {
     throw new Error("Password must be at least 12 characters.");
   }

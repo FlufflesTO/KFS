@@ -163,6 +163,29 @@ try {
 const overdueCount  = systems.filter((s) => s.next_due_date && s.next_due_date < today).length;
 const dueSoonCount  = systems.filter((s) => s.next_due_date && s.next_due_date >= today && s.next_due_date <= soonDate).length;
 const compliantCount = systems.filter((s) => !s.next_due_date || s.next_due_date > soonDate).length;
+import ComplianceHeatmap, { type SiteStatus } from "../../../components/portal/ComplianceHeatmap.astro";
+
+const siteStatuses: SiteStatus[] = sites.map(site => {
+  const siteSystems = systems.filter(s => s.site_id === site.id);
+  const siteDefects = openDefects.filter(d => d.site_id === site.id);
+
+  const isOverdue = siteSystems.some(s => s.next_due_date && s.next_due_date < today);
+  const isCritical = siteDefects.some(d => d.severity === 'Critical' || d.severity === 'Major');
+  const isDueSoon = siteSystems.some(s => s.next_due_date && s.next_due_date >= today && s.next_due_date <= soonDate);
+
+  let status: 'red' | 'amber' | 'green' = 'green';
+  let reason = 'Compliant';
+
+  if (isOverdue || isCritical) {
+    status = 'red';
+    reason = isOverdue ? 'Maintenance Overdue' : 'Critical Defect';
+  } else if (isDueSoon || siteDefects.length > 0) {
+    status = 'amber';
+    reason = isDueSoon ? 'Due Soon' : 'Minor Defects';
+  }
+
+  return { id: site.id, name: site.owner_company_name, status, reason };
+});
 ---
 
 <PortalLayout title="Client Gateway | Kharon Portal" active="client" user={user}>
@@ -180,6 +203,17 @@ const compliantCount = systems.filter((s) => !s.next_due_date || s.next_due_date
       {!loadError && sectionErrors.length > 0 && (
         <div class="grid gap-2 mb-6">
           {sectionErrors.map((message) => <p class="border border-amber-300 bg-amber-50 p-4 text-amber-900">{message}</p>)}
+        </div>
+      )}
+
+      {/* Compliance Heatmap */}
+      {siteStatuses.length > 1 && (
+        <div class="mb-10">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-bold uppercase tracking-widest text-white/70">Portfolio Compliance Heatmap</h2>
+            <span class="text-[0.65rem] text-white/40 uppercase font-mono">{siteStatuses.length} sites tracked</span>
+          </div>
+          <ComplianceHeatmap sites={siteStatuses} />
         </div>
       )}
 

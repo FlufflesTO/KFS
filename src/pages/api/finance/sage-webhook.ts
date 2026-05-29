@@ -1,12 +1,20 @@
-import { getDatabase } from "../../../lib/server/bindings";
+import { getBindings } from "../../../lib/server/bindings";
 
 export const prerender = false;
 
 export async function POST({ request }: { request: Request }) {
   try {
-    // Verify webhook source (implement proper authentication in production)
+    const { env, db } = getBindings();
+    
+    // Verify webhook source using a shared secret from environment
     const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    const webhookSecret = String(env.SAGE_WEBHOOK_SECRET || "");
+    
+    if (!webhookSecret) {
+      console.warn("SAGE_WEBHOOK_SECRET is not configured. Webhook security is degraded.");
+    }
+
+    if (!authHeader || (webhookSecret && authHeader !== `Bearer ${webhookSecret}`)) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json" } }
@@ -31,8 +39,6 @@ export async function POST({ request }: { request: Request }) {
         { status: 400, headers: { "Content-Type": "application/json" } }
     );
     }
-    
-    const db = getDatabase();
     
     // Process different Sage events
     switch (payload.event) {

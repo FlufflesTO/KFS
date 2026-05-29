@@ -5,14 +5,14 @@
  * Structural Role: Mutating REST API endpoint for jobcard completion
  */
 
-import type { APIContext } from "astro";
-// Removed unused import: import type { D1Database } from "@cloudflare/workers-types";
 import { auditError, auditEvent } from "../../../lib/server/audit";
 import { FinanceService } from "../../../lib/server/services/finance-service.js";
-import { getDatabase, getStandardServiceFee } from "../../../lib/server/bindings.js";
+import { getBindings, getStandardServiceFee } from "../../../lib/server/bindings.js";
 import { badRequest, forbidden, methodNotAllowed, serverError } from "../../../lib/server/http.js";
 import { json } from "../../../lib/server/http.js";
 import { verifyCsrfRequest } from "../../../lib/server/csrf.js";
+import { JobCardSchema } from "../../../lib/validation/schemas";
+import { buildJobcardPdf } from "../../../lib/server/jobcardPdf";
 
 export const prerender = false;
 
@@ -45,18 +45,10 @@ interface EvidenceRecord extends EvidencePhoto {
 }
 
 interface DefectInput {
-  severity: string;
+  severity: "Critical" | "Major" | "Minor" | "Observation";
   description: string;
   sansClauseRef: string;
   certificateBlocking: number;
-}
-
-function cleanId(value: unknown, fieldName: string): string {
-  const normalized = String(value || "").trim();
-  if (!/^[A-Za-z0-9_-]{3,80}$/.test(normalized)) {
-    throw new Error(`${fieldName} is invalid.`);
-  }
-  return normalized;
 }
 
 function addMonths(date: Date, months: number): string {
@@ -65,64 +57,21 @@ function addMonths(date: Date, months: number): string {
   return next.toISOString().slice(0, 10);
 }
 
-function imageDataUriToEvidence(value: unknown, index: number): EvidencePhoto {
-  const obj = value as Record<string, unknown> | null | undefined;
-  const dataUri = String(obj?.dataUri || "");
-  const caption = String(obj?.caption || `Evidence photo ${index + 1}`).trim().slice(0, 160);
+function dataUriToBytes(dataUri: string): { bytes: Uint8Array; contentType: string } {
   const match = dataUri.match(/^data:(image\/(?:jpeg|png|webp));base64,(?<data>[A-Za-z0-9+/=]+)$/);
   if (!match?.groups?.data) {
-    throw new Error(`Evidence photo ${index + 1} must be a JPEG, PNG or WebP image.`);
+    throw new Error("Invalid image format.");
   }
-
   const binary = atob(match.groups.data);
   const bytes = new Uint8Array(binary.length);
-  for (let byteIndex = 0; byteIndex < binary.length; byteIndex += 1) {
-    bytes[byteIndex] = binary.charCodeAt(byteIndex);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
   }
-
-  if (bytes.length < 128 || bytes.length > 1572864) {
-    throw new Error(`Evidence photo ${index + 1} must be between 128 bytes and 1.5 MB.`);
-  }
-
-  return {
-    bytes,
-    contentType: match[1] || "image/jpeg",
-    caption
-  };
-}
-
-function normalizeEvidencePhotos(value: unknown): EvidencePhoto[] {
-  if (!Array.isArray(value)) return [];
-  if (value.length > 3) throw new Error("A maximum of 3 evidence photos can be submitted per jobcard.");
-  return value.map((item: unknown, index: number) => imageDataUriToEvidence(item, index));
-}
-
-const defectSeverities = ["Critical", "Major", "Minor", "Observation"];
-
-function normalizeDefects(value: unknown): DefectInput[] {
-  if (!value) return [];
-  if (!Array.isArray(value)) throw new Error("Defects must be an array.");
-  if (value.length > 20) throw new Error("A maximum of 20 defects can be captured per jobcard.");
-
-  return value.map((item: unknown, index: number) => {
-    const obj = item as Record<string, unknown> | null | undefined;
-    const severity = String(obj?.severity || "").trim();
-    if (!defectSeverities.includes(severity)) {
-      throw new Error(`Defect ${index + 1} severity must be one of: ${defectSeverities.join(", ")}.`);
-    }
-    const description = String(obj?.description || "").trim();
-    if (description.length < 5 || description.length > 2000) {
-      throw new Error(`Defect ${index + 1} description must be between 5 and 2000 characters.`);
-    }
-    const sansClauseRef = String(obj?.sansClauseRef || "").trim().slice(0, 80);
-    const certificateBlocking = obj?.certificateBlocking === true || obj?.certificateBlocking === 1 || obj?.certificateBlocking === "1" || obj?.certificateBlocking === "true";
-
-    return { severity, description, sansClauseRef, certificateBlocking: certificateBlocking ? 1 : 0 };
-  });
+  return { bytes, contentType: match[1] || "image/jpeg" };
 }
 
 export async function POST({ request, locals }: APIContext): Promise<Response> {
-  let jobId = "unknown"; // Declare jobId in wider scope to handle errors properly
+  let jobId = "unknown";
 
   try {
     // Manual role check since requireRole doesn't exist
@@ -130,10 +79,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       return forbidden("Insufficient permissions.");
     }
     
-    const db = getDatabase();
-    if (!db) {
-      return serverError("Database unavailable.");
-    }
+    const { db, storage } = getBindings();
     
     // Verify CSRF token from header (JSON payload submission)
     const csrfValid = await verifyCsrfRequest(request, locals.user);
@@ -141,32 +87,53 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       return badRequest("Invalid CSRF token");
     }
 
-    const payload = (await request.json()) as Record<string, unknown>;
-
-    jobId = cleanId(payload.jobId, "jobId");
-    const systemId = cleanId(payload.systemId, "systemId");
-    const techComments = String(payload.techComments || "").trim();
-    const signatureBase64 = String(payload.signatureBase64 || "");
-    const signatureStrokes = Array.isArray(payload.signatureStrokes) ? payload.signatureStrokes : [];
-    const faultCategory = String(payload.faultCategory || "Routine service").trim().slice(0, 120);
-    const partsUsed = String(payload.partsUsed || "None recorded").trim().slice(0, 500);
-    const followUpActions = String(payload.followUpActions || "No follow-up actions recorded").trim().slice(0, 1000);
-    const customerName  = String(payload.customerName  || "").trim().slice(0, 120);
-    const customerTitle = String(payload.customerTitle || "").trim().slice(0, 80);
-    const evidencePhotos = normalizeEvidencePhotos(payload.evidencePhotos);
-    const defects = normalizeDefects(payload.defects);
-
-    if (techComments.length < 3 || techComments.length > 3000) {
-      return badRequest("Technician comments must be between 3 and 3000 characters.");
+    const payload = await request.json();
+    const parsed = JobCardSchema.safeParse(payload);
+    
+    if (!parsed.success) {
+      return badRequest(parsed.error.issues[0]?.message || "Validation failed.");
     }
 
-    if (!signatureBase64) {
-      return badRequest("A captured signature is required.");
-    }
+    const {
+      jobId: rawJobId,
+      systemId,
+      techComments,
+      signatureBase64,
+      signatureStrokes,
+      faultCategory,
+      partsUsed,
+      followUpActions,
+      customerName,
+      customerTitle,
+      evidencePhotos: rawEvidencePhotos,
+      defects: rawDefects
+    } = parsed.data;
 
-    const dbInstance = getDatabase();
-    const financeService = new FinanceService(dbInstance);
-    const job = await dbInstance
+    jobId = rawJobId;
+
+    const evidenceRecords: EvidenceRecord[] = rawEvidencePhotos.map((photo, index) => {
+      const { bytes, contentType } = dataUriToBytes(photo.dataUri);
+      const id = crypto.randomUUID();
+      const extension = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+      return {
+        bytes,
+        contentType,
+        caption: photo.caption || `Evidence photo ${index + 1}`,
+        id,
+        storagePath: `job-evidence/job-${jobId}/${id}.${extension}`,
+        index
+      };
+    });
+
+    const defects: DefectInput[] = rawDefects.map(d => ({
+      severity: d.severity,
+      description: d.description,
+      sansClauseRef: d.sansClauseRef || "",
+      certificateBlocking: d.certificateBlocking ? 1 : 0
+    }));
+
+    const financeService = new FinanceService(db);
+    const job = await db
       .prepare(
         `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, jobs.scheduled_date, jobs.job_type,
                 systems.site_id, systems.system_type, systems.coverage_area,
@@ -188,7 +155,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       .first<JobQueryResult>() ?? null;
 
     if (!job) {
-      await auditEvent(dbInstance, request, {
+      await auditEvent(db, request, {
         eventType: "jobcard.close",
         entityType: "job",
         entityId: jobId,
@@ -200,8 +167,8 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       return badRequest("The requested job and system mapping was not found.");
     }
 
-    if (job.assigned_technician_id !== locals.user.id) {  // Fixed: using locals.user.id instead of user.id
-      await auditEvent(dbInstance, request, {
+    if (job.assigned_technician_id !== locals.user.id) {
+      await auditEvent(db, request, {
         eventType: "jobcard.close",
         entityType: "job",
         entityId: jobId,
@@ -214,7 +181,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     }
 
     if (!["Scheduled", "In Progress"].includes(job.status)) {
-      await auditEvent(dbInstance, request, {
+      await auditEvent(db, request, {
         eventType: "jobcard.close",
         entityType: "job",
         entityId: jobId,
@@ -223,92 +190,80 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
         subject: locals.user?.email || "unknown",
         metadata: { reason: "invalid_status", currentStatus: job.status }
       });
-      return badRequest("Only scheduled or in-progress jobs can be closed.", { currentStatus: job.status });
+      return badRequest("Only scheduled or in-progress jobs can be closed.");
     }
 
     const completedAt = new Date();
-    // Removed unused variable: const serviceDate = completedAt.toISOString().slice(0, 10);
     const serviceIntervalMonths = typeof job.service_interval_months === "number" && Number.isInteger(job.service_interval_months) && job.service_interval_months >= 1 ? job.service_interval_months : 6;
     const nextDueDate = addMonths(completedAt, serviceIntervalMonths);
     const documentationPath = `jobcards/job-${jobId}-completed.pdf`;
     const financialRecordId = job.existing_financial_record_id || crypto.randomUUID();
     const amount = getStandardServiceFee();
-    const evidenceRecords: EvidenceRecord[] = evidencePhotos.map((photo, index) => {
-      const id = crypto.randomUUID();
-      const extension = photo.contentType === "image/png" ? "png" : photo.contentType === "image/webp" ? "webp" : "jpg";
-      return {
-        ...photo,
-        id,
-        storagePath: `job-evidence/job-${jobId}/${id}.${extension}`,
-        index
-      };
+
+    const { pdfBytes, signatureHash } = (await buildJobcardPdf({
+      jobId,
+      systemId,
+      technician: locals.user,
+      techComments,
+      signatureBase64,
+      signatureStrokes,
+      completedAt: completedAt.toISOString(),
+      evidence: {
+        ownerCompanyName: job.owner_company_name,
+        physicalAddress: job.physical_address,
+        systemType: job.system_type,
+        coverageArea: job.coverage_area,
+        scheduledDate: job.scheduled_date,
+        jobType: job.job_type,
+        faultCategory,
+        partsUsed,
+        followUpActions,
+        customerName,
+        customerTitle
+      }
+    })) as { pdfBytes: Uint8Array; signatureHash: string };
+
+    await storage.put(documentationPath, pdfBytes, {
+      httpMetadata: {
+        contentType: "application/pdf",
+        contentDisposition: `inline; filename="job-${jobId}-completed.pdf"`
+      },
+      customMetadata: {
+        jobId,
+        systemId,
+        technicianId: locals.user.id,
+        signatureSha256: signatureHash,
+        completedAt: completedAt.toISOString(),
+        faultCategory
+      }
     });
 
-    // Note: Commenting out storage operations since storage isn't properly defined in this context
-    // const { pdfBytes, signatureHash } = (await buildJobcardPdf({
-    //   jobId,
-    //   systemId,
-    //   technician: locals.user,  // Fixed: using locals.user instead of user
-    //   techComments,
-    //   signatureBase64,
-    //   signatureStrokes,
-    //   completedAt: completedAt.toISOString(),
-    //   evidence: {
-    //     ownerCompanyName: job.owner_company_name,
-    //     physicalAddress: job.physical_address,
-    //     systemType: job.system_type,
-    //     coverageArea: job.coverage_area,
-    //     scheduledDate: job.scheduled_date,
-    //     jobType: job.job_type,
-    //     faultCategory,
-    //     partsUsed,
-    //     followUpActions,
-    //     customerName,
-    //     customerTitle
-    //   }
-    // })) as { pdfBytes: Uint8Array; signatureHash: string };
-
-    // await storage.put(documentationPath, pdfBytes, {
-    //   httpMetadata: {
-    //     contentType: "application/pdf",
-    //     contentDisposition: `inline; filename="job-${jobId}-completed.pdf"`
-    //   },
-    //   customMetadata: {
-    //     jobId,
-    //     systemId,
-    //     technicianId: locals.user.id,  // Fixed: using locals.user.id instead of user.id
-    //     signatureSha256: signatureHash,
-    //     completedAt: completedAt.toISOString(),
-    //     faultCategory
-    //   }
-    // });
-
-    // for (const evidence of evidenceRecords) {
-    //   await storage.put(evidence.storagePath, evidence.bytes, {
-    //     httpMetadata: {
-    //       contentType: evidence.contentType,
-    //       contentDisposition: `inline; filename="job-${jobId}-evidence-${evidence.index + 1}"`
-    //     },
-    //     customMetadata: {
-    //       jobId,
-    //       systemId,
-    //       technicianId: locals.user.id,  // Fixed: using locals.user.id instead of user.id
-    //       evidenceType: "Photo",
-    //       completedAt: completedAt.toISOString()
-    //     }
-    //   });
-    // }
+    for (const evidence of evidenceRecords) {
+      await storage.put(evidence.storagePath, evidence.bytes, {
+        httpMetadata: {
+          contentType: evidence.contentType,
+          contentDisposition: `inline; filename="job-${jobId}-evidence-${evidence.index + 1}"`
+        },
+        customMetadata: {
+          jobId,
+          systemId,
+          technicianId: locals.user.id,
+          evidenceType: "Photo",
+          completedAt: completedAt.toISOString()
+        }
+      });
+    }
 
     // Create finance task for invoice
     await financeService.createInvoiceRequired(
       job.site_id,
       jobId,
-      50000, // Example amount in cents (R500.00)
+      amount,
       `Invoice required for job ${jobId} completion`
     );
 
     const batchStatements = [
-      dbInstance.prepare(
+      db.prepare(
         `UPDATE jobs SET 
            status = 'Completed',
            completed_at = CURRENT_TIMESTAMP,
@@ -341,7 +296,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
 
     for (const evidence of evidenceRecords) {
       batchStatements.push(
-        dbInstance
+        db
           .prepare(
             `INSERT INTO job_evidence_files
                (id, job_id, system_id, uploaded_by_user_id, evidence_type, storage_path, content_type, file_size_bytes, caption)
@@ -355,7 +310,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     for (const defect of defects) {
       const defectId = crypto.randomUUID();
       batchStatements.push(
-        dbInstance
+        db
           .prepare(
             `INSERT INTO defects
                (id, system_id, job_id, severity, sans_clause_ref, description, certificate_blocking, status)
@@ -366,11 +321,11 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       );
     }
 
-    await dbInstance.batch(batchStatements);
+    await db.batch(batchStatements);
 
     if (!job.existing_financial_record_id) {
       const hasBlockingDefects = defects.some((d) => d.certificateBlocking === 1);
-      await auditEvent(dbInstance, request, {
+      await auditEvent(db, request, {
         eventType: "finance.record.create",
         entityType: "financial_record",
         entityId: financialRecordId,
@@ -391,13 +346,13 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       });
     }
 
-    await auditEvent(dbInstance, request, {
+    await auditEvent(db, request, {
       eventType: "jobcard.close",
       entityType: "job",
       entityId: jobId,
       outcome: "success",
-      user: locals.user,  // Fixed: using locals.user instead of user
-      subject: locals.user?.email || "unknown",  // Added missing subject
+      user: locals.user,
+      subject: locals.user?.email || "unknown",
       metadata: {
         systemId,
         documentationPath,

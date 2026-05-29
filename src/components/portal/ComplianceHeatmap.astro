@@ -1,0 +1,48 @@
+---
+/**
+ * Project Sentinel - ComplianceHeatmap
+ * Purpose: Provides a visual grid of site compliance status (Red/Amber/Green)
+ * Dependencies: None
+ * Structural Role: Dashboard visualization component
+ */
+
+export interface SiteStatus {
+  id: string;
+  name: string;
+  status: 'red' | 'amber' | 'green';
+  reason: string;
+}
+
+interface Props {
+  sites: SiteStatus[];
+}
+
+const { sites } = Astro.props;
+---
+
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+  {sites.map((site) => (
+    <div 
+      class={`p-3 rounded-lg border flex flex-col items-center text-center transition-all hover:ring-2 hover:ring-offset-2 hover:ring-offset-kharon-black ${
+        site.status === 'red' 
+          ? 'bg-kharon-red/10 border-kharon-red/30 text-red-200 hover:ring-kharon-red/50' 
+          : site.status === 'amber'
+          ? 'bg-kharon-amber/10 border-kharon-amber/30 text-amber-200 hover:ring-kharon-amber/50'
+          : 'bg-kharon-green/10 border-kharon-green/30 text-green-200 hover:ring-kharon-green/50'
+      }`}
+      title={site.reason}
+    >
+      <div 
+        class={`w-2.5 h-2.5 rounded-full mb-2 shadow-lg ${
+          site.status === 'red' 
+            ? 'bg-kharon-red shadow-kharon-red/20' 
+            : site.status === 'amber' 
+            ? 'bg-kharon-amber shadow-kharon-amber/20' 
+            : 'bg-kharon-green shadow-kharon-green/20'
+        }`}
+      ></div>
+      <span class="text-[0.625rem] font-bold uppercase tracking-wider truncate w-full leading-tight">{site.name}</span>
+      <span class="mt-1 text-[0.55rem] font-medium opacity-60 uppercase tracking-tighter truncate w-full">{site.reason}</span>
+    </div>
+  ))}
+</div>

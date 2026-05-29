@@ -57,9 +57,12 @@ async function hmacKey(): Promise<CryptoKey> {
 
 export async function createCsrfToken(user: SessionUser): Promise<string> {
   const issuedAt = Math.floor(Date.now() / 1000);
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  const nonce = Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
   const payload: CsrfPayload = {
     sub: String(user.id),
-    nonce: crypto.randomUUID(),
+    nonce,
     iat: issuedAt,
     exp: issuedAt + csrfDurationSeconds
   };

@@ -38,27 +38,62 @@ const { initialQueueCount = 0 } = Astro.props;
     </svg>
     <span>Your changes are saved locally and will sync when connection is restored</span>
   </div>
-</div>
 
-<script>
+  <div data-pwa-install class="mt-2 hidden flex-col gap-2 border-t border-kharon-purple/10 pt-2">
+    <p class="text-[10px] text-kharon-purple/70 uppercase font-bold">Portal Update Available</p>
+    <button data-install-btn class="w-full bg-kharon-purple text-white py-2 rounded text-xs font-bold hover:bg-kharon-blue transition-colors">
+      Install Portal App
+    </button>
+  </div>
+  </div>
+
+  <script>
   const bannerEl = document.querySelector('[data-offline-banner]');
   const messageEl = bannerEl?.querySelector('[data-offline-message]');
   const countEl = bannerEl?.querySelector('[data-offline-count]');
   const onlineIcon = bannerEl?.querySelector('[data-offline-icon="online"]');
   const offlineIcon = bannerEl?.querySelector('[data-offline-icon="offline"]');
   const detailEl = bannerEl?.querySelector('[data-offline-detail]');
+  const installSection = bannerEl?.querySelector('[data-pwa-install]');
+  const installBtn = bannerEl?.querySelector('[data-install-btn]');
+
   let queueCount = Number(bannerEl?.getAttribute('data-initial-queue-count') || 0);
   let isOffline = !navigator.onLine;
-  
+  let deferredPrompt: any = null;
+
+  // PWA Install Logic
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (bannerEl && !isOffline) {
+      bannerEl.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+      bannerEl.classList.add('bg-white', 'border-kharon-purple/20', 'translate-y-0', 'opacity-100');
+      if (messageEl) messageEl.textContent = 'Enhance Your Workflow';
+      installSection?.classList.remove('hidden');
+      installSection?.classList.add('flex');
+    }
+  });
+
+  installBtn?.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      installSection?.classList.add('hidden');
+    }
+    deferredPrompt = null;
+  });
+
   // Function to update banner visibility
   function updateBanner() {
     if (!bannerEl) return;
-    bannerEl.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none', 'bg-amber-100', 'text-amber-800', 'border-amber-200', 'bg-emerald-100', 'text-emerald-800', 'border-emerald-200');
+    bannerEl.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none', 'bg-amber-100', 'text-amber-800', 'border-amber-200', 'bg-emerald-100', 'text-emerald-800', 'border-emerald-200', 'bg-white');
     countEl?.classList.toggle('hidden', queueCount === 0);
     countEl?.classList.toggle('flex', queueCount > 0);
     if (countEl) countEl.textContent = String(queueCount);
-    
+
     if (isOffline) {
+      installSection?.classList.add('hidden');
       bannerEl.classList.add('bg-amber-100', 'text-amber-800', 'border-amber-200', 'translate-y-0', 'opacity-100');
       if (messageEl) messageEl.textContent = 'Offline Mode - Data queued for sync';
       onlineIcon?.classList.add('hidden');
@@ -66,18 +101,20 @@ const { initialQueueCount = 0 } = Astro.props;
       detailEl?.classList.remove('hidden');
       detailEl?.classList.add('flex');
     } else if (queueCount > 0) {
+      installSection?.classList.add('hidden');
       bannerEl.classList.add('bg-emerald-100', 'text-emerald-800', 'border-emerald-200', 'translate-y-0', 'opacity-100');
       if (messageEl) messageEl.textContent = `Online - Syncing ${queueCount} items`;
       onlineIcon?.classList.remove('hidden');
       offlineIcon?.classList.add('hidden');
       detailEl?.classList.add('hidden');
       detailEl?.classList.remove('flex');
+    } else if (deferredPrompt) {
+      bannerEl.classList.add('bg-white', 'border-kharon-purple/20', 'translate-y-0', 'opacity-100');
+      if (messageEl) messageEl.textContent = 'Enhance Your Workflow';
+      installSection?.classList.remove('hidden');
+      installSection?.classList.add('flex');
     } else {
       bannerEl.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-      onlineIcon?.classList.remove('hidden');
-      offlineIcon?.classList.add('hidden');
-      detailEl?.classList.add('hidden');
-      detailEl?.classList.remove('flex');
     }
   }
   

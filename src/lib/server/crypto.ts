@@ -9,9 +9,9 @@ const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
 function getEncryptionKey(env: Record<string, unknown>): string {
-  const secret = String(env.ENCRYPTION_SECRET || env.SESSION_SECRET || env.AUTH_SECRET || "");
+  const secret = String(env.ENCRYPTION_SECRET || "");
   if (secret.length < 32) {
-    throw new Error("Encryption requires a secret of at least 32 characters.");
+    throw new Error("Encryption requires a dedicated ENCRYPTION_SECRET of at least 32 characters.");
   }
   return secret;
 }

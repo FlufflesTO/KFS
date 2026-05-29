@@ -11,6 +11,7 @@ export default defineConfig({
     configPath: "wrangler.jsonc",
     persistState: true
   }),
+  prefetch: true,
   vite: {
     plugins: [tailwindcss()],
     build: {

@@ -138,3 +138,14 @@ retention-reports/
 # Playwright
 playwright-report/
 test-results/
+
+# Data files
+accounting.json
+
+# Test/Temp files
+portal_test.html
+*_SUMMARY.md
+*_REPORT.md
+.cleanup_backup_*
+0.26.0
+cn

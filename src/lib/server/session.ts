@@ -50,7 +50,9 @@ export async function validateSession(sessionId: string): Promise<boolean> {
 
 export async function createSession(userId: string, csrfToken: string): Promise<string> {
   const db = getDatabase();
-  const sessionId = crypto.randomUUID();
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  const sessionId = Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 12); // 12-hour sliding window
   
