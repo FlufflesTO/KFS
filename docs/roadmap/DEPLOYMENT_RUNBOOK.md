@@ -160,14 +160,21 @@ npx wrangler login
 
 ### GitHub Actions Secret Configuration / Token Rotation
 
-To ensure GitHub Actions CI/CD can deploy to Cloudflare Pages, you must define the `CLOUDFLARE_API_TOKEN` repository secret on GitHub. If the token is rolled or updated, perform the following steps:
+To ensure GitHub Actions CI/CD can deploy to Cloudflare, you must define the `CLOUDFLARE_API_TOKEN` repository secret on GitHub. If the token is rolled or updated, perform the following steps:
 
 1. Go to the repository at https://github.com/flufflesto/kfs.
 2. Click on **Settings** (top tab navigation).
 3. Under the **Security** section on the left sidebar, click **Secrets and variables**, then select **Actions**.
 4. In the **Repository secrets** list, locate the secret named `CLOUDFLARE_API_TOKEN`.
 5. Click the edit icon (pencil) or click **Update**, paste the new Cloudflare API token value, and click **Update secret**.
-6. Trigger the workflow (e.g., by pushing a commit or manually re-running a failed job) to redeploy.
+6. Ensure the Cloudflare API User Token has the following scopes enabled in the Cloudflare dashboard:
+   - **Account** -> **Workers Scripts** -> **Edit**
+   - **User** -> **User Details** -> **Read**
+   - **Zone** -> **Workers Routes** -> **Edit** (Required to bind custom domains)
+   - **Zone** -> **Zone** -> **Read** (Required to read custom zone metadata)
+   - **Account** -> **D1** -> **Edit** (Required to bind D1 databases)
+   - **Account** -> **R2** -> **Edit** (Required to bind R2 buckets)
+7. Trigger the workflow (e.g., by pushing a commit or manually re-running a failed job) to redeploy.
 
 ### Final Kharon DNS
 
