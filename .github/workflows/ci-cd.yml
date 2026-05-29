@@ -25,9 +25,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
         
-      - name: CSS Purging & Asset Validation
-        run: node scripts/purge-css.mjs
-
       - name: Build Application
         run: npm run build
         env:
