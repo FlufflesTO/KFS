@@ -13,6 +13,8 @@ import { json } from "../../../lib/server/http.js";
 import { verifyCsrfRequest } from "../../../lib/server/csrf.js";
 import { JobCardSchema } from "../../../lib/validation/schemas";
 import { buildJobcardPdf } from "../../../lib/server/jobcardPdf";
+import { JobRepository } from "../../../lib/server/db/job-repository.js";
+import { SystemRepository } from "../../../lib/server/db/system-repository.js";
 
 export const prerender = false;
 
@@ -78,9 +80,13 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     if (!locals.user || !["admin", "tech", "client"].includes(locals.user.role)) {
       return forbidden("Insufficient permissions.");
     }
-    
+
     const { db, storage } = getBindings();
-    
+
+    // Initialize repositories
+    const jobRepository = new JobRepository(db);
+    const systemRepository = new SystemRepository(db);
+
     // Verify CSRF token from header (JSON payload submission)
     const csrfValid = await verifyCsrfRequest(request, locals.user);
     if (!csrfValid) {
@@ -94,7 +100,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
     }
     const parsed = JobCardSchema.safeParse(payload);
-    
+
     if (!parsed.success) {
       return badRequest(parsed.error.issues[0]?.message || "Validation failed.");
     }
@@ -137,7 +143,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       certificateBlocking: d.certificateBlocking ? 1 : 0
     }));
 
-    const financeService = new FinanceService(db);
+    // Use JobRepository to fetch job with related data
     const job = await db
       .prepare(
         `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, jobs.scheduled_date, jobs.job_type,
@@ -196,6 +202,21 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
         metadata: { reason: "invalid_status", currentStatus: job.status }
       });
       return badRequest("Only scheduled or in-progress jobs can be closed.");
+    }
+
+    // Verify system exists using repository (soft-delete aware)
+    const system = await systemRepository.findById(systemId);
+    if (!system) {
+      await auditEvent(db, request, {
+        eventType: "jobcard.close",
+        entityType: "system",
+        entityId: systemId,
+        outcome: "failure",
+        user: locals.user,
+        subject: locals.user?.email || "unknown",
+        metadata: { reason: "system_not_found_or_deleted" }
+      });
+      return badRequest("The associated system was not found or has been deleted.");
     }
 
     const completedAt = new Date();
@@ -260,6 +281,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     }
 
     // Create finance task for invoice
+    const financeService = new FinanceService(db);
     await financeService.createInvoiceRequired(
       job.site_id,
       jobId,
@@ -269,7 +291,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
 
     const batchStatements = [
       db.prepare(
-        `UPDATE jobs SET 
+        `UPDATE jobs SET
            status = 'Completed',
            completed_at = CURRENT_TIMESTAMP,
            tech_comments = ?1,

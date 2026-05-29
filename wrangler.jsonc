@@ -2,6 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "kharon-website",
   "compatibility_date": "2026-05-20",
+  "main": "src/server.ts",
   "routes": [
     {
       "pattern": "tequit.co.za/*",
@@ -33,5 +34,10 @@
   "vars": {
     "SESSION_COOKIE_NAME": "kharon_session_token",
     "STANDARD_SERVICE_FEE": "1850.00"
+  },
+  "triggers": {
+    "crons": [
+      "0 * * * *"
+    ]
   }
 }

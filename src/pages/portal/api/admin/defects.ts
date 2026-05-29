@@ -4,75 +4,19 @@ import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.ts";
 import { cleanBoolean, cleanId, cleanText, cleanChoice, readJson, requireAdmin } from "../../../../lib/server/access";
+import { DefectRepository } from "../../../../lib/server/db/defect-repository";
 
 export const prerender = false;
 
 const severities = ["Critical", "Major", "Minor", "Observation"];
 const statuses = ["Open", "In Progress", "Resolved", "Closed"];
 
-// ─── Certificate eligibility helpers ──────────────────────────────────────────
-
-/**
- * When a certificate-blocking defect goes active, block any Valid certificates
- * on the same system and record this defect as the blocker.
- */
-async function autoBlockCertificates(db, defectId, systemId) {
-  await db
-    .prepare(
-      `UPDATE certificates
-         SET status = 'Blocked',
-             blocked_by_defect_id = ?1
-       WHERE system_id = ?2
-         AND status = 'Valid'
-         AND deleted_at IS NULL`
-    )
-    .bind(defectId, systemId)
-    .run();
-}
-
-/**
- * When a cert-blocking defect is resolved/closed OR its certificate_blocking
- * flag is cleared, check if any other open blocking defects remain for the
- * system. If none remain, restore Blocked certificates to Valid.
- */
-async function maybeRestoreCertificates(db, systemId, excludeDefectId) {
-  const remainingBlocker = await db
-    .prepare(
-      `SELECT id FROM defects
-        WHERE system_id = ?1
-          AND deleted_at IS NULL
-          AND certificate_blocking = 1
-          AND status IN ('Open', 'In Progress')
-          AND id != ?2
-        LIMIT 1`
-    )
-    .bind(systemId, excludeDefectId)
-    .first();
-
-  if (!remainingBlocker) {
-    await db
-      .prepare(
-        `UPDATE certificates
-           SET status = 'Valid',
-               blocked_by_defect_id = NULL
-         WHERE system_id = ?1
-           AND status = 'Blocked'
-           AND deleted_at IS NULL`
-      )
-      .bind(systemId)
-      .run();
-    return true; // certificates were restored
-  }
-  return false; // still blocked by another defect
-}
-
-// ─── POST handler ──────────────────────────────────────────────────────────────
-
 export async function POST({ request, locals }: import('astro').APIContext) {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
   const db = getDatabase();
+  const defectRepository = new DefectRepository(db);
 
   try {
     const body = await readJson(request);
@@ -88,25 +32,30 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       const certificateBlocking = cleanBoolean(body.certificateBlocking);
       const status = cleanChoice(body.status || "Open", "status", statuses);
 
-      await db
-        .prepare(
-          `INSERT INTO defects
-             (id, system_id, job_id, severity, sans_clause_ref, description, certificate_blocking, status)
-           VALUES
-             (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`
-        )
-        .bind(id, systemId, jobId, severity, sansClauseRef || null, description, certificateBlocking, status)
-        .run();
+      // Verify system exists
+      const system = await db
+        .prepare(`SELECT id, site_id FROM systems WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`)
+        .bind(systemId)
+        .first();
+      if (!system) {
+        return badRequest("System not found.");
+      }
+
+      await defectRepository.create({
+        id,
+        system_id: systemId,
+        job_id: jobId,
+        severity,
+        sans_clause_ref: sansClauseRef || null,
+        description,
+        certificate_blocking: certificateBlocking,
+        status
+      });
 
       // Auto-block valid certificates when a blocking defect is opened
       let certificatesBlocked = 0;
       if (certificateBlocking && status !== "Resolved" && status !== "Closed") {
-        const before = await db
-          .prepare(`SELECT COUNT(*) AS n FROM certificates WHERE system_id = ?1 AND status = 'Valid' AND deleted_at IS NULL`)
-          .bind(systemId)
-          .first();
-        await autoBlockCertificates(db, id, systemId);
-        certificatesBlocked = before?.n ?? 0;
+        certificatesBlocked = await defectRepository.blockCertificates(id, systemId);
       }
 
       await auditEvent(db, request, {
@@ -130,24 +79,18 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       const status = cleanChoice(body.status, "status", statuses);
 
       // Read current state before updating so we can detect flag changes
-      const existing = await db
-        .prepare(`SELECT system_id, certificate_blocking FROM defects WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`)
-        .bind(id)
-        .first();
-      if (!existing) return badRequest("Defect not found.");
+      const existing = await defectRepository.findById(id);
+      if (!existing) {
+        return badRequest("Defect not found.");
+      }
 
-      await db
-        .prepare(
-          `UPDATE defects
-             SET severity = ?1,
-                 sans_clause_ref = ?2,
-                 description = ?3,
-                 certificate_blocking = ?4,
-                 status = ?5
-           WHERE id = ?6 AND deleted_at IS NULL`
-        )
-        .bind(severity, sansClauseRef || null, description, certificateBlocking, status, id)
-        .run();
+      await defectRepository.update(id, {
+        severity,
+        sans_clause_ref: sansClauseRef || null,
+        description,
+        certificate_blocking: certificateBlocking,
+        status
+      });
 
       const systemId = existing.system_id;
       let certificatesBlocked = 0;
@@ -157,15 +100,10 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
       if (certificateBlocking && isNowActive) {
         // Defect is/remains blocking and active — (re-)block any Valid certs
-        const before = await db
-          .prepare(`SELECT COUNT(*) AS n FROM certificates WHERE system_id = ?1 AND status = 'Valid' AND deleted_at IS NULL`)
-          .bind(systemId)
-          .first();
-        await autoBlockCertificates(db, id, systemId);
-        certificatesBlocked = before?.n ?? 0;
+        certificatesBlocked = await defectRepository.blockCertificates(id, systemId);
       } else if (!certificateBlocking && existing.certificate_blocking) {
         // Blocking flag was just cleared — restore certs if no other blockers remain
-        certificatesRestored = await maybeRestoreCertificates(db, systemId, id);
+        certificatesRestored = await defectRepository.maybeRestoreCertificates(systemId, id);
       }
 
       await auditEvent(db, request, {
@@ -184,26 +122,17 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       const id = cleanId(body.id, "id");
       const remediationNotes = cleanText(body.remediationNotes, "remediationNotes", { required: false, max: 3000 });
 
-      const defect = await db
-        .prepare(`SELECT id, status, system_id, certificate_blocking FROM defects WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`)
-        .bind(id)
-        .first();
-      if (!defect) return badRequest("Defect not found.");
+      const defect = await defectRepository.findById(id);
+      if (!defect) {
+        return badRequest("Defect not found.");
+      }
 
-      await db
-        .prepare(
-          `UPDATE defects
-             SET status = 'Resolved',
-                 remediation_notes = ?1
-           WHERE id = ?2 AND deleted_at IS NULL`
-        )
-        .bind(remediationNotes || null, id)
-        .run();
+      await defectRepository.resolve(id, remediationNotes || null);
 
       // If this defect was cert-blocking, check if certificates can now be restored
       let certificatesRestored = false;
       if (defect.certificate_blocking) {
-        certificatesRestored = await maybeRestoreCertificates(db, defect.system_id, id);
+        certificatesRestored = await defectRepository.maybeRestoreCertificates(defect.system_id, id);
       }
 
       await auditEvent(db, request, {
@@ -222,26 +151,17 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       const id = cleanId(body.id, "id");
       const remediationNotes = cleanText(body.remediationNotes, "remediationNotes", { required: false, max: 3000 });
 
-      const defect = await db
-        .prepare(`SELECT id, status, system_id, certificate_blocking FROM defects WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`)
-        .bind(id)
-        .first();
-      if (!defect) return badRequest("Defect not found.");
+      const defect = await defectRepository.findById(id);
+      if (!defect) {
+        return badRequest("Defect not found.");
+      }
 
-      await db
-        .prepare(
-          `UPDATE defects
-             SET status = 'Closed',
-                 remediation_notes = ?1
-           WHERE id = ?2 AND deleted_at IS NULL`
-        )
-        .bind(remediationNotes || null, id)
-        .run();
+      await defectRepository.close(id, remediationNotes || null);
 
       // Same certificate restore logic as resolve
       let certificatesRestored = false;
       if (defect.certificate_blocking) {
-        certificatesRestored = await maybeRestoreCertificates(db, defect.system_id, id);
+        certificatesRestored = await defectRepository.maybeRestoreCertificates(defect.system_id, id);
       }
 
       await auditEvent(db, request, {
@@ -270,7 +190,9 @@ export async function POST({ request, locals }: import('astro').APIContext) {
         )
         .bind(id)
         .first();
-      if (!defect) return badRequest("Defect not found.");
+      if (!defect) {
+        return badRequest("Defect not found.");
+      }
 
       await db
         .prepare(
@@ -308,4 +230,3 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 export function ALL() {
   return methodNotAllowed(["POST"]);
 }
-

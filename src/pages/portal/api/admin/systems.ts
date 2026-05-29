@@ -3,7 +3,8 @@ import { auditError } from "../../../../lib/server/audit";
 import { getDatabase } from "../../../../lib/server/bindings";
 import { auditEvent } from "../../../../lib/server/audit";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http";
-import { cleanChoice, cleanDate, cleanId, cleanInt, cleanText, readJson, requireAdmin } from "../../../../lib/server/access";      
+import { cleanChoice, cleanDate, cleanId, cleanInt, cleanText, readJson, requireAdmin } from "../../../../lib/server/access";
+import { SystemRepository } from "../../../../lib/server/db/system-repository";
 
 export const prerender = false;
 
@@ -14,6 +15,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (adminError) return adminError;
 
   const db = getDatabase();
+  const systemRepository = new SystemRepository(db);
 
   try {
     const body = await readJson(request) as Record<string, any>;
@@ -25,33 +27,43 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const manufacturer = cleanText(body.manufacturer, "manufacturer", { required: false, max: 120 });
     const modelReference = cleanText(body.modelReference, "modelReference", { required: false, max: 120 });
     const nextDueDate = cleanDate(body.nextDueDate, "nextDueDate");
-    const serviceIntervalMonths = cleanInt(body.serviceIntervalMonths, "serviceIntervalMonths", { min: 1, max: 36, fallback: 6 }); 
+    const serviceIntervalMonths = cleanInt(body.serviceIntervalMonths, "serviceIntervalMonths", { min: 1, max: 36, fallback: 6 });
 
     if (action === "create") {
-      await db
-        .prepare(
-          `INSERT INTO systems
-             (id, site_id, system_type, coverage_area, manufacturer, model_reference, next_due_date, service_interval_months)      
-           VALUES
-             (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`
-        )
-        .bind(id, siteId, systemType, coverageArea, manufacturer, modelReference, nextDueDate, serviceIntervalMonths)
-        .run();
+      await systemRepository.create({
+        id,
+        site_id: siteId,
+        system_type: systemType,
+        coverage_area: coverageArea,
+        manufacturer: manufacturer,
+        model_reference: modelReference,
+        next_due_date: nextDueDate,
+        service_interval_months: serviceIntervalMonths
+      });
     } else if (action === "update") {
-      await db
-        .prepare(
-          `UPDATE systems
-           SET site_id = ?1,
-               system_type = ?2,
-               coverage_area = ?3,
-               manufacturer = ?4,
-               model_reference = ?5,
-               next_due_date = ?6,
-               service_interval_months = ?7
-           WHERE id = ?8 AND deleted_at IS NULL`
-        )
-        .bind(siteId, systemType, coverageArea, manufacturer, modelReference, nextDueDate, serviceIntervalMonths, id)
-        .run();
+      // Verify system exists before updating
+      const existing = await systemRepository.findById(id);
+      if (!existing) {
+        return badRequest("System not found.");
+      }
+
+      await systemRepository.update(id, {
+        site_id: siteId,
+        system_type: systemType,
+        coverage_area: coverageArea,
+        manufacturer: manufacturer,
+        model_reference: modelReference,
+        next_due_date: nextDueDate,
+        service_interval_months: serviceIntervalMonths
+      });
+    } else if (action === "delete") {
+      // Soft delete using repository
+      const existing = await systemRepository.findById(id);
+      if (!existing) {
+        return badRequest("System not found.");
+      }
+
+      await systemRepository.softDelete(id);
     } else {
       return badRequest("action is invalid.");
     }
@@ -68,7 +80,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return json({ ok: true, id });
   } catch (error) {
     if (error instanceof Error && error.message) return badRequest(error.message);
-    await auditError(db, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin systems failed" } });       
+    await auditError(db, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin systems failed" } });
     return serverError("System administration failed.");
   }
 };

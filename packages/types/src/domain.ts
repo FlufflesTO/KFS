@@ -33,13 +33,17 @@ export interface DbSystem {
   id: string;
   site_id: string;
   system_type: string;
-  coverage_area: string;
-  manufacturer: string | null;
-  model_reference: string | null;
-  next_due_date: string;
+  system_subtype: string | null;
+  serial_number: string | null;
+  installation_date: string | null;
   last_service_date: string | null;
+  next_due_date: string;
   service_interval_months: number;
-  owner_company_name: string;
+  coverage_area: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 }
 
 export type SystemForForms = Pick<
@@ -77,18 +81,17 @@ export type DefectStatus   = "Open" | "In Progress" | "Resolved" | "Closed";
 
 export interface DbDefect {
   id: string;
+  system_id: string;
+  job_id: string | null;
   severity: DefectSeverity;
   sans_clause_ref: string | null;
   description: string;
   certificate_blocking: number;
   status: DefectStatus;
+  remediation_notes: string | null;
   created_at: string;
-  system_id: string;
-  system_type: string;
-  coverage_area: string;
-  site_id: string;
-  owner_company_name: string;
-  job_id: string | null;
+  updated_at: string;
+  deleted_at: string | null;
 }
 
 export type CertStatus = "Valid" | "Blocked" | "Expired" | "Revoked";
