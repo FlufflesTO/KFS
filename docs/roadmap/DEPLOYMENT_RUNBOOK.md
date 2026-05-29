@@ -158,6 +158,17 @@ Remove-Item Env:CLOUDFLARE_API_TOKEN -ErrorAction SilentlyContinue
 npx wrangler login
 ```
 
+### GitHub Actions Secret Configuration / Token Rotation
+
+To ensure GitHub Actions CI/CD can deploy to Cloudflare Pages, you must define the `CLOUDFLARE_API_TOKEN` repository secret on GitHub. If the token is rolled or updated, perform the following steps:
+
+1. Go to the repository at https://github.com/flufflesto/kfs.
+2. Click on **Settings** (top tab navigation).
+3. Under the **Security** section on the left sidebar, click **Secrets and variables**, then select **Actions**.
+4. In the **Repository secrets** list, locate the secret named `CLOUDFLARE_API_TOKEN`.
+5. Click the edit icon (pencil) or click **Update**, paste the new Cloudflare API token value, and click **Update secret**.
+6. Trigger the workflow (e.g., by pushing a commit or manually re-running a failed job) to redeploy.
+
 ### Final Kharon DNS
 
 When moving from Tequit staging to Kharon production, add the Kharon custom domains to Cloudflare and create DNS records in the `kharon.co.za` zone:

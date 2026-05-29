@@ -134,3 +134,7 @@ Icon?
 backups/
 monitor-results/
 retention-reports/
+
+# Playwright
+playwright-report/
+test-results/

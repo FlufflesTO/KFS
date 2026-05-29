@@ -31,6 +31,12 @@ jobs:
           PUBLIC_SITE_URL: ${{ github.ref == 'refs/heads/main' && 'https://www.kharon.co.za' || 'https://www.tequit.co.za' }}
           PUBLIC_PORTAL_URL: ${{ github.ref == 'refs/heads/main' && 'https://portal.kharon.co.za' || 'https://portal.tequit.co.za' }}
 
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run Playwright Tests
+        run: npm test
+
       - name: Site Audit (Security & Performance)
         run: npm run audit:site
 
