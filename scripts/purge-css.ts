@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 
 const root = path.resolve(__dirname, '..');
 const srcDir = path.join(root, 'src');
-const distDir = path.join(root, 'dist/client/_astro');
+const distDir = path.join(root, 'dist/_astro');
 
 if (!fs.existsSync(distDir)) {
   console.log('dist directory not found. Skipping CSS purge.');
