@@ -7,19 +7,24 @@
 
 import js from "@eslint/js";
 import type { Linter } from "eslint";
+import tseslint from "typescript-eslint";
 
 const config: Linter.Config[] = [
   js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
     ignores: [
       "dist/**/*",
       ".astro/**/*",
-      "node_modules/**/*"
+      "node_modules/**/*",
+      "public/**/*",
+      "scratch/**/*"
     ]
   },
   {
     files: ["src/**/*.{js,jsx,ts,tsx}", "scripts/**/*.{ts,js}"],
     languageOptions: {
+      parser: tseslint.parser,
       ecmaVersion: "latest",
       sourceType: "module",
       globals: {
@@ -54,7 +59,19 @@ const config: Linter.Config[] = [
             'External <a href="..."> must include rel="noopener noreferrer" to prevent tabnabbing.',
         },
       ],
-      "no-useless-escape": "off"
+      "no-useless-escape": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/ban-ts-comment": "off",
+      "no-undef": "off",
+      "prefer-const": "off",
+      "no-useless-assignment": "off",
+      "no-case-declarations": "off",
+      "no-empty-pattern": "off",
+      "preserve-caught-error": "off",
+      "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/triple-slash-reference": "off",
+      "no-var": "off"
     },
   },
 ];

@@ -48,7 +48,9 @@
     "@cloudflare/workers-types": "^4.20260526.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.60.0",
+    "eslint": "^10.4.0",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.0",
     "wrangler": "^4.92.0"
   },
   "overrides": {
