@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-05-29
+
+### Changed
+- **CI/CD Playwright Integration**: Modified [.github/workflows/ci-cd.yml](file:///c:/Users/conno/Desktop/Astro/kfs/.github/workflows/ci-cd.yml) to automatically install Playwright browsers and execute visual and layout tests (`npm test`) on every push/pull-request prior to deployment.
+- **Gitignore Configuration**: Added `playwright-report/` and `test-results/` to [.gitignore](file:///c:/Users/conno/Desktop/Astro/kfs/.gitignore) to keep the repository clean from testing output.
+- **Wrangler / Cloudflare API Token Runbook**: Updated [DEPLOYMENT_RUNBOOK.md](file:///c:/Users/conno/Desktop/Astro/kfs/docs/roadmap/DEPLOYMENT_RUNBOOK.md) with detailed documentation and step-by-step instructions on updating/rotating the `CLOUDFLARE_API_TOKEN` secret in GitHub Repository Secrets.
+
 ## [Unreleased] - 2026-05-27
 
 ### Security

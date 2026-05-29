@@ -70,10 +70,10 @@ Ensure a backup exists of the files being modified to allow for quick regression
 ## 3. Current Outstanding Items (as of May 2026)
 
 ### 🔴 Critical
-- None. All critical items (including watermark overlays, typescript endpoints, missing directories, and technician jobcard template recovery) have been fully resolved.
+- **Cloudflare API Token Update on GitHub**: Update the GitHub repository secrets for `CLOUDFLARE_API_TOKEN` to use the newly rolled token (the `cfut_...` token provided in the request) so that the automated Pages deployment succeeds.
 
 ### 🟡 Recommended
-- **End-to-End Testing**: Set up Playwright/Cypress browser tests covering the multi-step technician jobcard closure flow, defect sub-form, and canvas signature capture to prevent regression.
+- **Expand End-to-End Testing**: Expand the newly integrated Playwright/visual test suite to cover the multi-step technician jobcard closure flow, defect sub-form, and canvas signature capture.
 - **Client-Side Image Compression**: Integrate lightweight client-side image compression (canvas-based) before converting evidence photos to Data URIs. This will optimize performance in rural South African service areas where mobile bandwidth is limited.
 
 ### 🟢 Nice to Have
@@ -88,6 +88,7 @@ Ensure a backup exists of the files being modified to allow for quick regression
 ## 4. Operational Recommendations
 
 ### 💼 Recommended
+- **Scheduled Token Rotation Policy**: Implement a regular schedule for rotating Cloudflare API tokens and update them directly in GitHub Repository Secrets without hardcoding.
 - **Pre-commit Hooks**: Set up pre-commit hooks (Husky + lint-staged) enforcing `eslint` checks and TypeScript validations before files are committed.
 - **Database Housekeeping**: Configure a background cron task to clean up temporary files, unused session tokens, or draft jobcard uploads older than 30 days.
 
