@@ -101,20 +101,14 @@ switch ($Action) {
   "preview" {
     powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" staging
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    if (Test-Path -LiteralPath "dist\server\wrangler.json") {
-      npx wrangler deploy --config "dist\server\wrangler.json" --dry-run
-      exit $LASTEXITCODE
-    }
+    # Deploy to Cloudflare Pages using the Pages-specific command
     npx wrangler pages deploy dist --project-name $ProjectName --branch preview
     exit $LASTEXITCODE
   }
   "production" {
     powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" staging
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    if (Test-Path -LiteralPath "dist\server\wrangler.json") {
-      npx wrangler deploy --config "dist\server\wrangler.json"
-      exit $LASTEXITCODE
-    }
+    # Deploy to Cloudflare Pages using the Pages-specific command
     npx wrangler pages deploy dist --project-name $ProjectName --branch main
     exit $LASTEXITCODE
   }
