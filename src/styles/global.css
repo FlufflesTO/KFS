@@ -256,13 +256,13 @@ summary::-webkit-details-marker {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120%;
-  height: 120%;
+  width: 70%;
+  height: 70%;
   background-image: url('/brand/kharon-mark.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  opacity: 0.03;
+  opacity: 0.08;
   pointer-events: none;
   z-index: -2;
   /* Simulating 3D depth and architectural scale */
