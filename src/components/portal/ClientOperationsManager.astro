@@ -1,0 +1,182 @@
+---
+/**
+ * Project Sentinel - Client Operations Manager
+ * Purpose: Global UX resilience script for debouncing, rate limits, and session recovery
+ * Dependencies: PortalLayout.astro
+ * Structural Role: Client-side JS and Toast UI
+ */
+
+const nonce = Astro.locals.nonce;
+---
+
+<div id="operations-toast" class="fixed bottom-4 right-4 z-[200] max-w-sm w-full translate-y-12 opacity-0 transition-all duration-300 pointer-events-none">
+  <div class="bg-kharon-charcoal border border-kharon-purple/30 shadow-2xl shadow-kharon-black/50 rounded-lg overflow-hidden">
+    <div id="toast-header" class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-white flex justify-between items-center bg-gradient-to-r from-kharon-purple to-kharon-blue">
+      <span id="toast-title">Notification</span>
+      <button id="toast-close" class="text-white/60 hover:text-white pointer-events-auto">×</button>
+    </div>
+    <div class="p-4 bg-kharon-graphite text-sm text-kharon-light" id="toast-message">
+    </div>
+    <div id="toast-actions" class="px-4 py-3 bg-kharon-charcoal/50 border-t border-kharon-purple/20 hidden pointer-events-auto">
+    </div>
+  </div>
+</div>
+
+<script nonce={nonce}>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Toast UI logic
+    const toast = document.getElementById('operations-toast');
+    const toastTitle = document.getElementById('toast-title');
+    const toastMessage = document.getElementById('toast-message');
+    const toastActions = document.getElementById('toast-actions');
+    const toastClose = document.getElementById('toast-close');
+    let toastTimeout;
+
+    const showToast = (title, message, type = 'info', actions = null, duration = 5000) => {
+      clearTimeout(toastTimeout);
+      
+      toastTitle.textContent = title;
+      toastMessage.innerHTML = message;
+      
+      const header = document.getElementById('toast-header');
+      header.className = `px-4 py-2 text-xs font-bold uppercase tracking-widest text-white flex justify-between items-center ${
+        type === 'error' ? 'bg-gradient-to-r from-kharon-red to-[#a02824]' :
+        type === 'warning' ? 'bg-gradient-to-r from-kharon-amber to-orange-600' :
+        'bg-gradient-to-r from-kharon-purple to-kharon-blue'
+      }`;
+
+      if (actions) {
+        toastActions.innerHTML = '';
+        toastActions.appendChild(actions);
+        toastActions.classList.remove('hidden');
+      } else {
+        toastActions.classList.add('hidden');
+        toastActions.innerHTML = '';
+      }
+
+      toast.classList.remove('translate-y-12', 'opacity-0');
+      
+      if (duration > 0) {
+        toastTimeout = setTimeout(hideToast, duration);
+      }
+    };
+
+    const hideToast = () => {
+      toast.classList.add('translate-y-12', 'opacity-0');
+    };
+
+    toastClose.addEventListener('click', hideToast);
+    window.showOperationsToast = showToast;
+
+    // 2. Form UI Debouncing
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', (e) => {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          if (submitBtn.dataset.submitting === 'true') {
+            e.preventDefault();
+            return;
+          }
+          submitBtn.dataset.originalText = submitBtn.innerHTML;
+          submitBtn.dataset.submitting = 'true';
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="animate-pulse">Submitting...</span>';
+          submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
+
+          // Safety reset after 15s in case of silent failure
+          setTimeout(() => {
+            if (submitBtn.dataset.submitting === 'true') {
+              resetButton(submitBtn);
+            }
+          }, 15000);
+        }
+      });
+    });
+
+    const resetButton = (btn) => {
+      if (!btn) return;
+      btn.dataset.submitting = 'false';
+      btn.disabled = false;
+      btn.innerHTML = btn.dataset.originalText;
+      btn.classList.remove('opacity-80', 'cursor-not-allowed');
+    };
+
+    // 3. Overriding global fetch to catch 429 globally
+    const originalFetch = window.kharonPortalFetch || window.fetch;
+    window.kharonPortalFetch = async (...args) => {
+      const response = await originalFetch(...args);
+      
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('Retry-After');
+        const seconds = parseInt(retryAfter, 10) || 60;
+        
+        showToast(
+          'Too Many Requests',
+          `Rate limit exceeded. Please wait <strong id="retry-countdown" class="text-kharon-amber">${seconds}</strong> seconds before trying again.`,
+          'error',
+          null,
+          seconds * 1000 + 2000
+        );
+
+        // Countdown timer
+        let currentSeconds = seconds;
+        const interval = setInterval(() => {
+          currentSeconds--;
+          const el = document.getElementById('retry-countdown');
+          if (el) el.textContent = currentSeconds;
+          if (currentSeconds <= 0) clearInterval(interval);
+        }, 1000);
+
+        // Reset any forms that were submitting
+        document.querySelectorAll('button[type="submit"][data-submitting="true"]').forEach(resetButton);
+      }
+      
+      return response;
+    };
+
+    // 4. Session Polling Warning (7.5 hours)
+    // 7.5 hours = 27000000 ms
+    const warningTime = 7.5 * 60 * 60 * 1000;
+    setTimeout(() => {
+      const btn = document.createElement('button');
+      btn.className = "w-full py-2 bg-kharon-amber/20 border border-kharon-amber text-kharon-amber font-bold text-xs uppercase rounded hover:bg-kharon-amber hover:text-white transition-colors";
+      btn.textContent = "Save Drafts to Offline Storage";
+      btn.onclick = () => {
+        // Save forms to IndexedDB
+        saveFormsToIndexedDB();
+        btn.textContent = "Drafts Saved ✓";
+        btn.disabled = true;
+        btn.classList.replace('bg-kharon-amber/20', 'bg-kharon-green/20');
+        btn.classList.replace('border-kharon-amber', 'border-kharon-green');
+        btn.classList.replace('text-kharon-amber', 'text-kharon-green');
+      };
+
+      showToast(
+        'Session Expiring Soon',
+        'Your 8-hour shift session will expire in 30 minutes. Please save any active jobcard drafts to prevent data loss.',
+        'warning',
+        btn,
+        0 // Sticky until closed
+      );
+    }, warningTime);
+
+    function saveFormsToIndexedDB() {
+      const dbRequest = indexedDB.open('KharonDraftsDB', 1);
+      dbRequest.onupgradeneeded = (e) => {
+        e.target.result.createObjectStore('drafts', { keyPath: 'path' });
+      };
+      dbRequest.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction('drafts', 'readwrite');
+        const store = tx.objectStore('drafts');
+        
+        document.querySelectorAll('form').forEach(form => {
+          if (form.id === 'portal-logout-form' || form.id === 'feedback-form') return;
+          const formData = new FormData(form);
+          const data = Object.fromEntries(formData.entries());
+          store.put({ path: window.location.pathname, data, timestamp: Date.now() });
+        });
+      };
+    }
+  });
+</script>

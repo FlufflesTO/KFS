@@ -19,11 +19,26 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
+      name: 'desktop-chrome',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      name: 'mobile-safari',
+      use: { 
+        ...devices['iPhone 14 Pro'],
+        colorScheme: 'light', 
+      },
+    },
+    {
+      name: 'mobile-android-3g',
+      use: { 
+        ...devices['Pixel 7'],
+        contextOptions: {
+          offline: false,
+        }
+      },
+    }
   ],
-  /* Start local preview server before running tests */
   webServer: {
     command: 'npm run preview',
     url: 'http://localhost:4321',

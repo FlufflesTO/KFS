@@ -6,12 +6,15 @@
  * Structural Role: Shell layout component for all portal pages.
  */
 import "../../styles/global.css";
+import ClientOperationsManager from "../../components/portal/ClientOperationsManager.astro";
 
 const {
   title = "Kharon Portal",
   active = "",
   user = Astro.locals.user
 } = Astro.props;
+
+const variant = Astro.locals.variant || "A";
 
 const roleLinks: Record<string, Array<{ label: string; href: string; key: string }>> = {
   tech: [
@@ -89,15 +92,15 @@ const links = [
         const maxAttempts = 3;
         const baseDelayMs = 500;
         const maxDelayMs = 5000;
-        const retryableStatuses = [408, 429, 500, 502, 503, 504];
+        const retryableStatuses = [408, 500, 502, 503, 504]; // Exclude 429 here, let ClientOperationsManager handle it
         let attempt = 0;
 
         while (attempt < maxAttempts) {
           try {
             const response = await fetch(input, { ...init, headers });
             
-            if (response.ok || !retryableStatuses.includes(response.status)) {
-              return response;
+            if (response.ok || !retryableStatuses.includes(response.status) || response.status === 429) {
+              return response; // Return 429 directly to be handled by operations manager intercept
             }
 
             let delayMs = baseDelayMs * Math.pow(2, attempt);
@@ -124,7 +127,7 @@ const links = [
       };
     </script>
   </head>
-  <body class="portal-shell bg-gradient-to-br from-kharon-black to-kharon-charcoal min-h-screen text-kharon-light selection:bg-kharon-purple/30 selection:text-kharon-purple">
+  <body data-variant={variant} class="portal-shell bg-gradient-to-br from-kharon-black to-kharon-charcoal min-h-screen text-kharon-light selection:bg-kharon-purple/30 selection:text-kharon-purple">
   <!-- Skip link for accessibility -->
   <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:bg-kharon-charcoal focus:px-4 focus:py-2 focus:border focus:border-kharon-purple focus:rounded focus:text-white focus:shadow-lg">
     Skip to main content
@@ -340,5 +343,6 @@ const links = [
       }
     });
   </script>
+  <ClientOperationsManager />
 </body>
 </html>

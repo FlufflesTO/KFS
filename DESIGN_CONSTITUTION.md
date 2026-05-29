@@ -44,6 +44,7 @@ All interfaces **must** exhibit:
 - ✅ Compliance-focused data presentation (tables, status indicators)
 - ✅ Industrial color palette (dark headers, high-contrast content)
 - ✅ Formal typography (Inter, no decorative fonts)
+- ✅ **A/B Variant Consistency**: All UI variants (`data-variant="A|B"`) must independently satisfy all core visual principles and avoid jarring layout shifts when accessed.
 
 ---
 
