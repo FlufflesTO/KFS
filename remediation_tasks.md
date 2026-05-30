@@ -357,9 +357,23 @@ CRITICAL CONSTRAINTS:
 3. Reject any query formatting blocks that reference fractional values or real data definitions.
 
 OUTPUT THE ENTIRE RECONCILED DATA RECORD DEFINITION BLOCK.
-[ ] Task FIN-004: Automated Sage Ledger Event WebhookTarget File: src/pages/api/finance/sage-webhook.tsSystem Context: src/lib/server/db/finance-repository.tsSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [FIN-004]
-TARGET_FILE: src/pages/api/finance/sage-webhook.ts
-SYSTEM_CONTEXT: src/lib/server/db/finance-repository.ts
+
+[x] Task FIN-002: Type Realignment for Financial Fields
+Target File: src/lib/server/db/finance-repository.ts
+System Context: schema.sql
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [FIN-002]
+TARGET_FILE: src/lib/server/db/finance-repository.ts
+SYSTEM_CONTEXT: schema.sql
+
+CRITICAL CONSTRAINTS:
+1. Audit the data property assignments mapping database columns down to memory objects.
+2. Modify all transaction lookup parameters to enforce strict integer typing allocations (`number`) natively.
+3. Reject any query formatting blocks that reference fractional values or real data definitions.
+
+OUTPUT THE ENTIRE RECONCILED DATA RECORD DEFINITION BLOCK.
+
+[ ] Task FIN-004: Automated Sage Ledger Event Webhook
 
 CRITICAL CONSTRAINTS:
 1. Build a standard Astro route controller endpoint capable of handling post event actions from external accounting sources securely.

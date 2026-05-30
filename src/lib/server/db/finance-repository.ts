@@ -87,19 +87,25 @@ export class FinanceRepository {
 
   async getSummary(): Promise<DbFinanceSummary> {
     const result = await this.db.prepare(`
-      SELECT 
+      SELECT
         COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending_tasks,
         SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as total_pending_value,
         COUNT(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN 1 END) as overdue_invoices,
         SUM(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN amount ELSE 0 END) as unpaid_amount
       FROM finance_tasks
-    `).first();
-    
+    `).first<{
+      pending_tasks: number;
+      total_pending_value: number;
+      overdue_invoices: number;
+      unpaid_amount: number;
+    }>();
+
+    // D1 returns integers as numbers - ensure strict integer typing
     return {
-      pending_tasks: parseInt(result?.pending_tasks as string || '0') || 0,
-      total_pending_value: parseInt(result?.total_pending_value as string || '0') || 0,
-      overdue_invoices: parseInt(result?.overdue_invoices as string || '0') || 0,
-      unpaid_amount: parseInt(result?.unpaid_amount as string || '0') || 0
+      pending_tasks: Number(result?.pending_tasks ?? 0) | 0,
+      total_pending_value: Number(result?.total_pending_value ?? 0) | 0,
+      overdue_invoices: Number(result?.overdue_invoices ?? 0) | 0,
+      unpaid_amount: Number(result?.unpaid_amount ?? 0) | 0
     };
   }
 }

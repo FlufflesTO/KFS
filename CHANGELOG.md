@@ -73,6 +73,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **centsToZar Method**: Added private utility in `src/lib/server/services/sage-client.ts` that converts integer cents to ZAR using `Math.floor()` and modulo arithmetic instead of floating-point division. Eliminates IEEE 754 rounding errors in invoice/quote creation.
 - **createSalesInvoice/createSalesQuote**: Refactored to use `centsToZar()` method instead of `(amount/100).toFixed(2)` pattern. All monetary values now flow through integer-safe conversion pipeline before transmission to Sage API.
 
+### Type Realignment for Financial Fields (Task FIN-002)
+- **getSummary() Type Safety**: Updated `FinanceRepository.getSummary()` in `src/lib/server/db/finance-repository.ts` to use explicit generic typing for D1 result. Replaced `parseInt()` string parsing with `Number()` and bitwise OR (`| 0`) to enforce strict integer typing. D1 returns aggregate values as numbers, not strings.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
