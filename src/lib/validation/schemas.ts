@@ -3,6 +3,8 @@
  * Purpose: Centralized Zod schemas for all API endpoints and data mutations
  * Dependencies: zod
  * Structural Role: Validation Layer
+ * 
+ * Note: Using Zod v4 API - issue codes use string literals instead of ZodIssueCode enum
  */
 
 import { z } from "zod";
@@ -87,8 +89,6 @@ export const QuoteApprovalSchema = z.object({
 
 // Finance / VAT Validation Schemas (SARS Statutory Compliance)
 
-import { ZodIssueCode } from "zod";
-
 const BaseFinanceTaskSchema = z.object({
   siteId: z.string().regex(/^[A-Za-z0-9_-]{3,80}$/, "Invalid siteId format"),
   jobId: z.string().regex(/^[A-Za-z0-9_-]{3,80}$/, "Invalid jobId format").optional().nullable(),
@@ -116,7 +116,7 @@ export const FinanceTaskCreateSchema = BaseFinanceTaskSchema.superRefine((data, 
   const expectedVat = Math.round(data.amountExVat * 0.15);
   if (data.vatAmount !== expectedVat) {
     ctx.addIssue({
-      code: ZodIssueCode.custom,
+      code: "custom",
       message: `VAT amount must be exactly 15% of ex-VAT amount. Expected ${expectedVat} cents, got ${data.vatAmount} cents.`,
       path: ["vatAmount"]
     });
@@ -131,7 +131,7 @@ export const FinanceTaskUpdateSchema = BaseFinanceTaskSchema.partial().extend({
     const expectedVat = Math.round(data.amountExVat * 0.15);
     if (data.vatAmount !== expectedVat) {
       ctx.addIssue({
-        code: ZodIssueCode.custom,
+        code: "custom",
         message: `VAT amount must be exactly 15% of ex-VAT amount. Expected ${expectedVat} cents, got ${data.vatAmount} cents.`,
         path: ["vatAmount"]
       });
