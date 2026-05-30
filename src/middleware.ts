@@ -208,7 +208,6 @@ const authMiddleware: MiddlewareHandler = async (context, next) => {
     return await next();
   }
 
-  const db = getDatabase();
   const token = context.cookies.get(sessionCookieName)?.value;
   if (!token) return redirectToLogin(context, nonce);
 
@@ -219,6 +218,7 @@ const authMiddleware: MiddlewareHandler = async (context, next) => {
     return response;
   }
 
+  const db = getDatabase();
   if (await isTokenRevoked(db, token)) {
     const response = redirectToLogin(context, nonce);
     response.headers.append("Set-Cookie", expiredSessionCookie());
