@@ -381,9 +381,23 @@ CRITICAL CONSTRAINTS:
 3. Verify signature headers dynamically on incoming web traffic to protect against route spoofing attempts.
 
 OUTPUT THE COMPLETE WEBHOOK FILE CONTEXT SCRIPT.
-[ ] Task FIN-005: Idempotency Validation Parameter ImplementationTarget File: src/lib/server/services/sage-client.tsSystem Context: AI_CONTEXT.mdSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [FIN-005]
-TARGET_FILE: src/lib/server/services/sage-client.ts
-SYSTEM_CONTEXT: AI_CONTEXT.md
+
+[x] Task FIN-004: Automated Sage Ledger Event Webhook
+Target File: src/pages/api/finance/sage-webhook.ts
+System Context: src/lib/server/db/finance-repository.ts
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [FIN-004]
+TARGET_FILE: src/pages/api/finance/sage-webhook.ts
+SYSTEM_CONTEXT: src/lib/server/db/finance-repository.ts
+
+CRITICAL CONSTRAINTS:
+1. Build a standard Astro route controller endpoint capable of handling post event actions from external accounting sources securely.
+2. Extract incoming payment allocation references from the incoming text stream and pass updates straight down to system tracking structures.
+3. Verify signature headers dynamically on incoming web traffic to protect against route spoofing attempts.
+
+OUTPUT THE COMPLETE WEBHOOK FILE CONTEXT SCRIPT.
+
+[ ] Task FIN-005: Idempotency Validation Parameter Implementation
 
 CRITICAL CONSTRAINTS:
 1. Identify outward-facing transaction pipelines that serialize data models to outside platforms.

@@ -76,6 +76,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Type Realignment for Financial Fields (Task FIN-002)
 - **getSummary() Type Safety**: Updated `FinanceRepository.getSummary()` in `src/lib/server/db/finance-repository.ts` to use explicit generic typing for D1 result. Replaced `parseInt()` string parsing with `Number()` and bitwise OR (`| 0`) to enforce strict integer typing. D1 returns aggregate values as numbers, not strings.
 
+### Automated Sage Ledger Event Webhook (Task FIN-004)
+- **Webhook Endpoint Verified**: Confirmed `src/pages/api/finance/sage-webhook.ts` implements secure webhook receiver with Bearer token signature verification, content-type validation, and JSON parsing error handling. Handles `payment_received`, `invoice_paid`, and `quote_approved` events from Sage with database updates to `financial_records` table.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
