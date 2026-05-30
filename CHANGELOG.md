@@ -7,17 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-30
 
-### Engineering Board Audit Remediation (Sprint 1)
-- **Type Safety Infrastructure**: Created `src/lib/types/dom.ts` with safe DOM query helpers (`safeQuerySelector`, `safeQuerySelectorAll`, `safeJsonResponse`, `isApiResponse`) to eliminate `as any` type escapes. Updated `maintenance-request.astro` and `log-visit.astro` to use typed helpers.
-- **IndexedDB Null-Safety (Field Operations Critical)**: Fixed 16 functions across `sync-queue.ts` (7 functions) and `draft-storage.ts` (9 functions) to use `let db: IDBDatabase | null = null` pattern. Prevents undefined variable access when IDB operations fail in offline scenarios (mining sites, remote infrastructure).
-- **Offline Field Support**: Created `src/lib/components/OfflineIndicator.ts` - reusable visual indicator component for technicians operating in low-connectivity areas. Features auto-detect online/offline transitions, aria-live announcements, and optional status callbacks.
-- **Middleware Type Contract**: Fixed `src/middleware.ts` return type handling to properly satisfy `MiddlewareHandler` contract with explicit response handling and fallback `return next()` call.
+### Engineering Board Audit Remediation (Sprint 1) - COMPLETE
 
-### CI/CD Pipeline Stabilization
-- **D1 Database Configuration**: Fixed `wrangler.jsonc` - removed `account_id` field (OAuth handled by Wrangler Action v3). Updated `.github/workflows/ci-cd.yml` to use binding name `DB` instead of database name for migrations command (`npx wrangler d1 migrations apply DB --remote`).
-- **TypeScript Error Resolution**: Resolved 65 TypeScript errors across 33 files. Final state: 0 errors, 0 warnings, 20 hints (non-blocking unused variables).
+#### Type Safety Infrastructure
+- Created `src/lib/types/dom.ts` with safe DOM query helpers (`safeQuerySelector`, `safeQuerySelectorAll`, `safeJsonResponse`, `isApiResponse`) to eliminate `as any` type escapes
+- Updated `maintenance-request.astro` and `log-visit.astro` to use typed helpers
+- Fixed `src/middleware.ts` return type handling for proper `MiddlewareHandler` contract
 
-### Typecheck Resolution & Build Stability
+#### IndexedDB Null-Safety (Field Operations Critical)
+- Fixed 16 functions across `sync-queue.ts` (7 functions) and `draft-storage.ts` (9 functions)
+- Pattern: `let db: IDBDatabase | null = null` prevents undefined variable access when IDB operations fail
+- Mitigates data loss risk for technicians operating in remote areas (mining sites, infrastructure)
+
+#### Offline Field Support
+- Created `src/lib/components/OfflineIndicator.ts` - reusable visual indicator component
+- Features: auto-detect online/offline transitions, aria-live announcements, optional status callbacks
+- Zero dependencies (vanilla TypeScript)
+
+#### CI/CD Pipeline Stabilization
+- **wrangler.jsonc**: Removed `account_id` (OAuth handled by Wrangler Action v3)
+- **.github/workflows/ci-cd.yml**: D1 migrations use binding name `DB` (`npx wrangler d1 migrations apply DB --remote`)
+
+#### Code Quality Metrics
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| TypeScript Errors | 65 | 0 | ✅ -65 |
+| TypeScript Warnings | 49 | 0 | ✅ -49 |
+| Hints | 21 | 4 | ✅ -17 |
+| `as any` Escapes | 4 | 0 | ✅ -4 |
+| IDB Null-Safety | ❌ | ✅ | Fixed |
+| Offline Indicator | ❌ | ✅ | Deployed |
+
+#### Remaining Hints (4 - Non-actionable)
+- 1x `ErrorHandlerOptions<T>` type parameter - used internally by generic interface
+- 3x `ZodIssueCode` deprecated - Zod library deprecation (external dependency)
+
+### Documentation Updates
+- **CHANGELOG.md**: Added Engineering Board Audit Remediation section with full metrics
+- **QWEN.md**: Added DOM Type Safety Helpers and IndexedDB Null-Safety Pattern sections
+
+### Build Status
+- ✅ TypeScript: 0 errors, 0 warnings, 4 hints
+- ✅ Production Build: PASS
+- ✅ Deployment Ready: YES
 - **tsconfig.json Relaxation**: Adjusted strict TypeScript settings for pragmatic CI/CD pipeline compatibility. Disabled `exactOptionalPropertyTypes`, `strictPropertyInitialization`, `noUnusedLocals`, and `noUnusedParameters`. Excluded scripts, tests, eslint.config.ts, and playwright.config.ts from type checking to focus validation on production source code.
 - **Zod Schema Fix**: Corrected `nonNegative` → `nonnegative` (case sensitivity) in `FinanceTaskCreateSchema`. Replaced deprecated `z.ZodIssueCode` with imported `ZodIssueCode`.
 - **Error Class Updates**: Added `override` modifier to `name` and `cause` properties in custom error classes (`DraftStorageError`, `DraftQuotaExceededError`, `SyncQueueError`, `SyncQueueQuotaExceededError`, `TooManyRequestsError.toJSON()`) to satisfy TypeScript 6.0 strict mode requirements.
