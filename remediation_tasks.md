@@ -558,9 +558,23 @@ CRITICAL CONSTRAINTS:
 3. Ensure absolute high-contrast highlight visibility for accessibility across system surfaces.
 
 OUTPUT THE COMPLETED FOCUS PROPERTY MODIFICATION INDEX.
-[ ] Task UI-003: Navigation Target Size Accessibility OverhaulTarget File: src/components/portal/AdminNav.astroSystem Context: DESIGN_CONSTITUTION.mdSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [UI-003]
-TARGET_FILE: src/components/portal/AdminNav.astro
+
+[x] Task UI-002: System Focus Ring Palette Update
+Target File: src/styles/global.css
+System Context: DESIGN_CONSTITUTION.md
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [UI-002]
+TARGET_FILE: src/styles/global.css
 SYSTEM_CONTEXT: DESIGN_CONSTITUTION.md
+
+CRITICAL CONSTRAINTS:
+1. Scan for standard CSS keyboard layout selection classes (`:focus`, `:focus-visible`).
+2. Replace standard purple outline indicators with the designated high-contrast corporate cyan color palette token standard.
+3. Ensure absolute high-contrast highlight visibility for accessibility across system surfaces.
+
+OUTPUT THE COMPLETED FOCUS PROPERTY MODIFICATION INDEX.
+
+[ ] Task UI-003: Navigation Target Size Accessibility Overhaul
 
 CRITICAL CONSTRAINTS:
 1. Audit all structural links, interactive icons, and target selectors inside navigation components.

@@ -106,6 +106,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operational Alert Notification Panel Alignment (Task UI-001)
 - **OfflineBanner Styling Update**: Refactored `src/components/portal/OfflineBanner.astro` to use Industrial Command Intelligence brand tokens. Replaced generic emerald/amber colors with `kharon-purple`, `kharon-amber`, `kharon-grey`. Updated to solid border patterns (`border-kharon-purple/20`), removed soft pastel backgrounds. Typography updated to `font-semibold` per DESIGN_CONSTITUTION.md standards.
 
+### System Focus Ring Palette Update (Task UI-002)
+- **Cyan Focus Rings**: Replaced purple outline indicators with high-contrast cyan (`--color-kharon-cyan`) across all focus states in `src/styles/global.css`. Updated `:focus-visible`, `.kharon-focus-ring`, `.kharon-command-button:focus`, and `.kharon-secondary-button:focus` to use cyan palette for WCAG accessibility compliance with absolute highlight visibility.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

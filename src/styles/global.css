@@ -157,14 +157,15 @@ summary::-webkit-details-marker {
   display: block;
 }
 
+/* High-contrast focus rings for accessibility - cyan palette per DESIGN_CONSTITUTION.md */
 :focus-visible {
-  outline: 2px solid var(--color-kharon-purple);
+  outline: 2px solid var(--color-kharon-cyan);
   outline-offset: 4px;
 }
 
 /* Focus ring utility for accessibility */
 .kharon-focus-ring {
-  outline: 2px solid var(--color-kharon-purple) !important;
+  outline: 2px solid var(--color-kharon-cyan) !important;
   outline-offset: 4px !important;
 }
 
@@ -323,7 +324,7 @@ summary::-webkit-details-marker {
 }
 
 .kharon-command-button:focus {
-  outline: 2px solid var(--color-kharon-purple);
+  outline: 2px solid var(--color-kharon-cyan);
   outline-offset: 2px;
 }
 
@@ -347,7 +348,7 @@ summary::-webkit-details-marker {
 }
 
 .kharon-secondary-button:focus {
-  outline: 2px solid var(--color-kharon-purple);
+  outline: 2px solid var(--color-kharon-cyan);
   outline-offset: 2px;
 }
 
