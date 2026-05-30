@@ -107,11 +107,52 @@ function resolveBindings(): any {
   return (globalThis as any).__env__ || globalThis;
 }
 
+/**
+ * Validates that MFA_SECRET and SESSION_SECRET are configured with distinct values.
+ * Throws startup error if secrets are duplicated or missing.
+ */
+function validateSecretIsolation(): void {
+  const bindings = resolveBindings();
+  const sessionSecret = String(bindings.SESSION_SECRET || bindings.AUTH_SECRET || "");
+  const mfaSecret = String(bindings.MFA_SECRET || "");
+  
+  // Check minimum lengths
+  if (sessionSecret.length < 32) {
+    throw new Error("SESSION_SECRET must be configured with at least 32 characters.");
+  }
+  if (mfaSecret.length < 32) {
+    throw new Error("MFA_SECRET must be configured with at least 32 characters.");
+  }
+  
+  // Check for duplicate secrets
+  if (sessionSecret === mfaSecret) {
+    throw new Error(
+      "SECURITY VIOLATION: SESSION_SECRET and MFA_SECRET must be different values. " +
+      "Using identical secrets for both purposes compromises cryptographic isolation."
+    );
+  }
+}
+
 function getSessionSecret(): string {
+  validateSecretIsolation();
   const bindings = resolveBindings();
   const secret = String(bindings.SESSION_SECRET || bindings.AUTH_SECRET || "");
   if (secret.length < 32) {
     throw new Error("SESSION_SECRET must be configured with at least 32 characters.");
+  }
+  return secret;
+}
+
+/**
+ * Gets the MFA secret for TOTP generation and verification.
+ * Validated for isolation from SESSION_SECRET at startup.
+ */
+export function getMfaSecret(): string {
+  validateSecretIsolation();
+  const bindings = resolveBindings();
+  const secret = String(bindings.MFA_SECRET || bindings.SESSION_SECRET || "");
+  if (secret.length < 32) {
+    throw new Error("MFA_SECRET must be configured with at least 32 characters.");
   }
   return secret;
 }

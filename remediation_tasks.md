@@ -258,9 +258,23 @@ CRITICAL CONSTRAINTS:
 3. Throw an immediate system startup error if the environment maps read duplicate string configurations across those variable contexts.
 
 OUTPUT THE SPECIFIC PERIMETER VARIABLE CHECK BLOCKS.
-[ ] Task SEC-005: Audit Log Network Address AnonymizationTarget File: src/lib/server/audit.tsSystem Context: schema.sqlSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [SEC-005]
-TARGET_FILE: src/lib/server/audit.ts
-SYSTEM_CONTEXT: schema.sql
+
+[x] Task SEC-004: Isolate MFA and Session Secret Definitions
+Target File: src/lib/server/auth.ts
+System Context: wrangler.jsonc
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [SEC-004]
+TARGET_FILE: src/lib/server/auth.ts
+SYSTEM_CONTEXT: wrangler.jsonc
+
+CRITICAL CONSTRAINTS:
+1. Locate where configuration context strings pass cryptographically down to initialization logic blocks.
+2. Inject strict initialization validation checks ensuring that the `MFA_SECRET` and `SESSION_SECRET` strings evaluate as unequal.
+3. Throw an immediate system startup error if the environment maps read duplicate string configurations across those variable contexts.
+
+OUTPUT THE SPECIFIC PERIMETER VARIABLE CHECK BLOCKS.
+
+[ ] Task SEC-005: Audit Log Network Address Anonymization
 
 CRITICAL CONSTRAINTS:
 1. Locate the method responsible for persisting event tracking context logs down to the database ledger table.

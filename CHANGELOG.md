@@ -57,6 +57,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Elevated PBKDF2 Hashing Iteration Scaling (Task SEC-003)
 - **PBKDF2 Iteration Increase**: Updated `deriveAesKey()` in `src/lib/server/crypto.ts` from 100,000 to 600,000 iterations for AES-GCM key derivation. Meets POPIA Section 24 compliance requirements for cryptographic key strength. Salt buffer remains at fixed string ("kharon-storage-salt"), output key length unchanged at 256-bit.
 
+### MFA and Session Secret Isolation (Task SEC-004)
+- **validateSecretIsolation Function**: Added startup validation in `src/lib/server/auth.ts` that enforces distinct values for `SESSION_SECRET` and `MFA_SECRET`. Validates minimum 32-character length for both secrets. Throws explicit error on duplicate secret configuration: "SECURITY VIOLATION: SESSION_SECRET and MFA_SECRET must be different values."
+- **getMfaSecret Export**: New exported function for retrieving MFA secret with isolation validation. Called by TOTP generation/verification routines to ensure cryptographic separation from session token signing.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
