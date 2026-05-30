@@ -7,7 +7,7 @@ import { forbidden, methodNotAllowed, serverError, unauthorized } from "../../..
 
 export const prerender = false;
 
-const CATEGORY_PATTERNS = {
+const CATEGORY_PATTERNS: Record<string, string> = {
   auth:     "auth.%",
   admin:    "admin.%",
   finance:  "finance.%",
@@ -19,11 +19,12 @@ const CATEGORY_PATTERNS = {
 const ALLOWED_OUTCOMES = new Set(["success", "failure", "blocked"]);
 
 export async function GET({ request, locals }: import('astro').APIContext) {
-  try {
-    const user = locals.user;
-    if (!user) return unauthorized();
-    if (user.role !== "admin") return forbidden("Only admin accounts can export audit data.");
+  const user = locals.user;
+  if (!user) return unauthorized();
+  if (user.role !== "admin") return forbidden("Only admin accounts can export audit data.");
 
+  let db: ReturnType<typeof getDatabase>;
+  try {
     const url = new URL(request.url);
     const filterCategory = url.searchParams.get("category") || "";
     const filterOutcome  = url.searchParams.get("outcome")  || "";
@@ -62,7 +63,7 @@ export async function GET({ request, locals }: import('astro').APIContext) {
       ORDER BY ae.created_at DESC
       LIMIT 2000`;
 
-    const db   = getDatabase();
+    db = getDatabase();
     const stmt = db.prepare(sql);
     const rows = ((await (params.length > 0 ? stmt.bind(...params) : stmt).all()).results || []);
 
@@ -91,7 +92,7 @@ export async function GET({ request, locals }: import('astro').APIContext) {
       }
     });
   } catch (error: any) {
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "audit export failed" } });
+    await auditError(db!, request, error, { user, metadata: { message: "audit export failed" } });
     return serverError("Audit export could not be completed.");
   }
 }

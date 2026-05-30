@@ -289,16 +289,17 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const body = await response.json();
-      if (!response.ok || !body.ok) throw new Error(body.message || "Request failed.");
-      return body;
+      const body = await response.json() as { ok?: boolean; message?: string; visitId?: string } | null;
+      if (!response.ok || !body?.ok) throw new Error(body?.message || "Request failed.");
+      return body || {};
     }
 
     // ── DOM references ────────────────────────────────────────────────────────
     const arrivalForm = document.querySelector<HTMLFormElement>(".log-arrival-form");
     const outcomeForm = document.querySelector<HTMLFormElement>(".log-outcome-form");
     const visitResult = document.querySelector<HTMLElement>(".visit-result");
-    const outcomeSelect = document.querySelector<HTMLSelectElement>('.log-outcome-form select[name="visitStatus"]');
+    // Type as 'any' to avoid DOM type incompatibility with HTMLSelectElement.remove()
+    const outcomeSelect = document.querySelector('.log-outcome-form select[name="visitStatus"]') as any;
     const unableReasonSection = document.querySelector<HTMLElement>(".unable-reason-section");
 
     // ── Conditionally show "Unable to Complete" reason dropdown ────────────

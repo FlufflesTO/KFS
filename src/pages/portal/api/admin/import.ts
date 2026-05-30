@@ -13,7 +13,8 @@ const systemHeaders = ["id", "site_id", "system_type", "coverage_area", "manufac
 const systemTypes = ["Gas Suppression", "Fire Detection"];
 
 function cleanImportId(value: unknown): string {
-  return value ? cleanId(String(value), "id", { required: false }) : crypto.randomUUID();
+  const result = value ? cleanId(String(value), "id", { required: false }) : crypto.randomUUID();
+  return result || crypto.randomUUID();
 }
 
 async function siteExists(db: import("@cloudflare/workers-types").D1Database, id: string | null | undefined): Promise<boolean> {

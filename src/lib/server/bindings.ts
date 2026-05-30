@@ -12,7 +12,20 @@ import { env } from "cloudflare:workers";
 export interface WorkerBindings {
   db: D1Database;
   storage: R2Bucket;
-  env: Record<string, unknown>;
+  env: Env;
+}
+
+export interface Env {
+  SESSION_SECRET: string;
+  MFA_SECRET: string;
+  DB?: D1Database;
+  STORAGE?: R2Bucket;
+  STANDARD_SERVICE_FEE?: string;
+  SAGE_CLIENT_ID?: string;
+  SAGE_CLIENT_SECRET?: string;
+  SAGE_REDIRECT_URI?: string;
+  ENVIRONMENT?: string;
+  [key: string]: unknown;
 }
 
 // Global type extension for Cloudflare Workers
@@ -27,7 +40,7 @@ declare global {
 
 function resolveBindings(): any {
   try {
-    if (env && (env.DB || env.STORAGE)) {
+    if (env && ((env as any).DB || (env as any).STORAGE)) {
       return env;
     }
   } catch (e) {
@@ -38,7 +51,7 @@ function resolveBindings(): any {
 
 export function getBindings(): WorkerBindings {
   const bindings = resolveBindings();
-  
+
   const db = bindings.DB as D1Database | undefined;
   const storage = bindings.STORAGE as R2Bucket | undefined;
 
@@ -50,7 +63,7 @@ export function getBindings(): WorkerBindings {
     throw new Error("Cloudflare R2 binding STORAGE is not configured.");
   }
 
-  return { db, storage, env: bindings as Record<string, unknown> };
+  return { db, storage, env: bindings };
 }
 
 export function getDatabase(): D1Database {

@@ -5,7 +5,7 @@ import { auditEvent } from "../../../../lib/server/audit";
 import { hashPassword } from "../../../../lib/server/auth";
 import { createResetToken, resetTokenExpiry, sha256Hex } from "../../../../lib/server/auth";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http";
-import { cleanBoolean, cleanChoice, cleanEmail, cleanId, cleanText, readJson, requireAdmin } from "../../../../lib/server/access"; 
+import { cleanBoolean, cleanChoice, cleanEmail, cleanId, cleanText, readJson, requireAdmin } from "../../../../lib/server/access";
 
 export const prerender = false;
 
@@ -15,11 +15,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
-  const db = getDatabase();
-
+  let db: ReturnType<typeof getDatabase>;
   try {
+    db = getDatabase();
+
     const body = await readJson(request) as Record<string, any>;
-    const action = cleanChoice(body.action || "create", "action", ["create", "update", "deactivate", "reset-link", "reset-mfa"]);  
+    const action = cleanChoice(body.action || "create", "action", ["create", "update", "deactivate", "reset-link", "reset-mfa"]);
 
     if (action === "create") {
       const id = crypto.randomUUID();
@@ -55,6 +56,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const id = cleanId(body.id, "id");
+    if (!id) return badRequest("id is required.");
 
     if (action === "deactivate") {
       if (id === locals.user!.id) return badRequest("Admins cannot deactivate their own account.");
@@ -115,7 +117,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
       const target = await db.prepare(`SELECT id, role, is_active FROM users WHERE id = ?1 LIMIT 1`).bind(id).first() as TargetUser | null;
       if (!target || !target.is_active) return badRequest("Only active users can have MFA reset.");
-      if (!["admin", "finance"].includes(target.role)) return badRequest("MFA reset is limited to admin and finance accounts.");   
+      if (!["admin", "finance"].includes(target.role)) return badRequest("MFA reset is limited to admin and finance accounts.");
 
       await db
         .prepare(
@@ -180,7 +182,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return json({ ok: true, id });
   } catch (error) {
     if (error instanceof Error && error.message) return badRequest(error.message);
-    await auditError(db, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin users failed" } });
+    await auditError(db!, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin users failed" } });
     return serverError("User administration failed.");
   }
 };

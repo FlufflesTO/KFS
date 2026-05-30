@@ -24,7 +24,10 @@ export function bindFinanceForms(): void {
       const docDate      = (form.querySelector<HTMLInputElement>("[name='sageDocumentDate']")?.value ?? "").trim();
       const dueDate      = (form.querySelector<HTMLInputElement>("[name='sageDueDate']")?.value      ?? "").trim();
       const notes        = (form.querySelector<HTMLInputElement>("[name='financeNotes']")?.value     ?? "").trim();
-      const taskStatus   = (form.querySelector<HTMLSelectElement>("[name='financeTaskStatus']")?.value ?? "").trim();
+      const taskStatus   = (() => {
+        const el = form.querySelector("[name='financeTaskStatus']");
+        return el && 'value' in el ? String(el.value).trim() : "";
+      })();
 
       const payload: Record<string, unknown> = { recordId };
       if (sageInvoiceNumber) payload.sageInvoiceNumber = sageInvoiceNumber;

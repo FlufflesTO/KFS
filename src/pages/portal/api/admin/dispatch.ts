@@ -20,7 +20,11 @@ export async function POST({ params, request, locals }: APIContext): Promise<Res
       return unauthorized("Admin access required.");
     }
 
-    const { technicianId, priority, isEmergency, requiredByDate } = await request.json();
+    const body = await request.json() as Record<string, any>;
+    const technicianId = body.technicianId;
+    const priority = body.priority;
+    const isEmergency = body.isEmergency;
+    const requiredByDate = body.requiredByDate;
     const jobId = params.jobId;
 
     if (!jobId) {

@@ -7,7 +7,11 @@ import { requireAdmin } from "../../../../lib/server/access";
 
 export const prerender = false;
 
-const configs = {
+const configs: Record<string, {
+  filename: string;
+  headers: string[];
+  sql: string;
+}> = {
   users: {
     filename: "kharon-users.csv",
     headers: ["id", "name", "email", "role", "site_id", "is_active", "force_password_change", "mfa_required", "mfa_enabled", "last_login_at"],
@@ -53,6 +57,7 @@ export async function GET({ request, locals, url }: import('astro').APIContext) 
   await auditEvent(db, request, {
     eventType: `admin.export.${type}`,
     entityType: type,
+    entityId: "bulk",
     outcome: "success",
     user: locals.user,
     metadata: { rows: rows.length }

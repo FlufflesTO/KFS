@@ -144,13 +144,13 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "setup" })
       });
-      const body = await response.json().catch(() => ({ ok: false, message: "MFA setup could not be started." }));
-      if (!response.ok || !body.ok) {
-        showResult(body.message || "MFA setup could not be started.");
+      const body = await response.json() as { ok?: boolean; message?: string; secret?: string; provisioningUri?: string } | null;
+      if (!response.ok || !body?.ok) {
+        showResult(body?.message || "MFA setup could not be started.");
         return;
       }
-      if (secretInput) secretInput.value = body.secret;
-      if (uriInput) uriInput.value = body.provisioningUri;
+      if (secretInput) secretInput.value = body.secret || "";
+      if (uriInput) uriInput.value = body.provisioningUri || "";
       setupPanel?.classList.remove("hidden");
       showResult("Setup key generated. Verify the first authenticator code to enable MFA.", true);
     });
@@ -163,13 +163,13 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "enable", secret: secretInput?.value || "", code: formData.get("code") })
       });
-      const body = await response.json().catch(() => ({ ok: false, message: "MFA could not be enabled." }));
-      if (!response.ok || !body.ok) {
-        showResult(body.message || "MFA could not be enabled.");
+      const body = await response.json() as { ok?: boolean; message?: string; redirectTo?: string } | null;
+      if (!response.ok || !body?.ok) {
+        showResult(body?.message || "MFA could not be enabled.");
         return;
       }
       showResult("MFA enabled. Redirecting...", true);
-      window.location.href = body.redirectTo || "/portal";
+      window.location.href = body?.redirectTo || "/portal";
     });
 
     disableForm?.addEventListener("submit", async (event) => {
@@ -183,12 +183,12 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "disable", code: formData.get("code") })
       });
-      const body = await response.json().catch(() => ({ ok: false, message: "MFA could not be disabled." }));
-      if (!response.ok || !body.ok) {
-        showResult(body.message || "MFA could not be disabled.");
+      const body = await response.json() as { ok?: boolean; message?: string; redirectTo?: string } | null;
+      if (!response.ok || !body?.ok) {
+        showResult(body?.message || "MFA could not be disabled.");
         return;
       }
-      window.location.href = body.redirectTo || "/portal/account/mfa";
+      window.location.href = body?.redirectTo || "/portal/account/mfa";
     });
   </script>
 </PortalLayout>

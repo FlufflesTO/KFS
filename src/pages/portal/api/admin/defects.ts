@@ -1,4 +1,4 @@
-
+import type { DefectSeverity, DefectStatus } from "../../../../types";
 import { auditError } from "../../../../lib/server/audit";
 import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
@@ -15,22 +15,24 @@ export async function POST({ request, locals }: import('astro').APIContext) {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
-  const db = getDatabase();
-  const defectRepository = new DefectRepository(db);
-
+  let db: ReturnType<typeof getDatabase>;
   try {
+    db = getDatabase();
+    const defectRepository = new DefectRepository(db);
+
     const body = await readJson(request);
     const action = String(body.action || "create");
 
     if (action === "create") {
       const id = crypto.randomUUID();
       const systemId = cleanId(body.systemId, "systemId");
+      if (!systemId) return badRequest("systemId is required.");
       const jobId = cleanId(body.jobId, "jobId", { required: false });
-      const severity = cleanChoice(body.severity, "severity", severities);
+      const severity = cleanChoice(body.severity, "severity", severities) as DefectSeverity;
       const sansClauseRef = cleanText(body.sansClauseRef, "sansClauseRef", { required: false, max: 80 });
       const description = cleanText(body.description, "description", { min: 5, max: 2000 });
       const certificateBlocking = cleanBoolean(body.certificateBlocking);
-      const status = cleanChoice(body.status || "Open", "status", statuses);
+      const status = cleanChoice(body.status || "Open", "status", statuses) as DefectStatus;
 
       // Verify system exists
       const system = await db
@@ -72,11 +74,12 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     if (action === "update") {
       const id = cleanId(body.id, "id");
-      const severity = cleanChoice(body.severity, "severity", severities);
+      if (!id) return badRequest("id is required.");
+      const severity = cleanChoice(body.severity, "severity", severities) as DefectSeverity;
       const sansClauseRef = cleanText(body.sansClauseRef, "sansClauseRef", { required: false, max: 80 });
       const description = cleanText(body.description, "description", { min: 5, max: 2000 });
       const certificateBlocking = cleanBoolean(body.certificateBlocking);
-      const status = cleanChoice(body.status, "status", statuses);
+      const status = cleanChoice(body.status, "status", statuses) as DefectStatus;
 
       // Read current state before updating so we can detect flag changes
       const existing = await defectRepository.findById(id);
@@ -120,6 +123,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     if (action === "resolve") {
       const id = cleanId(body.id, "id");
+      if (!id) return badRequest("id is required.");
       const remediationNotes = cleanText(body.remediationNotes, "remediationNotes", { required: false, max: 3000 });
 
       const defect = await defectRepository.findById(id);
@@ -149,6 +153,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     if (action === "close") {
       const id = cleanId(body.id, "id");
+      if (!id) return badRequest("id is required.");
       const remediationNotes = cleanText(body.remediationNotes, "remediationNotes", { required: false, max: 3000 });
 
       const defect = await defectRepository.findById(id);
@@ -178,6 +183,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     if (action === "quoteRequired") {
       const id = cleanId(body.id, "id");
+      if (!id) return badRequest("id is required.");
 
       const defect = await db
         .prepare(
@@ -222,7 +228,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     return badRequest("Unknown defect action.");
   } catch (error: any) {
     if (error.message) return badRequest(error.message);
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "admin defects failed" } });
+    await auditError(db!, request, error, { user: locals.user, metadata: { message: "admin defects failed" } });
     return serverError("Defect administration failed.");
   }
 }

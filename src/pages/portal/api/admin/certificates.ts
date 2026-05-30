@@ -14,9 +14,9 @@ export async function POST({ request, locals }: import('astro').APIContext) {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
-  const db = getDatabase();
-
+  let db: ReturnType<typeof getDatabase>;
   try {
+    db = getDatabase();
     const body = await readJson(request);
     const action = String(body.action || "create");
 
@@ -67,7 +67,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
         entityId: id,
         outcome: "success",
         user: locals.user,
-        metadata: { systemId, jobId, certificateType, status, expiryDate }
+        metadata: { systemId: systemId || "unknown", jobId: jobId || "none", certificateType, status, expiryDate }
       });
 
       return json({ ok: true, id });
@@ -75,6 +75,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     if (action === "update") {
       const id = cleanId(body.id, "id");
+      if (!id) return badRequest("id is required for update action.");
       const expiryDate = cleanDate(body.expiryDate, "expiryDate");
 
       const cert = await db
@@ -106,6 +107,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     if (action === "revoke") {
       const id = cleanId(body.id, "id");
+      if (!id) return badRequest("id is required for revoke action.");
 
       await db
         .prepare(`UPDATE certificates SET status = 'Revoked' WHERE id = ?1 AND deleted_at IS NULL`)
@@ -126,6 +128,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     if (action === "expire") {
       const id = cleanId(body.id, "id");
+      if (!id) return badRequest("id is required for expire action.");
 
       await db
         .prepare(`UPDATE certificates SET status = 'Expired' WHERE id = ?1 AND deleted_at IS NULL`)
@@ -147,7 +150,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     return badRequest("Unknown certificate action.");
   } catch (error: any) {
     if (error.message) return badRequest(error.message);
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "admin certificates failed" } });
+    await auditError(db!, request, error, { user: locals.user, metadata: { message: "admin certificates failed" } });
     return serverError("Certificate administration failed.");
   }
 }

@@ -11,12 +11,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
-  const db = getDatabase();
-
+  let db: ReturnType<typeof getDatabase>;
   try {
+    db = getDatabase();
+
     const body = await readJson(request) as Record<string, any>;
     const action = String(body.action || "create");
     const id = action === "create" ? crypto.randomUUID() : cleanId(body.id, "id");
+    if (!id) return badRequest("id is required.");
     const ownerCompanyName = cleanText(body.ownerCompanyName, "ownerCompanyName", { min: 2, max: 200 });
     const physicalAddress = cleanText(body.physicalAddress, "physicalAddress", { min: 5, max: 500 });
     const siteContactPerson = cleanText(body.siteContactPerson, "siteContactPerson", { min: 2, max: 160 });
@@ -63,7 +65,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return json({ ok: true, id });
   } catch (error) {
     if (error instanceof Error && error.message) return badRequest(error.message);
-    await auditError(db, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin sites failed" } });
+    await auditError(db!, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin sites failed" } });
     return serverError("Site administration failed.");
   }
 };

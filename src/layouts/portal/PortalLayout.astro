@@ -262,8 +262,8 @@ const links = [
     logoutForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const response = await window.kharonPortalFetch("/portal/api/logout", { method: "POST" });
-      const body = await response.json().catch(() => ({ redirectTo: "/portal/login" }));
-      window.location.href = body.redirectTo || "/portal/login";
+      const body = await response.json() as { redirectTo?: string } | null;
+      window.location.href = body?.redirectTo || "/portal/login";
     });
 
     const openBtn = document.getElementById("open-feedback");
@@ -319,16 +319,16 @@ const links = [
           body: JSON.stringify(data)
         });
 
-        const body = await response.json();
+        const body = await response.json() as { ok?: boolean; message?: string } | null;
         if (result) {
           result.classList.remove("hidden");
-          if (response.ok && body.ok) {
+          if (response.ok && body?.ok) {
             result.className = "text-emerald-400 bg-emerald-900/30 border border-emerald-700/50 p-3 rounded-lg text-xs font-bold";
-            result.textContent = body.message;
+            result.textContent = body.message || "Feedback sent successfully.";
             setTimeout(closeModal, 2000);
           } else {
             result.className = "text-rose-400 bg-rose-900/30 border border-rose-700/50 p-3 rounded-lg text-xs font-bold";
-            result.textContent = body.message || "Feedback could not be sent.";
+            result.textContent = body?.message || "Feedback could not be sent.";
           }
         }
       } catch (err) {

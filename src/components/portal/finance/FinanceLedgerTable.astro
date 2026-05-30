@@ -165,8 +165,8 @@ const { completedTasks } = Astro.props;
           buttonEl.classList.add("bg-emerald-600");
           setTimeout(() => window.location.reload(), 1000); // Reload to show updated table
         } else {
-          const data = await res.json().catch(() => ({}));
-          alert(`Sage Sync Failed: ${data.error || 'Unknown error'}`);
+          const data = await res.json() as { error?: string } | null;
+          alert(`Sage Sync Failed: ${data?.error || 'Unknown error'}`);
           buttonEl.textContent = "Retry Sync";
           buttonEl.disabled = false;
         }

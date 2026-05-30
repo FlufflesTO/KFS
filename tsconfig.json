@@ -34,7 +34,7 @@
     "allowJs": true,
     "checkJs": false,
     "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
-    "types": ["astro/env"]
+    "types": ["astro/env", "@cloudflare/workers-types"]
   },
   "include": [
     "src/**/*",

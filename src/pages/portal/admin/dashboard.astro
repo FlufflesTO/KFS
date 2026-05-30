@@ -464,8 +464,8 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const body = await response.json();
-      if (!response.ok || !body.ok) throw new Error(body.message || "Request failed.");
+      const body = await response.json() as { ok?: boolean; message?: string; status?: string; jobId?: string } | null;
+      if (!response.ok || !body?.ok) throw new Error(body?.message || "Request failed.");
       return body;
     }
 

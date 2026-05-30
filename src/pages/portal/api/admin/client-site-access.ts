@@ -11,9 +11,9 @@ export async function POST({ request, locals }: import('astro').APIContext) {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
-  const db = getDatabase();
-
+  let db: ReturnType<typeof getDatabase>;
   try {
+    db = getDatabase();
     const body = await readJson(request);
     const action = cleanChoice(body.action, "action", ["grant", "revoke"]);
     const userId = cleanId(body.userId, "userId");
@@ -40,7 +40,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
              granted_by_user_id = excluded.granted_by_user_id,
              granted_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`
         )
-        .bind(userId, siteId, locals.user.id)
+        .bind(userId, siteId, locals.user!.id)
         .run();
     } else {
       await db
@@ -54,14 +54,14 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       entityType: "client_site_access",
       entityId: `${userId}:${siteId}`,
       outcome: "success",
-      user: locals.user,
+      user: locals.user!,
       metadata: { userId, siteId }
     });
 
     return json({ ok: true, userId, siteId, action });
   } catch (error: any) {
     if (error.message) return badRequest(error.message);
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "client site access admin failed" } });
+    await auditError(db!, request, error, { user: locals.user, metadata: { message: "client site access admin failed" } });
     return serverError("Client site access update failed.");
   }
 }

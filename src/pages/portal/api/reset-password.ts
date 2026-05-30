@@ -10,9 +10,10 @@ import { badRequest, json, methodNotAllowed, serverError, tooManyRequests } from
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
-  const db = getDatabase();
-
+  let db: ReturnType<typeof getDatabase>;
   try {
+    db = getDatabase();
+
     let body: Record<string, any>;
     try {
       body = await request.json() as Record<string, any>;
@@ -47,7 +48,7 @@ export const POST: APIRoute = async ({ request }) => {
       email: string;
       is_active: number;
     }
-    
+
     const reset = await db
       .prepare(
         `SELECT password_reset_tokens.id, password_reset_tokens.user_id, password_reset_tokens.expires_at,
@@ -64,7 +65,7 @@ export const POST: APIRoute = async ({ request }) => {
       await auditEvent(db, request, {
         eventType: "auth.password_reset",
         entityType: "password_reset_token",
-        entityId: reset?.id || null,
+        entityId: reset?.id || "unknown",
         outcome: "failure",
         subject: tokenHash.slice(0, 16),
         metadata: { reason: "invalid_or_expired" }
@@ -99,7 +100,7 @@ export const POST: APIRoute = async ({ request }) => {
   } catch (error) {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     if (error instanceof Error && error.message) return badRequest(error.message);
-    await auditError(db, request, error as Error, { metadata: { message: "password reset failed" } });      
+    await auditError(db!, request, error as Error, { metadata: { message: "password reset failed" } });
     return serverError("Password reset could not be completed.");
   }
 };

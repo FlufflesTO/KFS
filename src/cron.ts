@@ -9,10 +9,12 @@
  */
 
 import { pruneRateLimits } from "./lib/server/rateLimit";
+import type { D1Database, R2Bucket } from "@cloudflare/workers-types";
 
 export interface Env {
   DB: D1Database;
   STORAGE: R2Bucket;
+  SESSION_SECRET: string;
   [key: string]: unknown;
 }
 

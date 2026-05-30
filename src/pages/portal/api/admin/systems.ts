@@ -14,14 +14,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
-  const db = getDatabase();
-  const systemRepository = new SystemRepository(db);
-
+  let db: ReturnType<typeof getDatabase>;
   try {
+    db = getDatabase();
+    const systemRepository = new SystemRepository(db);
+
     const body = await readJson(request) as Record<string, any>;
     const action = String(body.action || "create");
     const id = action === "create" ? crypto.randomUUID() : cleanId(body.id, "id");
+    if (!id) return badRequest("id is required.");
     const siteId = cleanId(body.siteId, "siteId");
+    if (!siteId) return badRequest("siteId is required.");
     const systemType = cleanChoice(body.systemType, "systemType", systemTypes);
     const coverageArea = cleanText(body.coverageArea, "coverageArea", { min: 2, max: 200 });
     const manufacturer = cleanText(body.manufacturer, "manufacturer", { required: false, max: 120 });
@@ -38,7 +41,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
         manufacturer: manufacturer,
         model_reference: modelReference,
         next_due_date: nextDueDate,
-        service_interval_months: serviceIntervalMonths
+        service_interval_months: serviceIntervalMonths,
+        system_subtype: null,
+        serial_number: null,
+        installation_date: null,
+        last_service_date: null,
+        notes: null
       });
     } else if (action === "update") {
       // Verify system exists before updating
@@ -80,7 +88,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return json({ ok: true, id });
   } catch (error) {
     if (error instanceof Error && error.message) return badRequest(error.message);
-    await auditError(db, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin systems failed" } });
+    await auditError(db!, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin systems failed" } });
     return serverError("System administration failed.");
   }
 };

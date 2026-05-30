@@ -1,4 +1,3 @@
-
 import { auditError } from "../../../../lib/server/audit";
 import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
@@ -14,14 +13,16 @@ export async function POST({ request, locals }: import('astro').APIContext) {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
-  const db = getDatabase();
-
+  let db: ReturnType<typeof getDatabase>;
   try {
+    db = getDatabase();
+
     const body = await readJson(request);
     const action = String(body.action || "create");
 
     if (action === "markInvoiced") {
       const id = cleanId(body.id, "id");
+      if (!id) return badRequest("id is required.");
       const job = await db
         .prepare(
           `SELECT jobs.id, jobs.status, systems.site_id
@@ -81,7 +82,9 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     }
 
     const id = action === "create" ? crypto.randomUUID() : cleanId(body.id, "id");
+    if (!id) return badRequest("id is required.");
     const systemId = cleanId(body.systemId, "systemId");
+    if (!systemId) return badRequest("systemId is required.");
     const assignedTechnicianId = cleanId(body.assignedTechnicianId, "assignedTechnicianId", { required: false });
     const scheduledDate = cleanDate(body.scheduledDate, "scheduledDate");
     const status = cleanChoice(body.status || "Scheduled", "status", statuses);
@@ -144,7 +147,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     return json({ ok: true, id });
   } catch (error: any) {
     if (error.message) return badRequest(error.message);
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "admin jobs failed" } });
+    await auditError(db!, request, error, { user: locals.user, metadata: { message: "admin jobs failed" } });
     return serverError("Job administration failed.");
   }
 }
@@ -152,4 +155,3 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 export function ALL() {
   return methodNotAllowed(["POST"]);
 }
-

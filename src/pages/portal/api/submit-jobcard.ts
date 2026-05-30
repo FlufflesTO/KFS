@@ -5,9 +5,10 @@
  * Structural Role: Mutating REST API endpoint for jobcard completion
  */
 
+import type { APIContext } from "astro";
 import { auditError, auditEvent } from "../../../lib/server/audit";
 import { FinanceService } from "../../../lib/server/services/finance-service.js";
-import { getBindings, getStandardServiceFee } from "../../../lib/server/bindings.js";
+import { getBindings, getStandardServiceFee, getDatabase } from "../../../lib/server/bindings.js";
 import { badRequest, forbidden, methodNotAllowed, serverError } from "../../../lib/server/http.js";
 import { json } from "../../../lib/server/http.js";
 import { verifyCsrfRequest } from "../../../lib/server/csrf.js";
@@ -74,6 +75,7 @@ function dataUriToBytes(dataUri: string): { bytes: Uint8Array; contentType: stri
 
 export async function POST({ request, locals }: APIContext): Promise<Response> {
   let jobId = "unknown";
+  let db: Awaited<ReturnType<typeof getBindings>>["db"] | undefined;
 
   try {
     // Manual role check since requireRole doesn't exist
@@ -81,7 +83,9 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       return forbidden("Insufficient permissions.");
     }
 
-    const { db, storage } = getBindings();
+    const bindings = getBindings();
+    db = bindings.db;
+    const { storage } = bindings;
 
     // Initialize repositories
     const jobRepository = new JobRepository(db);
@@ -406,7 +410,6 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     }
 
     const err = error as Error;
-    const db = getDatabase();
     if (db) {
       await auditError(db, request, err, {
         entityType: "jobcard_submission",

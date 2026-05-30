@@ -1,4 +1,3 @@
-
 import { auditError } from "../../../../lib/server/audit";
 import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
@@ -13,12 +12,14 @@ export async function POST({ request, locals }: import('astro').APIContext) {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
-  const db = getDatabase();
-
+  let db: ReturnType<typeof getDatabase>;
   try {
+    db = getDatabase();
+
     const body = await readJson(request);
     const action = cleanChoice(body.action || "updateStatus", "action", ["updateStatus", "scheduleDispatch"]);
     const requestId = cleanId(body.requestId, "requestId");
+    if (!requestId) return badRequest("requestId is required.");
 
     const maintenanceRequest = await db
       .prepare(
@@ -93,7 +94,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     return json({ ok: true, requestId, jobId, status: "Scheduled" });
   } catch (error: any) {
     if (error.message) return badRequest(error.message);
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "admin maintenance request failed" } });
+    await auditError(db!, request, error, { user: locals.user, metadata: { message: "admin maintenance request failed" } });
     return serverError("Maintenance request administration failed.");
   }
 }
@@ -101,4 +102,3 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 export function ALL() {
   return methodNotAllowed(["POST"]);
 }
-

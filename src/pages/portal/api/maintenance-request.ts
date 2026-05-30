@@ -72,7 +72,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
         .bind(systemId, siteId)
         .first();
       if (!system) return forbidden("The selected system is not available to this client account.");
-      siteId = system.site_id;
+      siteId = system.site_id as string;
     }
 
     await db

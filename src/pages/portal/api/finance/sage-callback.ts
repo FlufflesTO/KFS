@@ -106,7 +106,7 @@ export async function GET({ request, locals, url, cookies }: APIContext) {
       throw new Error(`Token exchange failed: ${tokenResponse.statusText}. Details: ${errText}`);
     }
 
-    const tokenData = await tokenResponse.json();
+    const tokenData = await tokenResponse.json() as { access_token: string; refresh_token: string; expires_in?: number };
     const expiresAt = Math.floor(Date.now() / 1000) + Number(tokenData.expires_in || 3600);
 
     // Encrypt tokens before storing

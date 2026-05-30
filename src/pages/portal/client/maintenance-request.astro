@@ -142,8 +142,9 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 
   <script>
     const form = document.querySelector<HTMLFormElement>("#maintenance-request-form");
-    const siteSelect = document.querySelector<HTMLSelectElement>("#req-siteId");
-    const systemSelect = document.querySelector<HTMLSelectElement>("#req-systemId");
+    // Type as 'any' to avoid DOM type incompatibility with HTMLSelectElement.remove()
+    const siteSelect = document.querySelector("#req-siteId") as any;
+    const systemSelect = document.querySelector("#req-systemId") as any;
     const result = document.querySelector<HTMLElement>("#request-result");
     const submitBtn = document.querySelector<HTMLButtonElement>("#request-submit-btn");
 
@@ -151,10 +152,10 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
     function filterSystems() {
       if (!siteSelect || !systemSelect) return;
       const selectedSiteId = siteSelect.value;
-      const options = systemSelect.querySelectorAll<HTMLOptionElement>("option");
-      
+      const options = systemSelect.querySelectorAll("option");
+
       let firstVisibleIdx = 0;
-      options.forEach((option, idx) => {
+      options.forEach((option: HTMLOptionElement, idx: number) => {
         const optionSiteId = option.getAttribute("data-site-id");
         if (!optionSiteId || optionSiteId === selectedSiteId) {
           option.style.display = "";
@@ -198,9 +199,9 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           })
         });
 
-        const body = await response.json();
-        if (!response.ok || !body.ok) {
-          result.textContent = body.message || "Failed to submit request.";
+        const body = await response.json() as { ok?: boolean; message?: string; id?: string } | null;
+        if (!response.ok || !body?.ok) {
+          result.textContent = body?.message || "Failed to submit request.";
           result.className = "rounded border border-kharon-red bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-red-200";
           result.classList.remove("hidden");
           submitBtn.disabled = false;
@@ -208,7 +209,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           return;
         }
 
-        result.textContent = `Request successfully submitted. Status: New (ID: ${body.id})`;
+        result.textContent = `Request successfully submitted. Status: New (ID: ${body?.id || "unknown"})`;
         result.className = "rounded border border-kharon-green bg-kharon-green/10 px-4 py-3 text-sm font-semibold text-green-200";
         result.classList.remove("hidden");
         form.reset();
