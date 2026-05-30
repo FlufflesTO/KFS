@@ -582,9 +582,23 @@ CRITICAL CONSTRAINTS:
 3. Prevent layout alignment breaking while expanding spacing limits for technical tools used in the field.
 
 OUTPUT THE RESTRUCTURED ELEMENT LAYOUT STRATEGY.
-[ ] Task SRE-004: Service Worker Compiling Phase IsolationTarget File: astro.config.tsSystem Context: package.jsonSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [SRE-004]
-TARGET_FILE: astro.config.ts
-SYSTEM_CONTEXT: package.json
+
+[x] Task UI-003: Navigation Target Size Accessibility Overhaul
+Target File: src/components/portal/AdminNav.astro
+System Context: DESIGN_CONSTITUTION.md
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [UI-003]
+TARGET_FILE: src/components/portal/AdminNav.astro
+SYSTEM_CONTEXT: DESIGN_CONSTITUTION.md
+
+CRITICAL CONSTRAINTS:
+1. Audit all structural links, interactive icons, and target selectors inside navigation components.
+2. Scale up bounding dimensions using padding utilities to enforce a minimum interactable grid size of **44×44px**.
+3. Prevent layout alignment breaking while expanding spacing limits for technical tools used in the field.
+
+OUTPUT THE RESTRUCTURED ELEMENT LAYOUT STRATEGY.
+
+[ ] Task SRE-004: Service Worker Compiling Phase Isolation
 
 CRITICAL CONSTRAINTS:
 1. Isolate background runtime service worker compilation steps to prevent race conditions during asset building.

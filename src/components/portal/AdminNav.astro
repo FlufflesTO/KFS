@@ -4,6 +4,7 @@
  * Purpose: Navigation menu for admin users
  * Dependencies: None
  * Structural Role: Portal navigation sidebar
+ * Accessibility: WCAG 44x44px minimum touch targets per DESIGN_CONSTITUTION.md
  */
 export interface Props {
   currentPage?: string;
@@ -18,123 +19,133 @@ const isActive = (path: string) => currentPage.includes(path);
   <a
     href="/portal/admin/dashboard"
     class={`${
-      isActive('/dashboard') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+      isActive('/dashboard') ? 'bg-kharon-light text-kharon-black' : 'text-kharon-grey hover:bg-kharon-light hover:text-kharon-black'
+    } group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors min-h-[44px]`}
+    aria-current="${isActive('/dashboard') ? 'page' : undefined}"
   >
-    <svg class="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="mr-3 h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
     </svg>
-    Dashboard
+    <span class="flex-1">Dashboard</span>
   </a>
 
   <a
     href="/portal/admin/planning"
     class={`${
-      isActive('/planning') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+      isActive('/planning') ? 'bg-kharon-light text-kharon-black' : 'text-kharon-grey hover:bg-kharon-light hover:text-kharon-black'
+    } group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors min-h-[44px]`}
+    aria-current="${isActive('/planning') ? 'page' : undefined}"
   >
-    <svg class="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="mr-3 h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
-    Planning
+    <span class="flex-1">Planning</span>
   </a>
 
   <!-- New specialized admin pages -->
   <a
     href="/portal/admin/enquiries"
     class={`${
-      isActive('/enquiries') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+      isActive('/enquiries') ? 'bg-kharon-light text-kharon-black' : 'text-kharon-grey hover:bg-kharon-light hover:text-kharon-black'
+    } group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors min-h-[44px]`}
+    aria-current="${isActive('/enquiries') ? 'page' : undefined}"
   >
-    <svg class="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="mr-3 h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
     </svg>
-    Enquiries
+    <span class="flex-1">Enquiries</span>
   </a>
 
   <a
     href="/portal/admin/jobs"
     class={`${
-      isActive('/jobs') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+      isActive('/jobs') ? 'bg-kharon-light text-kharon-black' : 'text-kharon-grey hover:bg-kharon-light hover:text-kharon-black'
+    } group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors min-h-[44px]`}
+    aria-current="${isActive('/jobs') ? 'page' : undefined}"
   >
-    <svg class="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="mr-3 h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
     </svg>
-    Jobs
+    <span class="flex-1">Jobs</span>
   </a>
 
   <a
     href="/portal/admin/users"
     class={`${
-      isActive('/users') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+      isActive('/users') ? 'bg-kharon-light text-kharon-black' : 'text-kharon-grey hover:bg-kharon-light hover:text-kharon-black'
+    } group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors min-h-[44px]`}
+    aria-current="${isActive('/users') ? 'page' : undefined}"
   >
-    <svg class="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="mr-3 h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
     </svg>
-    Users
+    <span class="flex-1">Users</span>
   </a>
 
   <a
     href="/portal/admin/sites"
     class={`${
-      isActive('/sites') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+      isActive('/sites') ? 'bg-kharon-light text-kharon-black' : 'text-kharon-grey hover:bg-kharon-light hover:text-kharon-black'
+    } group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors min-h-[44px]`}
+    aria-current="${isActive('/sites') ? 'page' : undefined}"
   >
-    <svg class="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="mr-3 h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
     </svg>
-    Sites
+    <span class="flex-1">Sites</span>
   </a>
 
   <a
     href="/portal/admin/systems"
     class={`${
-      isActive('/systems') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+      isActive('/systems') ? 'bg-kharon-light text-kharon-black' : 'text-kharon-grey hover:bg-kharon-light hover:text-kharon-black'
+    } group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors min-h-[44px]`}
+    aria-current="${isActive('/systems') ? 'page' : undefined}"
   >
-    <svg class="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="mr-3 h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
     </svg>
-    Systems
+    <span class="flex-1">Systems</span>
   </a>
 
   <!-- NEW: Multi-client management link -->
   <a
     href="/portal/admin/multi-client"
     class={`${
-      isActive('/multi-client') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+      isActive('/multi-client') ? 'bg-kharon-light text-kharon-black' : 'text-kharon-grey hover:bg-kharon-light hover:text-kharon-black'
+    } group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors min-h-[44px]`}
+    aria-current="${isActive('/multi-client') ? 'page' : undefined}"
   >
-    <svg class="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="mr-3 h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
     </svg>
-    Multi-Client
+    <span class="flex-1">Multi-Client</span>
   </a>
 
   <!-- NEW: Advanced reporting link -->
   <a
     href="/portal/admin/advanced-reporting"
     class={`${
-      isActive('/advanced-reporting') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+      isActive('/advanced-reporting') ? 'bg-kharon-light text-kharon-black' : 'text-kharon-grey hover:bg-kharon-light hover:text-kharon-black'
+    } group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors min-h-[44px]`}
+    aria-current="${isActive('/advanced-reporting') ? 'page' : undefined}"
   >
-    <svg class="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="mr-3 h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
     </svg>
-    Advanced Reports
+    <span class="flex-1">Advanced Reports</span>
   </a>
 
   <a
     href="/portal/admin/exports"
     class={`${
-      isActive('/exports') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+      isActive('/exports') ? 'bg-kharon-light text-kharon-black' : 'text-kharon-grey hover:bg-kharon-light hover:text-kharon-black'
+    } group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors min-h-[44px]`}
+    aria-current="${isActive('/exports') ? 'page' : undefined}"
   >
-    <svg class="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="mr-3 h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
     </svg>
-    Exports
+    <span class="flex-1">Exports</span>
   </a>
 </nav>

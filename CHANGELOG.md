@@ -109,6 +109,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### System Focus Ring Palette Update (Task UI-002)
 - **Cyan Focus Rings**: Replaced purple outline indicators with high-contrast cyan (`--color-kharon-cyan`) across all focus states in `src/styles/global.css`. Updated `:focus-visible`, `.kharon-focus-ring`, `.kharon-command-button:focus`, and `.kharon-secondary-button:focus` to use cyan palette for WCAG accessibility compliance with absolute highlight visibility.
 
+### Navigation Target Size Accessibility Overhaul (Task UI-003)
+- **44x44px Touch Targets**: Refactored `src/components/portal/AdminNav.astro` navigation links to enforce WCAG minimum interactable size. Updated from `px-2 py-2` to `px-3 py-3` with explicit `min-h-[44px]` constraint. Added `flex-shrink-0` to icons and `flex-1` to text spans to prevent layout compression. Enhanced with `aria-current` and `aria-hidden` attributes for screen reader accessibility.
+- **Brand Token Alignment**: Converted generic gray colors to Kharon brand tokens (`kharon-light`, `kharon-black`, `kharon-grey`) for visual consistency with DESIGN_CONSTITUTION.md standards.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
