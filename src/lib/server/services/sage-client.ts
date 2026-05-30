@@ -32,25 +32,29 @@ export class SageClient {
     /**
      * Internal request method to handle Auth and JSON parsing
      */
-    private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    private async request<T>(endpoint: string, options: RequestInit = {}, idempotencyKey?: string): Promise<T> {
         const token = await getValidSageToken(this.db, this.env);
         const url = `${this.baseUrl}${endpoint}`;
-        
+
         const headers = new Headers(options.headers || {});
         headers.set('Authorization', `Bearer ${token}`);
         headers.set('Accept', 'application/json');
-        
+
         if (options.method && options.method !== 'GET') {
             headers.set('Content-Type', 'application/json');
+            // Add idempotency key for POST/PUT requests to prevent duplicate transactions
+            if (idempotencyKey) {
+                headers.set('X-Idempotency-Key', idempotencyKey);
+            }
         }
 
         const response = await fetch(url, { ...options, headers });
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Sage API Error [${response.status}] at ${endpoint}: ${errorText}`);
         }
-        
+
         return response.json() as Promise<T>;
     }
 
@@ -119,6 +123,7 @@ export class SageClient {
     /**
      * Creates a Sales Invoice in DRAFT status
      * Note: amountExVat and vatAmount are in cents (integer). Sage expects ZAR (decimal).
+     * Uses idempotency key to prevent duplicate invoices on network retries.
      */
     async createSalesInvoice(contactId: string, description: string, amountExVat: number, vatAmount: number): Promise<SageDocument> {
         // Convert cents to ZAR using integer division to avoid IEEE 754 precision issues
@@ -127,6 +132,9 @@ export class SageClient {
 
         const ledgerId = await this.getDefaultSalesLedgerId();
         const taxRateId = await this.getStandardTaxRateId();
+
+        // Generate idempotency key from transaction parameters to prevent duplicates
+        const idempotencyKey = await this.generateIdempotencyKey('invoice', contactId, description, amountExVat);
 
         const payload = {
             sales_invoice: {
@@ -151,13 +159,14 @@ export class SageClient {
         const data = await this.request<SageDocument>('/sales_invoices', {
             method: 'POST',
             body: JSON.stringify(payload)
-        });
+        }, idempotencyKey);
         return data;
     }
 
     /**
      * Creates a Sales Quote in DRAFT status
      * Note: amountExVat and vatAmount are in cents (integer). Sage expects ZAR (decimal).
+     * Uses idempotency key to prevent duplicate quotes on network retries.
      */
     async createSalesQuote(contactId: string, description: string, amountExVat: number, vatAmount: number): Promise<SageDocument> {
         // Convert cents to ZAR using integer division to avoid IEEE 754 precision issues
@@ -166,6 +175,9 @@ export class SageClient {
 
         const ledgerId = await this.getDefaultSalesLedgerId();
         const taxRateId = await this.getStandardTaxRateId();
+
+        // Generate idempotency key from transaction parameters to prevent duplicates
+        const idempotencyKey = await this.generateIdempotencyKey('quote', contactId, description, amountExVat);
 
         const payload = {
             sales_quote: {
@@ -189,8 +201,25 @@ export class SageClient {
         const data = await this.request<SageDocument>('/sales_quotes', {
             method: 'POST',
             body: JSON.stringify(payload)
-        });
+        }, idempotencyKey);
         return data;
+    }
+
+    /**
+     * Generates a deterministic idempotency key from transaction parameters.
+     * Uses SHA-256 to create unique key that prevents duplicate API calls.
+     */
+    private async generateIdempotencyKey(
+        type: 'invoice' | 'quote',
+        contactId: string,
+        description: string,
+        amountExVat: number
+    ): Promise<string> {
+        const data = `${type}:${contactId}:${description}:${amountExVat}:${Date.now()}`;
+        const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return `kharon-${type}-${hashHex.slice(0, 32)}`;
     }
 
     /**

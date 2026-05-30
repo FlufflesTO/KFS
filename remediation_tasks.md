@@ -405,9 +405,23 @@ CRITICAL CONSTRAINTS:
 3. Guarantee that transient network connectivity errors do not result in duplicate account adjustments or double billing events.
 
 OUTPUT THE MODIFIED POST CALL INTERCEPTOR BLOCK.
-[ ] Task FIN-006: Invoicing Render Multi-Page Layout RepairTarget File: src/lib/pdf/invoice-generator.tsSystem Context: src/lib/utils/financial-utils.tsSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [FIN-006]
-TARGET_FILE: src/lib/pdf/invoice-generator.ts
-SYSTEM_CONTEXT: src/lib/utils/financial-utils.ts
+
+[x] Task FIN-005: Idempotency Validation Parameter Implementation
+Target File: src/lib/server/services/sage-client.ts
+System Context: AI_CONTEXT.md
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [FIN-005]
+TARGET_FILE: src/lib/server/services/sage-client.ts
+SYSTEM_CONTEXT: AI_CONTEXT.md
+
+CRITICAL CONSTRAINTS:
+1. Identify outward-facing transaction pipelines that serialize data models to outside platforms.
+2. Inject a unique identifier token (`X-Idempotency-Key`) calculated using specific transaction variables directly into the request header metadata map.
+3. Guarantee that transient network connectivity errors do not result in duplicate account adjustments or double billing events.
+
+OUTPUT THE MODIFIED POST CALL INTERCEPTOR BLOCK.
+
+[ ] Task FIN-006: Invoicing Render Multi-Page Layout Repair
 
 CRITICAL CONSTRAINTS:
 1. Audit the loop configurations pacing item layouts inside file creation processes.

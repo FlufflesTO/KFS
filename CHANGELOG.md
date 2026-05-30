@@ -79,6 +79,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Automated Sage Ledger Event Webhook (Task FIN-004)
 - **Webhook Endpoint Verified**: Confirmed `src/pages/api/finance/sage-webhook.ts` implements secure webhook receiver with Bearer token signature verification, content-type validation, and JSON parsing error handling. Handles `payment_received`, `invoice_paid`, and `quote_approved` events from Sage with database updates to `financial_records` table.
 
+### Idempotency Validation Parameter Implementation (Task FIN-005)
+- **X-Idempotency-Key Header**: Modified `SageClient.request()` in `src/lib/server/services/sage-client.ts` to accept optional `idempotencyKey` parameter and inject `X-Idempotency-Key` header for POST/PUT requests.
+- **generateIdempotencyKey Method**: Added SHA-256-based key generator that creates deterministic keys from transaction type, contact ID, description, and amount. Keys formatted as `kharon-{type}-{32-char-hash}`.
+- **createSalesInvoice/createSalesQuote**: Both methods now generate and pass idempotency keys to prevent duplicate invoices/quotes on transient network failures.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
