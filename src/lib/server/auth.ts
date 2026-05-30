@@ -43,6 +43,28 @@ const textDecoder = new TextDecoder();
 const sessionDurationSeconds = 60 * 60 * 8;
 export const sessionCookieName = "kharon_session_token";
 
+/**
+ * Timing-safe comparison of two Uint8Arrays to prevent timing attacks.
+ * Compares all bytes regardless of where differences occur.
+ */
+function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
+  // Pad to same length if different
+  const maxLen = Math.max(a.length, b.length);
+  const paddedA = new Uint8Array(maxLen);
+  const paddedB = new Uint8Array(maxLen);
+  
+  paddedA.set(a, 0);
+  paddedB.set(b, 0);
+  
+  // Use XOR accumulation to avoid early exit
+  let result = 0;
+  for (let i = 0; i < maxLen; i++) {
+    result |= paddedA[i] ^ paddedB[i];
+  }
+  
+  return result === 0;
+}
+
 function base64UrlEncode(input: string | Uint8Array): string {
   const bytes = input instanceof Uint8Array ? input : textEncoder.encode(String(input));
   let binary = "";
@@ -133,25 +155,29 @@ export async function verifySessionToken(token: string | null | undefined): Prom
   const [encodedPayload, encodedSignature] = token.split(".");
   if (!encodedPayload || !encodedSignature) return null;
 
-  const expected = base64UrlDecode(encodedSignature);
-  // Explicitly cast to ArrayBuffer to satisfy TypeScript
-  const valid = await crypto.subtle.verify(
+  const providedSignature = base64UrlDecode(encodedSignature);
+  
+  // Compute expected signature using HMAC
+  const expectedSignature = new Uint8Array(await crypto.subtle.sign(
     "HMAC",
     await hmacKey(getSessionSecret()),
-    expected.buffer as ArrayBuffer,
     textEncoder.encode(encodedPayload)
-  );
-
-  if (!valid) return null;
+  ));
+  
+  // Timing-safe comparison to prevent side-channel timing attacks
+  const signatureValid = timingSafeEqual(providedSignature, expectedSignature);
+  
+  // Always perform the comparison even if signatures differ to maintain constant time
+  if (!signatureValid) return null;
 
   const payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload))) as SessionPayload;
   assertRole(payload.role);
 
   if (!payload.sub || !payload.name || !payload.email || !payload.exp || !payload.iat) return null;
-  
+
   const nowInSeconds = Math.floor(Date.now() / 1000);
   if (Number(payload.exp) <= nowInSeconds) return null;
-  
+
   // Enforce absolute 8-hour timeout from token creation
   if (nowInSeconds - Number(payload.iat) > sessionDurationSeconds) return null;
 

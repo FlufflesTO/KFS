@@ -209,9 +209,24 @@ CRITICAL CONSTRAINTS:
 4. Correctly pad input arrays to match bit lengths before execution routines run.
 
 OUTPUT ONLY THE SPECIFIC REFACTORED SESSION VALIDATION METHOD.
-[ ] Task SEC-003: Elevated PBKDF2 Hashing Iteration ScalingTarget File: src/lib/server/crypto.tsSystem Context: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.mdSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [SEC-003]
-TARGET_FILE: src/lib/server/crypto.ts
-SYSTEM_CONTEXT: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.md
+
+[x] Task SEC-002: Fixed-Time Cryptographic Session Token Verification
+Target File: src/lib/server/auth.ts
+System Context: schema.sql
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [SEC-002]
+TARGET_FILE: src/lib/server/auth.ts
+SYSTEM_CONTEXT: schema.sql
+
+CRITICAL CONSTRAINTS:
+1. Locate the dynamic token string comparison steps inside the session validation pipeline.
+2. Replace short-circuiting early return evaluation blocks to mitigate side-channel timing attack exposure.
+3. Utilize the serverless Web Crypto standard framework via `crypto.subtle.timingSafeEqual()` to execute fixed-time data stream validations.
+4. Correctly pad input arrays to match bit lengths before execution routines run.
+
+OUTPUT ONLY THE SPECIFIC REFACTORED SESSION VALIDATION METHOD.
+
+[ ] Task SEC-003: Elevated PBKDF2 Hashing Iteration Scaling
 
 CRITICAL CONSTRAINTS:
 1. Locate the password hashing generation configuration blocks.

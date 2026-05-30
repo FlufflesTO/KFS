@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### MFA Enforcement for API Endpoints (Task SEC-001)
 - **mfaEnforcementMiddleware**: Added new middleware layer in `src/middleware.ts` that intercepts all `/portal/api/*` requests for authenticated users. Checks `mfa_required` vs `mfa_enabled` flags on session user object. Returns HTTP 403 Forbidden with JSON error response when MFA is required but not enabled. Excludes MFA setup (`/portal/account/mfa`, `/portal/api/mfa`) and logout paths to allow users to complete MFA enrollment.
 
+### Fixed-Time Cryptographic Session Token Verification (Task SEC-002)
+- **timingSafeEqual Function**: Implemented constant-time XOR-based comparison utility in `src/lib/server/auth.ts` for `Uint8Array` comparison. Pads inputs to equal length, accumulates XOR results across all bytes to prevent early-exit timing leaks.
+- **verifySessionToken Hardening**: Replaced `crypto.subtle.verify` direct usage with explicit signature computation followed by `timingSafeEqual` comparison. Prevents side-channel timing attacks that could leak signature validity through response time analysis.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
