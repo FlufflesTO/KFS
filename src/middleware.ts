@@ -229,6 +229,41 @@ const authMiddleware: MiddlewareHandler = async (context, next) => {
   return await next();
 };
 
+// 3b. MFA Enforcement for API Endpoints
+const mfaEnforcementMiddleware: MiddlewareHandler = async (context, next) => {
+  const { pathname } = context.url;
+  const user = context.locals.user;
+  const nonce = context.locals.nonce;
+
+  // Only apply to authenticated users on portal API paths
+  if (!user || !pathname.startsWith("/portal/api/")) return await next();
+
+  // Exclude MFA setup and logout paths from enforcement
+  if (pathname === mfaPath || pathname === mfaApiPath || pathname === logoutApiPath) {
+    return await next();
+  }
+
+  // Check MFA enforcement requirement
+  const mfaRequired = user.mfa_required === 1 || user.mfa_required === true;
+  const mfaEnabled = user.mfa_enabled === 1 || user.mfa_enabled === true;
+
+  if (mfaRequired && !mfaEnabled) {
+    return withSecurityHeaders(new Response(JSON.stringify({
+      ok: false,
+      error: "mfa_required",
+      message: "Multi-factor authentication setup is required before accessing this endpoint."
+    }), {
+      status: 403,
+      headers: {
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "no-store"
+      }
+    }), nonce);
+  }
+
+  return await next();
+};
+
 // 4. CSRF and Rate Limiting
 const csrfAndRateLimitMiddleware: MiddlewareHandler = async (context, next) => {
   const { pathname } = context.url;
@@ -316,6 +351,7 @@ const rbacMiddleware: MiddlewareHandler = async (context, next) => {
 const middlewareChain = sequence(
   setupMiddleware,
   authMiddleware,
+  mfaEnforcementMiddleware,
   csrfAndRateLimitMiddleware,
   rbacMiddleware,
   securityMiddleware

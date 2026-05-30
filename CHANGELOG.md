@@ -47,6 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### On-Site Field Task Visual Evidence Enforcement (Task JOB-001)
 - **JobCardSchema Evidence Requirement**: Updated `evidencePhotos` array in `src/lib/validation/schemas.ts` from `.max(3).default([])` to `.min(1).max(3)`. Server-side validation now blocks job card submissions without photographic evidence, returning clear error message: "At least one evidence photo is required to complete the job card."
 
+### MFA Enforcement for API Endpoints (Task SEC-001)
+- **mfaEnforcementMiddleware**: Added new middleware layer in `src/middleware.ts` that intercepts all `/portal/api/*` requests for authenticated users. Checks `mfa_required` vs `mfa_enabled` flags on session user object. Returns HTTP 403 Forbidden with JSON error response when MFA is required but not enabled. Excludes MFA setup (`/portal/account/mfa`, `/portal/api/mfa`) and logout paths to allow users to complete MFA enrollment.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

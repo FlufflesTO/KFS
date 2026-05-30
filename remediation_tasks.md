@@ -183,9 +183,24 @@ CRITICAL CONSTRAINTS:
 4. Ensure full type safety using May 2026 Astro middleware context objects.
 
 OUTPUT ONLY THE REVISED MIDDLEWARE EXECUTION CODE BLOCK.
-[ ] Task SEC-002: Fixed-Time Cryptographic Session Token VerificationTarget File: src/lib/server/auth.tsSystem Context: schema.sqlSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [SEC-002]
-TARGET_FILE: src/lib/server/auth.ts
-SYSTEM_CONTEXT: schema.sql
+
+[x] Task SEC-001: MFA Enforcement Validation for API Endpoints
+Target File: src/middleware.ts
+System Context: src/lib/server/auth.ts
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [SEC-001]
+TARGET_FILE: src/middleware.ts
+SYSTEM_CONTEXT: src/lib/server/auth.ts
+
+CRITICAL CONSTRAINTS:
+1. Intercept all data transmission channels mapping under the sub-route pattern `/api/portal/*`.
+2. Extract the active verification payload context and explicitly check the multi-factor authentication lifecycle tracking state.
+3. If the authentication claims mark 'mfa_required' as true but 'mfa_verified' is unconfirmed, structurally truncate the request loop and issue a clean `403 Forbidden` response header string natively.
+4. Ensure full type safety using May 2026 Astro middleware context objects.
+
+OUTPUT ONLY THE REVISED MIDDLEWARE EXECUTION CODE BLOCK.
+
+[ ] Task SEC-002: Fixed-Time Cryptographic Session Token Verification
 
 CRITICAL CONSTRAINTS:
 1. Locate the dynamic token string comparison steps inside the session validation pipeline.
