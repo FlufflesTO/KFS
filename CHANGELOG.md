@@ -44,6 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Integer Cents Validation**: Schema enforces integer-only amounts (no floating-point precision issues) with bounds checking (0 to R9,999,999.00 in cents).
 - **API Integration**: Updated `src/pages/portal/api/finance/records.ts` to use `FinanceTaskCreateSchema.safeParse()` for request validation. Rejects payloads with non-standard VAT rates, returning detailed error messages showing expected vs. provided VAT amounts.
 
+### On-Site Field Task Visual Evidence Enforcement (Task JOB-001)
+- **JobCardSchema Evidence Requirement**: Updated `evidencePhotos` array in `src/lib/validation/schemas.ts` from `.max(3).default([])` to `.min(1).max(3)`. Server-side validation now blocks job card submissions without photographic evidence, returning clear error message: "At least one evidence photo is required to complete the job card."
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

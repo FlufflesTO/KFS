@@ -158,9 +158,23 @@ CRITICAL CONSTRAINTS:
 3. Ensure server-side input processing blocks any form submittal actions that lack supporting site photographic evidence.
 
 OUTPUT THE UPDATED JOBCARD FORM VALIDATION SCHEMAS ONLY.
-🔒 PHASE 2: SECURITY & CRYPTOGRAPHIC REALIGNMENT[ ] Task SEC-001: MFA Enforcement Validation for API EndpointsTarget File: src/middleware.tsSystem Context: src/lib/server/auth.tsSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [SEC-001]
-TARGET_FILE: src/middleware.ts
-SYSTEM_CONTEXT: src/lib/server/auth.ts
+
+[x] Task JOB-001: On-Site Field Task Visual Evidence Enforcement
+Target File: src/lib/validation/schemas.ts
+System Context: src/pages/portal/tech/jobs/[id]/jobcard.astro
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [JOB-001]
+TARGET_FILE: src/lib/validation/schemas.ts
+SYSTEM_CONTEXT: src/pages/portal/tech/jobs/[id]/jobcard.astro
+
+CRITICAL CONSTRAINTS:
+1. Locate the runtime validation schema parsing technician job card completion forms.
+2. Restructure the validation layout processing the incoming attachments array to require a minimum of 1 item payload string: `z.array(z.string().url()).min(1)`.
+3. Ensure server-side input processing blocks any form submittal actions that lack supporting site photographic evidence.
+
+OUTPUT THE UPDATED JOBCARD FORM VALIDATION SCHEMAS ONLY.
+
+[ ] Task SEC-001: MFA Enforcement Validation for API Endpoints
 
 CRITICAL CONSTRAINTS:
 1. Intercept all data transmission channels mapping under the sub-route pattern `/api/portal/*`.

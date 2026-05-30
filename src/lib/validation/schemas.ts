@@ -71,7 +71,7 @@ export const JobCardSchema = z.object({
         return sizeInBytes <= 1572864; // 1.5MB
       }, "Evidence photo must be less than 1.5MB."),
     caption: z.string().max(160).optional().default("")
-  })).max(3).default([]),
+  })).min(1, "At least one evidence photo is required to complete the job card.").max(3),
   defects: z.array(z.object({
     severity: z.enum(["Critical", "Major", "Minor", "Observation"]),
     description: z.string().min(5).max(2000),
