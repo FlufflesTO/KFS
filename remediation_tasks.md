@@ -71,9 +71,23 @@ CRITICAL CONSTRAINTS:
 3. Refactor foreign key relation definitions to enforce `ON DELETE SET NULL` or `ON DELETE RESTRICT` constraints to preserve historical data paths for POPIA compliance.
 
 OUTPUT THE COMPLETED SCHEMA TABLE LAYOUT WITH CORRECTED RESTRICTIONS.
-[ ] Task DB-007: Unified Soft-Delete State Pattern StandardizationTarget File: src/lib/server/db/user-repository.tsSystem Context: schema.sqlSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [DB-007]
-TARGET_FILE: src/lib/server/db/user-repository.ts
-SYSTEM_CONTEXT: schema.sql
+
+[x] Task DB-001: Structural Foreign Key CASCADE Deletion Repair
+Target File: schema.sql
+System Context: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.md
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [DB-001]
+TARGET_FILE: schema.sql
+SYSTEM_CONTEXT: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.md
+
+CRITICAL CONSTRAINTS:
+1. Scan for any instances of `ON DELETE CASCADE` parameters forming destructive data relationships from core entities down to task histories.
+2. Remove hard cascade parameters link updates from relationships between `sites` → `systems` → `jobs` → `defects`.
+3. Refactor foreign key relation definitions to enforce `ON DELETE SET NULL` or `ON DELETE RESTRICT` constraints to preserve historical data paths for POPIA compliance.
+
+OUTPUT THE COMPLETED SCHEMA TABLE LAYOUT WITH CORRECTED RESTRICTIONS.
+
+[ ] Task DB-007: Unified Soft-Delete State Pattern Standardization
 
 CRITICAL CONSTRAINTS:
 1. Remove all references to the legacy binary checking column variable `is_active`.

@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `0024_phase11_telemetry.sql` → `0024a_phase11_telemetry.sql`
   - `0024_sage_oauth_tokens.sql` → `0024b_sage_oauth_tokens.sql`
 
+### POPIA Cascade Deletion Repair (Task DB-001)
+- **Replaced ON DELETE CASCADE with RESTRICT/SET NULL**: Modified foreign key constraints across 10 tables to preserve historical data for POPIA Section 14 compliance. Core entity chain (`sites` → `systems` → `jobs` → `defects`) now uses `ON DELETE RESTRICT` to prevent accidental data loss. Audit-related tables (`password_reset_tokens`, `document_access_logs`, `client_site_access`, `job_evidence_files`, `job_visits`) use `ON DELETE SET NULL` to maintain historical records while allowing user deactivation.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

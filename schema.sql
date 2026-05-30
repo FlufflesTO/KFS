@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS systems (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP,
-    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE RESTRICT
 );
 
 -- Jobs table
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     completed_date DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (system_id) REFERENCES systems(id) ON DELETE CASCADE,
+    FOREIGN KEY (system_id) REFERENCES systems(id) ON DELETE RESTRICT,
     FOREIGN KEY (assigned_technician_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS job_cards (
     customer_signature TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE SET NULL
 );
 
 -- Financial records table
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS financial_records (
     payment_status TEXT NOT NULL DEFAULT 'Unpaid', -- financial_records marker: payment_status
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE RESTRICT
 );
 
 -- Password reset tokens table
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     expires_at TIMESTAMP NOT NULL,
     used_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expiry ON password_reset_tokens(expires_at); -- password reset marker: idx_password_reset_tokens_expiry
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS document_access_logs (
     document_type TEXT NOT NULL,
     document_id TEXT NOT NULL,
     accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_document_access_actor_created ON document_access_logs(user_id, accessed_at); -- document access marker: idx_document_access_actor_created
@@ -147,8 +147,8 @@ CREATE TABLE IF NOT EXISTS client_site_access (
     site_id TEXT NOT NULL,
     granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, site_id), -- client site access marker: PRIMARY KEY (user_id, site_id)
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE RESTRICT
 );
 
 CREATE INDEX IF NOT EXISTS idx_client_site_access_site ON client_site_access(site_id); -- client site access marker: idx_client_site_access_site
@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS job_evidence_files (
     job_id TEXT NOT NULL,
     storage_path TEXT NOT NULL UNIQUE, -- evidence marker: storage_path TEXT NOT NULL UNIQUE
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_job_evidence_job ON job_evidence_files(job_id); -- evidence marker: idx_job_evidence_job
@@ -245,7 +245,7 @@ CREATE INDEX IF NOT EXISTS idx_contact_submissions_submitted ON contact_submissi
 -- Job visits table (from 0015_job_visits.sql)
 CREATE TABLE IF NOT EXISTS job_visits (
     id TEXT PRIMARY KEY,
-    job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE RESTRICT,
     technician_id TEXT REFERENCES users(id) ON DELETE SET NULL,
     visit_date TEXT NOT NULL,
     arrival_time TEXT,
@@ -272,7 +272,7 @@ END;
 -- Defects table (from 0016_defects.sql)
 CREATE TABLE IF NOT EXISTS defects (
     id TEXT PRIMARY KEY,
-    system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE CASCADE,
+    system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE RESTRICT,
     job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
     severity TEXT NOT NULL CHECK (severity IN ('Critical', 'Major', 'Minor', 'Observation')),
     sans_clause_ref TEXT CHECK (sans_clause_ref IS NULL OR length(trim(sans_clause_ref)) BETWEEN 3 AND 80),
@@ -299,7 +299,7 @@ END;
 -- Certificates table (from 0017_certificates.sql)
 CREATE TABLE IF NOT EXISTS certificates (
     id TEXT PRIMARY KEY,
-    system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE CASCADE,
+    system_id TEXT NOT NULL REFERENCES systems(id) ON DELETE RESTRICT,
     job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
     certificate_type TEXT NOT NULL CHECK (certificate_type IN ('Fire Detection', 'Gas Suppression', 'Emergency Lighting', 'Evacuation', 'Combined')),
     issued_date TEXT NOT NULL,
@@ -341,7 +341,7 @@ END;
 -- Finance tasks table (from 0025_finance_tasks.sql)
 CREATE TABLE IF NOT EXISTS finance_tasks (
     id TEXT PRIMARY KEY,
-    site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+    site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE RESTRICT,
     job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL,
     task_type TEXT NOT NULL CHECK (task_type IN ('Quote Required', 'Quote Issued in Sage', 'Quote Approved', 'Invoice Required', 'Invoice Issued in Sage', 'Payment Recorded in Sage', 'Finance Follow-up')),
     amount NUMERIC NOT NULL CHECK (amount >= 0),
