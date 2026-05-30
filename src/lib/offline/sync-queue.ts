@@ -238,7 +238,7 @@ export async function enqueueRequest(
   headers: Record<string, string>,
   body: string | null,
   priority: RequestPriority = "normal",
-  options: SyncQueueOptions = {}
+  _options: SyncQueueOptions = {}
 ): Promise<number> {
   let db: IDBDatabase | null = null;
 
@@ -357,7 +357,7 @@ export async function getQueuedRequest(id: number): Promise<QueuedRequest | null
  * @throws {SyncQueueError} For storage errors
  */
 export async function getAllQueuedRequests(
-  options: SyncQueueOptions = {}
+  _options: SyncQueueOptions = {}
 ): Promise<QueuedRequest[]> {
   let db: IDBDatabase | null = null;
 

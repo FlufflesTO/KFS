@@ -5,18 +5,9 @@
  * Structural Role: Session cryptography and validation layer
  */
 
-import type { D1Database, R2Bucket } from "@cloudflare/workers-types";
+import type { D1Database } from "@cloudflare/workers-types";
 // @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
 import { env } from "cloudflare:workers";
-
-interface Env {
-  SESSION_SECRET: string;
-  MFA_SECRET: string;
-  DB?: D1Database;
-  STORAGE?: R2Bucket;
-  ENVIRONMENT?: string;
-  [key: string]: unknown;
-}
 
 export interface SessionUser {
   id: string;

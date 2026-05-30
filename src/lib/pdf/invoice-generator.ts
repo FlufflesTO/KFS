@@ -397,11 +397,8 @@ function buildInvoiceContent(
   let y = 780; // Starting Y position
   const lineHeight = 14;
   const smallLineHeight = 11;
-  const pageHeight = 842;
   const footerHeight = 60; // Space reserved for footer
-  const minContentHeight = 100; // Minimum space needed for content block
 
-  const content: string[] = [];
   const pages: string[] = [];
   let currentPageContent: string[] = [];
   let pageNumber = 1;

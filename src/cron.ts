@@ -20,12 +20,12 @@ export interface Env {
 
 /**
  * Cron handler - invoked by Cloudflare Workers cron triggers
- * @param scheduledTime - The scheduled time as a Date object
+ * @param _scheduledTime - The scheduled time as a Date object
  * @param cron - The cron expression that triggered this invocation
  * @param env - Worker environment bindings
  */
 export async function scheduled(
-  scheduledTime: ScheduledController,
+  _scheduledTime: ScheduledController,
   cron: string,
   env: Env
 ): Promise<void> {

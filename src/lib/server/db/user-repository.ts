@@ -71,13 +71,12 @@ export class UserRepository {
   async anonymizeUser(id: string): Promise<void> {
     const anonymizedName = generateAnonymizedValue();
     const anonymizedEmail = `${generateAnonymizedValue()}@anonymized.local`;
-    
-    // Generate random password hash to invalidate all sessions
-    const randomPassword = generateAnonymizedValue();
+
+    // Generate random salt to invalidate all sessions
     const bytes = new Uint8Array(32);
     crypto.getRandomValues(bytes);
     const randomSalt = Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
-    
+
     // Create invalid password hash format that will always fail verification
     const anonymizedPasswordHash = `pbkdf2_sha256$600000$${randomSalt}$${generateAnonymizedValue()}`;
 

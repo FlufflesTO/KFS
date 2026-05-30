@@ -8,13 +8,12 @@
 import type { APIContext } from "astro";
 import { auditError, auditEvent } from "../../../lib/server/audit";
 import { FinanceService } from "../../../lib/server/services/finance-service.js";
-import { getBindings, getStandardServiceFee, getDatabase } from "../../../lib/server/bindings.js";
+import { getBindings, getStandardServiceFee } from "../../../lib/server/bindings.js";
 import { badRequest, forbidden, methodNotAllowed, serverError } from "../../../lib/server/http.js";
 import { json } from "../../../lib/server/http.js";
 import { verifyCsrfRequest } from "../../../lib/server/csrf.js";
 import { JobCardSchema } from "../../../lib/validation/schemas";
 import { buildJobcardPdf } from "../../../lib/server/jobcardPdf";
-import { JobRepository } from "../../../lib/server/db/job-repository.js";
 import { SystemRepository } from "../../../lib/server/db/system-repository.js";
 
 export const prerender = false;
@@ -88,7 +87,6 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     const { storage } = bindings;
 
     // Initialize repositories
-    const jobRepository = new JobRepository(db);
     const systemRepository = new SystemRepository(db);
 
     // Verify CSRF token from header (JSON payload submission)
