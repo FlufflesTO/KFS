@@ -32,6 +32,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Users Table Schema Update**: Added `deleted_at TIMESTAMP` column and `idx_users_deleted_at` index to `schema.sql` for ISO 8601 soft-delete timestamp pattern.
 - **User Repository Migration**: Refactored `src/lib/server/db/user-repository.ts` to transition from legacy `is_active = 1` binary flag to `deleted_at IS NULL` filtering across all query methods (`findById`, `findByEmail`, `findWithSecretsByEmail`). Updated `softDelete()` method to set `deleted_at = CURRENT_TIMESTAMP` instead of `is_active = 0`.
 
+### Concurrency Protection via Optimistic Locking (Task DB-003)
+- **Jobs Table Version Column**: Added `version INTEGER NOT NULL DEFAULT 0` column and `idx_jobs_version` index to `schema.sql` for optimistic locking support.
+- **JobRepository Concurrency Methods**: Implemented `ConcurrencyError` class and two update methods with optimistic locking:
+  - `updateStatus(id, newStatus, expectedVersion)`: Atomic status update with version increment
+  - `update(id, updates, expectedVersion)`: Generic multi-field update with version check
+- Both methods throw typed `ConcurrencyError` with expected/current version when row affected is zero, enabling proper conflict resolution in field device update scenarios.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

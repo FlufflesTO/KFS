@@ -119,9 +119,23 @@ CRITICAL CONSTRAINTS:
 3. Throw a dedicated, typed concurrency error statement if a row modification call affects zero records due to an out-of-date state baseline version.
 
 OUTPUT THE REVISED DATA PERSISTENCE METHODS WITHIN JOB-REPOSITORY.TS.
-[ ] Task FIN-003: Strict Statutory 15% VAT Validation EnforcementTarget File: src/lib/validation/schemas.tsSystem Context: src/lib/server/services/finance-service.tsSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [FIN-003]
-TARGET_FILE: src/lib/validation/schemas.ts
-SYSTEM_CONTEXT: src/lib/server/services/finance-service.ts
+
+[x] Task DB-003: Concurrency Protection via Optimistic Locking
+Target File: src/lib/server/db/job-repository.ts
+System Context: schema.sql
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [DB-003]
+TARGET_FILE: src/lib/server/db/job-repository.ts
+SYSTEM_CONTEXT: schema.sql
+
+CRITICAL CONSTRAINTS:
+1. Implement a complete database optimistic locking pattern to protect job details against overlapping updates from field devices.
+2. Intercept update commands to execute query verification checks using an incrementing sequence number: `SET status = ?, version = version + 1 WHERE id = ? AND version = ?`.
+3. Throw a dedicated, typed concurrency error statement if a row modification call affects zero records due to an out-of-date state baseline version.
+
+OUTPUT THE REVISED DATA PERSISTENCE METHODS WITHIN JOB-REPOSITORY.TS.
+
+[ ] Task FIN-003: Strict Statutory 15% VAT Validation Enforcement
 
 CRITICAL CONSTRAINTS:
 1. Target the Zod object parsers that validate financial entities or invoice creation payloads.

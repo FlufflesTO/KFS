@@ -83,11 +83,14 @@ CREATE TABLE IF NOT EXISTS jobs (
     priority TEXT NOT NULL DEFAULT 'Normal',
     assigned_technician_id TEXT,
     completed_date DATE,
+    version INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (system_id) REFERENCES systems(id) ON DELETE RESTRICT,
     FOREIGN KEY (assigned_technician_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_jobs_version ON jobs(version);
 
 -- Job cards table
 CREATE TABLE IF NOT EXISTS job_cards (
