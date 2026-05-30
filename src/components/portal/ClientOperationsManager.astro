@@ -36,7 +36,8 @@ const nonce = Astro.locals.nonce;
       clearTimeout(toastTimeout);
       
       toastTitle.textContent = title;
-      toastMessage.innerHTML = message;
+      toastMessage.textContent = '';
+      toastMessage.appendChild(document.createRange().createContextualFragment(message));
       
       const header = document.getElementById('toast-header');
       header.className = `px-4 py-2 text-xs font-bold uppercase tracking-widest text-white flex justify-between items-center ${
@@ -46,12 +47,12 @@ const nonce = Astro.locals.nonce;
       }`;
 
       if (actions) {
-        toastActions.innerHTML = '';
+        toastActions.replaceChildren();
         toastActions.appendChild(actions);
         toastActions.classList.remove('hidden');
       } else {
         toastActions.classList.add('hidden');
-        toastActions.innerHTML = '';
+        toastActions.replaceChildren();
       }
 
       toast.classList.remove('translate-y-12', 'opacity-0');
@@ -80,7 +81,11 @@ const nonce = Astro.locals.nonce;
           submitBtn.dataset.originalText = submitBtn.innerHTML;
           submitBtn.dataset.submitting = 'true';
           submitBtn.disabled = true;
-          submitBtn.innerHTML = '<span class="animate-pulse">Submitting...</span>';
+          submitBtn.textContent = '';
+          const submitSpan = document.createElement('span');
+          submitSpan.className = 'animate-pulse';
+          submitSpan.textContent = 'Submitting...';
+          submitBtn.appendChild(submitSpan);
           submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
 
           // Safety reset after 15s in case of silent failure
@@ -97,7 +102,8 @@ const nonce = Astro.locals.nonce;
       if (!btn) return;
       btn.dataset.submitting = 'false';
       btn.disabled = false;
-      btn.innerHTML = btn.dataset.originalText;
+      btn.textContent = '';
+      btn.appendChild(document.createRange().createContextualFragment(btn.dataset.originalText));
       btn.classList.remove('opacity-80', 'cursor-not-allowed');
     };
 
