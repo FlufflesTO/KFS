@@ -33,7 +33,8 @@
     "cloudflare:retry-portal": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 retry-portal",
     "cloudflare:check-portal": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 check-portal",
     "deploy:cloudflare": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 production",
-    "deploy:cloudflare:preview": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 preview"
+    "deploy:cloudflare:preview": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 preview",
+    "prepare": "husky"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.5.3",
@@ -49,6 +50,7 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.60.0",
     "eslint": "^10.4.0",
+    "husky": "^9.1.7",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.0",
     "wrangler": "^4.92.0"

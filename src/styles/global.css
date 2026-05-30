@@ -262,7 +262,7 @@ summary::-webkit-details-marker {
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  opacity: 0.08;
+  opacity: 0.03;
   pointer-events: none;
   z-index: -2;
   /* Simulating 3D depth and architectural scale */

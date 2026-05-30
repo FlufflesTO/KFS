@@ -100,7 +100,7 @@ ava/
 .security/
 security/
 snyk/
-.husky/
+.husky/_
 
 # Browser extensions
 *.crx

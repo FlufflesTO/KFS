@@ -74,6 +74,19 @@ for (const file of textDistFiles) {
       fail(`forbidden output term "${term}" in ${path.relative(dist, file).replaceAll("\\", "/")}`);
     }
   }
+
+  // Enforce company branding in built HTML titles
+  if (file.endsWith(".html")) {
+    const titleMatch = text.match(/<title>([^<]+)<\/title>/i);
+    if (!titleMatch) {
+      fail(`missing <title> tag in built file ${rel(file)}`);
+    } else {
+      const title = titleMatch[1].trim();
+      if (!title.toLowerCase().includes("kharon")) {
+        fail(`unbranded page title "${title}" in built file ${rel(file)}`);
+      }
+    }
+  }
 }
 
 const forbiddenSourcePatterns = [
@@ -87,7 +100,9 @@ const forbiddenSourcePatterns = [
   { pattern: /@react-three|from ["']three|TechnicalScene|technical-scene/i, label: "heavy 3D dependency" },
   { pattern: /security guards?|home alarms?/i, label: "forbidden imagery positioning" },
   { pattern: /favicon\.png|apple-touch-icon\.png|og-image\.jpg|og-twitter\.jpg|kharon-portal-fetch\.js/i, label: "missing public asset reference" },
-  { pattern: /href=["']\/src\/|src=["']\/src\//i, label: "source path asset reference" }
+  { pattern: /href=["']\/src\/|src=["']\/src\//i, label: "source path asset reference" },
+  { pattern: /placehold\.it|placehold\.co|via\.placeholder|placeholder\.com|unsplash\.com\/photo/i, label: "unapproved placeholder asset reference" },
+  { pattern: /logo-placeholder|dummy-logo|generic-logo|company-logo/i, label: "generic or template brand logo reference" }
 ];
 
 for (const file of sourceFiles) {
