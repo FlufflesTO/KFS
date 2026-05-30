@@ -1,0 +1,63 @@
+# Kharon Portal & Site - AI Assistant Coding Rules
+
+You are coding on Project Kharon, a high-security Fire & Security web platform built with Astro, Tailwind v4, and Cloudflare Pages.
+Follow these rules strictly when modifying any code in this codebase.
+
+---
+
+## 1. Security & Compliance Boundaries (CRITICAL)
+
+- **Strict HTML Injection Ban**: Never assign to `innerHTML` or `outerHTML`, and never call `insertAdjacentHTML()`. Standard security audits check for these patterns and will block builds.
+  - To clear children: Use `element.replaceChildren()` or `element.textContent = ''`.
+  - To insert plain text: Use `element.textContent = text`.
+  - To parse/insert HTML safely: Use `element.appendChild(document.createRange().createContextualFragment(htmlString))` or construct DOM elements programmatically.
+- **CSP Nonce Injection**: Every inline `<script>` tag in Astro layout files or components MUST map the CSP nonce:
+  ```astro
+  <script nonce={Astro.locals.nonce}>
+    // JavaScript content
+  </script>
+  ```
+- **CSRF Protection**: Every `<form>` in the portal must include the CSRF token input. Always place the `<CsrfInput />` component inside the form:
+  ```astro
+  <form method="POST" action="/portal/api/submit-jobcard">
+    <CsrfInput />
+    <!-- Form elements -->
+  </form>
+  ```
+
+---
+
+## 2. Service Worker & Build Pipeline
+
+- **Service Worker Compilation**: The PWA Service Worker is located at `src/sw.ts` and runs on the client. It must be compiled to `public/sw.js` (minified) prior to running Astro build.
+- **Astro Config Integrity**: Never modify the `vite.build.rollupOptions` or Vite `worker` settings in `astro.config.ts` to build the service worker, as this overrides Astro's main page compilation and breaks server route generation. Keep `astro.config.ts` purely configured for Astro + Tailwind + Cloudflare.
+- **Pre-build Step**: Service worker compilation is configured in `package.json` under the `build` script:
+  ```json
+  "build": "esbuild src/sw.ts --minify --outfile=public/sw.js && astro build && node scripts/purge-css.ts"
+  ```
+
+---
+
+## 3. Performance & Size Budgets
+
+- **CSS Size Limit**: The global stylesheet must be under **95KB**.
+  - All Tailwind classes must be declared statically where possible.
+  - Post-build, `scripts/purge-css.ts` automatically runs to prune unused classes and CSS variables. Make sure your styling complies with `DESIGN_CONSTITUTION.md`.
+- **Public JS Size Limit**: Publicly served client-side JavaScript assets must be under **20KB**. Keep client script footprints minimal.
+
+---
+
+## 4. Forbidden Phrases & Copy Checks
+
+Do not introduce any of the following strings in copy, pages, or comments, as they will cause the site audit script to fail:
+- "System Overview", "Coming Soon", "TechnicalScene", "technical-scene", "critical path", "fake telemetry", "dashboard widget".
+- "security guards", "home alarms" (forbidden imagery positioning).
+- Temporary/dev credentials like "your-secure-password", "replace-with-current-test-password", "password123", "P@ssw0rd", "admin123", "tech123".
+
+---
+
+## 5. Local Commands & Verification
+
+- **Code Linting**: Run `npm run lint` to run ESLint.
+- **Full Build & Audit**: Run `npm run validate:site` to build the app, compile the service worker, purge CSS, and run the security/compliance audit.
+- **E2E Testing**: Run `npx playwright test` to run Playwright tests.
