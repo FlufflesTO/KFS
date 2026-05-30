@@ -94,6 +94,44 @@ export async function clientCanAccessSite(db: D1Database, user: AccessUser | nul
   return ids.includes(String(siteId));
 }
 
+/**
+ * Validates that a client user can access the requested site.
+ * Returns 403 Forbidden if access is not permitted.
+ * For non-client users, returns null (no restriction).
+ */
+export async function requireClientSiteAccess(
+  db: D1Database,
+  user: AccessUser | null | undefined,
+  siteId: string | null | undefined
+): Promise<Response | null> {
+  if (!user) return forbidden("Authentication required.");
+  if (user.role !== "client") return null; // Non-clients bypass this check
+
+  const canAccess = await clientCanAccessSite(db, user, siteId);
+  if (!canAccess) {
+    return forbidden("You do not have access to this site.");
+  }
+  return null;
+}
+
+/**
+ * Validates data access for tenant accounts.
+ * Ensures client users can only query data from their authorized sites.
+ * Returns filtered site IDs or empty array if no access.
+ */
+export async function validateDataAccess(
+  db: D1Database,
+  user: AccessUser | null | undefined,
+  requestedSiteIds: string[]
+): Promise<string[]> {
+  if (!user) return [];
+  if (user.role === "admin") return requestedSiteIds; // Admins can access all
+
+  const authorizedIds = await clientSiteIds(db, user);
+  // Return only the intersection of requested and authorized sites
+  return requestedSiteIds.filter(id => authorizedIds.includes(String(id)));
+}
+
 export function inClause(values: unknown[], startIndex: number = 1): string {
   return values.map((_, index) => `?${startIndex + index}`).join(", ");
 }

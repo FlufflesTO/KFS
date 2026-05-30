@@ -99,6 +99,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **compressImage Function**: Added client-side image compression utility in `src/pages/portal/tech/jobs/[id]/jobcard.astro`. Uses HTML5 Canvas to downsample images to max 1920px longest side, then iteratively compresses JPEG (quality 0.92→0.60) until under 2MB target.
 - **Job Card Integration**: Evidence photo upload loop now processes all images through `compressImage()` before submission. Large images automatically resized and converted to JPEG format, reducing upload bandwidth and storage requirements while preserving visual evidence quality.
 
+### Cross-Tenant Data Access Validation (Task JOB-006)
+- **requireClientSiteAccess Function**: New validator in `src/lib/server/access.ts` that enforces client site access restrictions. Returns 403 Forbidden if client user attempts to access unauthorized site. Non-client users bypass this check.
+- **validateDataAccess Function**: Multi-site access validator that filters requested site IDs against user's authorized sites. Admin users receive all requested IDs; client users receive only intersection of requested and authorized sites. Prevents cross-tenant data leakage in multi-site queries.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

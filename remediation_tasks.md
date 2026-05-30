@@ -517,9 +517,24 @@ CRITICAL CONSTRAINTS:
 3. Reject data requests with a `403 Unauthorized` response payload if the structural relation parameters are unverified.
 
 OUTPUT THE REFACTORED TENANT PERMISSION LOOKUP CODE.
-🎨 PHASE 5: UX, INTERFACES & TELEMETRY[ ] Task UI-001: Operational Alert Notification Panel Visual AlignmentTarget File: src/components/portal/OfflineBanner.astroSystem Context: DESIGN_CONSTITUTION.mdSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [UI-001]
-TARGET_FILE: src/components/portal/OfflineBanner.astro
-SYSTEM_CONTEXT: DESIGN_CONSTITUTION.md
+
+[x] Task JOB-006: Cross-Tenant Data Access Validation Rules
+Target File: src/lib/server/access.ts
+System Context: src/middleware.ts
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [JOB-006]
+TARGET_FILE: src/lib/server/access.ts
+SYSTEM_CONTEXT: src/middleware.ts
+
+CRITICAL CONSTRAINTS:
+1. Target the authorization middleware handling data access lookups for tenant accounts.
+2. Build validation requirements that compare active identity claim variables directly with access mapping tables.
+3. Reject data requests with a `403 Unauthorized` response payload if the structural relation parameters are unverified.
+
+OUTPUT THE REFACTORED TENANT PERMISSION LOOKUP CODE.
+
+🎨 PHASE 5: UX, INTERFACES & TELEMETRY
+[ ] Task UI-001: Operational Alert Notification Panel Visual Alignment
 
 CRITICAL CONSTRAINTS:
 1. Audit style definitions used within the interface notification panel.
