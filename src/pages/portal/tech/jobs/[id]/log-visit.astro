@@ -277,6 +277,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
   </section>
 
   <script>
+    import { safeQuerySelector } from "../../../../../lib/types/dom";
     /**
      * Client-side logic for the two-phase visit logging workflow.
      * Posts JSON to /portal/api/job-visits matching the existing payload contract:
@@ -295,12 +296,11 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
     }
 
     // ── DOM references ────────────────────────────────────────────────────────
-    const arrivalForm = document.querySelector<HTMLFormElement>(".log-arrival-form");
-    const outcomeForm = document.querySelector<HTMLFormElement>(".log-outcome-form");
-    const visitResult = document.querySelector<HTMLElement>(".visit-result");
-    // Type as 'any' to avoid DOM type incompatibility with HTMLSelectElement.remove()
-    const outcomeSelect = document.querySelector('.log-outcome-form select[name="visitStatus"]') as any;
-    const unableReasonSection = document.querySelector<HTMLElement>(".unable-reason-section");
+    const arrivalForm = safeQuerySelector<HTMLFormElement>(".log-arrival-form");
+    const outcomeForm = safeQuerySelector<HTMLFormElement>(".log-outcome-form");
+    const visitResult = safeQuerySelector<HTMLElement>(".visit-result");
+    const outcomeSelect = safeQuerySelector<Element>('.log-outcome-form select[name="visitStatus"]') as HTMLSelectElement | null;
+    const unableReasonSection = safeQuerySelector<HTMLElement>(".unable-reason-section");
 
     // ── Conditionally show "Unable to Complete" reason dropdown ────────────
     if (outcomeSelect) {

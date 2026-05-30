@@ -240,7 +240,7 @@ export async function enqueueRequest(
   priority: RequestPriority = "normal",
   options: SyncQueueOptions = {}
 ): Promise<number> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -314,7 +314,7 @@ export async function enqueueRequest(
  * @throws {SyncQueueError} For storage errors
  */
 export async function getQueuedRequest(id: number): Promise<QueuedRequest | null> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -359,7 +359,7 @@ export async function getQueuedRequest(id: number): Promise<QueuedRequest | null
 export async function getAllQueuedRequests(
   options: SyncQueueOptions = {}
 ): Promise<QueuedRequest[]> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -438,7 +438,7 @@ export async function getReadyQueuedRequests(): Promise<QueuedRequest[]> {
  * @throws {SyncQueueError} For storage errors
  */
 export async function deleteQueuedRequest(id: number): Promise<boolean> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -495,7 +495,7 @@ export async function updateRequestRetry(
   errorMessage?: string,
   options: SyncQueueOptions = {}
 ): Promise<void> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -567,7 +567,7 @@ export async function updateRequestRetry(
  * @throws {SyncQueueError} For storage errors
  */
 export async function clearQueue(): Promise<number> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -720,7 +720,7 @@ export async function processQueue(options: SyncQueueOptions = {}): Promise<Sync
  * @throws {SyncQueueError} For storage errors
  */
 export async function getQueueCount(): Promise<number> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();

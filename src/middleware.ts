@@ -359,10 +359,13 @@ const middlewareChain = sequence(
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
   try {
-    return await next();
+    const response = await middlewareChain(context, next);
+    if (response) {
+      return response;
+    }
   } catch (error) {
     console.error("Critical Middleware Error:", error);
-    
+
     // Structured error for Cloudflare Logs/Tail
     const errorData = {
       timestamp: new Date().toISOString(),
@@ -372,12 +375,13 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       stack: error instanceof Error ? error.stack : undefined,
       user: context.locals.user?.id || "anonymous"
     };
-    
+
     console.error(JSON.stringify(errorData));
 
-    return new Response("A critical system error occurred. Please contact admin@kharon.co.za if this persists.", { 
+    return new Response("A critical system error occurred. Please contact admin@kharon.co.za if this persists.", {
       status: 500,
       headers: { "Content-Type": "text/plain" }
     });
   }
+  return next();
 };

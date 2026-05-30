@@ -204,7 +204,7 @@ export async function saveDraft(
   jobId: string,
   data: Record<string, unknown>
 ): Promise<number> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -308,7 +308,7 @@ export async function saveDraft(
  * @throws {DraftStorageError} For storage errors
  */
 export async function getDraft(jobId: string): Promise<Draft | null> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -357,7 +357,7 @@ export async function getDraft(jobId: string): Promise<Draft | null> {
  * @throws {DraftStorageError} For storage errors
  */
 export async function getDraftById(id: number): Promise<Draft | null> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -405,7 +405,7 @@ export async function getDraftById(id: number): Promise<Draft | null> {
  * @throws {DraftStorageError} For storage errors
  */
 export async function getAllDrafts(status?: DraftStatus): Promise<Draft[]> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -459,7 +459,7 @@ export async function getAllDrafts(status?: DraftStatus): Promise<Draft[]> {
  * @throws {DraftStorageError} For storage errors
  */
 export async function deleteDraft(id: number): Promise<boolean> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -529,7 +529,7 @@ export async function deleteDraftByJobId(jobId: string): Promise<boolean> {
  * @throws {DraftStorageError} For storage errors
  */
 export async function clearAllDrafts(): Promise<number> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -595,7 +595,7 @@ export async function updateDraftStatus(
   status: DraftStatus,
   errorMessage?: string
 ): Promise<void> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -738,7 +738,7 @@ export async function handleDraftSyncFailure(
  * @throws {DraftStorageError} For storage errors
  */
 export async function deleteOldDrafts(maxAgeDays: number = DEFAULT_MAX_AGE_DAYS): Promise<number> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();
@@ -810,7 +810,7 @@ export async function deleteOldDrafts(maxAgeDays: number = DEFAULT_MAX_AGE_DAYS)
  * @throws {DraftStorageError} For storage errors
  */
 export async function deleteSyncedDrafts(): Promise<number> {
-  let db: IDBDatabase;
+  let db: IDBDatabase | null = null;
 
   try {
     db = await openDatabase();

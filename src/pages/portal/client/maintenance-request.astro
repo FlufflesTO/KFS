@@ -141,21 +141,22 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
   </section>
 
   <script>
-    const form = document.querySelector<HTMLFormElement>("#maintenance-request-form");
-    // Type as 'any' to avoid DOM type incompatibility with HTMLSelectElement.remove()
-    const siteSelect = document.querySelector("#req-siteId") as any;
-    const systemSelect = document.querySelector("#req-systemId") as any;
-    const result = document.querySelector<HTMLElement>("#request-result");
-    const submitBtn = document.querySelector<HTMLButtonElement>("#request-submit-btn");
+    import { safeQuerySelector } from "../../../lib/types/dom";
+
+    const form = safeQuerySelector<HTMLFormElement>("#maintenance-request-form");
+    const siteSelect = safeQuerySelector<Element>("#req-siteId") as HTMLSelectElement | null;
+    const systemSelect = safeQuerySelector<Element>("#req-systemId") as HTMLSelectElement | null;
+    const result = safeQuerySelector<HTMLElement>("#request-result");
+    const submitBtn = safeQuerySelector<HTMLButtonElement>("#request-submit-btn");
 
     // Dynamic filtering of systems based on selected site
     function filterSystems() {
       if (!siteSelect || !systemSelect) return;
       const selectedSiteId = siteSelect.value;
-      const options = systemSelect.querySelectorAll("option");
+      const options = Array.from(systemSelect.querySelectorAll<HTMLOptionElement>("option"));
 
       let firstVisibleIdx = 0;
-      options.forEach((option: HTMLOptionElement, idx: number) => {
+      options.forEach((option, idx) => {
         const optionSiteId = option.getAttribute("data-site-id");
         if (!optionSiteId || optionSiteId === selectedSiteId) {
           option.style.display = "";
@@ -177,7 +178,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
     // Trigger initial filter on load
     filterSystems();
 
-    form?.addEventListener("submit", async (event) => {
+    form?.addEventListener("submit", async (event: SubmitEvent) => {
       event.preventDefault();
       if (!result || !submitBtn) return;
       result.classList.add("hidden");
