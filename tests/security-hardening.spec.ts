@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Phase 3: E2E Verification & Hardening', () => {
 
-  test('CSRF Validation: Form submission without CSRF token returns 403', async ({ page, request }) => {
+  test('CSRF Validation: Form submission without CSRF token returns 403', async ({ page }) => {
     // Navigate to a non-portal page to avoid D1 auth middleware
     await page.goto('/');
     

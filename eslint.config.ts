@@ -22,7 +22,7 @@ const config: Linter.Config[] = [
     ]
   },
   {
-    files: ["src/**/*.{js,jsx,ts,tsx}", "scripts/**/*.{ts,js}"],
+    files: ["src/**/*.{js,jsx,ts,tsx}", "scripts/**/*.{ts,js,mjs}", "tests/**/*.{ts,js}"],
     languageOptions: {
       parser: tseslint.parser,
       ecmaVersion: "latest",
