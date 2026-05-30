@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('tech', 'admin', 'client', 'finance')),
     is_active INTEGER NOT NULL DEFAULT 1,
+    deleted_at TIMESTAMP,
     mfa_required INTEGER NOT NULL DEFAULT 0, -- MFA marker: mfa_required INTEGER NOT NULL DEFAULT 0
     mfa_secret TEXT,
     mfa_secret_encrypted TEXT, -- schema.sql missing MFA marker: mfa_secret_encrypted TEXT
@@ -22,6 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_mfa_required ON users(mfa_required); -- schema.sql missing MFA marker: idx_users_mfa_required
+CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
 
 -- Clients table
 CREATE TABLE IF NOT EXISTS clients (

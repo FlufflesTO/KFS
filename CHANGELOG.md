@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### POPIA Cascade Deletion Repair (Task DB-001)
 - **Replaced ON DELETE CASCADE with RESTRICT/SET NULL**: Modified foreign key constraints across 10 tables to preserve historical data for POPIA Section 14 compliance. Core entity chain (`sites` → `systems` → `jobs` → `defects`) now uses `ON DELETE RESTRICT` to prevent accidental data loss. Audit-related tables (`password_reset_tokens`, `document_access_logs`, `client_site_access`, `job_evidence_files`, `job_visits`) use `ON DELETE SET NULL` to maintain historical records while allowing user deactivation.
 
+### Soft-Delete Pattern Standardization (Task DB-007)
+- **Users Table Schema Update**: Added `deleted_at TIMESTAMP` column and `idx_users_deleted_at` index to `schema.sql` for ISO 8601 soft-delete timestamp pattern.
+- **User Repository Migration**: Refactored `src/lib/server/db/user-repository.ts` to transition from legacy `is_active = 1` binary flag to `deleted_at IS NULL` filtering across all query methods (`findById`, `findByEmail`, `findWithSecretsByEmail`). Updated `softDelete()` method to set `deleted_at = CURRENT_TIMESTAMP` instead of `is_active = 0`.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

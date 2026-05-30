@@ -95,9 +95,23 @@ CRITICAL CONSTRAINTS:
 3. Refactor data selection wrapper methods (`findById`, `getAll`, `authenticate`) to apply `WHERE deleted_at IS NULL` filters natively across all lookup passes.
 
 OUTPUT THE FULLY COMPLETED, STRONGLY-TYPED USER REPOSITORY SOURCE CODE.
-[ ] Task DB-003: Concurrency Protection via Optimistic LockingTarget File: src/lib/server/db/job-repository.tsSystem Context: schema.sqlSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [DB-003]
-TARGET_FILE: src/lib/server/db/job-repository.ts
+
+[x] Task DB-007: Unified Soft-Delete State Pattern Standardization
+Target File: src/lib/server/db/user-repository.ts
+System Context: schema.sql
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [DB-007]
+TARGET_FILE: src/lib/server/db/user-repository.ts
 SYSTEM_CONTEXT: schema.sql
+
+CRITICAL CONSTRAINTS:
+1. Remove all references to the legacy binary checking column variable `is_active`.
+2. Transition the query logic layer to use a standard ISO `deleted_at` timestamp field configuration.
+3. Refactor data selection wrapper methods (`findById`, `getAll`, `authenticate`) to apply `WHERE deleted_at IS NULL` filters natively across all lookup passes.
+
+OUTPUT THE FULLY COMPLETED, STRONGLY-TYPED USER REPOSITORY SOURCE CODE.
+
+[ ] Task DB-003: Concurrency Protection via Optimistic Locking
 
 CRITICAL CONSTRAINTS:
 1. Implement a complete database optimistic locking pattern to protect job details against overlapping updates from field devices.
