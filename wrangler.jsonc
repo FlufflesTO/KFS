@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "kharon-website",
+  "account_id": "env.CLOUDFLARE_ACCOUNT_ID",
   "compatibility_date": "2026-05-20",
   "compatibility_flags": ["nodejs_compat"],
   "routes": [

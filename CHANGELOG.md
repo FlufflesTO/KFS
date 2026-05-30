@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Core Infrastructure & Database Foundation
 - **Automated D1 Migrations (Task SRE-001)**: Integrated type-checking (`npm run check`) and automated D1 database migrations (`npx wrangler d1 migrations apply kharon-db --remote`) sequentially into the GitHub Actions CI/CD deployment workflow (`.github/workflows/ci-cd.yml`).
+- **Hardcoded Account ID Removal (Task SRE-002)**: Replaced hardcoded Cloudflare Account ID values with a dynamic evaluation rule in `wrangler.jsonc` extracting strings natively via `env.CLOUDFLARE_ACCOUNT_ID`.
 - **Wrangler Pages Deploy**: Refactored the GHA deployment steps to utilize the official `cloudflare/wrangler-action@v3` action with natively bound repository credentials.
 - **Type Check Script**: Added a `"check": "astro check"` script to `package.json` to support type-checking.
 
