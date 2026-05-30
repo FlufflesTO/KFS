@@ -23,12 +23,14 @@ ON CONFLICT(id) DO UPDATE SET
   site_contact_email = excluded.site_contact_email,
   billing_emails = excluded.billing_emails;
 
+-- Temporary Password: Kharon-Temp-Portal2026!
+-- Hash: pbkdf2_sha256$100000$$w6fCnUPDscO1w6wTKhY2CGkIw5fDtsOzw5BwShLDvcKwNwtXPsODU8Oewq9veQ
 INSERT INTO users (id, name, email, password_hash, role, site_id, is_active)
 VALUES
-  ('usr_admin_001', 'Kharon Admin', 'admin@kharon.co.za', 'pbkdf2_sha256$100000$ZGE0OGNjODAtNzU0ZC00NzQ5LWIyODQtODBjMDRiNWJiMGEy$5VRtPYcyy7NpUC0lho-8xpix25lCAJ7pe8mxtKl7W-E', 'admin', NULL, 1),
-  ('usr_tech_001', 'Kharon Technician', 'tech@kharon.co.za', 'pbkdf2_sha256$100000$ZGE0OGNjODAtNzU0ZC00NzQ5LWIyODQtODBjMDRiNWJiMGEy$5VRtPYcyy7NpUC0lho-8xpix25lCAJ7pe8mxtKl7W-E', 'tech', NULL, 1),
-  ('usr_finance_001', 'Kharon Finance', 'finance@kharon.co.za', 'pbkdf2_sha256$100000$ZGE0OGNjODAtNzU0ZC00NzQ5LWIyODQtODBjMDRiNWJiMGEy$5VRtPYcyy7NpUC0lho-8xpix25lCAJ7pe8mxtKl7W-E', 'finance', NULL, 1),
-  ('usr_client_001', 'Client Portal User', 'client@example.com', 'pbkdf2_sha256$100000$ZGE0OGNjODAtNzU0ZC00NzQ5LWIyODQtODBjMDRiNWJiMGEy$5VRtPYcyy7NpUC0lho-8xpix25lCAJ7pe8mxtKl7W-E', 'client', 'site_tequit_staging', 1)
+  ('usr_admin_001', 'Kharon Admin', 'admin@kharon.co.za', 'pbkdf2_sha256$100000$$w6fCnUPDscO1w6wTKhY2CGkIw5fDtsOzw5BwShLDvcKwNwtXPsODU8Oewq9veQ', 'admin', NULL, 1),
+  ('usr_tech_001', 'Kharon Technician', 'tech@kharon.co.za', 'pbkdf2_sha256$100000$$w6fCnUPDscO1w6wTKhY2CGkIw5fDtsOzw5BwShLDvcKwNwtXPsODU8Oewq9veQ', 'tech', NULL, 1),
+  ('usr_finance_001', 'Kharon Finance', 'finance@kharon.co.za', 'pbkdf2_sha256$100000$$w6fCnUPDscO1w6wTKhY2CGkIw5fDtsOzw5BwShLDvcKwNwtXPsODU8Oewq9veQ', 'finance', NULL, 1),
+  ('usr_client_001', 'Client Portal User', 'client@example.com', 'pbkdf2_sha256$100000$$w6fCnUPDscO1w6wTKhY2CGkIw5fDtsOzw5BwShLDvcKwNwtXPsODU8Oewq9veQ', 'client', 'site_tequit_staging', 1)
 ON CONFLICT(email) DO UPDATE SET
   name = excluded.name,
   password_hash = excluded.password_hash,
