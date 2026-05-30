@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-05-30
+
+### Core Infrastructure & Database Foundation
+- **Automated D1 Migrations (Task SRE-001)**: Integrated type-checking (`npm run check`) and automated D1 database migrations (`npx wrangler d1 migrations apply kharon-db --remote`) sequentially into the GitHub Actions CI/CD deployment workflow (`.github/workflows/ci-cd.yml`).
+- **Wrangler Pages Deploy**: Refactored the GHA deployment steps to utilize the official `cloudflare/wrangler-action@v3` action with natively bound repository credentials.
+- **Type Check Script**: Added a `"check": "astro check"` script to `package.json` to support type-checking.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
