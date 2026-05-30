@@ -69,6 +69,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **generateAnonymizedValue Utility**: Added cryptographic random value generator producing `anon_[32-char-hex]` format strings for PII replacement.
 - **anonymizeUser Method**: New `UserRepository.anonymizeUser(id)` method for POPIA Section 26 compliance (right to erasure). Replaces personal data (name, email, password_hash, mfa_secret_encrypted) with randomized values while preserving user ID and role for referential integrity with financial/audit records. Invalidates all active sessions by randomizing password hash and setting `force_password_change = 1`.
 
+### Absolute Integer Cent Conversion in Sage Client (Task FIN-001)
+- **centsToZar Method**: Added private utility in `src/lib/server/services/sage-client.ts` that converts integer cents to ZAR using `Math.floor()` and modulo arithmetic instead of floating-point division. Eliminates IEEE 754 rounding errors in invoice/quote creation.
+- **createSalesInvoice/createSalesQuote**: Refactored to use `centsToZar()` method instead of `(amount/100).toFixed(2)` pattern. All monetary values now flow through integer-safe conversion pipeline before transmission to Sage API.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

@@ -333,9 +333,23 @@ CRITICAL CONSTRAINTS:
 3. Restructure accounting transformations to format input numbers strictly as complete integer units representing total cents.
 
 OUTPUT THE UNIFIED FILE DELTA MODIFICATIONS FOR THE SAGE CLIENT.
-[ ] Task FIN-002: Type Realignment for Financial FieldsTarget File: src/lib/server/db/finance-repository.tsSystem Context: schema.sqlSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [FIN-002]
-TARGET_FILE: src/lib/server/db/finance-repository.ts
-SYSTEM_CONTEXT: schema.sql
+
+[x] Task FIN-001: Absolute Integer Cent Conversion in Sage Client
+Target File: src/lib/server/services/sage-client.ts
+System Context: src/lib/utils/financial-utils.ts
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [FIN-001]
+TARGET_FILE: src/lib/server/services/sage-client.ts
+SYSTEM_CONTEXT: src/lib/utils/financial-utils.ts
+
+CRITICAL CONSTRAINTS:
+1. Audit all mathematical transformations structuring invoices before sending to the external API endpoint.
+2. Strip out all fractional calculations like `(amount/100).toFixed(2)` which introduce IEEE 754 rounding errors.
+3. Restructure accounting transformations to format input numbers strictly as complete integer units representing total cents.
+
+OUTPUT THE UNIFIED FILE DELTA MODIFICATIONS FOR THE SAGE CLIENT.
+
+[ ] Task FIN-002: Type Realignment for Financial Fields
 
 CRITICAL CONSTRAINTS:
 1. Audit the data property assignments mapping database columns down to memory objects.

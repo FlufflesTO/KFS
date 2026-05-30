@@ -118,11 +118,13 @@ export class SageClient {
 
     /**
      * Creates a Sales Invoice in DRAFT status
+     * Note: amountExVat and vatAmount are in cents (integer). Sage expects ZAR (decimal).
      */
     async createSalesInvoice(contactId: string, description: string, amountExVat: number, vatAmount: number): Promise<SageDocument> {
-        const netAmount = (amountExVat / 100).toFixed(2);
-        const taxAmount = (vatAmount / 100).toFixed(2);
-        
+        // Convert cents to ZAR using integer division to avoid IEEE 754 precision issues
+        const netAmount = this.centsToZar(amountExVat);
+        const taxAmount = this.centsToZar(vatAmount);
+
         const ledgerId = await this.getDefaultSalesLedgerId();
         const taxRateId = await this.getStandardTaxRateId();
 
@@ -136,9 +138,9 @@ export class SageClient {
                         description: description,
                         ledger_account_id: ledgerId,
                         quantity: 1,
-                        unit_price: parseFloat(netAmount),
-                        tax_amount: parseFloat(taxAmount),
-                        net_amount: parseFloat(netAmount),
+                        unit_price: netAmount,
+                        tax_amount: taxAmount,
+                        net_amount: netAmount,
                         // Ensure tax rate is provided if we found one
                         ...(taxRateId ? { tax_rate_id: taxRateId } : {})
                     }
@@ -155,11 +157,13 @@ export class SageClient {
 
     /**
      * Creates a Sales Quote in DRAFT status
+     * Note: amountExVat and vatAmount are in cents (integer). Sage expects ZAR (decimal).
      */
     async createSalesQuote(contactId: string, description: string, amountExVat: number, vatAmount: number): Promise<SageDocument> {
-        const netAmount = (amountExVat / 100).toFixed(2);
-        const taxAmount = (vatAmount / 100).toFixed(2);
-        
+        // Convert cents to ZAR using integer division to avoid IEEE 754 precision issues
+        const netAmount = this.centsToZar(amountExVat);
+        const taxAmount = this.centsToZar(vatAmount);
+
         const ledgerId = await this.getDefaultSalesLedgerId();
         const taxRateId = await this.getStandardTaxRateId();
 
@@ -173,9 +177,9 @@ export class SageClient {
                         description: description,
                         ledger_account_id: ledgerId,
                         quantity: 1,
-                        unit_price: parseFloat(netAmount),
-                        tax_amount: parseFloat(taxAmount),
-                        net_amount: parseFloat(netAmount),
+                        unit_price: netAmount,
+                        tax_amount: taxAmount,
+                        net_amount: netAmount,
                         ...(taxRateId ? { tax_rate_id: taxRateId } : {})
                     }
                 ]
@@ -187,5 +191,17 @@ export class SageClient {
             body: JSON.stringify(payload)
         });
         return data;
+    }
+
+    /**
+     * Converts cents (integer) to ZAR (decimal) without floating-point precision issues.
+     * Uses Math.floor for whole rands and modulo for cents to avoid IEEE 754 errors.
+     * @param cents - Amount in cents (e.g., 185000 for R1,850.00)
+     * @returns Amount in ZAR as number (e.g., 1850.00)
+     */
+    private centsToZar(cents: number): number {
+        const rands = Math.floor(cents / 100);
+        const remainingCents = cents % 100;
+        return rands + (remainingCents / 100);
     }
 }
