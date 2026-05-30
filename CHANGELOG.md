@@ -33,21 +33,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 |--------|--------|-------|--------|
 | TypeScript Errors | 65 | 0 | ✅ -65 |
 | TypeScript Warnings | 49 | 0 | ✅ -49 |
-| Hints | 21 | 4 | ✅ -17 |
+| Hints | 21 | 1 | ✅ -20 |
 | `as any` Escapes | 4 | 0 | ✅ -4 |
 | IDB Null-Safety | ❌ | ✅ | Fixed |
 | Offline Indicator | ❌ | ✅ | Deployed |
 
-#### Remaining Hints (4 - Non-actionable)
+#### Remaining Hints (1 - Non-actionable)
 - 1x `ErrorHandlerOptions<T>` type parameter - used internally by generic interface
-- 3x `ZodIssueCode` deprecated - Zod library deprecation (external dependency)
+
+### Zod v4 API Migration (Post-Sprint 1)
+- Replaced deprecated `ZodIssueCode.custom` with `"custom"` string literal
+- Removed `ZodIssueCode` import from `src/lib/validation/schemas.ts`
+- Updated `FinanceTaskCreateSchema` and `FinanceTaskUpdateSchema` superRefine callbacks
 
 ### Documentation Updates
 - **CHANGELOG.md**: Added Engineering Board Audit Remediation section with full metrics
 - **QWEN.md**: Added DOM Type Safety Helpers and IndexedDB Null-Safety Pattern sections
 
 ### Build Status
-- ✅ TypeScript: 0 errors, 0 warnings, 4 hints
+- ✅ TypeScript: 0 errors, 0 warnings, 1 hint
 - ✅ Production Build: PASS
 - ✅ Deployment Ready: YES
 - **tsconfig.json Relaxation**: Adjusted strict TypeScript settings for pragmatic CI/CD pipeline compatibility. Disabled `exactOptionalPropertyTypes`, `strictPropertyInitialization`, `noUnusedLocals`, and `noUnusedParameters`. Excluded scripts, tests, eslint.config.ts, and playwright.config.ts from type checking to focus validation on production source code.
