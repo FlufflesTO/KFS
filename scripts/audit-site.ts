@@ -37,6 +37,7 @@ if (!fs.existsSync(dist)) {
 }
 
 const sourceFiles = walk(src).filter((file) => /\.(astro|js|ts|css)$/.test(file));
+const publicSourceFiles = walk(publicDir).filter((file) => /\.(html|js|css)$/.test(file));
 const distFiles = walk(dist);
 const textDistFiles = distFiles.filter((file) => /\.(html|mjs|js|css|txt|xml|json)$/.test(file));
 const repoTextFiles = walk(root).filter((file) => {
@@ -115,7 +116,7 @@ const forbiddenSourcePatterns = [
   { pattern: /logo-placeholder|dummy-logo|generic-logo|company-logo/i, label: "generic or template brand logo reference" }
 ];
 
-for (const file of sourceFiles) {
+for (const file of [...sourceFiles, ...publicSourceFiles]) {
   const text = read(file);
   for (const check of forbiddenSourcePatterns) {
     if (check.pattern.test(text)) {
@@ -179,6 +180,25 @@ const cssBytes = cssAssets.reduce((total, file) => total + fs.statSync(path.join
 if (cssBytes > 95_000) {
   fail(`CSS asset budget exceeded: ${cssBytes} bytes`);
 }
+if (cssBytes > 90_000) {
+  warnings.push(`CSS asset budget warning: ${cssBytes} bytes is above the 90000-byte review threshold.`);
+}
+
+const portalLayout = path.join(root, "src", "layouts", "portal", "PortalLayout.astro");
+if (fs.existsSync(portalLayout)) {
+  const text = read(portalLayout);
+  for (const term of ["plausible.io", "cloudflareinsights.com", "data-domain="]) {
+    if (text.includes(term)) fail(`portal layout leaks public analytics marker: ${term}`);
+  }
+}
+
+const baseLayout = path.join(root, "src", "layouts", "BaseLayout.astro");
+if (fs.existsSync(baseLayout)) {
+  const text = read(baseLayout);
+  for (const term of ["Portal navigation", "kharonPortalFetch", "kharon-csrf-token"]) {
+    if (text.includes(term)) fail(`public base layout leaks portal shell marker: ${term}`);
+  }
+}
 
 for (const asset of ["favicon.svg", "brand/kharon-mark.svg", "brand/kharon-full-logo.svg", "og/kharon-og.png", "_headers", "_redirects"]) {
   if (!fs.existsSync(path.join(assetRoot, asset))) {
@@ -215,6 +235,7 @@ const expectedSourceRoutes = [
   "portal/reset.astro",
   "portal/api/reset-password.ts",
   "portal/api/submit-jobcard.ts",
+  "portal/api/offline-sync.ts",
   "portal/api/approve-quote.ts",
   "portal/api/finance/payments.ts",
   "portal/api/finance/export.ts",
@@ -239,6 +260,7 @@ const requiredSourceTerms = new Map<string, string[]>([
   ["src/pages/portal/api/reset-password.ts", ["auth.password_reset", "password_reset_tokens", "hashPassword"]],
   ["src/pages/portal/reset.astro", ["/portal/api/reset-password", "Reset Portal Password"]],
   ["src/pages/portal/api/submit-jobcard.ts", ["db.batch", "jobcards/job-", "status = 'Completed'", "next_due_date", "financial_records"]],
+  ["src/pages/portal/api/offline-sync.ts", ["startIdempotentMutation", "offline.draft_sync", "jobcard_draft"]],
   ["src/pages/portal/api/file/[...key].ts", ["job-evidence/", "job_evidence_files", "documentAccessLog"]],
   ["src/pages/portal/tech/dashboard.astro", ["assigned_technician_id", "/portal/tech/jobs/"]],
   ["src/pages/portal/tech/jobs/[id]/jobcard.astro", ["/portal/api/submit-jobcard", "evidencePhotos", "/portal/api/job-visits", "Unable To Complete"]],
@@ -404,6 +426,10 @@ for (const header of [
 const schema = fs.existsSync(path.join(root, "schema.sql")) ? read(path.join(root, "schema.sql")) : "";
 for (const term of ["CREATE TABLE IF NOT EXISTS users", "CHECK (role IN ('tech', 'admin', 'client', 'finance'))", "CREATE TABLE IF NOT EXISTS jobs", "CREATE TABLE IF NOT EXISTS financial_records"]) {
   if (!schema.includes(term)) fail(`schema.sql missing ${term}`);
+}
+
+for (const term of ["CREATE TABLE IF NOT EXISTS offline_mutations", "idempotency_key TEXT NOT NULL UNIQUE", "idx_offline_mutations_actor_created"]) {
+  if (!schema.includes(term)) fail(`schema.sql missing offline mutation marker: ${term}`);
 }
 
 for (const term of ["CREATE TABLE IF NOT EXISTS job_evidence_files", "storage_path TEXT NOT NULL UNIQUE", "idx_job_evidence_job"]) 

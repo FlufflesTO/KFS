@@ -72,13 +72,37 @@ const links = [
     <script is:inline>
       // Register Service Worker
       if ('serviceWorker' in navigator) {
+        const csrfToken = document.querySelector('meta[name="kharon-csrf-token"]')?.content || "";
+        const sendPortalState = function(worker) {
+          if (worker && csrfToken) worker.postMessage({ type: 'SET_CSRF_TOKEN', token: csrfToken });
+        };
+
         navigator.serviceWorker.register('/sw.js', { scope: '/portal/' })
+          .then(function(registration) {
+            sendPortalState(registration.active || registration.waiting || registration.installing);
+          })
           .catch(function(err) { console.warn('SW registration failed:', err); });
+
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+          sendPortalState(navigator.serviceWorker.controller);
+        });
+
+        navigator.serviceWorker.addEventListener('message', function(event) {
+          if (!event.data) return;
+          if (event.data.type === 'OFFLINE_SYNC_CONFLICT') {
+            window.dispatchEvent(new CustomEvent('kharon-offline-conflict', { detail: event.data }));
+          }
+          if (event.data.type === 'OFFLINE_SYNC_COMPLETE' || event.data.type === 'QUEUE_DRAIN_COMPLETE') {
+            window.dispatchEvent(new CustomEvent('kharon-offline-sync-complete', { detail: event.data }));
+          }
+        });
 
         // Listen for online event to trigger queue drain
         window.addEventListener('online', function() {
           if (navigator.serviceWorker.controller) {
+            sendPortalState(navigator.serviceWorker.controller);
             navigator.serviceWorker.controller.postMessage({ type: 'DRAIN_QUEUE' });
+            navigator.serviceWorker.controller.postMessage({ type: 'SYNC_DRAFTS' });
           }
         });
       }
@@ -132,6 +156,9 @@ const links = [
   <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:bg-kharon-charcoal focus:px-4 focus:py-2 focus:border focus:border-kharon-purple focus:rounded focus:text-white focus:shadow-lg">
     Skip to main content
   </a>
+  <div id="offline-conflict-banner" class="hidden border-b border-amber-400/40 bg-amber-950/80 px-4 py-3 text-sm font-semibold text-amber-100" role="status" aria-live="polite">
+    Offline change conflict detected. Review the latest server data before resubmitting this work.
+  </div>
   
   <!-- Top Navigation Command Center -->
   <header class="sticky top-0 z-50 w-full border-b border-kharon-purple/10 bg-kharon-black/80 backdrop-blur-md text-white shadow-lg shadow-kharon-black/20">
@@ -149,18 +176,6 @@ const links = [
           <span class="block whitespace-nowrap text-[10px] uppercase text-white/40 tracking-wider">Secure Command Console</span>
         </span>
       </a>
-
-      <nav class="order-3 flex w-full items-center gap-1.5 overflow-x-auto pb-2 lg:order-none lg:w-auto lg:flex-wrap lg:overflow-visible lg:pb-0 scrollbar-hide" aria-label="Portal navigation" style="scrollbar-width: none; -ms-overflow-style: none;">
-        {links.map((link) => (
-          <a
-            href={link.href}
-            aria-current={active === link.key ? "page" : undefined}
-            class={`relative shrink-0 rounded-md px-3.5 py-2 text-xs font-semibold uppercase tracking-wide transition-all duration-200 min-h-[40px] flex items-center justify-center border border-transparent hover:border-kharon-purple/20 ${active === link.key ? "text-white bg-kharon-purple shadow-sm border-kharon-purple/50" : "text-white/70 hover:text-white hover:bg-kharon-purple/10"}`}
-          >
-            <span class="relative z-10">{link.label}</span>
-          </a>
-        ))}
-      </nav>
 
       <div class="ml-auto flex min-w-0 items-center gap-3 sm:gap-4 text-right text-xs">
         <div class="min-w-0 leading-tight hidden xl:block">
@@ -182,7 +197,7 @@ const links = [
     </div>
   </header>
 
-  <div class="flex max-w-7xl mx-auto">
+  <div class="flex flex-col lg:flex-row max-w-7xl mx-auto">
     <!-- Left Navigation Rail - Desktop -->
     <aside class="hidden lg:block w-64 min-h-[calc(100vh-5rem)] border-r border-kharon-purple/10 bg-kharon-black/60 backdrop-blur-sm p-4">
       <nav class="space-y-1" aria-label="Portal navigation">
@@ -298,6 +313,17 @@ const links = [
     openBtn?.addEventListener("click", openModal);
     closeBtn?.addEventListener("click", closeModal);
     modal?.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+    const conflictBanner = document.getElementById("offline-conflict-banner");
+    window.addEventListener("kharon-offline-conflict", () => {
+      conflictBanner?.classList.remove("hidden");
+    });
+    window.addEventListener("kharon-offline-sync-complete", (event) => {
+      const detail = (event as CustomEvent).detail || {};
+      if (!detail.conflicts || Number(detail.conflicts) === 0) {
+        conflictBanner?.classList.add("hidden");
+      }
+    });
 
     form?.addEventListener("submit", async (e) => {
       e.preventDefault();

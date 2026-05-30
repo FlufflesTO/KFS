@@ -33,6 +33,7 @@ const OFFLINE_DB_VERSION = 2;
 // IndexedDB store names
 const DRAFTS_STORE = 'drafts';
 const SYNC_QUEUE_STORE = 'sync_queue';
+const OFFLINE_SYNC_ENDPOINT = '/portal/api/offline-sync';
 
 // Static assets to pre-cache on install (cache-first)
 const PRECACHE_URLS = [
@@ -76,6 +77,7 @@ interface OfflineDraft {
   id?: number;
   jobId: string;
   data: Record<string, unknown>;
+  idempotencyKey?: string;
   timestamp: number;
   status: 'pending' | 'syncing' | 'synced' | 'failed';
   syncAttempts: number;
@@ -89,12 +91,48 @@ interface QueuedRequest {
   method: string;
   headers: Record<string, string>;
   body: string | null;
+  idempotencyKey: string;
   timestamp: number;
   retries: number;
   priority: 'low' | 'normal' | 'high';
 }
 
 let dbPromise: Promise<IDBDatabase> | null = null;
+let csrfToken: string | null = null;
+
+function base64UrlEncode(bytes: Uint8Array): string {
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
+}
+
+async function stableKey(prefix: string, parts: Array<string | number | null | undefined>): Promise<string> {
+  const data = parts.map((part) => String(part ?? '')).join('|');
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
+  return `${prefix}:${base64UrlEncode(new Uint8Array(digest)).slice(0, 43)}`;
+}
+
+function replayHeaders(headers: Record<string, string>, idempotencyKey: string): Record<string, string> {
+  const forbidden = new Set([
+    'accept-encoding',
+    'connection',
+    'content-length',
+    'cookie',
+    'host',
+    'origin',
+    'referer',
+    'sec-fetch-dest',
+    'sec-fetch-mode',
+    'sec-fetch-site',
+    'user-agent'
+  ]);
+  const next: Record<string, string> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    if (!forbidden.has(key.toLowerCase())) next[key] = value;
+  }
+  next['x-idempotency-key'] = idempotencyKey;
+  return next;
+}
 
 function openOfflineDB(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise;
@@ -148,6 +186,8 @@ function openOfflineDB(): Promise<IDBDatabase> {
 
 async function saveDraft(jobId: string, data: Record<string, unknown>): Promise<number> {
   const db = await openOfflineDB();
+  const now = Date.now();
+  const newIdempotencyKey = await stableKey('draft', [jobId, now, JSON.stringify(data)]);
   
   return new Promise((resolve, reject) => {
     const tx = db.transaction(DRAFTS_STORE, 'readwrite');
@@ -165,7 +205,8 @@ async function saveDraft(jobId: string, data: Record<string, unknown>): Promise<
         const updated: OfflineDraft = {
           ...existing,
           data,
-          timestamp: Date.now(),
+          idempotencyKey: existing.idempotencyKey,
+          timestamp: now,
           status: 'pending',
           syncAttempts: 0
         };
@@ -176,7 +217,8 @@ async function saveDraft(jobId: string, data: Record<string, unknown>): Promise<
         const newDraft: OfflineDraft = {
           jobId,
           data,
-          timestamp: Date.now(),
+          idempotencyKey: newIdempotencyKey,
+          timestamp: now,
           status: 'pending',
           syncAttempts: 0
         };
@@ -270,6 +312,8 @@ async function enqueueRequest(
   priority: 'low' | 'normal' | 'high' = 'normal'
 ): Promise<number> {
   const db = await openOfflineDB();
+  const idempotencyKey = headers['x-idempotency-key'] || headers['X-Idempotency-Key'] || await stableKey('queue', [method, url, body, Date.now()]);
+  headers['x-idempotency-key'] = idempotencyKey;
   
   return new Promise((resolve, reject) => {
     const tx = db.transaction(SYNC_QUEUE_STORE, 'readwrite');
@@ -280,6 +324,7 @@ async function enqueueRequest(
       method,
       headers,
       body,
+      idempotencyKey,
       timestamp: Date.now(),
       retries: 0,
       priority
@@ -503,6 +548,12 @@ async function handleQueueablePost(request: Request): Promise<Response> {
     try {
       const body = await clonedRequest.text();
       const headers = Object.fromEntries(clonedRequest.headers.entries());
+      headers['x-idempotency-key'] = headers['x-idempotency-key'] || await stableKey('queue', [
+        clonedRequest.method,
+        clonedRequest.url,
+        body,
+        Date.now()
+      ]);
       
       // Determine priority based on endpoint
       let priority: 'low' | 'normal' | 'high' = 'normal';
@@ -529,6 +580,7 @@ async function handleQueueablePost(request: Request): Promise<Response> {
         JSON.stringify({
           ok: true,
           queued: true,
+          idempotencyKey: headers['x-idempotency-key'],
           message: 'Request queued for offline sync. Will retry when connectivity is restored.',
           queueCount
         }),
@@ -591,15 +643,17 @@ async function notifyClients(message: Record<string, unknown>): Promise<void> {
 // Background Sync & Queue Draining
 // ============================================================================
 
-async function drainSyncQueue(): Promise<{ success: number; failed: number }> {
+async function drainSyncQueue(): Promise<{ success: number; failed: number; conflicts: number; remaining: number; errors: string[] }> {
   const items = await getQueuedRequests();
   
   if (items.length === 0) {
-    return { success: 0, failed: 0 };
+    return { success: 0, failed: 0, conflicts: 0, remaining: 0, errors: [] };
   }
 
   let successCount = 0;
   let failedCount = 0;
+  let conflictCount = 0;
+  const errors: string[] = [];
   const maxRetries = 5;
 
   for (const item of items) {
@@ -608,11 +662,21 @@ async function drainSyncQueue(): Promise<{ success: number; failed: number }> {
     try {
       const response = await fetch(item.url, {
         method: item.method,
-        headers: item.headers,
-        body: item.body
+        headers: replayHeaders(item.headers, item.idempotencyKey),
+        body: item.body,
+        credentials: 'include'
       });
 
-      if (response.ok || response.status < 500) {
+      if (response.status === 409) {
+        await deleteQueuedRequest(item.id);
+        conflictCount++;
+        await notifyClients({
+          type: 'OFFLINE_SYNC_CONFLICT',
+          url: item.url,
+          idempotencyKey: item.idempotencyKey,
+          timestamp: Date.now()
+        });
+      } else if (response.ok || response.status < 500) {
         // Success or non-retryable client error - remove from queue
         await deleteQueuedRequest(item.id);
         successCount++;
@@ -630,6 +694,7 @@ async function drainSyncQueue(): Promise<{ success: number; failed: number }> {
       }
     } catch (fetchError) {
       // Network error - leave in queue for next attempt
+      errors.push(fetchError instanceof Error ? fetchError.message : 'Network replay failed.');
       failedCount++;
       break; // Stop processing on network error
     }
@@ -641,11 +706,19 @@ async function drainSyncQueue(): Promise<{ success: number; failed: number }> {
     type: 'OFFLINE_SYNC_COMPLETE',
     success: successCount,
     failed: failedCount,
+    conflicts: conflictCount,
+    errors,
     remaining: remainingCount,
     timestamp: Date.now()
   });
 
-  return { success: successCount, failed: failedCount };
+  return {
+    success: successCount,
+    failed: failedCount + conflictCount,
+    conflicts: conflictCount,
+    remaining: remainingCount,
+    errors
+  };
 }
 
 async function syncDrafts(): Promise<{ success: number; failed: number }> {
@@ -661,11 +734,38 @@ async function syncDrafts(): Promise<{ success: number; failed: number }> {
       // Update status to syncing
       await updateDraftStatus(draft.id, 'syncing');
 
-      // TODO: Implement actual draft sync to server endpoint
-      // This would POST the draft data to a server endpoint
-      // For now, mark as synced after validation
-      
-      // Simulate sync - in production, this would be an actual API call
+      const response = await fetch(OFFLINE_SYNC_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+          'x-idempotency-key': draft.idempotencyKey || await stableKey('draft', [draft.jobId, draft.timestamp, JSON.stringify(draft.data)])
+        },
+        body: JSON.stringify({
+          type: 'jobcard_draft',
+          idempotencyKey: draft.idempotencyKey || await stableKey('draft', [draft.jobId, draft.timestamp, JSON.stringify(draft.data)]),
+          jobId: draft.jobId,
+          payload: draft.data,
+          clientUpdatedAt: draft.timestamp
+        })
+      });
+
+      if (response.status === 409) {
+        await updateDraftStatus(draft.id, 'failed', 'Server reported an offline draft conflict.');
+        await notifyClients({
+          type: 'OFFLINE_SYNC_CONFLICT',
+          jobId: draft.jobId,
+          idempotencyKey: draft.idempotencyKey,
+          timestamp: Date.now()
+        });
+        failedCount++;
+        continue;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Draft sync failed with status ${response.status}.`);
+      }
+
       await updateDraftStatus(draft.id, 'synced');
       successCount++;
     } catch (syncError) {
@@ -821,6 +921,11 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
   // Handle skip-waiting message
   if (data.type === 'SKIP_WAITING') {
     event.waitUntil(self.skipWaiting());
+    return;
+  }
+
+  if (data.type === 'SET_CSRF_TOKEN') {
+    csrfToken = typeof data.token === 'string' ? data.token : null;
     return;
   }
 

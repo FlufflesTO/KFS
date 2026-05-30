@@ -1,6 +1,7 @@
 
 import { auditError } from "../../../lib/server/audit";
 import { getDatabase } from "../../../lib/server/bindings.ts";
+import { finishIdempotentMutation, startIdempotentMutation } from "../../../lib/server/idempotency";
 export const prerender = false;
 
 const visitStatuses = ["Travelling", "Arrived", "In Progress", "Completed", "Unable To Complete", "Follow-up Required", "Quote Required"];
@@ -43,9 +44,11 @@ export async function POST({ locals, request }: import('astro').APIContext) {
   }
 
   let body;
+  let bodyText = "";
   try {
     try {
-      body = await request.json() as Record<string, any>;
+      bodyText = await request.text();
+      body = JSON.parse(bodyText) as Record<string, any>;
     } catch (e) {
       return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
     }
@@ -66,8 +69,30 @@ export async function POST({ locals, request }: import('astro').APIContext) {
   }
 
   let db;
+  let mutationId: string | null = null;
   try {
     db = getDatabase();
+    const idempotencyKey = request.headers.get("x-idempotency-key")?.trim();
+    if (idempotencyKey) {
+      if (!/^[A-Za-z0-9:_-]{16,160}$/.test(idempotencyKey)) {
+        return json({ ok: false, message: "Invalid idempotency key." }, 400);
+      }
+      const mutation = await startIdempotentMutation(db, {
+        idempotencyKey,
+        mutationType: "queued_request",
+        targetPath: new URL(request.url).pathname,
+        body: bodyText,
+        user
+      });
+      mutationId = mutation.id;
+      if (mutation.state === "conflict") {
+        return json({ ok: false, conflict: true, mutationId, message: "Queued visit replay conflicts with an existing payload." }, 409);
+      }
+      if (mutation.state === "duplicate") {
+        return json({ ok: true, duplicate: true, mutationId, message: "Visit action was already replayed." });
+      }
+    }
+
     const jobCheck = await db.prepare(
       `SELECT id, assigned_technician_id, status FROM jobs WHERE deleted_at IS NULL AND id = ?1`
     ).bind(jobId).first();
@@ -95,6 +120,7 @@ export async function POST({ locals, request }: import('astro').APIContext) {
         gpsLat, gpsLng, cleanOptionalText(body.customerName, 160), cleanOptionalText(body.customerTitle, 80), cleanOptionalText(body.notes, 1000)
       ).run();
 
+      if (mutationId) await finishIdempotentMutation(db, mutationId, "applied", 200);
       return json({ ok: true, visitId, message: "Arrival logged." });
     }
 
@@ -120,11 +146,15 @@ export async function POST({ locals, request }: import('astro').APIContext) {
         cleanOptionalText(body.notes, 1000), visitStatus, unableReason
       ).run();
 
+      if (mutationId) await finishIdempotentMutation(db, mutationId, "applied", 200);
       return json({ ok: true, visitId, message: "Visit outcome logged." });
     }
 
     return json({ ok: false, message: `Unknown action: ${action}` }, 400);
   } catch (error: any) {
+    if (db && mutationId) {
+      await finishIdempotentMutation(db, mutationId, "failed", 500, error.message || "Failed to update visit.");
+    }
     if (db) {
       await auditError(db, request, error, { user, metadata: { message: "job visit action failed" } });
     }
