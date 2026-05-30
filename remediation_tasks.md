@@ -283,9 +283,24 @@ CRITICAL CONSTRAINTS:
 4. Ensure plain-text information strings never write directly down to storage layouts.
 
 OUTPUT THE COMPLETED LOG ARCHIVING METRIC INTERCEPTOR FUNCTION.
-[ ] Task SEC-006: User Identity Anonymization Deletion LogicTarget File: src/lib/server/db/user-repository.tsSystem Context: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.mdSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [SEC-006]
-TARGET_FILE: src/lib/server/db/user-repository.ts
-SYSTEM_CONTEXT: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.md
+
+[x] Task SEC-005: Audit Log Network Address Anonymization
+Target File: src/lib/server/audit.ts
+System Context: schema.sql
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [SEC-005]
+TARGET_FILE: src/lib/server/audit.ts
+SYSTEM_CONTEXT: schema.sql
+
+CRITICAL CONSTRAINTS:
+1. Locate the method responsible for persisting event tracking context logs down to the database ledger table.
+2. Intercept incoming raw connection strings (`ip_address`) before data gets logged.
+3. Transform the raw address metadata using SHA-256 calculation passes paired with a secure environment configuration text salt.
+4. Ensure plain-text information strings never write directly down to storage layouts.
+
+OUTPUT THE COMPLETED LOG ARCHIVING METRIC INTERCEPTOR FUNCTION.
+
+[ ] Task SEC-006: User Identity Anonymization Deletion Logic
 
 CRITICAL CONSTRAINTS:
 1. Build a secure data anonymization method inside the repository file layer to fulfill POPIA Section 26 rules.

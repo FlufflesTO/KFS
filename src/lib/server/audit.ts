@@ -6,6 +6,26 @@
  */
 
 import type { D1Database } from "@cloudflare/workers-types";
+// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
+import { env } from "cloudflare:workers";
+
+const textEncoder = new TextEncoder();
+
+/**
+ * Anonymizes IP addresses using SHA-256 hashing with a salt.
+ * Complies with POPIA data minimization requirements by storing only hashed IPs.
+ */
+async function hashIpAddress(ip: string | null): Promise<string | null> {
+  if (!ip) return null;
+  
+  // @ts-ignore - env might not be typed in standard TypeScript
+  const salt = String(env.AUDIT_IP_SALT || env.SESSION_SECRET || "default-audit-salt");
+  const combined = `${ip}|${salt}`;
+  
+  const hashBuffer = await crypto.subtle.digest("SHA-256", textEncoder.encode(combined));
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
 
 export interface AuditEvent {
   eventType: string;
@@ -38,6 +58,9 @@ export async function auditEvent(db: D1Database, request: Request, event: AuditE
     const validRoles = ["tech", "admin", "client", "finance"];
     const sanitizedRole = actorRole && validRoles.includes(actorRole) ? actorRole : null;
 
+    // Hash IP address for POPIA compliance - never store plain-text IPs
+    const ipHash = await hashIpAddress(request.headers.get("cf-connecting-ip"));
+
     await db.prepare(`
       INSERT INTO audit_events (
         id, actor_user_id, actor_role, event_type, entity_type, entity_id, outcome, ip_hash, user_agent, metadata_json
@@ -50,7 +73,7 @@ export async function auditEvent(db: D1Database, request: Request, event: AuditE
       event.entityType,
       event.entityId || null,
       event.outcome,
-      request.headers.get("cf-connecting-ip") || null,
+      ipHash,
       request.headers.get("user-agent") || null,
       event.metadata ? JSON.stringify(event.metadata) : null
     ).run();
@@ -62,6 +85,10 @@ export async function auditEvent(db: D1Database, request: Request, event: AuditE
 export async function auditError(db: D1Database, request: Request, error: unknown, context: AuditError): Promise<void> {
   try {
     const id = crypto.randomUUID();
+    
+    // Hash IP address for POPIA compliance - never store plain-text IPs
+    const ipHash = await hashIpAddress(request.headers.get("cf-connecting-ip"));
+    
     await db.prepare(`
       INSERT INTO audit_events (
         id, actor_user_id, actor_role, event_type, entity_type, entity_id, outcome, ip_hash, user_agent, metadata_json
@@ -72,7 +99,7 @@ export async function auditError(db: D1Database, request: Request, error: unknow
       context.entityType || "system",
       context.entityId || null,
       "failure",
-      request.headers.get("cf-connecting-ip") || null,
+      ipHash,
       request.headers.get("user-agent") || null,
       JSON.stringify({
         error: error instanceof Error ? error.message : String(error),
@@ -103,7 +130,9 @@ export async function documentAccessLog(
   options: DocumentAccessLogOptions = {}
 ): Promise<void> {
   const user = options.user || null;
-  const ip = request.headers.get("cf-connecting-ip") || null;
+  
+  // Hash IP address for POPIA compliance - never store plain-text IPs
+  const ipHash = await hashIpAddress(request.headers.get("cf-connecting-ip"));
   const userAgent = request.headers.get("user-agent") || null;
 
   try {
@@ -122,7 +151,7 @@ export async function documentAccessLog(
         options.storagePath || "",
         options.documentType || "Jobcard PDF",
         options.outcome || "success",
-        ip,
+        ipHash,
         userAgent,
         options.reason || null
       )

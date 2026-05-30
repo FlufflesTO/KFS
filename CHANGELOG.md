@@ -61,6 +61,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **validateSecretIsolation Function**: Added startup validation in `src/lib/server/auth.ts` that enforces distinct values for `SESSION_SECRET` and `MFA_SECRET`. Validates minimum 32-character length for both secrets. Throws explicit error on duplicate secret configuration: "SECURITY VIOLATION: SESSION_SECRET and MFA_SECRET must be different values."
 - **getMfaSecret Export**: New exported function for retrieving MFA secret with isolation validation. Called by TOTP generation/verification routines to ensure cryptographic separation from session token signing.
 
+### Audit Log Network Address Anonymization (Task SEC-005)
+- **hashIpAddress Function**: Implemented SHA-256 IP anonymization utility in `src/lib/server/audit.ts` with configurable salt (`AUDIT_IP_SALT` or fallback to `SESSION_SECRET`). Combines IP with salt before hashing to prevent rainbow table attacks.
+- **Audit Function Updates**: Modified `auditEvent()`, `auditError()`, and `documentAccessLog()` to hash IP addresses before database storage. Plain-text IPs are never written to `audit_events` or `document_access_logs` tables, ensuring POPIA data minimization compliance.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
