@@ -84,6 +84,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **generateIdempotencyKey Method**: Added SHA-256-based key generator that creates deterministic keys from transaction type, contact ID, description, and amount. Keys formatted as `kharon-{type}-{32-char-hash}`.
 - **createSalesInvoice/createSalesQuote**: Both methods now generate and pass idempotency keys to prevent duplicate invoices/quotes on transient network failures.
 
+### Invoicing Render Multi-Page Layout Repair (Task FIN-006)
+- **checkPageBreak Function**: Added pagination helper in `src/lib/pdf/invoice-generator.ts` that tracks Y position and creates new pages when content exceeds available space. Preserves 60px footer margin and adds continuation headers with page numbers.
+- **Multi-Page Support**: Refactored `buildInvoiceContent()` to accumulate content in `currentPageContent` array and flush to `pages` array on page breaks. Line items now trigger page breaks when needed, with +80px buffer for totals/footer sections.
+- **Page Continuation Headers**: New pages display "TAX INVOICE (Page N)" header with invoice number for multi-page documents.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

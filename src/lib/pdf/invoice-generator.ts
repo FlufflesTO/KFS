@@ -397,97 +397,126 @@ function buildInvoiceContent(
   let y = 780; // Starting Y position
   const lineHeight = 14;
   const smallLineHeight = 11;
+  const pageHeight = 842;
+  const footerHeight = 60; // Space reserved for footer
+  const minContentHeight = 100; // Minimum space needed for content block
 
   const content: string[] = [];
+  const pages: string[] = [];
+  let currentPageContent: string[] = [];
+  let pageNumber = 1;
 
-  // Background
-  content.push(...drawRect(0, 0, 595, 842, "0.98 0.98 0.98 rg"));
+  // Helper to check if we need a new page and manage page breaks
+  function checkPageBreak(requiredSpace: number): void {
+    if (y - requiredSpace < footerHeight) {
+      // Save current page and start new one
+      pages.push(...currentPageContent);
+      currentPageContent = [];
+      pageNumber++;
+      y = 780; // Reset Y for new page
+      
+      // Add continuation header on new page
+      currentPageContent.push(...drawRect(0, 0, 595, 842, "0.98 0.98 0.98 rg"));
+      currentPageContent.push(...drawRect(0, 768, 595, 74, "0.04 0.05 0.06 rg"));
+      currentPageContent.push(...drawRect(0, 762, 595, 6, "0.74 0.25 0.10 rg"));
+      currentPageContent.push(...textLineBold("KHARON", 44, 816, 18, "1 1 1 rg"));
+      currentPageContent.push(...textLineBold(`TAX INVOICE (Page ${pageNumber})`, 420, 812, 14, "1 1 1 rg"));
+      currentPageContent.push(...textLine(`Invoice No: ${invoice.invoiceNumber}`, 400, 768, 10, "0.04 0.05 0.06 rg"));
+      y = 720;
+    }
+  }
+
+  // Background for first page
+  currentPageContent.push(...drawRect(0, 0, 595, 842, "0.98 0.98 0.98 rg"));
 
   // ─── Header Banner ─────────────────────────────────────────────────────
-  content.push(...drawRect(0, 768, 595, 74, "0.04 0.05 0.06 rg"));
-  content.push(...drawRect(0, 762, 595, 6, "0.74 0.25 0.10 rg")); // Amber accent
+  currentPageContent.push(...drawRect(0, 768, 595, 74, "0.04 0.05 0.06 rg"));
+  currentPageContent.push(...drawRect(0, 762, 595, 6, "0.74 0.25 0.10 rg")); // Amber accent
 
   // Company branding
-  content.push(...textLineBold("KHARON", 44, 816, 18, "1 1 1 rg"));
-  content.push(...textLine("FIRE & SECURITY SOLUTIONS (PTY) LTD", 44, 797, 10, "1 1 1 rg"));
-  content.push(...textLine("Reg No: " + invoice.companyRegistrationNumber, 44, 782, 8, "0.85 0.85 0.85 rg"));
+  currentPageContent.push(...textLineBold("KHARON", 44, 816, 18, "1 1 1 rg"));
+  currentPageContent.push(...textLine("FIRE & SECURITY SOLUTIONS (PTY) LTD", 44, 797, 10, "1 1 1 rg"));
+  currentPageContent.push(...textLine("Reg No: " + invoice.companyRegistrationNumber, 44, 782, 8, "0.85 0.85 0.85 rg"));
 
   // TAX INVOICE label (SARS requirement)
-  content.push(...drawRect(400, 790, 175, 40, "0.04 0.05 0.06 rg"));
-  content.push(...textLineBold("TAX INVOICE", 420, 812, 14, "1 1 1 rg"));
+  currentPageContent.push(...drawRect(400, 790, 175, 40, "0.04 0.05 0.06 rg"));
+  currentPageContent.push(...textLineBold("TAX INVOICE", 420, 812, 14, "1 1 1 rg"));
 
   // Invoice number and date
-  content.push(...textLineBold(`Invoice No: ${invoice.invoiceNumber}`, 400, 768, 10, "0.04 0.05 0.06 rg"));
-  content.push(...textLine(`Invoice Date: ${invoice.invoiceDate}`, 400, 754, 9));
+  currentPageContent.push(...textLineBold(`Invoice No: ${invoice.invoiceNumber}`, 400, 768, 10, "0.04 0.05 0.06 rg"));
+  currentPageContent.push(...textLine(`Invoice Date: ${invoice.invoiceDate}`, 400, 754, 9));
   if (invoice.supplyDate && invoice.supplyDate !== invoice.invoiceDate) {
-    content.push(...textLine(`Supply Date: ${invoice.supplyDate}`, 400, 742, 9));
+    currentPageContent.push(...textLine(`Supply Date: ${invoice.supplyDate}`, 400, 742, 9));
   }
 
   y = 720;
 
   // ─── Supplier Details (SARS Requirement) ────────────────────────────────
-  content.push(...textLineBold("Supplier Details", 44, y, 11));
+  checkPageBreak(100);
+  currentPageContent.push(...textLineBold("Supplier Details", 44, y, 11));
   y -= smallLineHeight;
-  content.push(...textLine(invoice.supplier.name, 54, y, 9));
+  currentPageContent.push(...textLine(invoice.supplier.name, 54, y, 9));
   y -= smallLineHeight;
-  content.push(...textLine(invoice.supplier.physicalAddress, 54, y, 9));
+  currentPageContent.push(...textLine(invoice.supplier.physicalAddress, 54, y, 9));
   y -= smallLineHeight;
   if (invoice.supplier.vatNumber) {
-    content.push(...textLine(`VAT Registration No: ${formatVATNumber(invoice.supplier.vatNumber)}`, 54, y, 9));
+    currentPageContent.push(...textLine(`VAT Registration No: ${formatVATNumber(invoice.supplier.vatNumber)}`, 54, y, 9));
   }
   y -= lineHeight;
 
   // ─── Customer Details (SARS Requirement) ────────────────────────────────
-  content.push(...textLineBold("Bill To", 44, y, 11));
+  checkPageBreak(80);
+  currentPageContent.push(...textLineBold("Bill To", 44, y, 11));
   y -= smallLineHeight;
-  content.push(...textLine(invoice.customer.name, 54, y, 9));
+  currentPageContent.push(...textLine(invoice.customer.name, 54, y, 9));
   y -= smallLineHeight;
-  content.push(...textLine(invoice.customer.physicalAddress, 54, y, 9));
+  currentPageContent.push(...textLine(invoice.customer.physicalAddress, 54, y, 9));
   y -= smallLineHeight;
   if (invoice.customer.vatNumber) {
-    content.push(...textLine(`VAT Registration No: ${formatVATNumber(invoice.customer.vatNumber)}`, 54, y, 9));
+    currentPageContent.push(...textLine(`VAT Registration No: ${formatVATNumber(invoice.customer.vatNumber)}`, 54, y, 9));
   }
   y -= lineHeight * 1.5;
 
   // ─── Payment Details (Optional) ─────────────────────────────────────────
   if (invoice.bankAccountNumber || invoice.paymentTerms) {
-    content.push(...drawRect(44, y - 5, 527, 60, "0.95 0.96 0.97 rg", "0.82 0.84 0.86 RG"));
+    checkPageBreak(100);
+    currentPageContent.push(...drawRect(44, y - 5, 527, 60, "0.95 0.96 0.97 rg", "0.82 0.84 0.86 RG"));
     let payY = y - 12;
-    
-    content.push(...textLineBold("Payment Details", 54, payY, 10));
+
+    currentPageContent.push(...textLineBold("Payment Details", 54, payY, 10));
     payY -= smallLineHeight;
-    
+
     if (invoice.paymentTerms) {
-      content.push(...textLine(`Terms: ${invoice.paymentTerms}`, 54, payY, 9));
+      currentPageContent.push(...textLine(`Terms: ${invoice.paymentTerms}`, 54, payY, 9));
       payY -= smallLineHeight;
     }
-    
+
     if (invoice.bankAccountName && invoice.bankAccountNumber && invoice.bankBranchCode) {
-      content.push(...textLine(`Bank: ${invoice.bankAccountName}`, 54, payY, 9));
+      currentPageContent.push(...textLine(`Bank: ${invoice.bankAccountName}`, 54, payY, 9));
       payY -= smallLineHeight;
-      content.push(...textLine(`Account: ${invoice.bankAccountNumber}`, 54, payY, 9));
+      currentPageContent.push(...textLine(`Account: ${invoice.bankAccountNumber}`, 54, payY, 9));
       payY -= smallLineHeight;
-      content.push(...textLine(`Branch Code: ${invoice.bankBranchCode}`, 54, payY, 9));
+      currentPageContent.push(...textLine(`Branch Code: ${invoice.bankBranchCode}`, 54, payY, 9));
     }
-    
+
     y -= 75;
   }
 
   // ─── Line Items Table Header ────────────────────────────────────────────
+  checkPageBreak(50);
   y -= 10;
-  const tableTop = y;
-  
-  content.push(...drawRect(44, y - 20, 527, 20, "0.04 0.05 0.06 rg"));
-  
-  content.push(...textLineBold("Description", 54, y - 6, 9, "1 1 1 rg"));
-  content.push(...textLineBold("Qty", 320, y - 6, 9, "1 1 1 rg"));
-  content.push(...textLineBold("Unit Price", 370, y - 6, 9, "1 1 1 rg"));
-  content.push(...textLineBold("VAT", 460, y - 6, 9, "1 1 1 rg"));
-  content.push(...textLineBold("Total", 510, y - 6, 9, "1 1 1 rg"));
-  
+
+  currentPageContent.push(...drawRect(44, y - 20, 527, 20, "0.04 0.05 0.06 rg"));
+
+  currentPageContent.push(...textLineBold("Description", 54, y - 6, 9, "1 1 1 rg"));
+  currentPageContent.push(...textLineBold("Qty", 320, y - 6, 9, "1 1 1 rg"));
+  currentPageContent.push(...textLineBold("Unit Price", 370, y - 6, 9, "1 1 1 rg"));
+  currentPageContent.push(...textLineBold("VAT", 460, y - 6, 9, "1 1 1 rg"));
+  currentPageContent.push(...textLineBold("Total", 510, y - 6, 9, "1 1 1 rg"));
+
   y -= 25;
 
-  // ─── Line Items ─────────────────────────────────────────────────────────
+  // ─── Line Items with Pagination ─────────────────────────────────────────
   for (const item of invoice.lineItems) {
     const lineTotalExclVat = item.quantity * item.unitPriceExclVatCents;
     const lineVat = calculateVAT(lineTotalExclVat, item.vatRate);
@@ -495,40 +524,44 @@ function buildInvoiceContent(
 
     // Word wrap description if needed
     const descLines = wrapText(item.description, 50);
-    const descHeight = descLines.length * smallLineHeight;
-    
+    const descHeight = descLines.length * smallLineHeight + 10;
+
+    // Check if we need a page break before this item
+    checkPageBreak(descHeight + 80); // +80 for totals and footer space
+
     for (let i = 0; i < descLines.length; i++) {
       if (i === 0) {
-        content.push(...textLine(descLines[i], 54, y, 9));
-        content.push(...textLine(String(item.quantity), 320, y, 9));
-        content.push(...textLine(formatCurrency(item.unitPriceExclVatCents), 370, y, 9));
-        content.push(...textLine(`${item.vatRate}%`, 460, y, 9));
-        content.push(...textLine(formatCurrency(lineTotalInclVat), 510, y, 9));
+        currentPageContent.push(...textLine(descLines[i], 54, y, 9));
+        currentPageContent.push(...textLine(String(item.quantity), 320, y, 9));
+        currentPageContent.push(...textLine(formatCurrency(item.unitPriceExclVatCents), 370, y, 9));
+        currentPageContent.push(...textLine(`${item.vatRate}%`, 460, y, 9));
+        currentPageContent.push(...textLine(formatCurrency(lineTotalInclVat), 510, y, 9));
       } else {
-        content.push(...textLine(descLines[i], 54, y, 9));
+        currentPageContent.push(...textLine(descLines[i], 54, y, 9));
       }
       y -= smallLineHeight;
     }
-    
+
     y -= 5; // Extra spacing between items
   }
 
   // ─── VAT Breakdown (SARS Requirement) ───────────────────────────────────
+  checkPageBreak(100);
   y -= 10;
-  
+
   // Draw separator line
-  content.push(...drawLine(44, y, 571, y, 1));
+  currentPageContent.push(...drawLine(44, y, 571, y, 1));
   y -= 10;
 
   // VAT breakdown table
-  content.push(...textLineBold("VAT Breakdown", 44, y, 10));
+  currentPageContent.push(...textLineBold("VAT Breakdown", 44, y, 10));
   y -= smallLineHeight;
 
   for (const [rate, breakdown] of totals.vatBreakdown.entries()) {
     const vatAmountFormatted = formatCurrency(breakdown.vatAmountCents);
     const baseAmountFormatted = formatCurrency(breakdown.amountExclVatCents);
-    
-    content.push(...textLine(
+
+    currentPageContent.push(...textLine(
       `VAT at ${rate}%: ${baseAmountFormatted} × ${rate}% = ${vatAmountFormatted}`,
       54, y, 9
     ));
@@ -536,49 +569,53 @@ function buildInvoiceContent(
   }
 
   y -= 5;
-  content.push(...drawLine(44, y, 571, y, 1));
+  currentPageContent.push(...drawLine(44, y, 571, y, 1));
   y -= 15;
 
   // ─── Totals Section ─────────────────────────────────────────────────────
   const totalsX = 380;
-  
+
   // Total excl. VAT
-  content.push(...textLine("Total (excl. VAT):", totalsX, y, 10));
-  content.push(...textLineBold(formatCurrency(totals.totalExclVatCents), 510, y, 10));
+  currentPageContent.push(...textLine("Total (excl. VAT):", totalsX, y, 10));
+  currentPageContent.push(...textLineBold(formatCurrency(totals.totalExclVatCents), 510, y, 10));
   y -= smallLineHeight;
 
   // Total VAT
-  content.push(...textLine("Total VAT:", totalsX, y, 10));
-  content.push(...textLineBold(formatCurrency(totals.totalVatCents), 510, y, 10));
+  currentPageContent.push(...textLine("Total VAT:", totalsX, y, 10));
+  currentPageContent.push(...textLineBold(formatCurrency(totals.totalVatCents), 510, y, 10));
   y -= smallLineHeight;
 
   // Separator
-  content.push(...drawLine(totalsX, y + 2, 571, y + 2, 1.5, "0.04 0.05 0.06 RG"));
+  currentPageContent.push(...drawLine(totalsX, y + 2, 571, y + 2, 1.5, "0.04 0.05 0.06 RG"));
   y -= 15;
 
   // Total incl. VAT (prominent)
-  content.push(...textLineBold("TOTAL (incl. VAT):", totalsX, y, 12, "0.04 0.05 0.06 rg"));
-  content.push(...textLineBold(formatCurrency(totals.totalInclVatCents), 510, y, 12, "0.74 0.25 0.10 rg"));
+  currentPageContent.push(...textLineBold("TOTAL (incl. VAT):", totalsX, y, 12, "0.04 0.05 0.06 rg"));
+  currentPageContent.push(...textLineBold(formatCurrency(totals.totalInclVatCents), 510, y, 12, "0.74 0.25 0.10 rg"));
   y -= 25;
 
   // ─── Footer ─────────────────────────────────────────────────────────────
+  checkPageBreak(60);
   y = 80;
-  
-  content.push(...drawLine(44, y + 20, 551, y + 20, 0.5));
-  
+
+  currentPageContent.push(...drawLine(44, y + 20, 551, y + 20, 0.5));
+
   // SARS compliance note
-  content.push(...textLine("This is a computer-generated tax invoice in compliance with SARS VAT regulations.", 44, y + 8, 8, "0.5 0.5 0.5 rg"));
-  content.push(...textLine("VAT Registration: " + formatVATNumber(invoice.supplier.vatNumber), 44, y - 5, 8, "0.5 0.5 0.5 rg"));
-  
+  currentPageContent.push(...textLine("This is a computer-generated tax invoice in compliance with SARS VAT regulations.", 44, y + 8, 8, "0.5 0.5 0.5 rg"));
+  currentPageContent.push(...textLine("VAT Registration: " + formatVATNumber(invoice.supplier.vatNumber), 44, y - 5, 8, "0.5 0.5 0.5 rg"));
+
   // Invoice integrity hash
   const hashRef = `INV-${signatureHash.slice(0, 8)}...${signatureHash.slice(-8)}`;
-  content.push(...textLine(`Invoice Hash: ${hashRef}`, 350, y - 5, 7, "0.6 0.6 0.6 rg"));
-  
-  // Company footer
-  content.push(...textLine("Kharon Fire and Security Solutions (Pty) Ltd", 44, y - 25, 8, "0.4 0.4 0.4 rg"));
-  content.push(...textLine("All amounts in ZAR (South African Rand)", 44, y - 38, 7, "0.5 0.5 0.5 rg"));
+  currentPageContent.push(...textLine(`Invoice Hash: ${hashRef}`, 350, y - 5, 7, "0.6 0.6 0.6 rg"));
 
-  return content.join("\n");
+  // Company footer
+  currentPageContent.push(...textLine("Kharon Fire and Security Solutions (Pty) Ltd", 44, y - 25, 8, "0.4 0.4 0.4 rg"));
+  currentPageContent.push(...textLine("All amounts in ZAR (South African Rand)", 44, y - 38, 7, "0.5 0.5 0.5 rg"));
+
+  // Save the last page
+  pages.push(...currentPageContent);
+
+  return pages.join("\n");
 }
 
 function wrapText(value: string | null | undefined, maxChars: number = 50): string[] {

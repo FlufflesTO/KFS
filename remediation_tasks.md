@@ -429,9 +429,24 @@ CRITICAL CONSTRAINTS:
 3. Implement structural pagination controls that add a fresh sheet layer if items exceed standard design heights, preventing layout truncation on multi-page invoices.
 
 OUTPUT THE COMPLETED REVISED MULTI-PAGE LAYOUT ENVELOPE.
-📷 PHASE 4: FIELD OPERATIONS, EVIDENCE & STORAGE OPTIMIZATIONS[ ] Task JOB-002: Optimistic Locking Verification Check ImplementationTarget File: src/lib/server/db/job-repository.tsSystem Context: schema.sqlSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [JOB-002]
-TARGET_FILE: src/lib/server/db/job-repository.ts
-SYSTEM_CONTEXT: schema.sql
+
+[x] Task FIN-006: Invoicing Render Multi-Page Layout Repair
+Target File: src/lib/pdf/invoice-generator.ts
+System Context: src/lib/utils/financial-utils.ts
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [FIN-006]
+TARGET_FILE: src/lib/pdf/invoice-generator.ts
+SYSTEM_CONTEXT: src/lib/utils/financial-utils.ts
+
+CRITICAL CONSTRAINTS:
+1. Audit the loop configurations pacing item layouts inside file creation processes.
+2. Inject dynamic positioning check calculations that track text cursor boundaries as records get added.
+3. Implement structural pagination controls that add a fresh sheet layer if items exceed standard design heights, preventing layout truncation on multi-page invoices.
+
+OUTPUT THE COMPLETED REVISED MULTI-PAGE LAYOUT ENVELOPE.
+
+📷 PHASE 4: FIELD OPERATIONS, EVIDENCE & STORAGE OPTIMIZATIONS
+[ ] Task JOB-002: Optimistic Locking Verification Check Implementation
 
 CRITICAL CONSTRAINTS:
 1. Locate tracking state persistence methods inside storage update blocks.
