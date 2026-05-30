@@ -84,3 +84,58 @@ export const QuoteApprovalSchema = z.object({
   quoteId: z.string().min(1),
   status: z.enum(["approved", "rejected"]).default("approved")
 });
+
+// Finance / VAT Validation Schemas (SARS Statutory Compliance)
+const VAT_RATE = 15 as const; // South African statutory VAT rate
+
+/**
+ * Validates that VAT amount is exactly 15% of the ex-VAT amount.
+ * Uses integer cents to avoid floating-point precision issues.
+ */
+function validateVatAmount(exVatCents: number, vatCents: number): boolean {
+  const expectedVatCents = Math.round(exVatCents * 0.15);
+  return vatCents === expectedVatCents;
+}
+
+export const FinanceTaskCreateSchema = z.object({
+  siteId: z.string().regex(/^[A-Za-z0-9_-]{3,80}$/, "Invalid siteId format"),
+  jobId: z.string().regex(/^[A-Za-z0-9_-]{3,80}$/, "Invalid jobId format").optional().nullable(),
+  taskType: z.enum([
+    "Quote Required",
+    "Quote Issued in Sage",
+    "Quote Approved",
+    "Invoice Required",
+    "Invoice Issued in Sage",
+    "Payment Recorded in Sage",
+    "Finance Follow-up"
+  ]),
+  amountExVat: z.number()
+    .int("Amount must be an integer (cents)")
+    .nonNegative("Amount cannot be negative")
+    .max(999999900, "Amount exceeds maximum (R9,999,999.00)"),
+  vatAmount: z.number()
+    .int("VAT must be an integer (cents)")
+    .nonNegative("VAT cannot be negative")
+    .refine(
+      (vat, ctx) => {
+        const exVat = ctx.parent.amountExVat;
+        if (!validateVatAmount(exVat, vat)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `VAT amount must be exactly 15% of ex-VAT amount. Expected ${Math.round(exVat * 0.15)} cents, got ${vat} cents.`,
+            path: ["vatAmount"]
+          });
+          return false;
+        }
+        return true;
+      },
+      { message: "VAT must be exactly 15% of ex-VAT amount" }
+    ),
+  reference: z.string().max(120).optional().nullable(),
+  financeNotes: z.string().max(500).optional().nullable()
+});
+
+export const FinanceTaskUpdateSchema = FinanceTaskCreateSchema.partial().extend({
+  id: z.string().regex(/^[A-Za-z0-9_-]{3,80}$/, "Invalid task ID"),
+  status: z.enum(["Pending", "In Progress", "Completed", "Cancelled"]).optional()
+});

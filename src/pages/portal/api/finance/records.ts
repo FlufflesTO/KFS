@@ -3,6 +3,7 @@ import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent, auditError } from "../../../../lib/server/audit";
 import { badRequest, forbidden, json, unauthorized } from "../../../../lib/server/http.ts";
 import { FinanceService } from "../../../../lib/server/services/finance-service.ts";
+import { FinanceTaskCreateSchema } from "../../../../lib/validation/schemas.ts";
 
 export const prerender = false;
 
@@ -37,55 +38,54 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       return forbidden("Only finance or admin accounts can create financial records.");
     }
 
-    let body = {};
+    let body: Record<string, any>;
     try {
-      try {
       body = await request.json() as Record<string, any>;
     } catch (e) {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
-    }
-    } catch {
       return badRequest("Request body must be valid JSON.");
     }
 
-    const siteId = String(body.siteId || "").trim();
-    if (!/^[A-Za-z0-9_-]{3,80}$/.test(siteId)) return badRequest("siteId is invalid.");
-
+    // Map itemType to taskType for validation
     const itemType = String(body.itemType || "").trim();
     if (!ITEM_TYPES.has(itemType)) return badRequest("itemType must be Task, Quote, or Invoice.");
 
-    let amountExVat, vatAmount;
-    try {
-      amountExVat = cleanAmount(body.amountExVat);
-      vatAmount = body.vatAmount ? cleanAmount(body.vatAmount) : Math.round(amountExVat * 0.15);
-    } catch (error: any) {
-      return badRequest(error.message);
+    let taskType = "Finance Follow-up";
+    if (itemType === "Quote") taskType = "Quote Required";
+    if (itemType === "Invoice") taskType = "Invoice Required";
+
+    // Convert amount from Rands to cents for schema validation
+    const payload = {
+      siteId: String(body.siteId || "").trim(),
+      jobId: body.jobId ? String(body.jobId).trim() : null,
+      taskType,
+      amountExVat: Math.round(Number(body.amountExVat || 0) * 100), // Convert to cents
+      vatAmount: body.vatAmount ? Math.round(Number(body.vatAmount) * 100) : Math.round(Number(body.amountExVat || 0) * 100 * 0.15),
+      reference: body.reference ? String(body.reference).trim().slice(0, 120) : null,
+      financeNotes: body.financeNotes ? String(body.financeNotes).trim().slice(0, 500) : null
+    };
+
+    // Validate payload against strict VAT schema
+    const validation = FinanceTaskCreateSchema.safeParse(payload);
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => ({
+        field: e.path.join("."),
+        message: e.message
+      }));
+      return badRequest(JSON.stringify({ errors }));
     }
 
-    let jobId, reference, financeNotes;
-    try {
-      jobId = cleanOptionalId(body.jobId);
-      reference = cleanRef(body.reference);
-      financeNotes = body.financeNotes ? String(body.financeNotes).trim().slice(0, 500) || null : null;
-    } catch (error: any) {
-      return badRequest(error.message);
-    }
+    const { siteId, jobId, amountExVat, vatAmount, reference, financeNotes } = validation.data;
 
     // Validate site exists
     const site = await db.prepare(`SELECT id FROM sites WHERE id = ?1 LIMIT 1`).bind(siteId).first();
     if (!site) return badRequest("The specified site was not found.");
 
     const financeService = new FinanceService(db);
-    
-    // Map itemType to taskType
-    let taskType = "Finance Follow-up";
-    if (itemType === "Quote") taskType = "Quote Required";
-    if (itemType === "Invoice") taskType = "Invoice Required";
 
     const task = await financeService.createFinanceTask({
       siteId,
       jobId,
-      taskType: taskType,
+      taskType,
       amount: amountExVat,
       vatAmount,
       reference,

@@ -39,6 +39,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `update(id, updates, expectedVersion)`: Generic multi-field update with version check
 - Both methods throw typed `ConcurrencyError` with expected/current version when row affected is zero, enabling proper conflict resolution in field device update scenarios.
 
+### Statutory 15% VAT Validation Enforcement (Task FIN-003)
+- **FinanceTaskCreateSchema**: Added new Zod validation schema in `src/lib/validation/schemas.ts` enforcing SARS statutory 15% VAT rate. Uses `z.literal(15)` pattern via custom refine validator that compares submitted VAT against expected value (`Math.round(exVatCents * 0.15)`).
+- **Integer Cents Validation**: Schema enforces integer-only amounts (no floating-point precision issues) with bounds checking (0 to R9,999,999.00 in cents).
+- **API Integration**: Updated `src/pages/portal/api/finance/records.ts` to use `FinanceTaskCreateSchema.safeParse()` for request validation. Rejects payloads with non-standard VAT rates, returning detailed error messages showing expected vs. provided VAT amounts.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

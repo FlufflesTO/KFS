@@ -135,7 +135,13 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE REVISED DATA PERSISTENCE METHODS WITHIN JOB-REPOSITORY.TS.
 
-[ ] Task FIN-003: Strict Statutory 15% VAT Validation Enforcement
+[x] Task FIN-003: Strict Statutory 15% VAT Validation Enforcement
+Target File: src/lib/validation/schemas.ts
+System Context: src/lib/server/services/finance-service.ts
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [FIN-003]
+TARGET_FILE: src/lib/validation/schemas.ts
+SYSTEM_CONTEXT: src/lib/server/services/finance-service.ts
 
 CRITICAL CONSTRAINTS:
 1. Target the Zod object parsers that validate financial entities or invoice creation payloads.
@@ -143,9 +149,8 @@ CRITICAL CONSTRAINTS:
 3. Reject any calculation payloads containing non-standard or custom tax properties to ensure strict compliance with the statutory SARS standard rate.
 
 OUTPUT ONLY THE REVISED INVOICE SCHEMA DEFINITION BLOCKS.
-[ ] Task JOB-001: On-Site Field Task Visual Evidence EnforcementTarget File: src/lib/validation/schemas.tsSystem Context: src/pages/portal/tech/jobs/[id]/jobcard.astroSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [JOB-001]
-TARGET_FILE: src/lib/validation/schemas.ts
-SYSTEM_CONTEXT: src/pages/portal/tech/jobs/[id]/jobcard.astro
+
+[ ] Task JOB-001: On-Site Field Task Visual Evidence Enforcement
 
 CRITICAL CONSTRAINTS:
 1. Locate the runtime validation schema parsing technician job card completion forms.
