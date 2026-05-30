@@ -16,6 +16,8 @@ export default defineConfig({
     plugins: [tailwindcss()],
     build: {
       chunkSizeWarningLimit: 900,
+      // Service worker is built separately via pre-build script (npm run build:sw)
+      // to prevent race conditions during asset bundling
     },
   },
 });

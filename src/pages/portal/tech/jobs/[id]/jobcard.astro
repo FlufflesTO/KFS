@@ -673,12 +673,12 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
       /**
        * Compress and downsample an image file to meet size constraints.
        * Resizes large images and compresses to JPEG format with quality adjustment.
-       * Target: ≤2MB per image while preserving visual quality.
+       * Target: <=2MB per image while preserving visual quality.
        */
-      async function compressImage(file: File, maxSizeBytes: number = 2097152): Promise<{ dataUri: string; file: File }> {
+      async function compressImage(file, maxSizeBytes = 2097152) {
         // If file is already under limit, return as-is
         if (file.size <= maxSizeBytes && ["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-          const dataUri = await new Promise<string>((resolve, reject) => {
+          const dataUri = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(String(reader.result || ""));
             reader.onerror = () => reject(new Error("Photo could not be read."));
@@ -688,7 +688,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
         }
 
         // Load image into canvas for downsampling
-        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
             const image = new Image();
@@ -724,7 +724,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
 
         // Compress with iterative quality reduction until under target size
         let quality = 0.92;
-        let compressedDataUri: string;
+        let compressedDataUri;
 
         while (quality > 0.60) {
           compressedDataUri = canvas.toDataURL("image/jpeg", quality);
@@ -761,7 +761,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
         const evidencePhotos = [];
         for (const [index, file] of evidenceFiles.entries()) {
           // Compress and downsample image
-          let compressedFile: File;
+          let compressedFile;
           try {
             const compressed = await compressImage(file, 2097152); // 2MB limit
             compressedFile = compressed.file;

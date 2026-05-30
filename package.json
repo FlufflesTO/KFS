@@ -13,7 +13,10 @@
   "scripts": {
     "dev": "astro dev",
     "check": "astro check",
-    "build": "esbuild src/sw.ts --minify --outfile=public/sw.js && astro build && node scripts/purge-css.ts",
+    "build:sw": "node scripts/build-sw.js",
+    "build:astro": "astro build",
+    "build:css": "node scripts/purge-css.ts",
+    "build": "npm run build:sw && npm run build:astro && npm run build:css",
     "build:staging": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 staging",
     "build:production:kharon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 production",
     "lint": "eslint .",

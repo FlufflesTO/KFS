@@ -113,6 +113,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **44x44px Touch Targets**: Refactored `src/components/portal/AdminNav.astro` navigation links to enforce WCAG minimum interactable size. Updated from `px-2 py-2` to `px-3 py-3` with explicit `min-h-[44px]` constraint. Added `flex-shrink-0` to icons and `flex-1` to text spans to prevent layout compression. Enhanced with `aria-current` and `aria-hidden` attributes for screen reader accessibility.
 - **Brand Token Alignment**: Converted generic gray colors to Kharon brand tokens (`kharon-light`, `kharon-black`, `kharon-grey`) for visual consistency with DESIGN_CONSTITUTION.md standards.
 
+### Service Worker Compiling Phase Isolation (Task SRE-004)
+- **scripts/build-sw.js**: New standalone service worker compilation script using esbuild. Runs as isolated pre-build phase to prevent race conditions during main asset bundling. Outputs minified IIFE format to `public/sw.js`.
+- **Package.json Script Refactor**: Split monolithic build command into discrete phases: `build:sw` (service worker), `build:astro` (main app), `build:css` (CSS purge). Main `build` script now executes phases sequentially: `npm run build:sw && npm run build:astro && npm run build:css`.
+- **astro.config.ts Update**: Added documentation comment noting service worker is built separately via pre-build script. Removed inline esbuild command from build chain.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

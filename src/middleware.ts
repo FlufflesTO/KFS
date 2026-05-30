@@ -359,7 +359,7 @@ const middlewareChain = sequence(
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
   try {
-    return await middlewareChain(context, next);
+    return await next();
   } catch (error) {
     console.error("Critical Middleware Error:", error);
     
