@@ -23,20 +23,21 @@ ON CONFLICT(id) DO UPDATE SET
   site_contact_email = excluded.site_contact_email,
   billing_emails = excluded.billing_emails;
 
--- Temporary Password: Kharon-Temp-Portal2026!
--- Hash: pbkdf2_sha256$100000$YzVkYWQzM2Q5NTUwNzk3ZTY2MGQ3MDlmZjk4MGQ3N2Y$vZlGGX8r8AFnwLwzFVBk9s5T1Riv4nhRCF8qZ_n_vgA
+-- Temporary role password hash. Do not store the plaintext password in git.
+-- Hash: pbkdf2_sha256$100000$NjRlODZmNzYtOGJmYS00NDdjLWIxZTgtODUwMDA4MzRlMTU5$VP_alYerv3Mrgz6fYZwKL0alcu4LB6YxGswSSZTMpFM
 INSERT INTO users (id, name, email, password_hash, role, site_id, is_active)
 VALUES
-  ('usr_admin_001', 'Kharon Admin', 'admin@kharon.co.za', 'pbkdf2_sha256$100000$YzVkYWQzM2Q5NTUwNzk3ZTY2MGQ3MDlmZjk4MGQ3N2Y$vZlGGX8r8AFnwLwzFVBk9s5T1Riv4nhRCF8qZ_n_vgA', 'admin', NULL, 1),
-  ('usr_tech_001', 'Kharon Technician', 'tech@kharon.co.za', 'pbkdf2_sha256$100000$YzVkYWQzM2Q5NTUwNzk3ZTY2MGQ3MDlmZjk4MGQ3N2Y$vZlGGX8r8AFnwLwzFVBk9s5T1Riv4nhRCF8qZ_n_vgA', 'tech', NULL, 1),
-  ('usr_finance_001', 'Kharon Finance', 'finance@kharon.co.za', 'pbkdf2_sha256$100000$YzVkYWQzM2Q5NTUwNzk3ZTY2MGQ3MDlmZjk4MGQ3N2Y$vZlGGX8r8AFnwLwzFVBk9s5T1Riv4nhRCF8qZ_n_vgA', 'finance', NULL, 1),
-  ('usr_client_001', 'Client Portal User', 'client@example.com', 'pbkdf2_sha256$100000$YzVkYWQzM2Q5NTUwNzk3ZTY2MGQ3MDlmZjk4MGQ3N2Y$vZlGGX8r8AFnwLwzFVBk9s5T1Riv4nhRCF8qZ_n_vgA', 'client', 'site_tequit_staging', 1)
+  ('usr_admin_001', 'Kharon Admin', 'admin@kharon.co.za', 'pbkdf2_sha256$100000$NjRlODZmNzYtOGJmYS00NDdjLWIxZTgtODUwMDA4MzRlMTU5$VP_alYerv3Mrgz6fYZwKL0alcu4LB6YxGswSSZTMpFM', 'admin', NULL, 1),
+  ('usr_tech_001', 'Kharon Technician', 'tech@kharon.co.za', 'pbkdf2_sha256$100000$NjRlODZmNzYtOGJmYS00NDdjLWIxZTgtODUwMDA4MzRlMTU5$VP_alYerv3Mrgz6fYZwKL0alcu4LB6YxGswSSZTMpFM', 'tech', NULL, 1),
+  ('usr_finance_001', 'Kharon Finance', 'finance@kharon.co.za', 'pbkdf2_sha256$100000$NjRlODZmNzYtOGJmYS00NDdjLWIxZTgtODUwMDA4MzRlMTU5$VP_alYerv3Mrgz6fYZwKL0alcu4LB6YxGswSSZTMpFM', 'finance', NULL, 1),
+  ('usr_client_001', 'Client Portal User', 'client@example.com', 'pbkdf2_sha256$100000$NjRlODZmNzYtOGJmYS00NDdjLWIxZTgtODUwMDA4MzRlMTU5$VP_alYerv3Mrgz6fYZwKL0alcu4LB6YxGswSSZTMpFM', 'client', 'site_tequit_staging', 1)
 ON CONFLICT(email) DO UPDATE SET
   name = excluded.name,
   password_hash = excluded.password_hash,
   role = excluded.role,
   site_id = excluded.site_id,
   is_active = excluded.is_active,
+  force_password_change = 0,
   mfa_required = 0,
   mfa_enabled = 0,
   mfa_secret_encrypted = NULL,
