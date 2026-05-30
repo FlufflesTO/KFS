@@ -4,6 +4,7 @@
  * Purpose: Displays a sticky banner when device is offline with queued items counter
  * Dependencies: None
  * Structural Role: UI indicator for offline status
+ * Design: Industrial Command Intelligence - solid brand tokens per DESIGN_CONSTITUTION.md
  */
 export interface Props {
   initialQueueCount?: number;
@@ -12,36 +13,36 @@ export interface Props {
 const { initialQueueCount = 0 } = Astro.props;
 ---
 
-<div data-offline-banner data-initial-queue-count={initialQueueCount} class:list={['fixed bottom-4 left-4 right-4 mx-auto z-50 transition-all duration-300 px-4 py-3 rounded-lg shadow-lg font-bold text-sm max-w-md w-full', {
-  'bg-emerald-100 text-emerald-800 border border-emerald-200 translate-y-0 opacity-100': initialQueueCount > 0,
+<div data-offline-banner data-initial-queue-count={initialQueueCount} class:list={['fixed bottom-4 left-4 right-4 mx-auto z-50 transition-all duration-300 px-4 py-3 rounded-md shadow-md font-semibold text-sm max-w-md w-full border', {
+  'bg-kharon-purple/5 text-kharon-black border-kharon-purple/20 translate-y-0 opacity-100': initialQueueCount > 0,
   'opacity-0 translate-y-4 pointer-events-none': initialQueueCount === 0
 }]}>
   <div class="flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <svg data-offline-icon="online" class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    <div class="flex items-center gap-3">
+      <svg data-offline-icon="online" class="w-5 h-5 text-kharon-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
       </svg>
-      <svg data-offline-icon="offline" class="hidden w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      <svg data-offline-icon="offline" class="hidden w-5 h-5 text-kharon-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
       </svg>
-      <span data-offline-message>Online - Syncing {initialQueueCount} items</span>
+      <span data-offline-message class="font-semibold">Online - Syncing {initialQueueCount} items</span>
     </div>
-    
-    <span data-offline-count class:list={['bg-kharon-purple text-white rounded-full w-6 h-6 items-center justify-center text-xs font-bold', initialQueueCount > 0 ? 'flex' : 'hidden']}>
+
+    <span data-offline-count class:list={['bg-kharon-purple text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold leading-none', initialQueueCount > 0 ? 'flex' : 'hidden']}>
         {initialQueueCount}
     </span>
   </div>
-  
-  <div data-offline-detail class="mt-2 hidden text-xs text-amber-700 items-center gap-1">
-    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+  <div data-offline-detail class="mt-2 hidden text-xs text-kharon-grey font-medium items-center gap-2">
+    <svg class="w-4 h-4 text-kharon-purple/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
     <span>Your changes are saved locally and will sync when connection is restored</span>
   </div>
 
   <div data-pwa-install class="mt-2 hidden flex-col gap-2 border-t border-kharon-purple/10 pt-2">
-    <p class="text-[10px] text-kharon-purple/70 uppercase font-bold">Portal Update Available</p>
-    <button data-install-btn class="w-full bg-kharon-purple text-white py-2 rounded text-xs font-bold hover:bg-kharon-blue transition-colors">
+    <p class="text-[10px] text-kharon-purple/70 uppercase font-bold tracking-wider">Portal Update Available</p>
+    <button data-install-btn class="w-full bg-kharon-purple text-white py-2 rounded-md text-xs font-bold hover:bg-kharon-purple/90 transition-colors">
       Install Portal App
     </button>
   </div>
@@ -87,14 +88,14 @@ const { initialQueueCount = 0 } = Astro.props;
   // Function to update banner visibility
   function updateBanner() {
     if (!bannerEl) return;
-    bannerEl.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none', 'bg-amber-100', 'text-amber-800', 'border-amber-200', 'bg-emerald-100', 'text-emerald-800', 'border-emerald-200', 'bg-white');
+    bannerEl.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none', 'bg-kharon-amber/5', 'text-kharon-black', 'border-kharon-amber/20', 'bg-kharon-purple/5', 'text-kharon-black', 'border-kharon-purple/20', 'bg-white');
     countEl?.classList.toggle('hidden', queueCount === 0);
     countEl?.classList.toggle('flex', queueCount > 0);
     if (countEl) countEl.textContent = String(queueCount);
 
     if (isOffline) {
       installSection?.classList.add('hidden');
-      bannerEl.classList.add('bg-amber-100', 'text-amber-800', 'border-amber-200', 'translate-y-0', 'opacity-100');
+      bannerEl.classList.add('bg-kharon-amber/5', 'text-kharon-black', 'border-kharon-amber/20', 'translate-y-0', 'opacity-100');
       if (messageEl) messageEl.textContent = 'Offline Mode - Data queued for sync';
       onlineIcon?.classList.add('hidden');
       offlineIcon?.classList.remove('hidden');
@@ -102,7 +103,7 @@ const { initialQueueCount = 0 } = Astro.props;
       detailEl?.classList.add('flex');
     } else if (queueCount > 0) {
       installSection?.classList.add('hidden');
-      bannerEl.classList.add('bg-emerald-100', 'text-emerald-800', 'border-emerald-200', 'translate-y-0', 'opacity-100');
+      bannerEl.classList.add('bg-kharon-purple/5', 'text-kharon-black', 'border-kharon-purple/20', 'translate-y-0', 'opacity-100');
       if (messageEl) messageEl.textContent = `Online - Syncing ${queueCount} items`;
       onlineIcon?.classList.remove('hidden');
       offlineIcon?.classList.add('hidden');
