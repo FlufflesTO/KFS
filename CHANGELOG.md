@@ -10,8 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Typecheck Resolution & Build Stability
 - **tsconfig.json Relaxation**: Adjusted strict TypeScript settings for pragmatic CI/CD pipeline compatibility. Disabled `exactOptionalPropertyTypes`, `strictPropertyInitialization`, `noUnusedLocals`, and `noUnusedParameters`. Excluded scripts, tests, eslint.config.ts, and playwright.config.ts from type checking to focus validation on production source code.
 - **Zod Schema Fix**: Corrected `nonNegative` → `nonnegative` (case sensitivity) in `FinanceTaskCreateSchema`.
-- **Error Class Updates**: Added `override` modifier to `name` property in custom error classes (`DraftStorageError`, `DraftQuotaExceededError`, `SyncQueueError`, `SyncQueueQuotaExceededError`, `TooManyRequestsError`) to satisfy TypeScript 6.0 strict mode requirements.
+- **Error Class Updates**: Added `override` modifier to `name` and `cause` properties in custom error classes (`DraftStorageError`, `DraftQuotaExceededError`, `SyncQueueError`, `SyncQueueQuotaExceededError`, `TooManyRequestsError.toJSON()`) to satisfy TypeScript 6.0 strict mode requirements.
 - **Missing Types Installed**: Added `@cloudflare/workers-types` dev dependency for D1Database, R2Bucket, and ScheduledController type definitions.
+- **Type Definition Fixes**:
+  - Added `manufacturer` and `model_reference` fields to `DbSystem` interface
+  - Added `completed_date` and `version` fields to `DbJob` interface
+  - Added optional `owner_company_name` and `coverage_area` to `DbDefect` for joined query results
+- **RateLimit Typing**: Fixed `getRateLimitStats()` return type by explicitly casting stats to `Number` and `String` types.
 - **Build Verification**: Confirmed successful build with `npm run build` completing all phases (service worker, Astro SSR, CSS purge) without errors.
 
 ### Cloudflare Deployment
