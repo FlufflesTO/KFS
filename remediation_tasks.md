@@ -31,7 +31,12 @@ CRITICAL CONSTRAINTS:
 3. Do not modify or alter active D1 database bindings, R2 bucket namespaces, compatibility dates, or environment names.
 
 OUTPUT THE UNIFIED DIFF BUNDLE FOR WRANGLER.JSONC.
-[ ] Task DB-005: Source Schema & Migration AlignmentTarget File: schema.sqlSystem Context: migrations/0001_kharon_portal.sqlSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [DB-005]
+
+[x] Task DB-005: Source Schema & Migration Alignment
+Target File: schema.sql
+System Context: migrations/
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [DB-005]
 TARGET_FILE: schema.sql
 SYSTEM_CONTEXT: migrations/
 
@@ -42,9 +47,8 @@ CRITICAL CONSTRAINTS:
 4. Keep the exact column signatures required for multi-factor authentication, soft-deletes, session revocations, and rate limits.
 
 OUTPUT THE SECTIONS OF SCHEMA.SQL ADDING MISSING STRUCTURAL TABLES.
-[ ] Task DB-006: Migration Sequence De-duplicationTarget File: migrations/0018_mfa_policy.sql (and other duplicated migrations)System Context: schema.sqlSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [DB-006]
-TARGET_FILE: migrations/
-SYSTEM_CONTEXT: schema.sql
+
+[ ] Task DB-006: Migration Sequence De-duplication
 
 CRITICAL CONSTRAINTS:
 1. Identify and resolve sorting conflicts within the migration file index where duplicate indexing prefixes occur on files (`0018`, `0020`, `0024`).

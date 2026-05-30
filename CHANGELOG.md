@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Wrangler Pages Deploy**: Refactored the GHA deployment steps to utilize the official `cloudflare/wrangler-action@v3` action with natively bound repository credentials.
 - **Type Check Script**: Added a `"check": "astro check"` script to `package.json` to support type-checking.
 
+### Schema Alignment (Task DB-005)
+- **Added 9 Missing Tables to schema.sql**: Reconciled `schema.sql` with all sequential migrations by adding missing table definitions: `revoked_sessions`, `contact_submissions`, `job_visits`, `defects`, `certificates`, `sage_config`, `finance_tasks`, `rate_limits`, `data_retention_policies`, `data_retention_logs`, and the `v_retention_policy_summary` view. All tables include proper foreign keys, constraints, indexes, and triggers matching migration definitions.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
