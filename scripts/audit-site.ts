@@ -46,8 +46,18 @@ const repoTextFiles = walk(root).filter((file) => {
     relative.startsWith("dist/") ||
     relative.startsWith(".wrangler/") ||
     relative.startsWith(".git/") ||
+    relative.startsWith(".claude/") ||
+    relative.startsWith(".qoder/") ||
+    relative.startsWith(".qwen/") ||
+    relative.startsWith(".vscode/") ||
+    relative.startsWith("antigravity_env/") ||
     relative.startsWith("backups/") ||
-    relative.startsWith("monitor-results/")
+    relative.startsWith("conductor/") ||
+    relative.startsWith("monitor-results/") ||
+    relative.startsWith("playwright-report/") ||
+    relative.startsWith("retention-reports/") ||
+    relative.startsWith("scratch/") ||
+    relative.startsWith("test-results/")
   ) return false;
   return /\.(astro|js|mjs|css|md|sql|json|jsonc|ps1|txt)$/.test(file);
 });
@@ -142,12 +152,15 @@ const allowedPortalJsPatterns = [
   /^dashboard\.astro_astro_type_script_index_1_lang\.[A-Za-z0-9_-]+\.js$/,
   /^FinanceCreateForm\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^FinanceLedgerTable\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^maintenance-request\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^log-visit\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^operations\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^exports\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^jobs\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^sites\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^systems\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^users\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^dom\.[A-Za-z0-9_-]+\.js$/,
   /^portalApi\.[A-Za-z0-9_-]+\.js$/,
   /^_id_\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^page\.[A-Za-z0-9_-]+\.js$/

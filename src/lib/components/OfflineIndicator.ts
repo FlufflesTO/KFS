@@ -66,15 +66,25 @@ function showOfflineBanner(containerSelector?: string): void {
     banner.className = 'fixed top-0 left-0 right-0 bg-amber-600 text-white px-4 py-2 text-center text-sm font-semibold z-50 shadow-lg';
     banner.setAttribute('role', 'alert');
     banner.setAttribute('aria-live', 'polite');
-    banner.innerHTML = `
-      <span class="inline-flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.828-2.828m2.828 2.828L21 21M15.556 3a9 9 0 010 12.728m0 0l-2.828-2.828m2.828 2.828L21 21m-6-6l-2.828-2.828m2.828 2.828L21 21"/>
-        </svg>
-        You are offline - Changes will sync when connection is restored
-      </span>
-    `;
+    const content = document.createElement('span');
+    content.className = 'inline-flex items-center gap-2';
+
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('class', 'w-4 h-4');
+    icon.setAttribute('fill', 'none');
+    icon.setAttribute('stroke', 'currentColor');
+    icon.setAttribute('viewBox', '0 0 24 24');
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('d', 'M18.364 5.636a9 9 0 010 12.728m0 0l-2.828-2.828m2.828 2.828L21 21M15.556 3a9 9 0 010 12.728m0 0l-2.828-2.828m2.828 2.828L21 21m-6-6l-2.828-2.828m2.828 2.828L21 21');
+
+    icon.appendChild(path);
+    content.appendChild(icon);
+    content.appendChild(document.createTextNode('You are offline - Changes will sync when connection is restored'));
+    banner.appendChild(content);
     document.body.insertBefore(banner, document.body.firstChild);
   }
 }
