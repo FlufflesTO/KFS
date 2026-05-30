@@ -1,0 +1,40 @@
+<!-- Kharon Guardian Emblem - Placeholder SVG -->
+<!-- Replace with actual AVIF/WebP renders from 3D logo concepts -->
+<!-- Best visual: Large blue ring, purple central core, black industrial base -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <!-- Outer ring - deep navy/blue metallic -->
+  <circle cx="200" cy="200" r="180" stroke="#1a3a5f" stroke-width="24" fill="none" opacity="0.8"/>
+  <circle cx="200" cy="200" r="180" stroke="#286fa7" stroke-width="2" fill="none" opacity="0.4"/>
+  
+  <!-- Inner compressed sphere/dome - deep purple metallic -->
+  <circle cx="200" cy="200" r="120" fill="url(#purpleGradient)" opacity="0.6"/>
+  <circle cx="200" cy="200" r="100" fill="url(#purpleCore)" opacity="0.8"/>
+  
+  <!-- Base bar - gunmetal/black cylinder -->
+  <rect x="140" y="280" width="120" height="40" rx="8" fill="#141416" opacity="0.9"/>
+  <rect x="140" y="280" width="120" height="40" rx="8" fill="url(#gunmetalGradient)" opacity="0.5"/>
+  
+  <!-- Rim lighting accents -->
+  <ellipse cx="200" cy="200" rx="180" ry="180" stroke="url(#rimGlow)" stroke-width="40" fill="none" opacity="0.3"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <radialGradient id="purpleGradient" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#54247a" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#3d1d5a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="purpleCore" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#7b3fb8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#3d1d5a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gunmetalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2d2d30" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#141416" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="rimGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#4B2E83" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#1F4E79" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#0B0D0F" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

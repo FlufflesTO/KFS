@@ -1,0 +1,38 @@
+<!-- Kharon Guardian Lockup - Placeholder SVG -->
+<!-- Replace with actual AVIF/WebP renders from 3D logo concepts -->
+<!-- Best visual: Emblem + KHARON wordmark side by side -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" fill="none">
+  <!-- Emblem (left side) -->
+  <g transform="translate(60, 50)">
+    <!-- Outer ring -->
+    <circle cx="100" cy="100" r="90" stroke="#1a3a5f" stroke-width="12" fill="none" opacity="0.8"/>
+    <circle cx="100" cy="100" r="90" stroke="#286fa7" stroke-width="1" fill="none" opacity="0.4"/>
+    
+    <!-- Inner sphere -->
+    <circle cx="100" cy="100" r="60" fill="url(#purpleGradient)" opacity="0.6"/>
+    <circle cx="100" cy="100" r="50" fill="url(#purpleCore)" opacity="0.8"/>
+    
+    <!-- Base bar -->
+    <rect x="70" y="140" width="60" height="20" rx="4" fill="#141416" opacity="0.9"/>
+  </g>
+  
+  <!-- KHARON wordmark (right side) -->
+  <text x="280" y="160" font-family="Inter, system-ui, sans-serif" font-size="48" font-weight="700" letter-spacing="0.15em" fill="#e2e8f0" opacity="0.9">
+    KHARON
+  </text>
+  <text x="280" y="190" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="400" letter-spacing="0.25em" fill="#cbd5e1" opacity="0.5">
+    FIRE &amp; SECURITY
+  </text>
+  
+  <!-- Gradients -->
+  <defs>
+    <radialGradient id="purpleGradient" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#54247a" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#3d1d5a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="purpleCore" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#7b3fb8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#3d1d5a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

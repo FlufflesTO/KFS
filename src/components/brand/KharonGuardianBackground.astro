@@ -1,0 +1,245 @@
+---
+/**
+ * Kharon Guardian Background Component
+ * Purpose: Dark, mysterious 3D-feeling protector/guardian background logo system
+ * Design: Industrial guardian in shadow - technical sentinel, not CCTV/security-first
+ * Usage: Reusable background layer for homepage hero and key sections
+ * 
+ * Props:
+ * - intensity: "subtle" | "medium" | "strong" - Controls opacity and presence
+ * - position: "center" | "right" | "left" - Logo positioning
+ * - variant: "emblem" | "lockup" - Emblem-only or full lockup with wordmark
+ * - motion: "static" | "subtle" - Animation behaviour
+ * - class: Additional CSS classes
+ */
+
+interface Props {
+  intensity?: "subtle" | "medium" | "strong";
+  position?: "center" | "right" | "left";
+  variant?: "emblem" | "lockup";
+  motion?: "static" | "subtle";
+  class?: string;
+}
+
+const {
+  intensity = "medium",
+  position = "right",
+  variant = "emblem",
+  motion = "subtle",
+  class: className = "",
+} = Astro.props;
+
+const assetBase = variant === "lockup"
+  ? "/brand/kharon-guardian-logo"
+  : "/brand/kharon-guardian-emblem";
+---
+
+<div
+  class:list={[
+    "guardian-bg",
+    `guardian-bg--${intensity}`,
+    `guardian-bg--${position}`,
+    `guardian-bg--motion-${motion}`,
+    className,
+  ]}
+  aria-hidden="true"
+>
+  <div class="guardian-bg__mark">
+    <picture>
+      <source srcset={`${assetBase}.avif`} type="image/avif" />
+      <source srcset={`${assetBase}.webp`} type="image/webp" />
+      <img
+        src={`${assetBase}-fallback.png`}
+        alt=""
+        loading="eager"
+        decoding="async"
+        class="guardian-bg__image"
+      />
+    </picture>
+  </div>
+
+  <div class="guardian-bg__vignette"></div>
+  <div class="guardian-bg__rim guardian-bg__rim--left"></div>
+  <div class="guardian-bg__rim guardian-bg__rim--right"></div>
+</div>
+
+<style>
+  /* Base container */
+  .guardian-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    isolation: isolate;
+  }
+
+  /* Logo mark positioning */
+  .guardian-bg__mark {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateZ(0);
+  }
+
+  .guardian-bg--right .guardian-bg__mark {
+    justify-content: flex-end;
+    padding-right: 5%;
+  }
+
+  .guardian-bg--left .guardian-bg__mark {
+    justify-content: flex-start;
+    padding-left: 5%;
+  }
+
+  .guardian-bg--center .guardian-bg__mark {
+    justify-content: center;
+  }
+
+  /* Image sizing and opacity */
+  .guardian-bg__image {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    display: block;
+    opacity: 0.18;
+    transition: opacity 0.3s ease;
+    filter: drop-shadow(0 0 40px rgba(75, 46, 131, 0.15));
+  }
+
+  /* Intensity variants */
+  .guardian-bg--subtle .guardian-bg__image {
+    opacity: 0.12;
+  }
+
+  .guardian-bg--medium .guardian-bg__image {
+    opacity: 0.20;
+  }
+
+  .guardian-bg--strong .guardian-bg__image {
+    opacity: 0.30;
+  }
+
+  /* Motion states */
+  .guardian-bg--motion-subtle .guardian-bg__mark {
+    animation: guardian-drift 20s ease-in-out infinite;
+  }
+
+  .guardian-bg--motion-static .guardian-bg__mark {
+    animation: none;
+  }
+
+  @keyframes guardian-drift {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(2%, 1%) scale(1.02);
+    }
+    50% {
+      transform: translate(0, 2%) scale(1);
+    }
+    75% {
+      transform: translate(-2%, 1%) scale(0.98);
+    }
+  }
+
+  /* Vignette overlay */
+  .guardian-bg__vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      transparent 40%,
+      rgba(11, 13, 15, 0.4) 100%
+    );
+    pointer-events: none;
+  }
+
+  /* Rim light glows */
+  .guardian-bg__rim {
+    position: absolute;
+    top: 50%;
+    width: 200px;
+    height: 200px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  .guardian-bg__rim--left {
+    left: -100px;
+    background: radial-gradient(
+      circle,
+      rgba(75, 46, 131, 0.4) 0%,
+      transparent 70%
+    );
+  }
+
+  .guardian-bg__rim--right {
+    right: -100px;
+    background: radial-gradient(
+      circle,
+      rgba(31, 78, 121, 0.3) 0%,
+      transparent 70%
+    );
+  }
+
+  /* Responsive sizing */
+  @media (max-width: 1024px) {
+    .guardian-bg__image {
+      max-width: 400px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .guardian-bg__image {
+      max-width: 300px;
+      opacity: 0.10;
+    }
+
+    .guardian-bg--subtle .guardian-bg__image {
+      opacity: 0.08;
+    }
+
+    .guardian-bg--medium .guardian-bg__image {
+      opacity: 0.10;
+    }
+
+    .guardian-bg--strong .guardian-bg__image {
+      opacity: 0.15;
+    }
+
+    .guardian-bg--motion-subtle .guardian-bg__mark {
+      animation: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .guardian-bg__image {
+      max-width: 200px;
+    }
+
+    .guardian-bg--right .guardian-bg__mark {
+      justify-content: center;
+      padding-right: 0;
+    }
+
+    .guardian-bg--left .guardian-bg__mark {
+      justify-content: center;
+      padding-left: 0;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .guardian-bg--motion-subtle .guardian-bg__mark {
+      animation: none;
+    }
+  }
+</style>

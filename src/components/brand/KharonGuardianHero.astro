@@ -1,0 +1,123 @@
+---
+/**
+ * Kharon Guardian Hero Component
+ * Purpose: Complete homepage hero section with guardian background
+ * Design: Industrial guardian atmosphere - Fire Detection & Gas Suppression first
+ * Brand Positioning: Engineering-led life-safety and compliance systems
+ */
+
+import KharonGuardianBackground from "./KharonGuardianBackground.astro";
+---
+
+<section class="guardian-hero relative isolate overflow-hidden bg-kharon-black text-white">
+  <!-- Background Guardian Layer -->
+  <KharonGuardianBackground
+    intensity="medium"
+    position="right"
+    variant="emblem"
+    motion="subtle"
+  />
+
+  <!-- Foreground Content -->
+  <div class="guardian-hero__content relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl py-16 sm:py-24 lg:py-32">
+      <!-- Eyebrow Badge -->
+      <div class="reveal inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 mb-12">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-kharon-purple opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-kharon-purple"></span>
+        </span>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.25em] text-kharon-purple">
+          Fire Detection • Gas Suppression • Compliance Systems
+        </p>
+      </div>
+
+      <!-- Primary Heading -->
+      <h1 class="kharon-h1 reveal reveal-delayed text-white max-w-3xl">
+        Life-safety systems for commercial and industrial environments.
+      </h1>
+
+      <!-- Supporting Copy -->
+      <p class="mt-8 reveal reveal-delayed text-base sm:text-lg leading-relaxed text-white/70 max-w-3xl font-medium">
+        Kharon designs, installs, services, and maintains compliance-critical fire detection, gas suppression, and supporting security systems for operational environments where failure is not acceptable.
+      </p>
+
+      <!-- Primary CTAs -->
+      <div class="mt-12 flex flex-col sm:flex-row gap-4 reveal reveal-delayed">
+        <a
+          href="/gas-suppression"
+          class="group relative flex items-center justify-center gap-2.5 overflow-hidden rounded-md bg-kharon-purple px-8 py-4 text-[0.75rem] font-bold uppercase tracking-widest text-white transition-all hover:bg-kharon-blue shadow-lg"
+        >
+          Gas Suppression
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+          </svg>
+        </a>
+
+        <a
+          href="/fire-detection"
+          class="flex items-center justify-center rounded-md border border-white/10 bg-transparent px-8 py-4 text-[0.75rem] font-bold uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/5"
+        >
+          Fire Detection
+        </a>
+
+        <a
+          href="/contact"
+          class="flex items-center justify-center rounded-md border border-kharon-purple/30 bg-kharon-purple/10 px-8 py-4 text-[0.75rem] font-bold uppercase tracking-widest text-kharon-purple backdrop-blur-sm transition-all hover:bg-kharon-purple/20"
+        >
+          Request Compliance Support
+        </a>
+      </div>
+
+      <!-- Trust Signals -->
+      <div class="mt-16 flex flex-wrap gap-3 reveal reveal-delayed">
+        <span class="rounded-sm border border-white/5 bg-white/5 px-3 py-1.5 text-[0.625rem] font-bold uppercase tracking-[0.15em] text-white/40">
+          SAQCC Certified
+        </span>
+        <span class="rounded-sm border border-white/5 bg-white/5 px-3 py-1.5 text-[0.625rem] font-bold uppercase tracking-[0.15em] text-white/40">
+          SANS 10139
+        </span>
+        <span class="rounded-sm border border-white/5 bg-white/5 px-3 py-1.5 text-[0.625rem] font-bold uppercase tracking-[0.15em] text-white/40">
+          SANS 14520
+        </span>
+        <span class="rounded-sm border border-white/5 bg-white/5 px-3 py-1.5 text-[0.625rem] font-bold uppercase tracking-[0.15em] text-white/40">
+          Commercial & Industrial
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dark Overlay for Text Contrast -->
+  <div class="guardian-hero__overlay pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-kharon-black/80 via-kharon-black/40 to-transparent"></div>
+</section>
+
+<style>
+  .guardian-hero {
+    min-height: min(900px, 85svh);
+    padding-top: var(--header-height);
+  }
+
+  .guardian-hero__overlay {
+    background: radial-gradient(
+      ellipse at 30% 50%,
+      transparent 0%,
+      rgba(11, 13, 15, 0.6) 100%
+    );
+  }
+
+  @media (max-width: 768px) {
+    .guardian-hero {
+      min-height: min(700px, 70svh);
+      padding-top: calc(var(--header-height) + 2rem);
+    }
+
+    .guardian-hero__overlay {
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        transparent 0%,
+        rgba(11, 13, 15, 0.7) 100%
+      );
+    }
+  }
+</style>

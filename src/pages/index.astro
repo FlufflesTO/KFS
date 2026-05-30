@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import CinematicHero from "../components/sections/CinematicHero.astro";
+import KharonGuardianHero from "../components/brand/KharonGuardianHero.astro";
 import RouteMatrix from "../components/sections/RouteMatrix.astro";
 import AuthorityEvidence from "../components/sections/AuthorityEvidence.astro";
 import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
@@ -39,7 +39,7 @@ const localBusinessJsonLd = JSON.stringify({
 
 <BaseLayout title={pageMeta.home.title} description={pageMeta.home.description}>
   <script type="application/ld+json" set:html={localBusinessJsonLd}></script>
-  <CinematicHero />
+  <KharonGuardianHero />
   <ComplianceStrip />
   <Testimonials />
   <RouteMatrix />
