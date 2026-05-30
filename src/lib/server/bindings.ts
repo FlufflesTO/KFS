@@ -3,11 +3,11 @@
  * Purpose: Provides type-safe access to database and storage bindings and standard fee config
  * Dependencies: @cloudflare/workers-types
  * Structural Role: Server-side bindings and configuration accessor
+ * 
+ * Note: In Cloudflare Pages + Astro, bindings are injected into globalThis.env at runtime
  */
 
 import type { D1Database, R2Bucket } from "@cloudflare/workers-types";
-// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
-import { env } from "cloudflare:workers";
 
 export interface WorkerBindings {
   db: D1Database;
@@ -28,25 +28,21 @@ export interface Env {
   [key: string]: unknown;
 }
 
-// Global type extension for Cloudflare Workers
-declare global {
-  var __env__: {
-    DB?: D1Database;
-    STORAGE?: R2Bucket;
-    STANDARD_SERVICE_FEE?: string;
-    [key: string]: unknown;
-  };
-}
-
 function resolveBindings(): any {
-  try {
-    if (env && ((env as any).DB || (env as any).STORAGE)) {
+  // Cloudflare Pages injects bindings into globalThis.env at runtime
+  if (typeof globalThis !== "undefined" && (globalThis as any).env) {
+    const env = (globalThis as any).env;
+    if (env.DB || env.STORAGE) {
       return env;
     }
-  } catch (e) {
-    // Ignore if module is not available
   }
-  return (globalThis as any).__env__ || globalThis;
+  
+  // Fallback for local development
+  if (typeof globalThis !== "undefined") {
+    return globalThis;
+  }
+  
+  return {};
 }
 
 export function getBindings(): WorkerBindings {
