@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Cloudflare Deployment
 - **Production Deployment**: Successfully deployed to Cloudflare Pages (https://production.kharon-website.pages.dev). Uploaded 153 files with 45 already cached. Deployment alias configured for production branch.
 
+### Guardian Background System (UI/UX Hardening)
+- **KharonGuardianBackground Component**: Created reusable Astro component (`src/components/brand/KharonGuardianBackground.astro`) for dark, mysterious 3D-feeling protector/guardian background logo. Supports intensity variants (subtle/medium/strong), positioning (center/right/left), variant modes (emblem/lockup), and motion states (static/subtle). Includes AVIF/WebP/PNG fallback picture sources, CSS vignette overlay, rim light glows, and respects prefers-reduced-motion.
+- **KharonGuardianHero Component**: Implemented complete homepage hero (`src/components/brand/KharonGuardianHero.astro`) with guardian background, proper brand copy aligned to Fire Detection & Gas Suppression first positioning. CTAs route to `/gas-suppression`, `/fire-detection`, and `/contact`. Includes SAQCC/SANS trust signals.
+- **Asset Structure**: Created `/public/brand/` directory with `kharon-guardian-emblem.svg`, `kharon-guardian-logo.svg`, and PNG fallbacks. Placeholder SVGs use deep navy/blue metallic outer ring, purple central core, and gunmetal base bar.
+- **Homepage Integration**: Updated `src/pages/index.astro` to use `KharonGuardianHero` instead of `CinematicHero`.
+- **Design Principles**: Background feels like "industrial guardian in shadow" - technical sentinel, not CCTV/security-first. Subtle slow drift animation, low opacity (0.10-0.30), dark radial gradients, and purple/blue rim lighting. Mobile-reduced opacity and disabled animation for performance.
+
 ### Core Infrastructure & Database Foundation
 - **Automated D1 Migrations (Task SRE-001)**: Integrated type-checking (`npm run check`) and automated D1 database migrations (`npx wrangler d1 migrations apply kharon-db --remote`) sequentially into the GitHub Actions CI/CD deployment workflow (`.github/workflows/ci-cd.yml`).
 - **Hardcoded Account ID Removal (Task SRE-002)**: Replaced hardcoded Cloudflare Account ID values with a dynamic evaluation rule in `wrangler.jsonc` extracting strings natively via `env.CLOUDFLARE_ACCOUNT_ID`.
