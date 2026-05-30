@@ -308,9 +308,24 @@ CRITICAL CONSTRAINTS:
 3. Keep numerical row identifiers, account metadata mapping vectors, and ledger linkages intact to protect financial data dependencies.
 
 OUTPUT ONLY THE REVISED USER REPOSITORY SECURITY METHODS.
-📊 PHASE 3: FINANCIAL & SARS ALIGNMENT[ ] Task FIN-001: Absolute Integer Cent Conversion in Sage ClientTarget File: src/lib/server/services/sage-client.tsSystem Context: src/lib/utils/financial-utils.tsSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [FIN-001]
-TARGET_FILE: src/lib/server/services/sage-client.ts
-SYSTEM_CONTEXT: src/lib/utils/financial-utils.ts
+
+[x] Task SEC-006: User Identity Anonymization Deletion Logic
+Target File: src/lib/server/db/user-repository.ts
+System Context: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.md
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [SEC-006]
+TARGET_FILE: src/lib/server/db/user-repository.ts
+SYSTEM_CONTEXT: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.md
+
+CRITICAL CONSTRAINTS:
+1. Build a secure data anonymization method inside the repository file layer to fulfill POPIA Section 26 rules.
+2. Replace private text inputs (such as names, physical locations, cell profiles, or validation parameters) with randomized cryptographic text values.
+3. Keep numerical row identifiers, account metadata mapping vectors, and ledger linkages intact to protect financial data dependencies.
+
+OUTPUT ONLY THE REVISED USER REPOSITORY SECURITY METHODS.
+
+📊 PHASE 3: FINANCIAL & SARS ALIGNMENT
+[ ] Task FIN-001: Absolute Integer Cent Conversion in Sage Client
 
 CRITICAL CONSTRAINTS:
 1. Audit all mathematical transformations structuring invoices before sending to the external API endpoint.

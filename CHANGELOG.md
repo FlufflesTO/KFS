@@ -65,6 +65,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **hashIpAddress Function**: Implemented SHA-256 IP anonymization utility in `src/lib/server/audit.ts` with configurable salt (`AUDIT_IP_SALT` or fallback to `SESSION_SECRET`). Combines IP with salt before hashing to prevent rainbow table attacks.
 - **Audit Function Updates**: Modified `auditEvent()`, `auditError()`, and `documentAccessLog()` to hash IP addresses before database storage. Plain-text IPs are never written to `audit_events` or `document_access_logs` tables, ensuring POPIA data minimization compliance.
 
+### User Identity Anonymization for Deletion Logic (Task SEC-006)
+- **generateAnonymizedValue Utility**: Added cryptographic random value generator producing `anon_[32-char-hex]` format strings for PII replacement.
+- **anonymizeUser Method**: New `UserRepository.anonymizeUser(id)` method for POPIA Section 26 compliance (right to erasure). Replaces personal data (name, email, password_hash, mfa_secret_encrypted) with randomized values while preserving user ID and role for referential integrity with financial/audit records. Invalidates all active sessions by randomizing password hash and setting `force_password_change = 1`.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
