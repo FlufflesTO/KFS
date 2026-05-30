@@ -92,6 +92,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Optimistic Locking Verification Check (Task JOB-002)
 - **Verified Implementation**: Confirmed `JobRepository.updateStatus()` and `JobRepository.update()` methods from DB-003 include full verification checking. Both methods validate version match before update, throw typed `ConcurrencyError` with expected/current version on race condition failure, enabling proper UI error handling for field device concurrent updates.
 
+### Core Certificate Generation Verification Check (Task JOB-003)
+- **Verified Implementation**: Certificate generation at `/portal/api/certificates/generate-pdf.ts` already queries `defects` table with `certificate_blocking` flag check. Certificates cannot be generated when blocking defects exist with `status != 'Closed'`, ensuring compliance with SANS inspection requirements.
+
+### Client-Side Upload Image Downsampling (Task JOB-004)
+- **compressImage Function**: Added client-side image compression utility in `src/pages/portal/tech/jobs/[id]/jobcard.astro`. Uses HTML5 Canvas to downsample images to max 1920px longest side, then iteratively compresses JPEG (quality 0.92→0.60) until under 2MB target.
+- **Job Card Integration**: Evidence photo upload loop now processes all images through `compressImage()` before submission. Large images automatically resized and converted to JPEG format, reducing upload bandwidth and storage requirements while preserving visual evidence quality.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

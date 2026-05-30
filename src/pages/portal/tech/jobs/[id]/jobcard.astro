@@ -670,6 +670,80 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
       });
       renderDefects();
 
+      /**
+       * Compress and downsample an image file to meet size constraints.
+       * Resizes large images and compresses to JPEG format with quality adjustment.
+       * Target: ≤2MB per image while preserving visual quality.
+       */
+      async function compressImage(file: File, maxSizeBytes: number = 2097152): Promise<{ dataUri: string; file: File }> {
+        // If file is already under limit, return as-is
+        if (file.size <= maxSizeBytes && ["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+          const dataUri = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ""));
+            reader.onerror = () => reject(new Error("Photo could not be read."));
+            reader.readAsDataURL(file);
+          });
+          return { dataUri, file };
+        }
+
+        // Load image into canvas for downsampling
+        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = () => reject(new Error("Image could not be loaded."));
+            image.src = String(reader.result);
+          };
+          reader.onerror = () => reject(new Error("Photo could not be read."));
+          reader.readAsDataURL(file);
+        });
+
+        // Calculate new dimensions (max 1920px on longest side)
+        const MAX_DIMENSION = 1920;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > MAX_DIMENSION) {
+          height = Math.round((height * MAX_DIMENSION) / width);
+          width = MAX_DIMENSION;
+        } else if (height > MAX_DIMENSION) {
+          width = Math.round((width * MAX_DIMENSION) / height);
+          height = MAX_DIMENSION;
+        }
+
+        // Draw resized image on canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Canvas not supported");
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Compress with iterative quality reduction until under target size
+        let quality = 0.92;
+        let compressedDataUri: string;
+
+        while (quality > 0.60) {
+          compressedDataUri = canvas.toDataURL("image/jpeg", quality);
+          const sizeBytes = Math.round((compressedDataUri.length - 22) * 3 / 4); // Estimate size from base64
+
+          if (sizeBytes <= maxSizeBytes) {
+            break;
+          }
+          quality -= 0.08;
+        }
+
+        // Convert data URI back to File for consistency
+        const response = await fetch(compressedDataUri);
+        const blob = await response.blob();
+        const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
+
+        return { dataUri: compressedDataUri, file: compressedFile };
+      }
+
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const result = form.querySelector(".jobcard-result");
@@ -686,19 +760,25 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
         const evidenceCategory = data.get("evidenceCategory") || "General Evidence";
         const evidencePhotos = [];
         for (const [index, file] of evidenceFiles.entries()) {
-          if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 1572864) {
-            result.textContent = `Evidence photo ${index + 1} must be JPEG, PNG or WebP and 1.5 MB or smaller.`;
+          // Compress and downsample image
+          let compressedFile: File;
+          try {
+            const compressed = await compressImage(file, 2097152); // 2MB limit
+            compressedFile = compressed.file;
+            // Validate compressed output
+            if (compressedFile.size > 2097152) {
+              result.textContent = `Evidence photo ${index + 1} could not be compressed below 2MB.`;
+              result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
+              result.classList.remove("hidden");
+              return;
+            }
+            evidencePhotos.push({ dataUri: compressed.dataUri, caption: `${evidenceCategory}: ${file.name || `Evidence photo ${index + 1}`}` });
+          } catch (error) {
+            result.textContent = `Evidence photo ${index + 1} processing failed: ${error instanceof Error ? error.message : "Unknown error"}`;
             result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
             result.classList.remove("hidden");
             return;
           }
-          const dataUri = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result || ""));
-            reader.onerror = () => reject(new Error("Photo could not be read."));
-            reader.readAsDataURL(file);
-          });
-          evidencePhotos.push({ dataUri, caption: `${evidenceCategory}: ${file.name || `Evidence photo ${index + 1}`}` });
         }
         if (!data.get("signatureBase64")) {
           result.textContent = "A captured signature is required.";

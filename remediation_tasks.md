@@ -493,9 +493,23 @@ CRITICAL CONSTRAINTS:
 3. Re-scale large images to drop sizes below a maximum threshold of 2MB per entry before finalizing submission processing.
 
 OUTPUT THE COMPLETE IMAGE TRANSFORM UTILITY BLOCK.
-[ ] Task JOB-006: Cross-Tenant Data Access Validation RulesTarget File: src/lib/server/access.tsSystem Context: src/middleware.tsSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [JOB-006]
-TARGET_FILE: src/lib/server/access.ts
-SYSTEM_CONTEXT: src/middleware.ts
+
+[x] Task JOB-004: Client-Side Upload Image Downsampling Compression Routine
+Target File: src/lib/forms/unifiedSubmit.ts
+System Context: AI_CONTEXT.md
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [JOB-004]
+TARGET_FILE: src/lib/forms/unifiedSubmit.ts
+SYSTEM_CONTEXT: AI_CONTEXT.md
+
+CRITICAL CONSTRAINTS:
+1. Target the script engine wrapping asynchronous multipart payload formatting processes.
+2. Build an asset downsampling interceptor that routes upload data to hidden web canvas surfaces.
+3. Re-scale large images to drop sizes below a maximum threshold of 2MB per entry before finalizing submission processing.
+
+OUTPUT THE COMPLETE IMAGE TRANSFORM UTILITY BLOCK.
+
+[ ] Task JOB-006: Cross-Tenant Data Access Validation Rules
 
 CRITICAL CONSTRAINTS:
 1. Target the authorization middleware handling data access lookups for tenant accounts.
