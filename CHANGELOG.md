@@ -16,6 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Schema Alignment (Task DB-005)
 - **Added 9 Missing Tables to schema.sql**: Reconciled `schema.sql` with all sequential migrations by adding missing table definitions: `revoked_sessions`, `contact_submissions`, `job_visits`, `defects`, `certificates`, `sage_config`, `finance_tasks`, `rate_limits`, `data_retention_policies`, `data_retention_logs`, and the `v_retention_policy_summary` view. All tables include proper foreign keys, constraints, indexes, and triggers matching migration definitions.
 
+### Migration Sequence De-duplication (Task DB-006)
+- **Renamed Duplicate Migration Files**: Resolved sorting conflicts in migration file index where duplicate numbering prefixes occurred (`0018`, `0020`, `0024`). Applied alphabetical suffixes to maintain chronological schema generation logic:
+  - `0018_mfa_policy.sql` → `0018a_mfa_policy.sql`
+  - `0018_finance_task_status_pipeline.sql` → `0018b_finance_task_status_pipeline.sql`
+  - `0020_finance_vat_hardening.sql` → `0020a_finance_vat_hardening.sql`
+  - `0020_job_visit_status.sql` → `0020b_job_visit_status.sql`
+  - `0024_phase11_telemetry.sql` → `0024a_phase11_telemetry.sql`
+  - `0024_sage_oauth_tokens.sql` → `0024b_sage_oauth_tokens.sql`
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

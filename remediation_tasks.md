@@ -48,7 +48,13 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE SECTIONS OF SCHEMA.SQL ADDING MISSING STRUCTURAL TABLES.
 
-[ ] Task DB-006: Migration Sequence De-duplication
+[x] Task DB-006: Migration Sequence De-duplication
+Target File: migrations/
+System Context: schema.sql
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [DB-006]
+TARGET_FILE: migrations/
+SYSTEM_CONTEXT: schema.sql
 
 CRITICAL CONSTRAINTS:
 1. Identify and resolve sorting conflicts within the migration file index where duplicate indexing prefixes occur on files (`0018`, `0020`, `0024`).
@@ -56,9 +62,8 @@ CRITICAL CONSTRAINTS:
 3. Maintain chronological schema generation logic matching relational table dependencies. Do not alter any target row data fields.
 
 OUTPUT THE UNIFIED FILE DELTA CONTENTS AND RENAMING MANIFEST.
-[ ] Task DB-001: Structural Foreign Key CASCADE Deletion RepairTarget File: schema.sqlSystem Context: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.mdSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [DB-001]
-TARGET_FILE: schema.sql
-SYSTEM_CONTEXT: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.md
+
+[ ] Task DB-001: Structural Foreign Key CASCADE Deletion Repair
 
 CRITICAL CONSTRAINTS:
 1. Scan for any instances of `ON DELETE CASCADE` parameters forming destructive data relationships from core entities down to task histories.
