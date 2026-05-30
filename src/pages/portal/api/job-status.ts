@@ -6,25 +6,32 @@ import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorize
 
 export const prerender = false;
 
-function cleanId(value: any, fieldName) {
+function cleanId(value: any, _fieldName: string) {
   const normalized = String(value || "").trim();
   if (!/^[A-Za-z0-9_-]{3,80}$/.test(normalized)) {
-    throw new Error(`${fieldName} is invalid.`);
+    throw new Error(`${_fieldName} is invalid.`);
   }
   return normalized;
 }
 
 export async function POST({ request, locals }: import('astro').APIContext) {
-  try {
-    const user = locals.user;
-    if (!user) return unauthorized();
-    if (user.role !== "tech") return forbidden("Only technician accounts can update dispatch status from the field workspace.");
+  const user = locals.user;
+  if (!user) return unauthorized();
+  if (user.role !== "tech") return forbidden("Only technician accounts can update dispatch status from the field workspace.");
 
+  let db;
+  try {
+    db = getDatabase();
+  } catch {
+    return serverError("Service temporarily unavailable.");
+  }
+
+  try {
     let body: Record<string, any>;
     try {
       body = await request.json() as Record<string, any>;
     } catch (e) {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+      return json({ error: "Invalid JSON" }, { status: 400 });
     }
     const jobId = cleanId(body.jobId, "jobId");
     const status = String(body.status || "").trim();
@@ -72,7 +79,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
   } catch (error: any) {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     if (error.message) return badRequest(error.message);
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "job status update failed" } });
+    await auditError(db, request, error, { user, metadata: { message: "job status update failed" } });
     return serverError("The job status could not be updated.");
   }
 }

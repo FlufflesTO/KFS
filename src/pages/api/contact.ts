@@ -65,7 +65,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Apply CSV injection sanitization
   name = sanitizeForCsvInjection(name);
-  requestType = sanitizeForCsvInjection(requestType);
+  requestType = sanitizeForCsvInjection(requestType) as typeof requestType;
   message = sanitizeForCsvInjection(message);
 
   const ip =

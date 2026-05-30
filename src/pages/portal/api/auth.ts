@@ -39,7 +39,7 @@ async function readCredentials(request: Request): Promise<LoginCredentials> {
     try {
       parsedBody = await request.json() as Record<string, unknown>;
     } catch(e) {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+      return json({ error: "Invalid JSON" }, { status: 400 });
     }
     return {
       email: parsedBody?.email,

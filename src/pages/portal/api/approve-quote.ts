@@ -46,7 +46,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     }
 
     // Security: Check if client has access to this site
-    if (user.role === "client" && !(await clientCanAccessSite(db, user, financialRecord.site_id))) {
+    if (user.role === "client" && !(await clientCanAccessSite(db, user, String(financialRecord.site_id)))) {
       return forbidden("You do not have access to approve quotes for this site.");
     }
 
@@ -54,10 +54,10 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       // INSTEAD OF converting the quote to an invoice in financial_records,
       // create a finance task to track the approval and subsequent invoice creation in Sage
       await financeService.createFinanceTask({
-        siteId: financialRecord.site_id,
-        jobId: financialRecord.job_id,
+        siteId: String(financialRecord.site_id),
+        jobId: financialRecord.job_id ? String(financialRecord.job_id) : undefined,
         taskType: 'Quote Approved',
-        amount: financialRecord.amount,
+        amount: Number(financialRecord.amount),
         status: 'Pending',
         notes: `Client approved quote ${quoteId}. Invoice needs to be issued in Sage.`
       });

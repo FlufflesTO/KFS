@@ -6,7 +6,7 @@ export const prerender = false;
 const visitStatuses = ["Travelling", "Arrived", "In Progress", "Completed", "Unable To Complete", "Follow-up Required", "Quote Required"];
 const unableReasons = ["No Access", "Client Unavailable", "Unsafe To Proceed", "Parts Required", "System Isolated", "Quote Required", "Return Visit Required", "Cancelled On Site"];
 
-function json(body, status = 200) {
+function json(body: Record<string, any>, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "content-type": "application/json; charset=utf-8" }
@@ -19,9 +19,9 @@ function cleanId(value: any) {
   return id;
 }
 
-function cleanTime(value: any, field) {
+function cleanTime(value: any, _field: string) {
   const time = String(value || "").trim();
-  if (!/^\d{2}:\d{2}$/.test(time)) throw new Error(`${field} must use HH:MM format.`);
+  if (!/^\d{2}:\d{2}$/.test(time)) throw new Error(`${_field} must use HH:MM format.`);
   return time;
 }
 

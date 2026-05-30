@@ -10,15 +10,21 @@ export async function POST({ request, locals }: import('astro').APIContext) {
   const user = locals.user;
   if (!user) return unauthorized();
 
+  let db;
+  try {
+    db = getDatabase();
+  } catch {
+    return serverError("Service temporarily unavailable.");
+  }
+
   try {
     let body: Record<string, any>;
     try {
       body = await request.json() as Record<string, any>;
     } catch (e) {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+      return json({ error: "Invalid JSON" }, { status: 400 });
     }
     const action = String(body.action || "").trim();
-    const db = getDatabase();
 
     if (action === "export") {
       await auditEvent(db, request, {
@@ -52,7 +58,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     return badRequest("Invalid data rights action.");
   } catch (error: any) {
-    await auditError(typeof db !== "undefined" ? db : getDatabase(), request, error, { user: user, metadata: { message: "data rights action failed" } });
+    await auditError(db, request, error, { user, metadata: { message: "data rights action failed" } });
     return serverError("Your request could not be processed at this time.");
   }
 }

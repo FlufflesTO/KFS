@@ -10,38 +10,45 @@ export const prerender = false;
 const requestTypes = ["Maintenance", "Fault", "Compliance Documentation", "Quote Request", "Emergency Follow-up"];
 const priorities = ["Routine", "Urgent", "Critical"];
 
-function cleanText(value: any, fieldName, { min = 1, max = 2000 } = {}) {
+function cleanText(value: any, _fieldName: string, { min = 1, max = 2000 } = {}) {
   const normalized = String(value || "").trim().replace(/\s+/g, " ");
   if (normalized.length < min || normalized.length > max) {
-    throw new Error(`${fieldName} must be between ${min} and ${max} characters.`);
+    throw new Error(`${_fieldName} must be between ${min} and ${max} characters.`);
   }
   return normalized;
 }
 
-function cleanChoice(value: any, fieldName, choices) {
-  const normalized = cleanText(value, fieldName, { min: 1, max: 80 });
-  if (!choices.includes(normalized)) throw new Error(`${fieldName} is invalid.`);
+function cleanChoice(value: any, _fieldName: string, choices: string[]) {
+  const normalized = cleanText(value, _fieldName, { min: 1, max: 80 });
+  if (!choices.includes(normalized)) throw new Error(`${_fieldName} is invalid.`);
   return normalized;
 }
 
-function cleanOptionalId(value: any, fieldName) {
+function cleanOptionalId(value: any, _fieldName: string) {
   const normalized = String(value || "").trim();
   if (!normalized) return null;
-  if (!/^[A-Za-z0-9_-]{3,80}$/.test(normalized)) throw new Error(`${fieldName} is invalid.`);
+  if (!/^[A-Za-z0-9_-]{3,80}$/.test(normalized)) throw new Error(`${_fieldName} is invalid.`);
   return normalized;
 }
 
 export async function POST({ request, locals }: import('astro').APIContext) {
-  try {
-    const user = locals.user;
-    if (!user) return unauthorized();
-    if (user.role !== "client") return forbidden("Only client accounts can submit maintenance requests.");
+  const user = locals.user;
+  if (!user) return unauthorized();
+  if (user.role !== "client") return forbidden("Only client accounts can submit maintenance requests.");
 
+  let db;
+  try {
+    db = getDatabase();
+  } catch {
+    return serverError("Service temporarily unavailable.");
+  }
+
+  try {
     let body: Record<string, any>;
     try {
       body = await request.json() as Record<string, any>;
     } catch (e) {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
+      return json({ error: "Invalid JSON" }, { status: 400 });
     }
     const id = crypto.randomUUID();
     const requestedSiteId = cleanOptionalId(body.siteId, "siteId");
@@ -91,7 +98,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
   } catch (error: any) {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     if (error.message) return badRequest(error.message);
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "maintenance request failed" } });
+    await auditError(db, request, error, { user, metadata: { message: "maintenance request failed" } });
     return serverError("Maintenance request could not be submitted.");
   }
 }

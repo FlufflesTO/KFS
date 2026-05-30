@@ -87,14 +87,7 @@ export const QuoteApprovalSchema = z.object({
 
 // Finance / VAT Validation Schemas (SARS Statutory Compliance)
 
-/**
- * Validates that VAT amount is exactly 15% of the ex-VAT amount.
- * Uses integer cents to avoid floating-point precision issues.
- */
-function validateVatAmount(exVatCents: number, vatCents: number): boolean {
-  const expectedVatCents = Math.round(exVatCents * 0.15);
-  return vatCents === expectedVatCents;
-}
+import { ZodIssueCode } from "zod";
 
 const BaseFinanceTaskSchema = z.object({
   siteId: z.string().regex(/^[A-Za-z0-9_-]{3,80}$/, "Invalid siteId format"),
@@ -123,7 +116,7 @@ export const FinanceTaskCreateSchema = BaseFinanceTaskSchema.superRefine((data, 
   const expectedVat = Math.round(data.amountExVat * 0.15);
   if (data.vatAmount !== expectedVat) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: ZodIssueCode.custom,
       message: `VAT amount must be exactly 15% of ex-VAT amount. Expected ${expectedVat} cents, got ${data.vatAmount} cents.`,
       path: ["vatAmount"]
     });
@@ -138,7 +131,7 @@ export const FinanceTaskUpdateSchema = BaseFinanceTaskSchema.partial().extend({
     const expectedVat = Math.round(data.amountExVat * 0.15);
     if (data.vatAmount !== expectedVat) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZodIssueCode.custom,
         message: `VAT amount must be exactly 15% of ex-VAT amount. Expected ${expectedVat} cents, got ${data.vatAmount} cents.`,
         path: ["vatAmount"]
       });

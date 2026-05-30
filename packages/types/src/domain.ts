@@ -42,6 +42,7 @@ export interface DbSystem {
   coverage_area: string;
   manufacturer: string | null;
   model_reference: string | null;
+  owner_company_name?: string; // Joined from sites table
   notes: string | null;
   created_at: string;
   updated_at: string;
