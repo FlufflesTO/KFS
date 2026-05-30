@@ -30,12 +30,22 @@ export interface Env {
 }
 
 function resolveBindings(): any {
-  // Pattern 1: Check Cloudflare's runtime global (for Pages Functions)
+  // Pattern 1: Check for Astro.locals injection (from middleware)
+  // This is set by the middleware when running in Cloudflare Pages SSR
+  if (typeof globalThis !== "undefined") {
+    const gh = globalThis as any;
+    // Check if bindings were injected by middleware into a shared location
+    if (gh.__astro_locals__?.db || gh.__astro_locals__?.storage) {
+      return gh.__astro_locals__;
+    }
+  }
+  
+  // Pattern 2: Check Cloudflare's runtime global (for Pages Functions)
   if (typeof __env__ !== "undefined" && (__env__.DB || __env__.STORAGE)) {
     return __env__;
   }
   
-  // Pattern 2: Check globalThis.env (for Workers)
+  // Pattern 3: Check globalThis.env (for Workers)
   if (typeof globalThis !== "undefined" && (globalThis as any).env) {
     const env = (globalThis as any).env;
     if (env.DB || env.STORAGE) {
@@ -43,7 +53,7 @@ function resolveBindings(): any {
     }
   }
   
-  // Pattern 3: Check globalThis directly (fallback)
+  // Pattern 4: Check globalThis directly (fallback)
   if (typeof globalThis !== "undefined") {
     const gh = globalThis as any;
     if (gh.DB || gh.STORAGE) {
@@ -51,8 +61,22 @@ function resolveBindings(): any {
     }
   }
   
-  // Pattern 4: Return empty object (will cause error if bindings are used)
+  // Pattern 5: Return empty object (will cause error if bindings are used)
   return {};
+}
+
+/**
+ * Set bindings from Astro middleware context.
+ * Called by middleware to inject bindings into module scope.
+ */
+export function setBindingsFromLocals(locals: any): void {
+  if (typeof globalThis !== "undefined") {
+    (globalThis as any).__astro_locals__ = {
+      DB: locals.db,
+      STORAGE: locals.storage,
+      env: locals.env
+    };
+  }
 }
 
 export function getBindings(): WorkerBindings {

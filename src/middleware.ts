@@ -10,7 +10,7 @@ import { sequence } from "astro:middleware";
 import type { MiddlewareHandler } from "astro";
 import { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } from "./lib/server/auth.js";
 import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
-import { getDatabase } from "./lib/server/bindings.ts";
+import { getDatabase, setBindingsFromLocals } from "./lib/server/bindings.ts";
 import { consumeRateLimit } from "./lib/server/rateLimit.js";
 import { auditEvent } from "./lib/server/audit";
 
@@ -162,8 +162,26 @@ const setupMiddleware: MiddlewareHandler = async (context, next) => {
   const variantCookie = context.cookies.get("kharon_ui_variant")?.value;
   let variant = variantCookie || (Math.random() < 0.5 ? "A" : "B");
   context.locals.variant = variant;
-  
+
   context.locals.needsVariantCookie = !variantCookie;
+  
+  // Inject database and storage bindings into module scope for API routes
+  try {
+    if (typeof __env__ !== "undefined") {
+      context.locals.db = __env__.DB;
+      context.locals.storage = __env__.STORAGE;
+      context.locals.env = __env__;
+      setBindingsFromLocals(context.locals);
+    } else if (typeof globalThis !== "undefined") {
+      const gh = globalThis as any;
+      context.locals.db = gh.DB || gh.env?.DB;
+      context.locals.storage = gh.STORAGE || gh.env?.STORAGE;
+      context.locals.env = gh.env || gh;
+      setBindingsFromLocals(context.locals);
+    }
+  } catch (e) {
+    console.error("Failed to inject bindings into locals:", e);
+  }
 
   return await next();
 };
