@@ -534,7 +534,14 @@ CRITICAL CONSTRAINTS:
 OUTPUT THE REFACTORED TENANT PERMISSION LOOKUP CODE.
 
 🎨 PHASE 5: UX, INTERFACES & TELEMETRY
-[ ] Task UI-001: Operational Alert Notification Panel Visual Alignment
+
+[x] Task UI-001: Operational Alert Notification Panel Visual Alignment
+Target File: src/components/portal/OfflineBanner.astro
+System Context: DESIGN_CONSTITUTION.md
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [UI-001]
+TARGET_FILE: src/components/portal/OfflineBanner.astro
+SYSTEM_CONTEXT: DESIGN_CONSTITUTION.md
 
 CRITICAL CONSTRAINTS:
 1. Audit style definitions used within the interface notification panel.
@@ -542,9 +549,8 @@ CRITICAL CONSTRAINTS:
 3. Align visual components with the "Industrial Command Intelligence" blueprint by applying solid brand tokens uniformly.
 
 OUTPUT THE REMEDIATED OFFLINEBANNER STRATEGY.
-[ ] Task UI-002: System Focus Ring Palette UpdateTarget File: src/styles/global.cssSystem Context: DESIGN_CONSTITUTION.mdSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [UI-002]
-TARGET_FILE: src/styles/global.css
-SYSTEM_CONTEXT: DESIGN_CONSTITUTION.md
+
+[ ] Task UI-002: System Focus Ring Palette Update
 
 CRITICAL CONSTRAINTS:
 1. Scan for standard CSS keyboard layout selection classes (`:focus`, `:focus-visible`).

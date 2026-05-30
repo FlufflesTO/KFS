@@ -103,6 +103,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **requireClientSiteAccess Function**: New validator in `src/lib/server/access.ts` that enforces client site access restrictions. Returns 403 Forbidden if client user attempts to access unauthorized site. Non-client users bypass this check.
 - **validateDataAccess Function**: Multi-site access validator that filters requested site IDs against user's authorized sites. Admin users receive all requested IDs; client users receive only intersection of requested and authorized sites. Prevents cross-tenant data leakage in multi-site queries.
 
+### Operational Alert Notification Panel Alignment (Task UI-001)
+- **OfflineBanner Styling Update**: Refactored `src/components/portal/OfflineBanner.astro` to use Industrial Command Intelligence brand tokens. Replaced generic emerald/amber colors with `kharon-purple`, `kharon-amber`, `kharon-grey`. Updated to solid border patterns (`border-kharon-purple/20`), removed soft pastel backgrounds. Typography updated to `font-semibold` per DESIGN_CONSTITUTION.md standards.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
