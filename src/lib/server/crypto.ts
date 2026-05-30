@@ -24,11 +24,12 @@ async function deriveAesKey(secret: string): Promise<CryptoKey> {
     false,
     ["deriveKey"]
   );
+  // POPIA Section 24 Compliance: 600,000 iterations for key derivation
   return crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
       salt: textEncoder.encode("kharon-storage-salt"),
-      iterations: 100000,
+      iterations: 600000,
       hash: "SHA-256",
     },
     keyMaterial,

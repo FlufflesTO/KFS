@@ -54,6 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **timingSafeEqual Function**: Implemented constant-time XOR-based comparison utility in `src/lib/server/auth.ts` for `Uint8Array` comparison. Pads inputs to equal length, accumulates XOR results across all bytes to prevent early-exit timing leaks.
 - **verifySessionToken Hardening**: Replaced `crypto.subtle.verify` direct usage with explicit signature computation followed by `timingSafeEqual` comparison. Prevents side-channel timing attacks that could leak signature validity through response time analysis.
 
+### Elevated PBKDF2 Hashing Iteration Scaling (Task SEC-003)
+- **PBKDF2 Iteration Increase**: Updated `deriveAesKey()` in `src/lib/server/crypto.ts` from 100,000 to 600,000 iterations for AES-GCM key derivation. Meets POPIA Section 24 compliance requirements for cryptographic key strength. Salt buffer remains at fixed string ("kharon-storage-salt"), output key length unchanged at 256-bit.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening

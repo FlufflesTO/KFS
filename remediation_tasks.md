@@ -234,9 +234,23 @@ CRITICAL CONSTRAINTS:
 3. Keep salt generation buffers at 32 bytes and do not alter the output signature length definition.
 
 OUTPUT THE SECTIONS OF CRYPTO.TS DISPLAYING MODIFIED ITERATION VARIABLES.
-[ ] Task SEC-004: Isolate MFA and Session Secret DefinitionsTarget File: src/lib/server/auth.tsSystem Context: wrangler.jsoncSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [SEC-004]
-TARGET_FILE: src/lib/server/auth.ts
-SYSTEM_CONTEXT: wrangler.jsonc
+
+[x] Task SEC-003: Elevated PBKDF2 Hashing Iteration Scaling
+Target File: src/lib/server/crypto.ts
+System Context: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.md
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [SEC-003]
+TARGET_FILE: src/lib/server/crypto.ts
+SYSTEM_CONTEXT: docs/privacy/POPIA_COMPLIANCE_DOCUMENTATION.md
+
+CRITICAL CONSTRAINTS:
+1. Locate the password hashing generation configuration blocks.
+2. Upgrade the standard system computation iteration scale factor property from 100,000 runs to a baseline of exactly 600,000 iterations to meet POPIA Section 24 parameters.
+3. Keep salt generation buffers at 32 bytes and do not alter the output signature length definition.
+
+OUTPUT THE SECTIONS OF CRYPTO.TS DISPLAYING MODIFIED ITERATION VARIABLES.
+
+[ ] Task SEC-004: Isolate MFA and Session Secret Definitions
 
 CRITICAL CONSTRAINTS:
 1. Locate where configuration context strings pass cryptographically down to initialization logic blocks.
