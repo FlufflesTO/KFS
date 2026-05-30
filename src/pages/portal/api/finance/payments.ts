@@ -33,12 +33,20 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     const db = getDatabase();
     const financeService = new FinanceService(db);
 
+    interface FinancialRecordRow {
+      id: string;
+      site_id: string;
+      job_id: string | null;
+      amount: number;
+      item_type: string;
+    }
+
     // Get the financial record to determine site and amount
     const financialRecord = await db.prepare(
       `SELECT id, site_id, job_id, amount, item_type
        FROM financial_records 
        WHERE id = ?`
-    ).bind(financialRecordId).first();
+    ).bind(financialRecordId).first<FinancialRecordRow>();
 
     if (!financialRecord) {
       return badRequest("Financial record not found.");
@@ -48,7 +56,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     // create a finance task to track that payment was recorded in Sage
     await financeService.createFinanceTask({
       siteId: financialRecord.site_id,
-      jobId: financialRecord.job_id,
+      jobId: financialRecord.job_id ?? undefined,
       taskType: 'Payment Recorded in Sage',
       amount: financialRecord.amount,
       status: 'Completed',

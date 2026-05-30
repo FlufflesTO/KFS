@@ -1,12 +1,11 @@
 
 import { getDatabase } from "../../../../lib/server/bindings";
-import { verifyCsrfToken } from "../../../../lib/server/csrf";
 import { requireAdminOrFinance } from "../../../../lib/server/access";
 import { FinanceService } from "../../../../lib/server/services/finance-service";
 
 export const prerender = false;
 
-export async function GET({ request, locals }: import('astro').APIContext) {
+export async function GET({ locals }: import('astro').APIContext) {
   try {
     // Verify authentication and authorization
     const user = locals.user;
@@ -55,10 +54,19 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     const action = formData.get('action');
     const taskId = String(formData.get('taskId'));
-    const updates = {};
+    const updates: {
+      status?: 'Pending' | 'In Progress' | 'Completed' | 'Cancelled';
+      notes?: string;
+      sageDocumentRef?: string;
+    } = {};
 
     if (action === 'update-status') {
-      updates.status = String(formData.get('status'));
+      const statusVal = String(formData.get('status'));
+      if (statusVal === 'Pending' || statusVal === 'In Progress' || statusVal === 'Completed' || statusVal === 'Cancelled') {
+        updates.status = statusVal;
+      } else {
+        return new Response(JSON.stringify({ error: "Invalid status value" }), { status: 400 });
+      }
       await financeService.updateFinanceTask(taskId, updates);
     } else if (action === 'add-note') {
       updates.notes = String(formData.get('note'));

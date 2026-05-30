@@ -181,7 +181,7 @@ export class TooManyRequestsError extends AppError {
     this.retryAfter = retryAfter;
   }
 
-  toJSON(): ErrorResponse {
+  public override toJSON(): ErrorResponse {
     return {
       ...super.toJSON(),
       details: { retryAfter: this.retryAfter }

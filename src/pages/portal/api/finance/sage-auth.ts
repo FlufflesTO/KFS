@@ -15,7 +15,7 @@ function stateCookie(value: string) {
   return `kharon_sage_oauth_state=${encodeURIComponent(value)}; Path=/portal/api/finance; HttpOnly; Secure; SameSite=Strict; Max-Age=600`;
 }
 
-export async function GET({ request, locals, url }: APIContext) {
+export async function GET({ locals, url }: APIContext) {
   const user = locals.user;
   if (!user) return unauthorized();
   if (!["finance", "admin"].includes(user.role)) {

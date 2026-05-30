@@ -1,11 +1,13 @@
 ---
 import PortalLayout from "../../../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../../../lib/server/bindings.js";
-import { auditError } from "../../../../../lib/server/audit";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
+if (!user) {
+  return Astro.redirect("/portal/login");
+}
 const jobId = Astro.params.id;
 const today = new Date().toISOString().slice(0, 10);
 let job: any = null;

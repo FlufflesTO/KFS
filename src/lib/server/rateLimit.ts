@@ -148,9 +148,9 @@ export async function getRateLimitStats(db: D1Database): Promise<{
   `).first();
 
   return {
-    totalEntries: stats?.totalEntries || 0,
-    oldestEntry: stats?.oldestEntry || null,
-    newestEntry: stats?.newestEntry || null,
-    uniqueIdentifiers: stats?.uniqueIdentifiers || 0
+    totalEntries: Number(stats?.totalEntries) || 0,
+    oldestEntry: String(stats?.oldestEntry) || null,
+    newestEntry: String(stats?.newestEntry) || null,
+    uniqueIdentifiers: Number(stats?.uniqueIdentifiers) || 0
   };
 }

@@ -1,8 +1,8 @@
-
 import { auditError } from "../../../../lib/server/audit";
 import { getDatabase } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
 import { csvObjects } from "../../../../lib/server/csv";
+import type { CsvObjectResult } from "../../../../lib/server/csv";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.ts";
 import { cleanChoice, cleanDate, cleanEmail, cleanId, cleanText, readJson, requireAdmin } from "../../../../lib/server/access";
 
@@ -12,23 +12,23 @@ const siteHeaders = ["id", "owner_company_name", "physical_address", "site_conta
 const systemHeaders = ["id", "site_id", "system_type", "coverage_area", "manufacturer", "model_reference", "next_due_date"];
 const systemTypes = ["Gas Suppression", "Fire Detection"];
 
-function cleanImportId(value: any) {
-  return value ? cleanId(value, "id", { required: false }) : crypto.randomUUID();
+function cleanImportId(value: unknown): string {
+  return value ? cleanId(String(value), "id", { required: false }) : crypto.randomUUID();
 }
 
-async function siteExists(db, id) {
+async function siteExists(db: import("@cloudflare/workers-types").D1Database, id: string | null | undefined): Promise<boolean> {
   if (!id) return false;
   const record = await db.prepare(`SELECT id FROM sites WHERE id = ?1 LIMIT 1`).bind(id).first();
   return Boolean(record);
 }
 
-async function systemExists(db, id) {
+async function systemExists(db: import("@cloudflare/workers-types").D1Database, id: string | null | undefined): Promise<boolean> {
   if (!id) return false;
   const record = await db.prepare(`SELECT id FROM systems WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`).bind(id).first();
   return Boolean(record);
 }
 
-async function importSites(db, rows, isDryRun) {
+async function importSites(db: import("@cloudflare/workers-types").D1Database, rows: CsvObjectResult[], isDryRun: boolean) {
   const results = [];
   for (const row of rows) {
     try {
@@ -80,7 +80,7 @@ async function importSites(db, rows, isDryRun) {
   return results;
 }
 
-async function importSystems(db, rows, isDryRun) {
+async function importSystems(db: import("@cloudflare/workers-types").D1Database, rows: CsvObjectResult[], isDryRun: boolean) {
   const results = [];
   for (const row of rows) {
     try {
@@ -136,7 +136,8 @@ async function importSystems(db, rows, isDryRun) {
 }
 
 export async function POST({ request, locals }: import('astro').APIContext) {
-  const adminError = requireAdmin(locals.user);
+  const user = locals.user;
+  const adminError = requireAdmin(user);
   if (adminError) return adminError;
 
   const db = getDatabase();
@@ -155,8 +156,9 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     await auditEvent(db, request, {
       eventType: `admin.import.${type}`,
       entityType: type,
+      entityId: "bulk",
       outcome: failures.length ? "failure" : "success",
-      user: locals.user,
+      user,
       metadata: {
         rows: results.length,
         failures: failures.length,
@@ -167,7 +169,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     return json({ ok: failures.length === 0, type, isDryRun, results, failures });
   } catch (error: any) {
     if (error.message) return badRequest(error.message);
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "admin import failed" } });
+    await auditError(db, request, error, { user: user ?? null, metadata: { message: "admin import failed" } });
     return serverError("Import could not be completed.");
   }
 }
@@ -175,4 +177,3 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 export function ALL() {
   return methodNotAllowed(["POST"]);
 }
-

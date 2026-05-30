@@ -9,26 +9,6 @@ export const prerender = false;
 
 const ITEM_TYPES = new Set(["Task", "Quote", "Invoice"]);
 
-function cleanAmount(value: any) {
-  const num = Number(value);
-  if (!Number.isFinite(num) || num < 0 || num > 9_999_999) {
-    throw new Error("Amount must be a number between 0 and 9,999,999.");
-  }
-  return Math.round(num * 100);
-}
-
-function cleanOptionalId(value: any) {
-  if (!value) return null;
-  const str = String(value).trim();
-  if (!/^[A-Za-z0-9_-]{3,80}$/.test(str)) throw new Error("jobId format is invalid.");
-  return str;
-}
-
-function cleanRef(value: any) {
-  if (!value) return null;
-  return String(value).trim().slice(0, 120) || null;
-}
-
 export async function POST({ request, locals }: import('astro').APIContext) {
   const db = getDatabase();
   try {
@@ -49,7 +29,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     const itemType = String(body.itemType || "").trim();
     if (!ITEM_TYPES.has(itemType)) return badRequest("itemType must be Task, Quote, or Invoice.");
 
-    let taskType = "Finance Follow-up";
+    let taskType: 'Quote Required' | 'Quote Issued in Sage' | 'Quote Approved' | 'Invoice Required' | 'Invoice Issued in Sage' | 'Payment Recorded in Sage' | 'Finance Follow-up' = "Finance Follow-up";
     if (itemType === "Quote") taskType = "Quote Required";
     if (itemType === "Invoice") taskType = "Invoice Required";
 
@@ -67,7 +47,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     // Validate payload against strict VAT schema
     const validation = FinanceTaskCreateSchema.safeParse(payload);
     if (!validation.success) {
-      const errors = validation.error.errors.map(e => ({
+      const errors = validation.error.issues.map(e => ({
         field: e.path.join("."),
         message: e.message
       }));
@@ -84,24 +64,22 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     const task = await financeService.createFinanceTask({
       siteId,
-      jobId,
+      jobId: jobId ?? undefined,
       taskType,
       amount: amountExVat,
-      vatAmount,
-      reference,
+      vatAmount: vatAmount ?? undefined,
+      reference: reference ?? undefined,
       status: "Pending",
-      notes: financeNotes
+      notes: financeNotes ?? undefined
     });
 
     await auditEvent(db, request, {
-      userId: user.id,
       eventType: "finance_task_created",
-      resourceType: "finance_task",
-      resourceId: task.id,
-      siteId: siteId,
-      jobId: jobId,
-      details: { amountExVat, itemType },
-      status: "success",
+      entityType: "finance_task",
+      entityId: task.id,
+      outcome: "success",
+      user,
+      metadata: { siteId, jobId, amountExVat, itemType }
     });
 
     return json({ ok: true, message: "Record created successfully.", task });

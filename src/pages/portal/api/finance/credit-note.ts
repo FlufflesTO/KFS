@@ -20,22 +20,25 @@ export const prerender = false;
  * Creates a negative financial_record linked via credit_note_for_id.
  */
 export async function POST({ request, locals }: import('astro').APIContext) {
+  const user = locals.user;
+  const db = getDatabase();
   try {
-    const user = locals.user;
     if (!user) return unauthorized();
     if (!["finance", "admin"].includes(user.role)) {
       return forbidden("Only finance or admin accounts can create credit notes.");
     }
 
-    let body = {};
+    let body: {
+      originalRecordId?: string;
+      reason?: string;
+      amountExVat?: number;
+      vatAmount?: number;
+      amountIncVat?: number;
+    } = {};
     try {
-      try {
-      body = await request.json() as Record<string, any>;
+      body = await request.json() as typeof body;
     } catch (e) {
       return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
-    }
-    } catch {
-      return badRequest("Request body must be valid JSON.");
     }
 
     const originalRecordId = String(body.originalRecordId || "").trim();
@@ -46,7 +49,19 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     const reason = String(body.reason || "").trim().slice(0, 500);
     if (!reason) return badRequest("A reason for the credit note is required.");
 
-    const db = getDatabase();
+    interface OriginalRecordRow {
+      id: string;
+      site_id: string;
+      job_id: string | null;
+      amount: number;
+      item_type: string;
+      payment_status: string;
+      sage_amount_ex_vat: number | null;
+      sage_vat_amount: number | null;
+      sage_amount_inc_vat: number | null;
+      sage_invoice_number: string | null;
+      sage_quote_number: string | null;
+    }
 
     const original = await db
       .prepare(
@@ -58,7 +73,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
          LIMIT 1`
       )
       .bind(originalRecordId)
-      .first();
+      .first<OriginalRecordRow>();
 
     if (!original) return badRequest("The original record was not found or is not an Invoice/Quote.");
     if (original.payment_status === "Settled" && !original.sage_invoice_number) {
@@ -120,7 +135,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
 
     return json({ ok: true, creditNoteId, amountIncVat });
   } catch (error: any) {
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "credit note creation failed" } });
+    await auditError(db, request, error, { user: user ?? null, metadata: { message: "credit note creation failed" } });
     return serverError("The credit note could not be created.");
   }
 }

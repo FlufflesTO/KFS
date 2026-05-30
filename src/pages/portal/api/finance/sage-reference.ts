@@ -35,8 +35,9 @@ const VALID_TASK_STATUSES = [
  * Saves Sage manual reference fields to financial_records and audit logs the change.
  */
 export async function POST({ request, locals }: APIContext) {
+  const user = locals.user;
+  const db = getDatabase();
   try {
-    const user = locals.user;
     if (!user) return unauthorized();
     if (!["finance", "admin"].includes(user.role)) {
       return forbidden("Only finance or admin accounts can update Sage references.");
@@ -68,7 +69,6 @@ export async function POST({ request, locals }: APIContext) {
       return badRequest("financeTaskStatus is not a recognised value.");
     }
 
-    const db = getDatabase();
     const record = await db
       .prepare(`SELECT id, item_type FROM financial_records WHERE id = ?1 LIMIT 1`)
       .bind(recordId)
@@ -138,7 +138,7 @@ export async function POST({ request, locals }: APIContext) {
     if (error instanceof SyntaxError) {
       return badRequest("Request body must be valid JSON.");
     }
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "sage reference update failed" } });
+    await auditError(db, request, error, { user: user ?? null, metadata: { message: "sage reference update failed" } });
     return serverError("Sage reference update could not be completed.");
   }
 }

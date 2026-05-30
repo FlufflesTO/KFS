@@ -40,6 +40,8 @@ export interface DbSystem {
   next_due_date: string;
   service_interval_months: number;
   coverage_area: string;
+  manufacturer: string | null;
+  model_reference: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -48,8 +50,8 @@ export interface DbSystem {
 
 export type SystemForForms = Pick<
   DbSystem,
-  "id" | "system_type" | "coverage_area" | "owner_company_name"
->;
+  "id" | "system_type" | "coverage_area"
+> & { owner_company_name?: string };
 
 export interface DbJob {
   id: string;
@@ -63,6 +65,8 @@ export interface DbJob {
   is_emergency: number;
   required_by_date: string | null;
   estimated_duration_minutes: number | null;
+  completed_date: string | null;
+  version: number;
   coverage_area: string;
   owner_company_name: string;
 }
@@ -92,6 +96,9 @@ export interface DbDefect {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  // Joined fields for UI display
+  owner_company_name?: string;
+  coverage_area?: string;
 }
 
 export type CertStatus = "Valid" | "Blocked" | "Expired" | "Revoked";

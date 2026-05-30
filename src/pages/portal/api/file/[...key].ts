@@ -1,4 +1,4 @@
-﻿import type { APIContext } from "astro";
+import type { APIContext } from "astro";
 import { auditError, documentAccessLog } from "../../../../lib/server/audit";
 import { getBindings } from "../../../../lib/server/bindings.ts";
 import { clientCanAccessSite } from "../../../../lib/server/access";
@@ -108,7 +108,7 @@ export async function GET({ params, locals, request }: APIContext): Promise<Resp
     });
 
     const headers = new Headers();
-    object.writeHttpMetadata(headers);
+    object.writeHttpMetadata(headers as unknown as import("@cloudflare/workers-types").Headers);
     headers.set("etag", object.httpEtag);
     headers.set("cache-control", "private, max-age=3600, must-revalidate");
     headers.set("content-type", headers.get("content-type") || (isJobcard ? "application/pdf" : "image/jpeg"));
@@ -120,7 +120,7 @@ export async function GET({ params, locals, request }: APIContext): Promise<Resp
       headers.set("content-security-policy", "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; sandbox");
     }
 
-    return new Response(object.body, { headers });
+    return new Response(object.body as unknown as ReadableStream<Uint8Array>, { headers });
   } catch (error) {
     if (dbInstance) {
       await auditError(dbInstance, request, error as Error, { 

@@ -171,7 +171,7 @@ export function resetConnection(): void {
 // ============================================================================
 
 export class SyncQueueError extends Error {
-  public readonly cause?: unknown;
+  public override readonly cause?: unknown;
   public readonly code: string;
   public override name = "SyncQueueError";
 
@@ -184,7 +184,7 @@ export class SyncQueueError extends Error {
 
 export class SyncQueueQuotaExceededError extends SyncQueueError {
   public override name = "SyncQueueQuotaExceededError";
-  
+
   constructor(message: string = "Storage quota exceeded") {
     super(message, undefined, "QUOTA_EXCEEDED");
   }

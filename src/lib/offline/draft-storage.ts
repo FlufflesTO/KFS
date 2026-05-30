@@ -152,7 +152,7 @@ export function resetConnection(): void {
 // ============================================================================
 
 export class DraftStorageError extends Error {
-  public readonly cause?: unknown;
+  public override readonly cause?: unknown;
   public readonly code: string;
   public override name = "DraftStorageError";
 
@@ -165,7 +165,7 @@ export class DraftStorageError extends Error {
 
 export class DraftQuotaExceededError extends DraftStorageError {
   public override name = "DraftQuotaExceededError";
-  
+
   constructor(message: string = "Storage quota exceeded") {
     super(message, undefined, "QUOTA_EXCEEDED");
   }

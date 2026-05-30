@@ -13,18 +13,18 @@ import { forbidden, methodNotAllowed, serverError, unauthorized } from "../../..
 
 export const prerender = false;
 
-function csvCell(value) {
+function csvCell(value: unknown) {
   const text = value === null || value === undefined ? "" : String(value);
   return `"${text.replaceAll('"', '""')}"`;
 }
 
 export async function GET({ request, locals }: import('astro').APIContext) {
+  const user = locals.user;
+  const db = getDatabase();
   try {
-    const user = locals.user;
     if (!user) return unauthorized();
     if (!["finance", "admin"].includes(user.role)) return forbidden("Only finance or admin accounts can export ledger data.");
 
-    const db = getDatabase();
     const rows = (await db
       .prepare(
         `SELECT financial_records.id, financial_records.reference, financial_records.item_type,
@@ -97,7 +97,7 @@ export async function GET({ request, locals }: import('astro').APIContext) {
       }
     });
   } catch (error: any) {
-    await auditError(typeof db !== 'undefined' ? db : getDatabase(), request, error, { user: typeof user !== 'undefined' ? user : null, metadata: { message: "finance export failed" } });
+    await auditError(db, request, error, { user: user ?? null, metadata: { message: "finance export failed" } });
     return serverError("Finance export could not be completed.");
   }
 }

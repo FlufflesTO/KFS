@@ -96,7 +96,7 @@ function validateVatAmount(exVatCents: number, vatCents: number): boolean {
   return vatCents === expectedVatCents;
 }
 
-export const FinanceTaskCreateSchema = z.object({
+const BaseFinanceTaskSchema = z.object({
   siteId: z.string().regex(/^[A-Za-z0-9_-]{3,80}$/, "Invalid siteId format"),
   jobId: z.string().regex(/^[A-Za-z0-9_-]{3,80}$/, "Invalid jobId format").optional().nullable(),
   taskType: z.enum([
@@ -114,28 +114,34 @@ export const FinanceTaskCreateSchema = z.object({
     .max(999999900, "Amount exceeds maximum (R9,999,999.00)"),
   vatAmount: z.number()
     .int("VAT must be an integer (cents)")
-    .nonnegative("VAT cannot be negative")
-    .refine(
-      (vat, ctx: any) => {
-        const exVat = ctx.parent.amountExVat;
-        const expectedVat = Math.round(exVat * 0.15);
-        if (vat !== expectedVat) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `VAT amount must be exactly 15% of ex-VAT amount. Expected ${expectedVat} cents, got ${vat} cents.`,
-            path: ["vatAmount"]
-          });
-          return false;
-        }
-        return true;
-      },
-      { message: "VAT must be exactly 15% of ex-VAT amount" }
-    ),
+    .nonnegative("VAT cannot be negative"),
   reference: z.string().max(120).optional().nullable(),
   financeNotes: z.string().max(500).optional().nullable()
 });
 
-export const FinanceTaskUpdateSchema = FinanceTaskCreateSchema.partial().extend({
+export const FinanceTaskCreateSchema = BaseFinanceTaskSchema.superRefine((data, ctx) => {
+  const expectedVat = Math.round(data.amountExVat * 0.15);
+  if (data.vatAmount !== expectedVat) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `VAT amount must be exactly 15% of ex-VAT amount. Expected ${expectedVat} cents, got ${data.vatAmount} cents.`,
+      path: ["vatAmount"]
+    });
+  }
+});
+
+export const FinanceTaskUpdateSchema = BaseFinanceTaskSchema.partial().extend({
   id: z.string().regex(/^[A-Za-z0-9_-]{3,80}$/, "Invalid task ID"),
   status: z.enum(["Pending", "In Progress", "Completed", "Cancelled"]).optional()
+}).superRefine((data, ctx) => {
+  if (data.amountExVat !== undefined && data.vatAmount !== undefined) {
+    const expectedVat = Math.round(data.amountExVat * 0.15);
+    if (data.vatAmount !== expectedVat) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `VAT amount must be exactly 15% of ex-VAT amount. Expected ${expectedVat} cents, got ${data.vatAmount} cents.`,
+        path: ["vatAmount"]
+      });
+    }
+  }
 });
