@@ -6,6 +6,8 @@
  */
 
 import type { D1Database, R2Bucket } from "@cloudflare/workers-types";
+// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
+import { env } from "cloudflare:workers";
 
 export interface WorkerBindings {
   db: D1Database;
@@ -23,9 +25,19 @@ declare global {
   };
 }
 
+function resolveBindings(): any {
+  try {
+    if (env && (env.DB || env.STORAGE)) {
+      return env;
+    }
+  } catch (e) {
+    // Ignore if module is not available
+  }
+  return (globalThis as any).__env__ || globalThis;
+}
+
 export function getBindings(): WorkerBindings {
-  // Try Cloudflare Workers global first, then fallback to globalThis
-  const bindings = (globalThis as any).__env__ || globalThis;
+  const bindings = resolveBindings();
   
   const db = bindings.DB as D1Database | undefined;
   const storage = bindings.STORAGE as R2Bucket | undefined;
@@ -42,7 +54,7 @@ export function getBindings(): WorkerBindings {
 }
 
 export function getDatabase(): D1Database {
-  const bindings = (globalThis as any).__env__ || globalThis;
+  const bindings = resolveBindings();
   const db = bindings.DB as D1Database | undefined;
 
   if (!db) {
@@ -53,7 +65,7 @@ export function getDatabase(): D1Database {
 }
 
 export function getStorage(): R2Bucket {
-  const bindings = (globalThis as any).__env__ || globalThis;
+  const bindings = resolveBindings();
   const storage = bindings.STORAGE as R2Bucket | undefined;
 
   if (!storage) {
@@ -64,7 +76,7 @@ export function getStorage(): R2Bucket {
 }
 
 export function getStandardServiceFee(): number {
-  const bindings = (globalThis as any).__env__ || globalThis;
+  const bindings = resolveBindings();
   const raw = String(bindings.STANDARD_SERVICE_FEE || "1850.00");
   const configured = Number(raw);
   if (Number.isFinite(configured) && configured >= 0) {

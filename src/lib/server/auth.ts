@@ -6,6 +6,8 @@
  */
 
 import type { D1Database } from "@cloudflare/workers-types";
+// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
+import { env } from "cloudflare:workers";
 
 export interface SessionUser {
   id: string;
@@ -72,9 +74,19 @@ async function hmacKey(secret: string): Promise<CryptoKey> {
   );
 }
 
+function resolveBindings(): any {
+  try {
+    if (env && (env.SESSION_SECRET || env.DB || env.STORAGE)) {
+      return env;
+    }
+  } catch (e) {
+    // Ignore if module is not available
+  }
+  return (globalThis as any).__env__ || globalThis;
+}
+
 function getSessionSecret(): string {
-  // @ts-ignore - env types might not be perfectly aligned with generic runtime
-  const bindings = (globalThis as any).__env__ || globalThis;
+  const bindings = resolveBindings();
   const secret = String(bindings.SESSION_SECRET || bindings.AUTH_SECRET || "");
   if (secret.length < 32) {
     throw new Error("SESSION_SECRET must be configured with at least 32 characters.");
@@ -157,15 +169,13 @@ export async function verifySessionToken(token: string | null | undefined): Prom
 }
 
 export function sessionCookie(token: string): string {
-  // @ts-ignore
-  const bindings = (globalThis as any).__env__ || globalThis;
+  const bindings = resolveBindings();
   const secure = bindings.ENVIRONMENT === "local" ? "" : " Secure;";
   return `${sessionCookieName}=${token}; Path=/portal; HttpOnly;${secure} SameSite=Strict; Max-Age=${sessionDurationSeconds}`;
 }
 
 export function expiredSessionCookie(): string {
-  // @ts-ignore
-  const bindings = (globalThis as any).__env__ || globalThis;
+  const bindings = resolveBindings();
   const secure = bindings.ENVIRONMENT === "local" ? "" : " Secure;";
   return `${sessionCookieName}=; Path=/portal; HttpOnly;${secure} SameSite=Strict; Max-Age=0`;
 }
