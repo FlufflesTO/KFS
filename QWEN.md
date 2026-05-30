@@ -175,8 +175,55 @@ The project uses **strict TypeScript** with `exactOptionalPropertyTypes: true`. 
 
 - All optional properties must explicitly handle `undefined`
 - Use `??` instead of `typeof x !== "undefined" ? x : fallback`
-- For database handles, declare `let db: any = null` outside try block
-- Use `Astro.locals.user ?? null` for nullable user objects
+- For database handles, declare `let db: IDBDatabase | null = null` outside try block
+- Use `Astor.locals.user ?? null` for nullable user objects
+
+### DOM Type Safety Helpers
+
+**New in Sprint 1 (2026-05-30):** Use safe DOM query helpers from `src/lib/types/dom.ts` to avoid `as any` escapes:
+
+```typescript
+import { safeQuerySelector, safeQuerySelectorAll, safeJsonResponse } from '../../lib/types/dom';
+
+// Instead of: const select = document.querySelector('#id') as HTMLSelectElement;
+const select = safeQuerySelector<HTMLSelectElement>('#id');
+
+// Instead of: const body = await response.json() as { ok?: boolean };
+const body = await safeJsonResponse<{ ok?: boolean }>(response);
+
+// Type guard for API responses
+if (isApiResponse(body) && body.ok) {
+  // Safe to access body.ok and body.message
+}
+```
+
+**Available Helpers:**
+- `safeQuerySelector<T>(selector, context?)` - Type-safe single element query
+- `safeQuerySelectorAll<T>(selector, context?)` - Type-safe multi-element query
+- `safeJsonResponse<T>(response)` - Safe JSON parsing with error handling
+- `isApiResponse(data)` - Type guard for `{ ok: boolean; message?: string }`
+- `addSafeEventListener(target, type, handler)` - Type-safe event listener
+
+### IndexedDB Null-Safety Pattern
+
+**Critical for Field Operations:** All IndexedDB functions must use null-safe declaration:
+
+```typescript
+// ✅ CORRECT - Field operations safe
+let db: IDBDatabase | null = null;
+try {
+  db = await openDatabase();
+  // ... operations
+} catch (error) {
+  // db is null here - safe to reference
+  throw new DraftStorageError("Failed", error, "DB_OPEN_FAILED");
+}
+
+// ❌ WRONG - TypeScript error, runtime risk
+let db: IDBDatabase;  // Could be undefined if openDatabase() throws
+```
+
+**Files Updated:** `sync-queue.ts` (7 functions), `draft-storage.ts` (9 functions)
 
 ### Repository Layer
 

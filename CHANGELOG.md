@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-30
 
+### Engineering Board Audit Remediation (Sprint 1)
+- **Type Safety Infrastructure**: Created `src/lib/types/dom.ts` with safe DOM query helpers (`safeQuerySelector`, `safeQuerySelectorAll`, `safeJsonResponse`, `isApiResponse`) to eliminate `as any` type escapes. Updated `maintenance-request.astro` and `log-visit.astro` to use typed helpers.
+- **IndexedDB Null-Safety (Field Operations Critical)**: Fixed 16 functions across `sync-queue.ts` (7 functions) and `draft-storage.ts` (9 functions) to use `let db: IDBDatabase | null = null` pattern. Prevents undefined variable access when IDB operations fail in offline scenarios (mining sites, remote infrastructure).
+- **Offline Field Support**: Created `src/lib/components/OfflineIndicator.ts` - reusable visual indicator component for technicians operating in low-connectivity areas. Features auto-detect online/offline transitions, aria-live announcements, and optional status callbacks.
+- **Middleware Type Contract**: Fixed `src/middleware.ts` return type handling to properly satisfy `MiddlewareHandler` contract with explicit response handling and fallback `return next()` call.
+
+### CI/CD Pipeline Stabilization
+- **D1 Database Configuration**: Fixed `wrangler.jsonc` - removed `account_id` field (OAuth handled by Wrangler Action v3). Updated `.github/workflows/ci-cd.yml` to use binding name `DB` instead of database name for migrations command (`npx wrangler d1 migrations apply DB --remote`).
+- **TypeScript Error Resolution**: Resolved 65 TypeScript errors across 33 files. Final state: 0 errors, 0 warnings, 20 hints (non-blocking unused variables).
+
 ### Typecheck Resolution & Build Stability
 - **tsconfig.json Relaxation**: Adjusted strict TypeScript settings for pragmatic CI/CD pipeline compatibility. Disabled `exactOptionalPropertyTypes`, `strictPropertyInitialization`, `noUnusedLocals`, and `noUnusedParameters`. Excluded scripts, tests, eslint.config.ts, and playwright.config.ts from type checking to focus validation on production source code.
 - **Zod Schema Fix**: Corrected `nonNegative` → `nonnegative` (case sensitivity) in `FinanceTaskCreateSchema`. Replaced deprecated `z.ZodIssueCode` with imported `ZodIssueCode`.
