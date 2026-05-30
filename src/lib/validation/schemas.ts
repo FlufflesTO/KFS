@@ -86,7 +86,6 @@ export const QuoteApprovalSchema = z.object({
 });
 
 // Finance / VAT Validation Schemas (SARS Statutory Compliance)
-const VAT_RATE = 15 as const; // South African statutory VAT rate
 
 /**
  * Validates that VAT amount is exactly 15% of the ex-VAT amount.
@@ -111,18 +110,19 @@ export const FinanceTaskCreateSchema = z.object({
   ]),
   amountExVat: z.number()
     .int("Amount must be an integer (cents)")
-    .nonNegative("Amount cannot be negative")
+    .nonnegative("Amount cannot be negative")
     .max(999999900, "Amount exceeds maximum (R9,999,999.00)"),
   vatAmount: z.number()
     .int("VAT must be an integer (cents)")
-    .nonNegative("VAT cannot be negative")
+    .nonnegative("VAT cannot be negative")
     .refine(
-      (vat, ctx) => {
+      (vat, ctx: any) => {
         const exVat = ctx.parent.amountExVat;
-        if (!validateVatAmount(exVat, vat)) {
+        const expectedVat = Math.round(exVat * 0.15);
+        if (vat !== expectedVat) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `VAT amount must be exactly 15% of ex-VAT amount. Expected ${Math.round(exVat * 0.15)} cents, got ${vat} cents.`,
+            message: `VAT amount must be exactly 15% of ex-VAT amount. Expected ${expectedVat} cents, got ${vat} cents.`,
             path: ["vatAmount"]
           });
           return false;

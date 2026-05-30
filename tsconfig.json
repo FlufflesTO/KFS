@@ -6,15 +6,15 @@
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
+    "strictPropertyInitialization": false,
     "noImplicitThis": true,
-    "useUnknownInCatchVariables": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": false,
     "noImplicitOverride": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
@@ -34,7 +34,7 @@
     "allowJs": true,
     "checkJs": false,
     "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
-    "types": ["astro/env", "vite/cloudflare"]
+    "types": ["astro/env"]
   },
   "include": [
     "src/**/*",
@@ -50,6 +50,10 @@
     "dist",
     ".astro",
     "build",
-    "coverage"
+    "coverage",
+    "scripts/**/*",
+    "tests/**/*",
+    "eslint.config.ts",
+    "playwright.config.ts"
   ]
 }

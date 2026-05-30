@@ -174,10 +174,10 @@ export class ConflictError extends AppError {
  */
 export class TooManyRequestsError extends AppError {
   public readonly retryAfter: number;
+  public override name = "TooManyRequestsError";
 
   constructor(message: string = "Too many requests", retryAfter: number = 60) {
     super("rate_limited", 429, message, { retryAfter });
-    this.name = "TooManyRequestsError";
     this.retryAfter = retryAfter;
   }
 
