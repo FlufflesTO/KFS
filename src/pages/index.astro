@@ -38,7 +38,7 @@ const localBusinessJsonLd = JSON.stringify({
 ---
 
 <BaseLayout title={pageMeta.home.title} description={pageMeta.home.description}>
-  <script type="application/ld+json" set:html={localBusinessJsonLd}></script>
+  <script is:inline type="application/ld+json" set:html={localBusinessJsonLd}></script>
   <KharonGuardianHero />
   <ComplianceStrip />
   <Testimonials />

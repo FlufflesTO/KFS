@@ -95,16 +95,17 @@ const organizationJsonLd = JSON.stringify({
   <link rel="stylesheet" media="print" href="/print.css" />
   
   <!-- Schema.org JSON-LD -->
-  <script nonce={nonce} type="application/ld+json" set:html={organizationJsonLd}></script>
-  
+  <script is:inline nonce={nonce} type="application/ld+json" set:html={organizationJsonLd}></script>
+
   <!-- POPIA-Compliant Analytics - Only load on non-portal pages -->
   {shouldLoadAnalytics && (
     <>
       {/* Plausible Analytics - Privacy-friendly */}
-      <script 
+      <script
+        is:inline
         nonce={nonce}
-        defer 
-        src="https://plausible.io/js/script.js" 
+        defer
+        src="https://plausible.io/js/script.js"
         data-domain={SITE_CONFIG.url.replace('https://', '')}
       ></script>
       
@@ -121,10 +122,11 @@ const organizationJsonLd = JSON.stringify({
   )}
   
   {hasForms && (
-    <script 
+    <script
+      is:inline
       nonce={nonce}
-      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" 
-      async 
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+      async
       defer
     ></script>
   )}
