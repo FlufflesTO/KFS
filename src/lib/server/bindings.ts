@@ -4,7 +4,8 @@
  * Dependencies: @cloudflare/workers-types
  * Structural Role: Server-side bindings and configuration accessor
  * 
- * Note: In Cloudflare Pages + Astro, bindings are injected into globalThis.env at runtime
+ * Note: In Cloudflare Pages + Astro SSR, bindings are available on the global object
+ * at request time. We try multiple access patterns to ensure compatibility.
  */
 
 import type { D1Database, R2Bucket } from "@cloudflare/workers-types";
@@ -29,7 +30,12 @@ export interface Env {
 }
 
 function resolveBindings(): any {
-  // Cloudflare Pages injects bindings into globalThis.env at runtime
+  // Pattern 1: Check Cloudflare's runtime global (for Pages Functions)
+  if (typeof __env__ !== "undefined" && (__env__.DB || __env__.STORAGE)) {
+    return __env__;
+  }
+  
+  // Pattern 2: Check globalThis.env (for Workers)
   if (typeof globalThis !== "undefined" && (globalThis as any).env) {
     const env = (globalThis as any).env;
     if (env.DB || env.STORAGE) {
@@ -37,11 +43,15 @@ function resolveBindings(): any {
     }
   }
   
-  // Fallback for local development
+  // Pattern 3: Check globalThis directly (fallback)
   if (typeof globalThis !== "undefined") {
-    return globalThis;
+    const gh = globalThis as any;
+    if (gh.DB || gh.STORAGE) {
+      return gh;
+    }
   }
   
+  // Pattern 4: Return empty object (will cause error if bindings are used)
   return {};
 }
 
