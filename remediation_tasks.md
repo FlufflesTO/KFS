@@ -454,7 +454,27 @@ CRITICAL CONSTRAINTS:
 3. Enforce tracking rules that safely handle transaction race condition failures by returning typed error signals back to interactive forms.
 
 OUTPUT THE MODIFIED LOGIC MAP BLOCK FOR ROW STORAGE OPERATIONS.
-[ ] Task JOB-003: Core Certificate Generation Verification Check RulesTarget File: src/pages/api/certificates/generate-pdf.tsSystem Context: src/lib/server/db/job-repository.tsSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [JOB-003]
+
+[x] Task JOB-002: Optimistic Locking Verification Check Implementation
+Target File: src/lib/server/db/job-repository.ts
+System Context: schema.sql
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [JOB-002]
+TARGET_FILE: src/lib/server/db/job-repository.ts
+SYSTEM_CONTEXT: schema.sql
+
+CRITICAL CONSTRAINTS:
+1. Locate tracking state persistence methods inside storage update blocks.
+2. Inject verification requirements checking status properties matching the current atomic identifier count index.
+3. Enforce tracking rules that safely handle transaction race condition failures by returning typed error signals back to interactive forms.
+
+OUTPUT THE MODIFIED LOGIC MAP BLOCK FOR ROW STORAGE OPERATIONS.
+
+[x] Task JOB-003: Core Certificate Generation Verification Check Rules
+Target File: src/pages/api/certificates/generate-pdf.ts
+System Context: src/lib/server/db/job-repository.ts
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [JOB-003]
 TARGET_FILE: src/pages/api/certificates/generate-pdf.ts
 SYSTEM_CONTEXT: src/lib/server/db/job-repository.ts
 
@@ -464,9 +484,8 @@ CRITICAL CONSTRAINTS:
 3. Stop document completion scripts if relational tracking lookups identify unresolved critical failure records.
 
 OUTPUT THE STRUCTURAL SECURITY LOOKUP BLOCKS FOR CERTIFICATE ROUTING.
-[ ] Task JOB-004: Client-Side Upload Image Downsampling Compression RoutineTarget File: src/lib/forms/unifiedSubmit.tsSystem Context: AI_CONTEXT.mdSurgical Prompt:USER_DIRECTIVE: Execute Remediation for Task ID [JOB-004]
-TARGET_FILE: src/lib/forms/unifiedSubmit.ts
-SYSTEM_CONTEXT: AI_CONTEXT.md
+
+[ ] Task JOB-004: Client-Side Upload Image Downsampling Compression Routine
 
 CRITICAL CONSTRAINTS:
 1. Target the script engine wrapping asynchronous multipart payload formatting processes.

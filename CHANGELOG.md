@@ -89,6 +89,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Multi-Page Support**: Refactored `buildInvoiceContent()` to accumulate content in `currentPageContent` array and flush to `pages` array on page breaks. Line items now trigger page breaks when needed, with +80px buffer for totals/footer sections.
 - **Page Continuation Headers**: New pages display "TAX INVOICE (Page N)" header with invoice number for multi-page documents.
 
+### Optimistic Locking Verification Check (Task JOB-002)
+- **Verified Implementation**: Confirmed `JobRepository.updateStatus()` and `JobRepository.update()` methods from DB-003 include full verification checking. Both methods validate version match before update, throw typed `ConcurrencyError` with expected/current version on race condition failure, enabling proper UI error handling for field device concurrent updates.
+
 ## [Unreleased] - 2026-05-29
 
 ### Security & UX Hardening
