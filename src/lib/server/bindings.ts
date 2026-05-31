@@ -20,6 +20,8 @@ export interface WorkerBindings {
 export interface Env {
   SESSION_SECRET: string;
   MFA_SECRET: string;
+  CSRF_SECRET?: string;
+  ENCRYPTION_SECRET?: string;
   DB?: D1Database;
   STORAGE?: R2Bucket;
   STANDARD_SERVICE_FEE?: string;

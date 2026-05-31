@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Site Configuration
+ * Purpose: Centralized configuration, navigation links, and content definitions for the Kharon website.
+ * Dependencies: None
+ * Structural Role: Single source of truth for site-wide static copy, page metadata, and regulatory mappings.
+ */
+
 export interface SiteConfig {
   name: string;
   shortName: string;
@@ -23,6 +30,8 @@ export interface SolutionLink {
   label: string;
   href: string;
   summary: string;
+  icon?: string;
+  sans?: string[];
 }
 
 export interface NavLink {
@@ -34,6 +43,9 @@ export interface IndustryItem {
   title: string;
   risk: string;
   priority: string;
+  riskLevel: number;
+  icon: string;
+  sans: string[];
 }
 
 export interface AssuranceItem {
@@ -151,31 +163,41 @@ export const solutionLinks: SolutionLink[] = [
     label: "Gas Suppression",
     href: "/gas-suppression",
     summary:
-      "Clean-agent and engineered suppression systems for server rooms, electrical rooms and sensitive operational assets."        
+      "Clean-agent and engineered suppression systems for server rooms, electrical rooms and sensitive operational assets.",
+    icon: "/brand/icons/service-fire-suppression.svg",
+    sans: ["SANS 14520"]
   },
   {
     label: "Fire Detection",
     href: "/fire-detection",
     summary:
-      "Addressable detection, control panels, response zones and fault diagnostics for commercial and industrial sites."
+      "Addressable detection, control panels, response zones and fault diagnostics for commercial and industrial sites.",
+    icon: "/brand/icons/service-fire-detection.svg",
+    sans: ["SANS 10139", "SANS 1475"]
   },
   {
     label: "Compliance & Maintenance",
     href: "/compliance-maintenance",
     summary:
-      "Inspection, servicing, reporting and lifecycle maintenance for accountable fire-system ownership."
+      "Inspection, servicing, reporting and lifecycle maintenance for accountable fire-system ownership.",
+    icon: "/brand/icons/service-engineering.svg",
+    sans: ["SANS 10139", "SANS 14520", "SANS 369"]
   },
   {
     label: "Critical Infrastructure",
     href: "/critical-infrastructure",
     summary:
-      "Infrastructure protection for data centres, control rooms, electrical rooms and high-consequence operational sites."        
+      "Infrastructure protection for data centres, control rooms, electrical rooms and high-consequence operational sites.",
+    icon: "/brand/icons/service-access-control.svg",
+    sans: ["SANS 10400-T", "SANS 10142"]
   },
   {
     label: "Integrated Security",
     href: "/security-systems",
     summary:
-      "CCTV, access control and monitoring integrated as supporting infrastructure around fire protection priorities."
+      "CCTV, access control and monitoring integrated as supporting infrastructure around fire protection priorities.",
+    icon: "/brand/icons/service-cctv.svg",
+    sans: ["SANS 10222", "SANS 10198"]
   }
 ];
 
@@ -207,42 +229,66 @@ export const industries: IndustryItem[] = [
   {
     title: "Data centres and server rooms",
     risk: "Clean-agent suppression, early detection and uptime-sensitive response logic.",
-    priority: "Continuity"
+    priority: "Continuity",
+    riskLevel: 92,
+    icon: "/brand/icons/sector-server-rack.svg",
+    sans: ["SANS 10139", "SANS 14520", "SANS 10400-T"]
   },
   {
     title: "Telecoms and control rooms",
     risk: "Protected electronics, controlled release, alarm routing and fault visibility.",
-    priority: "Signal integrity"
+    priority: "Signal integrity",
+    riskLevel: 88,
+    icon: "/brand/icons/sector-radio-tower.svg",
+    sans: ["SANS 10139", "SANS 14520", "SANS 10198"]
   },
   {
     title: "Electrical rooms and switchgear spaces",
     risk: "Rapid detection, asset protection and suppression methods that limit collateral damage.",
-    priority: "Asset protection"
+    priority: "Asset protection",
+    riskLevel: 90,
+    icon: "/brand/icons/sector-switchgear.svg",
+    sans: ["SANS 10142", "SANS 14520"]
   },
   {
     title: "Logistics and warehousing",
     risk: "Large-volume detection coverage, evacuation signalling and inspection cadence.",
-    priority: "Coverage"
+    priority: "Coverage",
+    riskLevel: 65,
+    icon: "/brand/icons/sector-warehouse.svg",
+    sans: ["SANS 10139", "SANS 1475"]
   },
   {
     title: "Industrial and process facilities",
     risk: "Risk-segmented zones, rugged detection choices and maintenance access planning.",
-    priority: "Process risk"
+    priority: "Process risk",
+    riskLevel: 82,
+    icon: "/brand/icons/sector-factory.svg",
+    sans: ["SANS 10139", "SANS 1475", "SANS 10400-T"]
   },
   {
     title: "Utilities and critical infrastructure",
     risk: "Compliance records, escalation pathways and response logic for high-consequence assets.",
-    priority: "Resilience"
+    priority: "Resilience",
+    riskLevel: 94,
+    icon: "/brand/icons/sector-power-grid.svg",
+    sans: ["SANS 10139", "SANS 10142", "SANS 10090"]
   },
   {
     title: "Healthcare and commercial infrastructure",
     risk: "Occupancy-aware detection, documented servicing and continuity-sensitive protection.",
-    priority: "Occupancy"
+    priority: "Occupancy",
+    riskLevel: 78,
+    icon: "/brand/icons/sector-healthcare.svg",
+    sans: ["SANS 10139", "SANS 14520", "SANS 10400-T"]
   },
   {
     title: "Control rooms and operations centres",
     risk: "Fire detection and suppression architecture for spaces coordinating wider site response.",
-    priority: "Operational command"
+    priority: "Operational command",
+    riskLevel: 85,
+    icon: "/brand/icons/sector-control-room.svg",
+    sans: ["SANS 10139", "SANS 10222", "SANS 10198"]
   }
 ];
 

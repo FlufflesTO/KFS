@@ -283,7 +283,6 @@ async function logRetentionOperation(
 
 export const GET: APIRoute = async ({ request, locals }) => {
   // Require authentication
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const user = (locals as { user?: { id: string; name: string; email: string; role: string } | undefined }).user;
   
   if (!user) {
@@ -377,7 +376,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
 export const POST: APIRoute = async ({ request, locals }) => {
   // Require authentication
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const user = (locals as { user?: { id: string; name: string; email: string; role: "tech" | "admin" | "client" | "finance" } | undefined }).user;
   
   if (!user) {

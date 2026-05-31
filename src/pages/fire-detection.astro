@@ -1,6 +1,13 @@
 ---
+/**
+ * Project Sentinel - Fire Detection Page
+ * Purpose: Public page presenting fire detection systems, addressable panels, cause-and-effect matrix, and zoning.
+ * Dependencies: BaseLayout.astro, SectionHeading.astro, DetectionTechnicalBlocks.astro, site data
+ * Structural Role: Main informational page for fire detection services.
+ */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
+import DetectionTechnicalBlocks from "../components/sections/DetectionTechnicalBlocks.astro";
 import { pageMeta } from "../data/site.js";
 
 const detectionCapabilities = [
@@ -67,6 +74,9 @@ const detectionCapabilities = [
       </div>
     </div>
   </section>
+
+  <!-- Technical tables and flowchart matrix component -->
+  <DetectionTechnicalBlocks />
 
   <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
     <div class="mx-auto max-w-4xl px-6 text-center">

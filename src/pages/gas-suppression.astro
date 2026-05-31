@@ -1,8 +1,15 @@
 ---
+/**
+ * Project Sentinel - Gas Suppression Page
+ * Purpose: Public page presenting gas suppression systems, clean agents (FM-200, Novec 1230), and capability framework.
+ * Dependencies: BaseLayout.astro, SectionHeading.astro, SuppressionAuthority.astro, SuppressionTechnicalBlocks.astro, site data
+ * Structural Role: Main informational page for gas suppression services.
+ */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import SuppressionAuthority from "../components/sections/SuppressionAuthority.astro";
-import { pageMeta } from "../data/site.js";
+import SuppressionTechnicalBlocks from "../components/sections/SuppressionTechnicalBlocks.astro";
+import { pageMeta, capabilityProof } from "../data/site.js";
 
 const suppressionCapabilities = [
   {
@@ -53,6 +60,14 @@ const suppressionCapabilities = [
   </section>
 
   <SuppressionAuthority capabilities={suppressionCapabilities} />
+
+  <!-- Technical Capability Framework component -->
+  <SuppressionTechnicalBlocks 
+    suppression={capabilityProof.suppression}
+    detection={capabilityProof.detection}
+    compliance={capabilityProof.compliance}
+    security={capabilityProof.security}
+  />
   
   <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
     <div class="mx-auto max-w-4xl px-6 text-center">

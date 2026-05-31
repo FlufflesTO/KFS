@@ -1,6 +1,13 @@
 ---
+/**
+ * Project Sentinel - Critical Infrastructure Page
+ * Purpose: Public page presenting critical infrastructure protection (data centres, control rooms) and technical blocks.
+ * Dependencies: BaseLayout.astro, SectionHeading.astro, InfrastructureTechnicalBlocks.astro, site data
+ * Structural Role: Main informational page for critical infrastructure protection services.
+ */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
+import InfrastructureTechnicalBlocks from "../components/sections/InfrastructureTechnicalBlocks.astro";
 import { pageMeta } from "../data/site.js";
 ---
 
@@ -62,6 +69,9 @@ import { pageMeta } from "../data/site.js";
       </div>
     </div>
   </section>
+
+  <!-- Technical uptime model, escalation path and risk-tier matrix component -->
+  <InfrastructureTechnicalBlocks />
 
   <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
     <div class="mx-auto max-w-4xl px-6 text-center">

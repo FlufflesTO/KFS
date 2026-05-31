@@ -114,7 +114,7 @@ function resolveBindings(): any {
 function validateSecretIsolation(): void {
   const bindings = resolveBindings();
   const sessionSecret = String(bindings.SESSION_SECRET || bindings.AUTH_SECRET || "");
-  const mfaSecret = String(bindings.MFA_SECRET || "");
+  const mfaSecret = String(bindings.MFA_SECRET || bindings.ENCRYPTION_SECRET || "");
   
   // Check minimum lengths
   if (sessionSecret.length < 32) {
@@ -150,7 +150,7 @@ function getSessionSecret(): string {
 export function getMfaSecret(): string {
   validateSecretIsolation();
   const bindings = resolveBindings();
-  const secret = String(bindings.MFA_SECRET || bindings.SESSION_SECRET || "");
+  const secret = String(bindings.MFA_SECRET || bindings.ENCRYPTION_SECRET || "");
   if (secret.length < 32) {
     throw new Error("MFA_SECRET must be configured with at least 32 characters.");
   }

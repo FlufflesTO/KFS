@@ -2,12 +2,14 @@
 /**
  * Project Sentinel - Compliance Page
  * Purpose: Compliance guidance hub and reference page
- * Dependencies: BaseLayout.astro, SectionHeading.astro, ProofGrid.astro, site data
+ * Dependencies: BaseLayout.astro, SectionHeading.astro, ProofGrid.astro, site data, SansReferenceMatrix.astro, ComplianceTechnicalBlocks.astro
  * Structural Role: Public compliance information page
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import ProofGrid from "../components/sections/ProofGrid.astro";
+import SansReferenceMatrix from "../components/compliance/SansReferenceMatrix.astro";
+import ComplianceTechnicalBlocks from "../components/sections/ComplianceTechnicalBlocks.astro";
 import { pageMeta } from "../data/site.js";
 
 const complianceSignals = [
@@ -53,7 +55,7 @@ const proofItems = [
   <ProofGrid items={proofItems} title="Compliance Framework" subtitle="Regulatory Alignment" />
   
   <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
-    <div class="mx-auto max-w-4xl px-6">
+    <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
         title="Forensic Compliance Approach"
         subtitle="Inspection-Ready Systems"
@@ -61,7 +63,7 @@ const proofItems = [
         center={true}
       />
       
-      <div class="mt-12 grid gap-6 md:grid-cols-2">
+      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {complianceSignals.map((signal) => (
           <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
             <div class="flex items-center">
@@ -77,6 +79,93 @@ const proofItems = [
       </div>
     </div>
   </section>
+
+  <!-- Sans Reference Matrix Section -->
+  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal border-t border-white/5">
+    <div class="mx-auto max-w-7xl px-6">
+      <SectionHeading
+        title="Regulatory Standards Reference"
+        subtitle="SANS Compliance Matrix"
+        description="Comprehensive mapping of South African National Standards governing fire safety, physical security, and supporting electrical/community infrastructure."
+        center={true}
+      />
+      <SansReferenceMatrix />
+    </div>
+  </section>
+
+  <!-- SANS Deep-Dive Section -->
+  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black border-t border-white/5">
+    <div class="mx-auto max-w-4xl px-6">
+      <SectionHeading
+        title="SANS Regulatory Deep-Dives"
+        subtitle="Technical Specifications"
+        description="Detailed compliance frameworks and mandated maintenance procedures under South African National Standards."
+        center={true}
+      />
+      
+      <div class="mt-12 space-y-12">
+        <!-- SANS 10139 Deep-Dive -->
+        <div class="rounded-xl border border-kharon-purple/15 bg-kharon-surface-elevated p-8">
+          <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded text-xs font-black uppercase bg-red-500/10 text-kharon-red border border-red-500/20">SANS 10139</span>
+            Fire Detection & Alarm Systems
+          </h3>
+          <p class="text-kharon-light/80 leading-relaxed mb-6 text-sm">
+            SANS 10139 provides code of practice recommendations for the design, installation, commissioning, and maintenance of fire detection and alarm systems in and around buildings. It establishes the baseline for protecting life and property.
+          </p>
+          <div class="grid gap-6 md:grid-cols-2">
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-kharon-purple mb-2">Mandated Maintenance Cadence</h4>
+              <ul class="space-y-2 text-xs text-kharon-light/70">
+                <li><strong class="text-white">Daily:</strong> Verify control panel indicators and record active faults.</li>
+                <li><strong class="text-white">Weekly:</strong> Trigger manual call point on rotation to test sounders.</li>
+                <li><strong class="text-white">Quarterly:</strong> Functional test of battery backup, panel logs, and 25% of detectors.</li>
+                <li><strong class="text-white">Annual:</strong> Comprehensive test of 100% of devices, sounders, and interface relays.</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-kharon-purple mb-2">Required Handover Documentation</h4>
+              <ul class="space-y-2 text-xs text-kharon-light/70">
+                <li><strong class="text-white">System Logbook:</strong> Live record of all tests, false alarms, and maintenance.</li>
+                <li><strong class="text-white">Design Certificate:</strong> Declares coverage zones and system categories.</li>
+                <li><strong class="text-white">Commissioning Certificate:</strong> Proves system meets design and SANS limits.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- SANS 14520 Deep-Dive -->
+        <div class="rounded-xl border border-kharon-purple/15 bg-kharon-surface-elevated p-8">
+          <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded text-xs font-black uppercase bg-red-500/10 text-kharon-red border border-red-500/20">SANS 14520</span>
+            Gaseous Fire-Extinguishing Systems
+          </h3>
+          <p class="text-kharon-light/80 leading-relaxed mb-6 text-sm">
+            SANS 14520 governs clean-agent gas suppression systems, specifying physical properties, system design, calculations, room integrity, and safety requirements.
+          </p>
+          <div class="grid gap-6 md:grid-cols-2">
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-kharon-purple mb-2">Agent Calculations & Room Integrity</h4>
+              <ul class="space-y-2 text-xs text-kharon-light/70">
+                <li><strong class="text-white">Concentration Limits:</strong> Strict calculations of agent quantity based on room volume and temperature.</li>
+                <li><strong class="text-white">Room Integrity Testing (Door Fan):</strong> Mandatory annual test verifying the protected room can hold gas concentration for at least 10 minutes (retention time).</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-kharon-purple mb-2">Service & Inspection Intervals</h4>
+              <ul class="space-y-2 text-xs text-kharon-light/70">
+                <li><strong class="text-white">6-Monthly:</strong> Verify cylinder weights and pressures. If agent loss exceeds 5%, refill or replacement is required.</li>
+                <li><strong class="text-white">10-Year:</strong> Hydrostatic stretch testing of gas storage cylinders.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical tables and diagrams component -->
+  <ComplianceTechnicalBlocks />
 
   <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
     <div class="mx-auto max-w-4xl px-6 text-center">

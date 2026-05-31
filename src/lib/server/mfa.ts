@@ -43,9 +43,9 @@ function base64UrlDecode(input: string): Uint8Array {
 
 function getMfaSecret(): string {
   // @ts-ignore
-  const secret = String(env.MFA_SECRET || env.SESSION_SECRET || env.AUTH_SECRET || "");
+  const secret = String(env.MFA_SECRET || env.ENCRYPTION_SECRET || "");
   if (secret.length < 32) {
-    throw new Error("MFA_SECRET or SESSION_SECRET must be configured with at least 32 characters.");
+    throw new Error("MFA_SECRET or ENCRYPTION_SECRET must be configured with at least 32 characters.");
   }
   return secret;
 }

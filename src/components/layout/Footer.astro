@@ -1,4 +1,10 @@
 ---
+/**
+ * Project Sentinel - Footer Component
+ * Purpose: Global footer layout component with navigation, contact info, and legal links
+ * Dependencies: data/site.js
+ * Structural Role: Global footer in frontend pages
+ */
 import { site, solutionLinks } from "../../data/site.js";
 ---
 
@@ -11,7 +17,7 @@ import { site, solutionLinks } from "../../data/site.js";
       <!-- Brand -->
       <div>
         <a href="/" class="group inline-flex items-center gap-2.5 mb-4" aria-label="Kharon home">
-          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" style="height:32px;width:32px;object-fit:contain;" class="transition-transform duration-300 group-hover:scale-110 flex-none"/>
+          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" class="transition-transform duration-300 group-hover:scale-110 flex-none h-8 w-8 object-contain"/>
           <div>
             <span class="block text-sm font-black uppercase tracking-[0.18em] text-white">Kharon</span>
             <span class="block text-[0.55rem] font-bold uppercase tracking-[0.25em] text-kharon-purple/80">Fire &amp; Security</span>

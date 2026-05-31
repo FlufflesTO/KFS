@@ -1,12 +1,13 @@
 ---
 /**
  * Project Sentinel - Security Systems Page
- * Purpose: Public information page for integrated security systems
- * Dependencies: BaseLayout.astro, SectionHeading.astro, site data
- * Structural Role: Public security systems page
+ * Purpose: Public page presenting integrated security systems (CCTV, access control) and technical blocks.
+ * Dependencies: BaseLayout.astro, SectionHeading.astro, SecurityTechnicalBlocks.astro, site data
+ * Structural Role: Main informational page for security systems services.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
+import SecurityTechnicalBlocks from "../components/sections/SecurityTechnicalBlocks.astro";
 import { pageMeta } from "../data/site.js";
 
 const securityCapabilities = [
@@ -65,6 +66,9 @@ const securityCapabilities = [
       </div>
     </div>
   </section>
+
+  <!-- Access Control Tiers, CCTV retention and Integration diagram component -->
+  <SecurityTechnicalBlocks />
 
   <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
     <div class="mx-auto max-w-4xl px-6 text-center">

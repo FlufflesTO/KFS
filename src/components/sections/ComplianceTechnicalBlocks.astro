@@ -1,380 +1,276 @@
 ---
 /**
  * Project Sentinel - Compliance Technical Blocks
- * Purpose: Displays compliance maintenance cadence tables, defect severity levels, and certificate readiness flowcharts.
- * Dependencies: Astro section layout, SVG.
- * Structural Role: Presentation component for compliance page.
+ * Purpose: Displays compliance maintenance cadence, defect severity classification, certificate flow, and service report structure.
+ * Dependencies: None
+ * Structural Role: Deep technical depth section for the Compliance page.
  */
+
+const cadenceRows = [
+  { system: "Fire Detection",        monthly: true,  quarterly: true,  half: true,  annual: true },
+  { system: "Gas Suppression",       monthly: true,  quarterly: true,  half: true,  annual: true },
+  { system: "Emergency Lighting",    monthly: false, quarterly: true,  half: true,  annual: true },
+  { system: "Portable Extinguishers",monthly: true,  quarterly: false, half: false, annual: true },
+  { system: "Hose Reels",            monthly: false, quarterly: true,  half: false, annual: true },
+  { system: "Sprinklers",            monthly: false, quarterly: true,  half: true,  annual: true }
+];
+
+const severities = [
+  {
+    band: "Category 1 — Critical",
+    tone: "red",
+    heading: "Life safety impairment",
+    body: "System non-functional or unable to perform its primary protection role. Immediate risk to occupant safety.",
+    action: "24-hour rectification",
+    examples: [
+      "Fire panel offline or in fault state",
+      "Gas suppression agent leak",
+      "Emergency lighting total failure"
+    ]
+  },
+  {
+    band: "Category 2 — Major",
+    tone: "amber",
+    heading: "Impaired function",
+    body: "Degraded protection or partial system failure. The system operates but with reduced reliability or coverage.",
+    action: "7-day rectification",
+    examples: [
+      "Zone detector fault on one zone",
+      "Extinguisher missing from designated point",
+      "Hose reel valve seized"
+    ]
+  },
+  {
+    band: "Category 3 — Minor",
+    tone: "neutral",
+    heading: "Cosmetic or advisory",
+    body: "Non-critical cosmetic damage, advisory notes, or items flagged for future monitoring without current safety impact.",
+    action: "Next scheduled visit",
+    examples: [
+      "Extinguisher label faded",
+      "Paint damage on enclosure",
+      "Advisory note for future system upgrade"
+    ]
+  }
+];
+
+const reportSteps = [
+  { title: "Site Information",       text: "Client name, site address, building type, contact details and service order reference." },
+  { title: "System Inventory",       text: "Full listing of installed protection systems, zones, device types and quantities under scope." },
+  { title: "Test Results (per zone)",text: "Individual zone test outcomes — detector responses, alarm activations, suppression readiness — recorded per area." },
+  { title: "Defect Register",        text: "All faults and deficiencies classified by severity category with required rectification timeframe." },
+  { title: "Recommendations",        text: "Forward-looking guidance covering system improvements, lifecycle planning and compliance positioning." },
+  { title: "Client Sign-off",        text: "Client acknowledgment of service completion, defect awareness and acceptance of the report content." },
+  { title: "Next Service Date",      text: "Calculated next inspection or service due date based on system type, interval schedule and current completion." }
+];
+
+const sansLinks = [
+  { code: "SANS 10139", scope: "Fire detection — design, installation, commissioning, maintenance" },
+  { code: "SANS 14520", scope: "Gas suppression — agent calculations, integrity, discharge" },
+  { code: "SANS 369",   scope: "Emergency lighting — design, performance, testing" },
+  { code: "SANS 10400-T", scope: "National building regulations — fire protection requirements" }
+];
 ---
 
-<section class="section-padding bg-white">
+<section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
   <div class="mx-auto max-w-7xl px-6">
 
     <!-- ─── Block 1: Maintenance Cadence Table ─── -->
     <div>
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Service Frequencies</span>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Maintenance Cadence</h2>
-      <p class="mt-4 max-w-3xl leading-7 text-kharon-grey">
-        Each protection system follows a defined inspection and service cycle aligned to its operational risk and regulatory requirement.
+      <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Service Frequencies</span>
+      <h2 class="text-3xl font-bold leading-tight text-white mt-2">Maintenance Cadence</h2>
+      <p class="mt-4 max-w-3xl leading-7 text-white/70">
+        Each protection system follows a defined inspection and service cycle aligned to its operational risk and SANS regulatory requirement.
       </p>
 
-      <div class="mt-8 overflow-x-auto scrollbar-hide">
+      <div class="mt-8 overflow-x-auto">
         <table class="w-full min-w-[480px] border-collapse text-sm">
           <thead>
-            <tr class="border-b border-kharon-border">
-              <th class="py-3 pr-4 text-left font-semibold text-kharon-black">System</th>
-              <th class="py-3 px-2 text-center font-semibold text-kharon-purple">Monthly</th>
-              <th class="py-3 px-2 text-center font-semibold text-kharon-purple">Quarterly</th>
-              <th class="py-3 px-2 text-center font-semibold text-kharon-purple">6-Monthly</th>
-              <th class="py-3 px-2 text-center font-semibold text-kharon-purple">Annual</th>
+            <tr class="border-b border-kharon-purple/20">
+              <th class="py-3 pr-4 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">System</th>
+              <th class="py-3 px-2 text-center text-xs font-bold uppercase tracking-widest text-kharon-purple">Monthly</th>
+              <th class="py-3 px-2 text-center text-xs font-bold uppercase tracking-widest text-kharon-purple">Quarterly</th>
+              <th class="py-3 px-2 text-center text-xs font-bold uppercase tracking-widest text-kharon-purple">6-Monthly</th>
+              <th class="py-3 px-2 text-center text-xs font-bold uppercase tracking-widest text-kharon-purple">Annual</th>
             </tr>
-            <tr class="border-b border-kharon-border text-xs text-kharon-grey">
+            <tr class="border-b border-kharon-purple/10 text-[10px] text-white/40">
               <th class="py-1 pr-4 text-left"></th>
-              <th class="py-1 px-2 text-center">Visual</th>
-              <th class="py-1 px-2 text-center">Functional</th>
-              <th class="py-1 px-2 text-center">Comprehensive</th>
-              <th class="py-1 px-2 text-center">Certification</th>
+              <th class="py-1 px-2 text-center font-normal">Visual</th>
+              <th class="py-1 px-2 text-center font-normal">Functional</th>
+              <th class="py-1 px-2 text-center font-normal">Comprehensive</th>
+              <th class="py-1 px-2 text-center font-normal">Certification</th>
             </tr>
           </thead>
           <tbody>
-            <!-- Fire Detection: all four -->
-            <tr class="border-b border-kharon-border/50">
-              <td class="py-3 pr-4 font-medium text-kharon-black">Fire Detection</td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-            </tr>
-            <!-- Gas Suppression: all four -->
-            <tr class="border-b border-kharon-border/50">
-              <td class="py-3 pr-4 font-medium text-kharon-black">Gas Suppression</td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-            </tr>
-            <!-- Emergency Lighting: quarterly, 6-monthly, annual -->
-            <tr class="border-b border-kharon-border/50">
-              <td class="py-3 pr-4 font-medium text-kharon-black">Emergency Lighting</td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full border-2 border-kharon-border"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-            </tr>
-            <!-- Portable Extinguishers: monthly + annual -->
-            <tr class="border-b border-kharon-border/50">
-              <td class="py-3 pr-4 font-medium text-kharon-black">Portable Extinguishers</td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full border-2 border-kharon-border"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full border-2 border-kharon-border"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-            </tr>
-            <!-- Hose Reels: quarterly + annual -->
-            <tr class="border-b border-kharon-border/50">
-              <td class="py-3 pr-4 font-medium text-kharon-black">Hose Reels</td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full border-2 border-kharon-border"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full border-2 border-kharon-border"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-            </tr>
-            <!-- Sprinklers: quarterly, 6-monthly, annual -->
-            <tr>
-              <td class="py-3 pr-4 font-medium text-kharon-black">Sprinklers</td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full border-2 border-kharon-border"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-              <td class="py-3 px-2 text-center"><span class="inline-block h-4 w-4 rounded-full bg-kharon-purple"></span></td>
-            </tr>
+            {cadenceRows.map((row) => (
+              <tr class="border-b border-kharon-purple/10">
+                <td class="py-3 pr-4 font-medium text-white">{row.system}</td>
+                {[row.monthly, row.quarterly, row.half, row.annual].map((on) => (
+                  <td class="py-3 px-2 text-center">
+                    {on
+                      ? <span class="inline-block h-4 w-4 rounded-full bg-kharon-cyan shadow-glow-cyan"></span>
+                      : <span class="inline-block h-4 w-4 rounded-full border border-white/20"></span>}
+                  </td>
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
-      <p class="mt-4 text-xs leading-6 text-kharon-grey/70">
-        Filled circles indicate required service intervals. Empty circles indicate intervals not applicable to that system type.
+      <p class="mt-4 text-xs leading-6 text-white/40">
+        Filled cyan dots indicate required service intervals. Hollow rings indicate intervals not applicable to that system type. All cadences are SANS 10139 / SANS 14520 aligned.
       </p>
     </div>
 
     <!-- ─── Block 2: Defect Severity Classification ─── -->
-    <div class="mt-16">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Defect Classification</span>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Severity Categories</h2>
-      <p class="mt-4 max-w-3xl leading-7 text-kharon-grey">
+    <div class="mt-20">
+      <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Defect Classification</span>
+      <h2 class="text-3xl font-bold leading-tight text-white mt-2">Severity Categories</h2>
+      <p class="mt-4 max-w-3xl leading-7 text-white/70">
         Every defect recorded during inspection or service is classified by severity to determine the required response timeframe and escalation path.
       </p>
 
       <div class="mt-8 grid gap-5 md:grid-cols-3">
-        <!-- Category 1  -  Critical -->
-        <div class="rounded-lg border border-kharon-red/40 bg-red-50 p-6">
-          <p class="text-xs font-bold uppercase tracking-wider text-kharon-red">Category 1  -  Critical</p>
-          <h3 class="mt-2 text-xl font-semibold text-kharon-black">Life safety impairment</h3>
-          <p class="mt-3 leading-7 text-kharon-grey">
-            System non-functional or unable to perform its primary protection role. Immediate risk to occupant safety.
-          </p>
-          <div class="mt-4 border-t border-kharon-red/20 pt-4">
-            <p class="text-sm font-semibold text-kharon-black">Required action</p>
-            <p class="mt-1 text-sm leading-6 text-kharon-grey">24-hour rectification</p>
-          </div>
-          <div class="mt-3">
-            <p class="text-xs font-semibold text-kharon-grey">Examples</p>
-            <ul class="mt-1 space-y-1 text-xs leading-5 text-kharon-grey/80">
-              <li>Fire panel offline or in fault state</li>
-              <li>Gas suppression agent leak</li>
-              <li>Emergency lighting total failure</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Category 2  -  Major -->
-        <div class="rounded-lg border border-kharon-amber/40 bg-amber-50 p-6">
-          <p class="text-xs font-bold uppercase tracking-wider text-kharon-amber">Category 2  -  Major</p>
-          <h3 class="mt-2 text-xl font-semibold text-kharon-black">Impaired function</h3>
-          <p class="mt-3 leading-7 text-kharon-grey">
-            Degraded protection or partial system failure. The system operates but with reduced reliability or coverage.
-          </p>
-          <div class="mt-4 border-t border-kharon-amber/20 pt-4">
-            <p class="text-sm font-semibold text-kharon-black">Required action</p>
-            <p class="mt-1 text-sm leading-6 text-kharon-grey">7-day rectification</p>
-          </div>
-          <div class="mt-3">
-            <p class="text-xs font-semibold text-kharon-grey">Examples</p>
-            <ul class="mt-1 space-y-1 text-xs leading-5 text-kharon-grey/80">
-              <li>Zone detector fault on one zone</li>
-              <li>Extinguisher missing from designated point</li>
-              <li>Hose reel valve seized</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Category 3  -  Minor -->
-        <div class="rounded-lg border border-kharon-border bg-white p-6">
-          <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Category 3  -  Minor</p>
-          <h3 class="mt-2 text-xl font-semibold text-kharon-black">Cosmetic or advisory</h3>
-          <p class="mt-3 leading-7 text-kharon-grey">
-            Non-critical cosmetic damage, advisory notes, or items flagged for future monitoring without current safety impact.
-          </p>
-          <div class="mt-4 border-t border-kharon-border pt-4">
-            <p class="text-sm font-semibold text-kharon-black">Required action</p>
-            <p class="mt-1 text-sm leading-6 text-kharon-grey">Next scheduled visit</p>
-          </div>
-          <div class="mt-3">
-            <p class="text-xs font-semibold text-kharon-grey">Examples</p>
-            <ul class="mt-1 space-y-1 text-xs leading-5 text-kharon-grey/80">
-              <li>Extinguisher label faded</li>
-              <li>Paint damage on enclosure</li>
-              <li>Advisory note for future system upgrade</li>
-            </ul>
-          </div>
-        </div>
+        {severities.map((sev) => {
+          const tones = {
+            red:     { border: "border-kharon-red/40",    bg: "bg-kharon-red/10",    label: "text-kharon-red"    },
+            amber:   { border: "border-kharon-amber/40",  bg: "bg-kharon-amber/10",  label: "text-kharon-amber"  },
+            neutral: { border: "border-kharon-purple/30", bg: "bg-kharon-graphite",  label: "text-kharon-purple" }
+          };
+          const t = tones[sev.tone as keyof typeof tones];
+          return (
+            <div class={`rounded-lg border ${t.border} ${t.bg} p-6`}>
+              <p class={`text-xs font-bold uppercase tracking-widest ${t.label}`}>{sev.band}</p>
+              <h3 class="mt-2 text-xl font-semibold text-white">{sev.heading}</h3>
+              <p class="mt-3 leading-7 text-white/70">{sev.body}</p>
+              <div class="mt-4 border-t border-white/10 pt-4">
+                <p class="text-xs font-bold uppercase tracking-widest text-white/50">Required action</p>
+                <p class="mt-1 text-sm leading-6 text-white">{sev.action}</p>
+              </div>
+              <div class="mt-3">
+                <p class="text-xs font-bold uppercase tracking-widest text-white/50">Examples</p>
+                <ul class="mt-1 space-y-1 text-xs leading-5 text-white/60">
+                  {sev.examples.map((ex) => <li>· {ex}</li>)}
+                </ul>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
 
     <!-- ─── Block 3: Certificate Readiness Flowchart ─── -->
-    <div class="mt-16">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Certification Path</span>
-      <h2 class="text-3xl font-bold leading-tight text-kharon-black mt-2">Certificate Readiness Flowchart</h2>
-      <p class="mt-4 max-w-3xl leading-7 text-kharon-grey">
+    <div class="mt-20">
+      <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Certification Path</span>
+      <h2 class="text-3xl font-bold leading-tight text-white mt-2">Certificate Readiness Flow</h2>
+      <p class="mt-4 max-w-3xl leading-7 text-white/70">
         Decision logic governing whether a Certificate of Compliance can be issued, or whether an Advisory Notice is required pending defect resolution.
       </p>
 
-      <div class="mt-8 w-full max-w-3xl mx-auto overflow-x-auto">
+      <div class="mt-10 w-full max-w-3xl mx-auto overflow-x-auto">
         <div class="min-w-[320px] px-2">
-        <svg viewBox="0 0 600 820" class="w-full h-auto" role="img" aria-label="Certificate readiness decision flowchart" style="overflow: visible;">
-          <!-- Connectors (drawn first so nodes overlay junctions) -->
-          <!-- Start -> Decision 1 -->
+        <svg viewBox="0 0 600 660" class="w-full h-auto" role="img" aria-label="Certificate readiness decision flowchart">
+          <!-- Connectors -->
           <line x1="300" y1="56" x2="300" y2="100" stroke="#00C2FF" stroke-width="2.5"/>
-          <!-- Decision 1 No -> Process 1 -->
-          <line x1="220" y1="140" x2="160" y2="140" stroke="#00C2FF" stroke-width="2.5"/>
-          <!-- Process 1 -> loop back up to Decision 1 -->
-          <line x1="100" y1="140" x2="100" y2="68" stroke="#00C2FF" stroke-width="2.5"/>
-          <line x1="100" y1="68" x2="300" y2="68" stroke="#00C2FF" stroke-width="2.5"/>
-          <!-- Decision 1 Yes -> Decision 2 -->
+          <line x1="220" y1="140" x2="160" y2="140" stroke="#C4332F" stroke-width="2.5"/>
+          <line x1="100" y1="140" x2="100" y2="68" stroke="#C4332F" stroke-width="2.5"/>
+          <line x1="100" y1="68" x2="300" y2="68" stroke="#C4332F" stroke-width="2.5"/>
           <line x1="300" y1="180" x2="300" y2="230" stroke="#00C2FF" stroke-width="2.5"/>
-          <!-- Decision 2 Yes -> Process 2 -->
           <line x1="380" y1="270" x2="440" y2="270" stroke="#C4332F" stroke-width="2.5"/>
-          <!-- Process 2 -> loop back up to Decision 2 -->
-          <line x1="495" y1="270" x2="495" y2="198" stroke="#00C2FF" stroke-width="2.5"/>
-          <line x1="495" y1="198" x2="300" y2="198" stroke="#00C2FF" stroke-width="2.5"/>
-          <!-- Decision 2 No -> Decision 3 -->
+          <line x1="495" y1="270" x2="495" y2="198" stroke="#C4332F" stroke-width="2.5"/>
+          <line x1="495" y1="198" x2="300" y2="198" stroke="#C4332F" stroke-width="2.5"/>
           <line x1="300" y1="310" x2="300" y2="360" stroke="#00C2FF" stroke-width="2.5"/>
-          <!-- Decision 3 No -> Process 3 -->
-          <line x1="220" y1="400" x2="160" y2="400" stroke="#00C2FF" stroke-width="2.5"/>
-          <!-- Process 3 -> loop back up to Decision 3 -->
-          <line x1="100" y1="400" x2="100" y2="328" stroke="#00C2FF" stroke-width="2.5"/>
-          <line x1="100" y1="328" x2="300" y2="328" stroke="#00C2FF" stroke-width="2.5"/>
-          <!-- Decision 3 Yes -> Split to two outcomes -->
-          <line x1="300" y1="440" x2="300" y2="510" stroke="#00C2FF" stroke-width="2.5"/>
-          <!-- Split line to Advisory -->
-          <line x1="300" y1="510" x2="440" y2="510" stroke="#C4332F" stroke-width="2.5"/>
-          <line x1="440" y1="510" x2="440" y2="570" stroke="#C4332F" stroke-width="2.5"/>
-          <!-- Split line to Certificate -->
-          <line x1="300" y1="510" x2="160" y2="510" stroke="#00C2FF" stroke-width="2.5"/>
-          <line x1="160" y1="510" x2="160" y2="570" stroke="#00C2FF" stroke-width="2.5"/>
+          <line x1="220" y1="400" x2="160" y2="400" stroke="#C4332F" stroke-width="2.5"/>
+          <line x1="100" y1="400" x2="100" y2="328" stroke="#C4332F" stroke-width="2.5"/>
+          <line x1="100" y1="328" x2="300" y2="328" stroke="#C4332F" stroke-width="2.5"/>
+          <line x1="300" y1="440" x2="300" y2="500" stroke="#00C2FF" stroke-width="2.5"/>
+          <line x1="300" y1="500" x2="440" y2="500" stroke="#C4332F" stroke-width="2.5"/>
+          <line x1="440" y1="500" x2="440" y2="555" stroke="#C4332F" stroke-width="2.5"/>
+          <line x1="300" y1="500" x2="160" y2="500" stroke="#16A34A" stroke-width="2.5"/>
+          <line x1="160" y1="500" x2="160" y2="555" stroke="#16A34A" stroke-width="2.5"/>
 
           <!-- Nodes -->
-
-          <!-- START -->
-          <rect x="235" y="30" width="130" height="26" rx="13" fill="#1F4E79"/>
+          <rect x="235" y="30" width="130" height="26" rx="13" fill="#1F4E79" stroke="#00C2FF" stroke-width="1"/>
           <text x="300" y="47" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700">Start</text>
 
-          <!-- Decision 1: All zones tested? -->
-          <polygon points="300,100 380,140 300,180 220,140" fill="#4B2E83" stroke="#4B2E83" stroke-width="1"/>
+          <polygon points="300,100 380,140 300,180 220,140" fill="#4B2E83" stroke="#00C2FF" stroke-width="1"/>
           <text x="300" y="137" text-anchor="middle" fill="#FFFFFF" font-size="10.5" font-weight="600">All zones</text>
           <text x="300" y="149" text-anchor="middle" fill="#FFFFFF" font-size="10.5" font-weight="600">tested?</text>
-          <!-- No label -->
           <text x="195" y="133" text-anchor="middle" fill="#C4332F" font-size="9.5" font-weight="700">No</text>
-          <!-- Yes label -->
-          <text x="315" y="205" fill="#1F4E79" font-size="9.5" font-weight="700">Yes</text>
+          <text x="315" y="205" fill="#00C2FF" font-size="9.5" font-weight="700">Yes</text>
 
-          <!-- Process 1: Complete zone testing -->
-          <rect x="50" y="127" width="110" height="26" rx="6" fill="#1F4E79"/>
-          <text x="105" y="143" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="600">Complete</text>
+          <rect x="50" y="127" width="110" height="26" rx="6" fill="#C4332F"/>
+          <text x="105" y="143" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="600">Complete tests</text>
 
-          <!-- Decision 2: Open Category 1 defects? -->
-          <polygon points="300,230 380,270 300,310 220,270" fill="#4B2E83" stroke="#4B2E83" stroke-width="1"/>
+          <polygon points="300,230 380,270 300,310 220,270" fill="#4B2E83" stroke="#00C2FF" stroke-width="1"/>
           <text x="300" y="267" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Open Cat 1</text>
           <text x="300" y="279" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">defects?</text>
-          <!-- Yes label -->
           <text x="405" y="263" text-anchor="middle" fill="#C4332F" font-size="9.5" font-weight="700">Yes</text>
-          <!-- No label -->
-          <text x="315" y="335" fill="#1F4E79" font-size="9.5" font-weight="700">No</text>
+          <text x="315" y="335" fill="#00C2FF" font-size="9.5" font-weight="700">No</text>
 
-          <!-- Process 2: Rectify before certification -->
           <rect x="440" y="257" width="110" height="26" rx="6" fill="#C4332F"/>
           <text x="495" y="273" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="600">Rectify</text>
 
-          <!-- Decision 3: Documentation complete? -->
-          <polygon points="300,360 380,400 300,440 220,400" fill="#4B2E83" stroke="#4B2E83" stroke-width="1"/>
+          <polygon points="300,360 380,400 300,440 220,400" fill="#4B2E83" stroke="#00C2FF" stroke-width="1"/>
           <text x="300" y="397" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">Docs</text>
           <text x="300" y="409" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600">complete?</text>
-          <!-- No label -->
           <text x="195" y="393" text-anchor="middle" fill="#C4332F" font-size="9.5" font-weight="700">No</text>
-          <!-- Yes label -->
-          <text x="315" y="465" fill="#1F4E79" font-size="9.5" font-weight="700">Yes</text>
+          <text x="315" y="465" fill="#00C2FF" font-size="9.5" font-weight="700">Yes</text>
 
-          <!-- Process 3: Compile service records -->
-          <rect x="50" y="387" width="110" height="26" rx="6" fill="#1F4E79"/>
-          <text x="105" y="403" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="600">Compile</text>
+          <rect x="50" y="387" width="110" height="26" rx="6" fill="#C4332F"/>
+          <text x="105" y="403" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="600">Compile records</text>
 
-          <!-- Outcome label at split -->
-          <text x="210" y="500" text-anchor="middle" fill="#0B0D0F" font-size="9.5" font-weight="600">All Cat 1 resolved? (Yes)</text>
-          <text x="390" y="500" text-anchor="middle" fill="#C4332F" font-size="9.5" font-weight="600">Unresolved Cat 1 (No)</text>
+          <text x="210" y="490" text-anchor="middle" fill="#16A34A" font-size="9.5" font-weight="600">All Cat 1 resolved</text>
+          <text x="390" y="490" text-anchor="middle" fill="#C4332F" font-size="9.5" font-weight="600">Unresolved Cat 1</text>
 
-          <!-- Certificate of Compliance Issued -->
-          <rect x="55" y="570" width="210" height="44" rx="8" fill="#1F4E79"/>
-          <text x="160" y="592" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">Certificate of</text>
-          <text x="160" y="605" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">Compliance Issued</text>
+          <rect x="55" y="555" width="210" height="44" rx="8" fill="#16A34A"/>
+          <text x="160" y="577" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">Certificate of</text>
+          <text x="160" y="590" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">Compliance Issued</text>
 
-          <!-- Advisory Notice Issued -->
-          <rect x="335" y="570" width="210" height="44" rx="8" fill="#C4332F"/>
-          <text x="440" y="592" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">Advisory Notice</text>
-          <text x="440" y="605" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">Issued</text>
-
-          <!-- Legend -->
-          <rect x="100" y="660" width="400" height="140" rx="8" fill="none" stroke="#D6D9DD" stroke-width="1"/>
-          <text x="300" y="682" text-anchor="middle" fill="#0B0D0F" font-size="11" font-weight="700">Legend</text>
-          <!-- Decision -->
-          <polygon points="120,708 136,700 152,708 136,716" fill="#4B2E83"/>
-          <text x="164" y="712" fill="#0B0D0F" font-size="9.5">Decision point</text>
-          <!-- Process -->
-          <rect x="116" y="728" width="36" height="16" rx="4" fill="#1F4E79"/>
-          <text x="164" y="740" fill="#0B0D0F" font-size="9.5">Process / action</text>
-          <!-- Blocker -->
-          <rect x="116" y="750" width="36" height="16" rx="4" fill="#C4332F"/>
-          <text x="164" y="762" fill="#0B0D0F" font-size="9.5">Blocker / failure path</text>
-          <!-- Connector -->
-          <line x1="280" y1="708" x2="320" y2="708" stroke="#00C2FF" stroke-width="2.5"/>
-          <text x="332" y="712" fill="#0B0D0F" font-size="9.5">Connector / flow</text>
-          <!-- Loop -->
-          <path d="M280,730 L320,730 L320,748 L280,748" fill="none" stroke="#00C2FF" stroke-width="2" stroke-dasharray="4 3"/>
-          <text x="332" y="740" fill="#0B0D0F" font-size="9.5">Loop-back path</text>
+          <rect x="335" y="555" width="210" height="44" rx="8" fill="#C4332F"/>
+          <text x="440" y="577" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">Advisory Notice</text>
+          <text x="440" y="590" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">Issued</text>
         </svg>
         </div>
       </div>
     </div>
 
-    <!-- ─── Block 4: Sample Service Report Structure ─── -->
-    <div class="mt-16 reveal reveal-delayed">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="h-1 w-8 bg-kharon-purple"></div>
-        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Reporting Standard</p>
-      </div>
-      <h2 class="kharon-h2 text-kharon-black">Service Report Structure</h2>
-      <p class="mt-4 max-w-3xl text-lg leading-relaxed text-kharon-grey">
+    <!-- ─── Block 4: Service Report Structure ─── -->
+    <div class="mt-20">
+      <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Reporting Standard</span>
+      <h2 class="text-3xl font-bold leading-tight text-white mt-2">Service Report Structure</h2>
+      <p class="mt-4 max-w-3xl leading-7 text-white/70">
         Every Kharon service engagement produces a structured report capturing site conditions, test outcomes, defects and forward recommendations.
       </p>
 
-      <div class="mt-12 max-w-3xl">
-        <div class="rounded-xl border border-kharon-border bg-white p-6 sm:p-10 shadow-sm">
-
-          <ol class="space-y-8 border-l-2 border-kharon-purple/20 pl-8 ml-2">
-
+      <div class="mt-10 max-w-3xl">
+        <ol class="space-y-7 border-l-2 border-kharon-purple/30 pl-8 ml-3">
+          {reportSteps.map((step, i) => (
             <li class="relative">
-              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">1</span>
-              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Site Information</h3>
-              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Client name, site address, building type, contact details and service order reference.</p>
+              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-glow-purple ring-4 ring-kharon-black">{i + 1}</span>
+              <h3 class="text-base font-bold tracking-tight text-white">{step.title}</h3>
+              <p class="mt-1 text-sm leading-relaxed text-white/65">{step.text}</p>
             </li>
-
-            <li class="relative">
-              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">2</span>
-              <h3 class="text-lg font-bold tracking-tight text-kharon-black">System Inventory</h3>
-              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Full listing of installed protection systems, zones, device types and quantities under scope.</p>
-            </li>
-
-            <li class="relative">
-              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">3</span>
-              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Test Results (per zone)</h3>
-              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Individual zone test outcomes  -  detector responses, alarm activations, suppression readiness  -  recorded per area.</p>
-            </li>
-
-            <li class="relative">
-              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">4</span>
-              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Defect Register</h3>
-              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">All faults and deficiencies classified by severity category with required rectification timeframe.</p>
-            </li>
-
-            <li class="relative">
-              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">5</span>
-              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Recommendations</h3>
-              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Forward-looking guidance covering system improvements, lifecycle planning and compliance positioning.</p>
-            </li>
-
-            <li class="relative">
-              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">6</span>
-              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Client Sign-off</h3>
-              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Client acknowledgment of service completion, defect awareness and acceptance of the report content.</p>
-            </li>
-
-            <li class="relative">
-              <span class="absolute -left-[2.6rem] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white shadow-md ring-4 ring-white">7</span>
-              <h3 class="text-lg font-bold tracking-tight text-kharon-black">Next Service Date</h3>
-              <p class="mt-1 text-sm leading-relaxed text-kharon-grey/80">Calculated next inspection or service due date based on system type, interval schedule and current completion.</p>
-            </li>
-
-          </ol>
-
-        </div>
+          ))}
+        </ol>
       </div>
     </div>
 
-  </div>
-</section>sitioning.</p>
-            </li>
-
-            <li class="relative">
-              <span class="absolute -left-[1.85rem] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white">6</span>
-              <h3 class="text-lg font-semibold text-kharon-black">Client Sign-off</h3>
-              <p class="mt-1 leading-6 text-sm text-kharon-grey">Client acknowledgment of service completion, defect awareness and acceptance of the report content.</p>
-            </li>
-
-            <li class="relative">
-              <span class="absolute -left-[1.85rem] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-kharon-purple text-xs font-bold text-white">7</span>
-              <h3 class="text-lg font-semibold text-kharon-black">Next Service Date</h3>
-              <p class="mt-1 leading-6 text-sm text-kharon-grey">Calculated next inspection or service due date based on system type, interval schedule and current completion.</p>
-            </li>
-
-          </ol>
-
-        </div>
+    <!-- ─── Block 5: SANS Standards Linked to This Page ─── -->
+    <div class="mt-20">
+      <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Regulatory Reference</span>
+      <h2 class="text-3xl font-bold leading-tight text-white mt-2">SANS Standards Applied</h2>
+      <p class="mt-4 max-w-3xl leading-7 text-white/70">
+        Every cadence, classification, and certification decision on this page is grounded in published South African National Standards.
+      </p>
+      <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {sansLinks.map((s) => (
+          <div class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-5">
+            <p class="text-base font-bold text-kharon-cyan tracking-tight">{s.code}</p>
+            <p class="mt-2 text-xs leading-relaxed text-white/60">{s.scope}</p>
+          </div>
+        ))}
       </div>
     </div>
 

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Critical red theme ring -->
+  <circle cx="40" cy="40" r="38" stroke="#C4332F" stroke-width="2.5" fill="#0B1520"/>
+  <circle cx="40" cy="40" r="34" stroke="#FF5A54" stroke-width="1" fill="none" opacity="0.3"/>
+  <!-- Siren light dome -->
+  <path d="M28 50 L52 50 L48 30 Q48 24 40 24 Q32 24 32 30 Z" fill="#4B2E83" stroke="#FF5A54" stroke-width="1.5"/>
+  <!-- Siren base -->
+  <rect x="24" y="50" width="32" height="6" rx="2" fill="#1F4E79" stroke="#FF5A54" stroke-width="1"/>
+  <!-- Glowing bulb inside -->
+  <circle cx="40" cy="38" r="5" fill="#F59E0B"/>
+  <!-- Radiation/pulsing rays -->
+  <line x1="22" y1="22" x2="28" y2="28" stroke="#C4332F" stroke-width="2" stroke-linecap="round"/>
+  <line x1="58" y1="22" x2="52" y2="28" stroke="#C4332F" stroke-width="2" stroke-linecap="round"/>
+  <line x1="40" y1="12" x2="40" y2="19" stroke="#C4332F" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="36" x2="25" y2="36" stroke="#C4332F" stroke-width="2" stroke-linecap="round"/>
+  <line x1="62" y1="36" x2="55" y2="36" stroke="#C4332F" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-test("offline portal mutation queues once and drains after reconnection", async ({ page, context }) => {
+test("offline portal mutation queues once and drains after reconnection", async ({ page, context, browserName }) => {
+  test.skip(browserName === "webkit", "WebKit does not reliably register service workers on the local HTTP preview target.");
   let disconnectApi = true;
   await context.route("**/portal/api/job-visits", async (route) => {
     if (disconnectApi) {

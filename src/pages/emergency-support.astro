@@ -7,6 +7,7 @@
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
+import EmergencyResponse from "../components/sections/EmergencyResponse.astro";
 import { pageMeta, site } from "../data/site.js";
 
 const emergencyRoutes = [
@@ -85,6 +86,8 @@ const emergencyRoutes = [
       </div>
     </div>
   </section>
+
+  <EmergencyResponse />
 
   <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
     <div class="mx-auto max-w-4xl px-6 text-center">

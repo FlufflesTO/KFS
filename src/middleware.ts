@@ -94,7 +94,23 @@ function allowedForPath(pathname: string, role: string): boolean {
   if (pathname.startsWith("/portal/api/admin/")) return role === "admin";
   if (pathname.startsWith("/portal/api/finance/")) return role === "finance" || role === "admin";
   if (pathname.startsWith("/portal/api/client/")) return role === "client" || role === "admin";
-  if (pathname.startsWith("/portal/api/")) return true;
+  if (pathname.startsWith("/portal/api/")) {
+    const sharedApiPaths = new Set([
+      "/portal/api/logout",
+      "/portal/api/change-password",
+      "/portal/api/mfa",
+      "/portal/api/feedback",
+      "/portal/api/data-rights",
+      "/portal/api/file",
+      "/portal/api/maintenance-request",
+      "/portal/api/approve-quote",
+      "/portal/api/job-status",
+      "/portal/api/job-visits",
+      "/portal/api/submit-jobcard",
+      "/portal/api/offline-sync"
+    ]);
+    return [...sharedApiPaths].some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  }
 
   if (pathname.startsWith("/portal/tech/")) return role === "tech" || role === "admin";
   if (pathname.startsWith("/portal/admin/")) return role === "admin";

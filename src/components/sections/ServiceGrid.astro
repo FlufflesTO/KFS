@@ -1,7 +1,7 @@
 ---
 /**
  * Project Sentinel - ServiceGrid
- * Purpose: Services grid display
+ * Purpose: Services grid display with custom SVG icons and SANS standard tags
  * Dependencies: SectionHeading.astro
  * Structural Role: Reusable sections UI component
  */
@@ -22,21 +22,40 @@ const { services = [] } = Astro.props;
     <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
       {services.map((service: any) => (
         <div class="rounded-xl border border-kharon-purple/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
-          <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
-            <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5">
-              <div class="w-6 h-6 bg-kharon-purple rounded"></div>
+          <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
+                {service.icon ? (
+                  <img src={service.icon} class="w-full h-full object-contain" alt={`${service.title} icon`} />
+                ) : (
+                  <div class="w-6 h-6 bg-kharon-purple rounded"></div>
+                )}
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">{service.title}</h3>
+              <p class="text-kharon-light/70 mb-4">{service.summary}</p>
+              
+              {service.sans && service.sans.length > 0 && (
+                <div class="flex flex-wrap gap-2 mb-6">
+                  {service.sans.map((std: string) => (
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-kharon-purple/15 text-kharon-purple border border-kharon-purple/30">
+                      {std}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            <h3 class="text-xl font-bold text-white mb-3">{service.title}</h3>
-            <p class="text-kharon-light/70 mb-4">{service.summary}</p>
-            <a 
-              href={service.href} 
-              class="inline-flex items-center text-kharon-purple font-bold text-sm hover:underline"
-            >
-              Learn more
-              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </a>
+            
+            <div>
+              <a 
+                href={service.href} 
+                class="inline-flex items-center text-kharon-purple font-bold text-sm hover:underline"
+              >
+                Learn more
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
       ))}

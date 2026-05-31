@@ -1,204 +1,197 @@
+---
 /**
  * Project Sentinel - Infrastructure Technical Blocks
- * Purpose: Renders critical infrastructure uptime impact models, escalation dependency maps, and risk-tier matrices.
- * Dependencies: Astro section layout, SVG.
- * Structural Role: Presentation component for infrastructure page.
+ * Purpose: Critical infrastructure uptime impact model, escalation dependency map, and risk-tier matrix
+ * Structural Role: Deep technical depth section for the Critical Infrastructure page
  */
-<section class="section-padding bg-white relative overflow-hidden">
+
+const tiers = [
+  {
+    band: "Tier 1 — Mission Critical",
+    tone: "red",
+    title: "Mission Critical",
+    sectors: "Data centres, hospitals, banking",
+    rows: [
+      ["Financial",   ">R500k / hour"],
+      ["Operational", "Full service interruption"],
+      ["Reputation",  "Regulatory + Public"]
+    ]
+  },
+  {
+    band: "Tier 2 — Business Critical",
+    tone: "amber",
+    title: "Business Critical",
+    sectors: "Manufacturing, logistics, retail hubs",
+    rows: [
+      ["Financial",   "R50–500k / hour"],
+      ["Operational", "Production halt"],
+      ["Reputation",  "Contract penalties"]
+    ]
+  },
+  {
+    band: "Tier 3 — Standard Business",
+    tone: "neutral",
+    title: "Business Important",
+    sectors: "Commercial offices, estate retail",
+    rows: [
+      ["Financial",   "<R50k / hour"],
+      ["Operational", "Partial disruption"],
+      ["Reputation",  "Internal incident"]
+    ]
+  }
+];
+
+const matrixRows: Array<[string, string, string, string]> = [
+  ["Response SLA",        "30 min",            "2 hours",          "4 hours"],
+  ["Inspection Frequency","Monthly",           "Quarterly",        "6-Monthly"],
+  ["System Redundancy",   "N+1 mandatory",     "Recommended",      "Optional"],
+  ["Monitoring",          "24/7 Remote + Site","24/7 Remote",      "Business Hours"],
+  ["Backup Power",        "UPS + Generator",   "UPS Recommended",  "Standard"],
+  ["Documentation",       "Real-time Digital", "Digital Quarterly","Annual Paper"]
+];
+---
+
+<section class="section-padding bg-kharon-black border-t border-kharon-purple/10 relative overflow-hidden">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-    {/* Block 1: Uptime Impact Model */}
-    <div class="max-w-4xl reveal">
+    <!-- Block 1: Uptime Impact Model -->
+    <div class="max-w-4xl">
       <div class="flex items-center gap-3 mb-6">
         <div class="h-1 w-8 bg-kharon-purple"></div>
         <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Uptime Impact Model</p>
       </div>
-      <h2 class="kharon-h2 text-kharon-black">The cost of failure changes by facility tier.</h2>
+      <h2 class="kharon-h2 text-white">The cost of failure changes by facility tier.</h2>
+      <p class="mt-4 text-white/70 leading-relaxed">
+        SANS 10400-T and SANS 14520 require risk-aligned protection. Tier classification drives every cadence, response time, and redundancy decision.
+      </p>
     </div>
 
-    <div class="mt-12 grid gap-6 md:grid-cols-3 reveal reveal-delayed">
-      {/* Tier 1 */}
-      <article class="rounded-xl border border-kharon-red/20 bg-white p-6 sm:p-7 shadow-sm transition-all hover:border-kharon-red/40 hover:shadow-md">
-        <div class="flex items-center gap-2.5">
-          <div class="h-2 w-2 rounded-full bg-kharon-red"></div>
-          <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-red">Tier 1  -  Mission Critical</p>
-        </div>
-        <h3 class="mt-4 text-xl font-bold tracking-tight text-kharon-black">Mission Critical</h3>
-        <p class="mt-2 text-xs font-semibold text-kharon-grey/60 uppercase tracking-wider">Data centres, hospitals, banking</p>
-        
-        <dl class="mt-8 space-y-5">
-          {[['Financial', '>R500k/hour'], ['Operational', 'Full service interruption'], ['Reputation', 'Regulatory + Public']].map(([label, val]) => (
-            <div class="border-b border-kharon-border/30 pb-2.5">
-              <dt class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">{label}</dt>
-              <dd class="mt-1 text-sm font-bold text-kharon-black">{val}</dd>
+    <div class="mt-12 grid gap-6 md:grid-cols-3">
+      {tiers.map((tier) => {
+        const tones = {
+          red:     { dot: "bg-kharon-red",    label: "text-kharon-red",    border: "border-kharon-red/40"    },
+          amber:   { dot: "bg-kharon-amber",  label: "text-kharon-amber",  border: "border-kharon-amber/40"  },
+          neutral: { dot: "bg-kharon-cyan",   label: "text-kharon-cyan",   border: "border-kharon-purple/30" }
+        };
+        const t = tones[tier.tone as keyof typeof tones];
+        return (
+          <article class={`rounded-xl border ${t.border} bg-kharon-graphite p-6 sm:p-7 transition-all hover:border-kharon-purple/50`}>
+            <div class="flex items-center gap-2.5">
+              <div class={`h-2 w-2 rounded-full ${t.dot}`}></div>
+              <p class={`text-[0.625rem] font-bold uppercase tracking-widest ${t.label}`}>{tier.band}</p>
             </div>
-          ))}
-        </dl>
-      </article>
-
-      {/* Tier 2 */}
-      <article class="rounded-xl border border-kharon-border bg-white p-6 sm:p-7 shadow-sm transition-all hover:border-kharon-purple/20 hover:shadow-md">
-        <div class="flex items-center gap-2.5">
-          <div class="h-2 w-2 rounded-full bg-kharon-amber"></div>
-          <p class="text-[0.625rem] font-bold uppercase tracking-widest text-amber-700">Tier 2  -  Business Critical</p>
-        </div>
-        <h3 class="mt-4 text-xl font-bold tracking-tight text-kharon-black">Business Critical</h3>
-        <p class="mt-2 text-xs font-semibold text-kharon-grey/60 uppercase tracking-wider">Manufacturing, logistics, retail hubs</p>
-        
-        <dl class="mt-8 space-y-5">
-          {[['Financial', 'R50-500k/hour'], ['Operational', 'Production halt'], ['Reputation', 'Contract Penalties']].map(([label, val]) => (
-            <div class="border-b border-kharon-border/30 pb-2.5">
-              <dt class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">{label}</dt>
-              <dd class="mt-1 text-sm font-bold text-kharon-black">{val}</dd>
-            </div>
-          ))}
-        </dl>
-      </article>
-
-      {/* Tier 3 */}
-      <article class="rounded-xl border border-kharon-border bg-white p-6 sm:p-7 shadow-sm transition-all hover:border-kharon-purple/20 hover:shadow-md">
-        <div class="flex items-center gap-2.5">
-          <div class="h-2 w-2 rounded-full bg-kharon-grey"></div>
-          <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">Tier 3  -  Standard Business</p>
-        </div>
-        <h3 class="mt-4 text-xl font-bold tracking-tight text-kharon-black">Business Important</h3>
-        <p class="mt-2 text-xs font-semibold text-kharon-grey/60 uppercase tracking-wider">Commercial offices, estate retail</p>
-        
-        <dl class="mt-8 space-y-5">
-          {[['Financial', '<R50k/hour'], ['Operational', 'Partial disruption'], ['Reputation', 'Internal Incident']].map(([label, val]) => (
-            <div class="border-b border-kharon-border/30 pb-2.5">
-              <dt class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">{label}</dt>
-              <dd class="mt-1 text-sm font-bold text-kharon-black">{val}</dd>
-            </div>
-          ))}
-        </dl>
-      </article>
+            <h3 class="mt-4 text-xl font-bold tracking-tight text-white">{tier.title}</h3>
+            <p class="mt-2 text-xs font-semibold text-white/50 uppercase tracking-wider">{tier.sectors}</p>
+            <dl class="mt-6 space-y-4">
+              {tier.rows.map(([label, val]) => (
+                <div class="border-b border-kharon-purple/15 pb-2.5">
+                  <dt class="text-[0.625rem] font-bold uppercase tracking-widest text-white/40">{label}</dt>
+                  <dd class="mt-1 text-sm font-bold text-white">{val}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
+        );
+      })}
     </div>
 
-    {/* Block 2: Escalation Dependency Map */}
-    <div class="mt-20 reveal reveal-delayed">
+    <!-- Block 2: Escalation Dependency Map -->
+    <div class="mt-20">
       <div class="max-w-4xl">
         <div class="flex items-center gap-3 mb-6">
           <div class="h-1 w-8 bg-kharon-purple"></div>
           <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Escalation Logic</p>
         </div>
-        <h2 class="kharon-h2 text-kharon-black">Every minute is mapped from detection to resolution.</h2>
+        <h2 class="kharon-h2 text-white">Every minute is mapped from detection to resolution.</h2>
       </div>
 
-      <div class="mt-12 overflow-x-auto portal-scroll-x py-6">
+      <div class="mt-12 overflow-x-auto py-6">
         <div class="min-w-[55rem]">
-        <svg
-          viewBox="0 0 1200 220"
-          role="img"
-          aria-label="Escalation and response dependency map"
-          class="w-full h-auto drop-shadow-sm"
-          font-family="system-ui, -apple-system, sans-serif"
-        >
-          <defs>
-            <filter id="nodeShadow" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.1" />
-            </filter>
-          </defs>
+        <svg viewBox="0 0 1200 220" role="img" aria-label="Escalation and response dependency map" class="w-full h-auto">
+          <!-- Connectors -->
+          <line x1="140" y1="100" x2="220" y2="100" stroke="#00C2FF" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="340" y1="100" x2="420" y2="100" stroke="#00C2FF" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="540" y1="100" x2="620" y2="100" stroke="#00C2FF" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="740" y1="100" x2="820" y2="100" stroke="#00C2FF" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="940" y1="100" x2="1020" y2="100" stroke="#C4332F" stroke-width="2" stroke-dasharray="6 4" stroke-opacity="0.7"/>
 
-          {/* Connector lines */}
-          <line x1="140" y1="100" x2="220" y2="100" stroke="#00C2FF" stroke-width="2" stroke-opacity="0.6" />
-          <line x1="340" y1="100" x2="420" y2="100" stroke="#00C2FF" stroke-width="2" stroke-opacity="0.6" />
-          <line x1="540" y1="100" x2="620" y2="100" stroke="#00C2FF" stroke-width="2" stroke-opacity="0.6" />
-          <line x1="740" y1="100" x2="820" y2="100" stroke="#00C2FF" stroke-width="2" stroke-opacity="0.6" />
-          <line x1="940" y1="100" x2="1020" y2="100" stroke="#C4332F" stroke-width="2" stroke-dasharray="6 4" stroke-opacity="0.6" />
+          <!-- Node 1: Detection Event -->
+          <rect x="20" y="68" width="120" height="64" rx="8" fill="#4B2E83" stroke="#00C2FF" stroke-width="1"/>
+          <text x="80" y="100" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">DETECTION</text>
+          <text x="80" y="116" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">EVENT</text>
 
-          {/* Node 1: Detection Event */}
-          <rect x="20" y="68" width="120" height="64" rx="8" fill="#4B2E83" filter="url(#nodeShadow)" />
-          <text x="80" y="100" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Detection</text>
-          <text x="80" y="116" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Event</text>
-
-          {/* Time: 2 min */}
-          <rect x="155" y="90" width="50" height="20" rx="4" fill="#F59E0B" />
+          <!-- Time: 2 min -->
+          <rect x="155" y="90" width="50" height="20" rx="4" fill="#F59E0B"/>
           <text x="180" y="104" text-anchor="middle" fill="#0B0D0F" font-size="10" font-weight="800">2 min</text>
 
-          {/* Node 2: Control Room Acknowledgement */}
-          <rect x="220" y="68" width="120" height="64" rx="8" fill="#4B2E83" filter="url(#nodeShadow)" />
-          <text x="280" y="92" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Control</text>
-          <text x="280" y="106" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Room</text>
-          <text x="280" y="120" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Ack</text>
+          <!-- Node 2: Control Room -->
+          <rect x="220" y="68" width="120" height="64" rx="8" fill="#4B2E83" stroke="#00C2FF" stroke-width="1"/>
+          <text x="280" y="92" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">CONTROL</text>
+          <text x="280" y="106" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">ROOM</text>
+          <text x="280" y="120" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">ACK</text>
 
-          {/* Time tier labels */}
-          <g transform="translate(345, 44)">
-             <rect width="70" height="16" rx="3" fill="#F59E0B" />
-             <text x="35" y="11" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="800">T1: 30min</text>
-          </g>
-          <g transform="translate(345, 64)">
-             <rect width="70" height="16" rx="3" fill="#F59E0B" />
-             <text x="35" y="11" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="800">T2: 2hr</text>
-          </g>
-          <g transform="translate(345, 84)">
-             <rect width="70" height="16" rx="3" fill="#F59E0B" />
-             <text x="35" y="11" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="800">T3: 4hr</text>
-          </g>
+          <!-- Tier labels -->
+          <g transform="translate(345, 44)"><rect width="70" height="16" rx="3" fill="#C4332F"/><text x="35" y="11" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="800">T1: 30 min</text></g>
+          <g transform="translate(345, 64)"><rect width="70" height="16" rx="3" fill="#F59E0B"/><text x="35" y="11" text-anchor="middle" fill="#0B0D0F" font-size="9" font-weight="800">T2: 2 hr</text></g>
+          <g transform="translate(345, 84)"><rect width="70" height="16" rx="3" fill="#1F4E79"/><text x="35" y="11" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="800">T3: 4 hr</text></g>
 
-          {/* Node 3: Field Technician Dispatch */}
-          <rect x="420" y="68" width="120" height="64" rx="8" fill="#4B2E83" filter="url(#nodeShadow)" />
-          <text x="480" y="92" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Field</text>
-          <text x="480" y="106" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Tech</text>
-          <text x="480" y="120" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Dispatch</text>
+          <!-- Node 3: Field Technician Dispatch -->
+          <rect x="420" y="68" width="120" height="64" rx="8" fill="#4B2E83" stroke="#00C2FF" stroke-width="1"/>
+          <text x="480" y="92" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">FIELD</text>
+          <text x="480" y="106" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">TECH</text>
+          <text x="480" y="120" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">DISPATCH</text>
 
-          {/* Node 4: On-Site Assessment */}
-          <rect x="620" y="68" width="120" height="64" rx="8" fill="#4B2E83" filter="url(#nodeShadow)" />
-          <text x="680" y="99" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">On-Site</text>
-          <text x="680" y="115" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Assessment</text>
+          <!-- Node 4: On-Site Assessment -->
+          <rect x="620" y="68" width="120" height="64" rx="8" fill="#4B2E83" stroke="#00C2FF" stroke-width="1"/>
+          <text x="680" y="99" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">ON-SITE</text>
+          <text x="680" y="115" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">ASSESSMENT</text>
 
-          {/* Node 5: Resolution or Escalation */}
-          <rect x="820" y="68" width="120" height="64" rx="8" fill="#C4332F" filter="url(#nodeShadow)" />
-          <text x="880" y="92" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Resolution</text>
-          <text x="880" y="106" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">or</text>
-          <text x="880" y="120" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Escalation</text>
+          <!-- Node 5: Resolution or Escalation -->
+          <rect x="820" y="68" width="120" height="64" rx="8" fill="#C4332F" stroke="#00C2FF" stroke-width="1"/>
+          <text x="880" y="92" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">RESOLUTION</text>
+          <text x="880" y="106" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">OR</text>
+          <text x="880" y="120" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">ESCALATION</text>
 
-          {/* Node 6: Post-Incident Report */}
-          <rect x="1020" y="68" width="120" height="64" rx="8" fill="#4B2E83" filter="url(#nodeShadow)" />
-          <text x="1080" y="99" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Post-Incident</text>
-          <text x="1080" y="115" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">Report</text>
+          <!-- Node 6: Post-Incident Report -->
+          <rect x="1020" y="68" width="120" height="64" rx="8" fill="#4B2E83" stroke="#00C2FF" stroke-width="1"/>
+          <text x="1080" y="99" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">POST-INCIDENT</text>
+          <text x="1080" y="115" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">REPORT</text>
         </svg>
         </div>
       </div>
     </div>
 
-    {/* Block 3: Site Risk-Tier Matrix */}
-    <div class="mt-20 reveal reveal-delayed">
+    <!-- Block 3: Site Risk-Tier Matrix -->
+    <div class="mt-20">
       <div class="max-w-4xl">
         <div class="flex items-center gap-3 mb-6">
           <div class="h-1 w-8 bg-kharon-purple"></div>
           <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Risk Matrix</p>
         </div>
-        <h2 class="kharon-h2 text-kharon-black">Protection requirements by facility classification.</h2>
+        <h2 class="kharon-h2 text-white">Protection requirements by facility classification.</h2>
       </div>
 
-      <div class="mt-12 overflow-x-auto portal-scroll-x rounded-xl border border-kharon-border shadow-sm">
-        <div class="min-w-[640px] bg-white text-sm">
-          {/* Header row */}
-          <div class="grid grid-cols-4 border-b border-kharon-border">
-            <div class="px-6 py-5 font-bold uppercase tracking-widest text-[0.625rem] text-kharon-grey/50">Criteria</div>
-            <div class="px-6 py-5 text-center font-bold uppercase tracking-widest text-[0.625rem] bg-kharon-purple text-white">Tier 1</div>
-            <div class="px-6 py-5 text-center font-bold uppercase tracking-widest text-[0.625rem] text-kharon-black bg-kharon-light/50">Tier 2</div>
-            <div class="px-6 py-5 text-center font-bold uppercase tracking-widest text-[0.625rem] text-kharon-black bg-kharon-light/50">Tier 3</div>
+      <div class="mt-12 overflow-x-auto rounded-xl border border-kharon-purple/20">
+        <div class="min-w-[640px] bg-kharon-graphite text-sm">
+          <!-- Header row -->
+          <div class="grid grid-cols-4 border-b border-kharon-purple/20">
+            <div class="px-6 py-5 font-bold uppercase tracking-widest text-[0.625rem] text-white/40">Criteria</div>
+            <div class="px-6 py-5 text-center font-bold uppercase tracking-widest text-[0.625rem] bg-kharon-red/20 text-kharon-red">Tier 1</div>
+            <div class="px-6 py-5 text-center font-bold uppercase tracking-widest text-[0.625rem] bg-kharon-amber/20 text-kharon-amber">Tier 2</div>
+            <div class="px-6 py-5 text-center font-bold uppercase tracking-widest text-[0.625rem] bg-kharon-purple/20 text-kharon-cyan">Tier 3</div>
           </div>
 
-          {[
-            ['Response SLA', '30 min', '2 hours', '4 hours'],
-            ['Inspection Frequency', 'Monthly', 'Quarterly', '6-Monthly'],
-            ['System Redundancy', 'N+1 mandatory', 'Recommended', 'Optional'],
-            ['Monitoring', '24/7 Remote + Site', '24/7 Remote', 'Business Hours'],
-            ['Backup Power', 'UPS + Generator', 'UPS Recommended', 'Standard'],
-            ['Documentation', 'Real-time Digital', 'Digital Quarterly', 'Annual Paper']
-          ].map(([label, t1, t2, t3]) => (
-            <div class="grid grid-cols-4 border-b border-kharon-border/30 last:border-b-0 hover:bg-kharon-light/30 transition-colors">
-              <div class="px-6 py-4 font-bold text-kharon-black">{label}</div>
-              <div class="px-6 py-4 text-center font-semibold text-kharon-purple bg-kharon-purple/5">{t1}</div>
-              <div class="px-6 py-4 text-center font-medium text-kharon-grey">{t2}</div>
-              <div class="px-6 py-4 text-center font-medium text-kharon-grey">{t3}</div>
+          {matrixRows.map(([label, t1, t2, t3]) => (
+            <div class="grid grid-cols-4 border-b border-kharon-purple/10 last:border-b-0 hover:bg-kharon-purple/5 transition-colors">
+              <div class="px-6 py-4 font-bold text-white">{label}</div>
+              <div class="px-6 py-4 text-center font-semibold text-kharon-red/90 bg-kharon-red/5">{t1}</div>
+              <div class="px-6 py-4 text-center font-medium text-white/80">{t2}</div>
+              <div class="px-6 py-4 text-center font-medium text-white/60">{t3}</div>
             </div>
           ))}
         </div>
       </div>
     </div>
+
   </div>
 </section>

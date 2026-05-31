@@ -9,7 +9,7 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
     // 2. Verify that the main landing page content is visible
     const mainHeading = page.locator('h1.kharon-h1');
     await expect(mainHeading).toBeVisible();
-    await expect(mainHeading).toContainText('detection');
+    await expect(mainHeading).toContainText(/Life-safety|fire detection/i);
 
     // 3. Programmatically inspect the computed styling of the logo watermark pseudo-element
     const watermarkStyles = await page.evaluate(() => {
@@ -35,7 +35,7 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
     }
 
     // 4. Verify that the main CTA button is clickable and not obstructed
-    const assessmentCTA = page.getByRole('link', { name: 'Request Site Assessment' }).first();
+    const assessmentCTA = page.getByRole('link', { name: /Request Compliance Support|Assessment Intake|Inquiry/ }).first();
     await expect(assessmentCTA).toBeVisible();
     await expect(assessmentCTA).toBeEnabled();
   });

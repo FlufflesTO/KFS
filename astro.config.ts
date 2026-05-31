@@ -6,6 +6,9 @@ const siteUrl = process.env.PUBLIC_SITE_URL || "https://www.tequit.co.za";
 
 export default defineConfig({
   site: siteUrl,
+  devToolbar: {
+    enabled: false
+  },
   output: "server",
   adapter: cloudflare({
     configPath: "wrangler.jsonc",

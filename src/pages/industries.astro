@@ -1,13 +1,16 @@
 ---
+/**
+ * Project Sentinel - Industries Served Page
+ * Purpose: Display the critical infrastructure sectors served by Kharon, their risk profiles, and relevant SANS standards.
+ * Dependencies: BaseLayout.astro, SectorRiskGrid.astro, SectionHeading.astro, industries from site.ts
+ * Structural Role: Main page for listing industries and sector-specific risk profiles.
+ */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectorRiskGrid from "../components/sections/SectorRiskGrid.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import { pageMeta, industries } from "../data/site.js";
 
-const sectors = industries.map((industry, index) => ({
-  ...industry,
-  riskLevel: 75 + (index % 3) * 5 // Vary risk level slightly for demo purposes
-}));
+const sectors = industries;
 ---
 
 <BaseLayout title={pageMeta.industries.title} description={pageMeta.industries.description}>

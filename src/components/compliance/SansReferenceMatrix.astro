@@ -1,0 +1,102 @@
+---
+/**
+ * Project Sentinel - SansReferenceMatrix
+ * Purpose: Matrix displaying SANS regulatory standards for fire, security, and support systems
+ * Dependencies: None
+ * Structural Role: Reusable compliance UI component
+ */
+
+const categories = [
+  {
+    title: "Fire Protection Standards",
+    color: "text-kharon-red border-red-500/20 bg-red-500/5",
+    standards: [
+      {
+        code: "SANS 10139",
+        name: "Fire Detection Systems",
+        governs: "Design, installation, commissioning, and maintenance of fire detection and alarm systems in buildings."
+      },
+      {
+        code: "SANS 14520",
+        name: "Gas Suppression Systems",
+        governs: "Gaseous fire-extinguishing systems — design, installation, commissioning, and room integrity requirements."
+      },
+      {
+        code: "SANS 369",
+        name: "Emergency Lighting",
+        governs: "Operation and maintenance of emergency evacuation lighting and exit routing systems."
+      },
+      {
+        code: "SANS 10400-T",
+        name: "Building Fire Regulations",
+        governs: "National Building Regulations requirements for fire protection and safety facilities."
+      },
+      {
+        code: "SANS 1475",
+        name: "Point Detector Performance",
+        governs: "Performance, testing, and maintenance specifications for point-type detectors and fire equipment."
+      }
+    ]
+  },
+  {
+    title: "Security Standards",
+    color: "text-kharon-purple border-kharon-purple/20 bg-kharon-purple/5",
+    standards: [
+      {
+        code: "SANS 10222",
+        name: "CCTV Surveillance Systems",
+        governs: "Closed-circuit television (CCTV) surveillance systems — design, installation, commissioning, and operation."
+      },
+      {
+        code: "SANS 10198",
+        name: "Access Control Systems",
+        governs: "Management and implementation of access control systems (Parts 1-4) — design, operation, and maintenance."
+      }
+    ]
+  },
+  {
+    title: "Supporting Standards",
+    color: "text-kharon-blue border-kharon-blue/20 bg-kharon-blue/5",
+    standards: [
+      {
+        code: "SANS 10142",
+        name: "Electrical Wiring Premise",
+        governs: "The wiring of premises, ensuring electrical safety and supply integration for active systems."
+      },
+      {
+        code: "SANS 10090",
+        name: "Community Fire Protection",
+        governs: "Community protection against fire and integration with emergency response plans."
+      }
+    ]
+  }
+];
+---
+
+<div class="mt-12 grid gap-8 lg:grid-cols-3">
+  {categories.map((category) => (
+    <div class="rounded-xl border border-white/10 bg-kharon-charcoal/40 p-6 backdrop-blur-sm">
+      <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+        <span class="h-2 w-2 rounded-full bg-kharon-purple"></span>
+        {category.title}
+      </h3>
+      <div class="space-y-4">
+        {category.standards.map((std) => (
+          <div class="group rounded-lg border border-white/5 bg-kharon-black/40 p-4 transition-all duration-300 hover:border-kharon-purple/30 hover:bg-kharon-black/60">
+            <div class="flex items-center justify-between gap-2">
+              <span class={`rounded px-2.5 py-0.5 text-xs font-black uppercase tracking-wider border ${category.color}`}>
+                {std.code}
+              </span>
+            </div>
+            <h4 class="mt-2.5 text-sm font-bold text-white group-hover:text-kharon-cyan transition-colors">
+              {std.name}
+            </h4>
+            <p class="mt-1.5 text-xs leading-relaxed text-kharon-light/65">
+              {std.governs}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  ))}
+</div>

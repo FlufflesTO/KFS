@@ -1,10 +1,10 @@
 ---
 /**
  * Project Sentinel - Security Technical Blocks
- * Purpose: Renders access control tiers, POPIA CCTV retention planning, and integrated security points.
- * Dependencies: Astro section layout, SVG.
- * Structural Role: Presentation component for security page.
+ * Purpose: Access control tiers, POPIA CCTV retention planning, integrated security points
+ * Structural Role: Deep technical depth section for the Security Systems page
  */
+
 const accessTiers = [
   {
     level: 1,
@@ -30,119 +30,60 @@ const accessTiers = [
 ];
 
 const cctvZones = [
-  {
-    zone: "Entry/Exit Points",
-    description: "All pedestrian and vehicle access recorded 24/7",
-    retention: "30-day minimum"
-  },
-  {
-    zone: "Perimeter",
-    description: "Fence line coverage with motion-triggered recording",
-    retention: "30-day minimum"
-  },
-  {
-    zone: "High-Value Zones",
-    description: "Cash handling, server rooms, stock areas  -  continuous recording",
-    retention: "90-day (high-risk)"
-  },
-  {
-    zone: "Blind-Spot Elimination",
-    description: "Corridor intersections, stairwells, behind columns",
-    retention: "30-day minimum"
-  },
-  {
-    zone: "Retention Requirements",
-    description: "POPIA-compliant storage with audit-grade retrieval and chain-of-custody logging",
-    retention: "30-90 day tiered"
-  }
+  { zone: "Entry / Exit Points",   description: "All pedestrian and vehicle access recorded 24/7",                                  retention: "30-day minimum" },
+  { zone: "Perimeter",             description: "Fence line coverage with motion-triggered recording",                              retention: "30-day minimum" },
+  { zone: "High-Value Zones",      description: "Cash handling, server rooms, stock areas — continuous recording",                  retention: "90-day high-risk" },
+  { zone: "Blind-Spot Elimination",description: "Corridor intersections, stairwells, behind columns",                               retention: "30-day minimum" },
+  { zone: "POPIA Retention",       description: "POPIA-compliant storage with audit-grade retrieval and chain-of-custody logging",  retention: "30–90 day tiered" }
 ];
 
 const integrationNodes = [
-  { id: "access", label: "Access Control", cx: 300, cy: 60 },
-  { id: "cctv", label: "CCTV", cx: 510, cy: 155 },
-  { id: "fire", label: "Fire Detection", cx: 450, cy: 355 },
-  { id: "gas", label: "Gas Suppression", cx: 150, cy: 355 },
-  { id: "intruder", label: "Intruder Alarm", cx: 90, cy: 155 }
+  { id: "access",   label: "Access Control",   cx: 300, cy: 60  },
+  { id: "cctv",     label: "CCTV",             cx: 510, cy: 155 },
+  { id: "fire",     label: "Fire Detection",   cx: 450, cy: 355 },
+  { id: "gas",      label: "Gas Suppression",  cx: 150, cy: 355 },
+  { id: "intruder", label: "Intruder Alarm",   cx: 90,  cy: 155 }
 ];
 
 const integrationEvents = [
-  {
-    label: "Fire alarm",
-    detail: "Doors unlock (egress), Lifts recall, CCTV flags event",
-    x1: 390,
-    y1: 260,
-    x2: 300,
-    y2: 60,
-    color: "#C4332F"
-  },
-  {
-    label: "Gas release",
-    detail: "Access lockout (zone), CCTV records pre/post",
-    x1: 280,
-    y1: 260,
-    x2: 150,
-    y2: 355,
-    color: "#C4332F"
-  },
-  {
-    label: "Intrusion",
-    detail: "CCTV switches to live view, Access logs frozen, Alert dispatched",
-    x1: 250,
-    y1: 260,
-    x2: 90,
-    y2: 155,
-    color: "#C4332F"
-  },
-  {
-    label: "After-hours",
-    detail: "Reduced access zones, CCTV motion sensitivity increased",
-    x1: 340,
-    y1: 260,
-    x2: 510,
-    y2: 155,
-    color: "#00C2FF"
-  }
+  { label: "Fire alarm",   detail: "Doors unlock (egress), Lifts recall, CCTV flags event",                  color: "#C4332F" },
+  { label: "Gas release",  detail: "Access lockout (zone), CCTV records pre/post",                            color: "#C4332F" },
+  { label: "Intrusion",    detail: "CCTV switches to live view, Access logs frozen, Alert dispatched",        color: "#C4332F" },
+  { label: "After-hours",  detail: "Reduced access zones, CCTV motion sensitivity increased",                 color: "#00C2FF" }
 ];
 ---
 
 <!-- Block 1: Access Control Tiers -->
-<section class="section-padding bg-white">
+<section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
   <div class="mx-auto max-w-7xl px-6">
     <div class="max-w-3xl">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Access Control Tiers</span>
-      <h2 class="mt-2 text-3xl font-bold leading-tight text-kharon-black">
+      <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Access Control Tiers — SANS 10198</span>
+      <h2 class="mt-2 text-3xl font-bold leading-tight text-white">
         Escalating control levels matched to zone sensitivity.
       </h2>
     </div>
 
     <div class="mt-10 grid gap-5 md:grid-cols-3">
       {accessTiers.map((tier) => (
-        <article
-          class:list={[
-            "rounded-lg border border-kharon-border bg-white p-6",
-            tier.level === 3 && "border-l-4 border-l-kharon-purple"
-          ]}
-        >
+        <article class={`rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-6 ${tier.level === 3 ? "border-l-4 border-l-kharon-purple" : ""}`}>
           <div class="flex items-center gap-3">
-            <span class="flex h-9 w-9 items-center justify-center rounded-md text-sm font-bold text-white"
-              class:list={[tier.level === 3 ? "bg-kharon-purple" : "bg-kharon-blue"]}
-            >
+            <span class={`flex h-9 w-9 items-center justify-center rounded-md text-sm font-bold text-white ${tier.level === 3 ? "bg-kharon-purple" : "bg-kharon-blue"}`}>
               L{tier.level}
             </span>
             <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-kharon-grey">Level {tier.level}</p>
-              <h3 class="text-lg font-bold text-kharon-black">{tier.label}</h3>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-white/40">Level {tier.level}</p>
+              <h3 class="text-lg font-bold text-white">{tier.label}</h3>
             </div>
           </div>
 
-          <p class="mt-4 text-sm font-semibold text-kharon-purple">Purpose: {tier.purpose}</p>
-          <p class="mt-2 text-sm text-kharon-grey">{tier.examples}</p>
+          <p class="mt-4 text-sm font-semibold text-kharon-cyan">Purpose: {tier.purpose}</p>
+          <p class="mt-2 text-sm text-white/65">{tier.examples}</p>
 
-          <div class="mt-4 border-t border-kharon-border pt-4">
-            <p class="mb-2 text-xs font-bold uppercase tracking-wider text-kharon-grey">Technology</p>
-            <ul class="space-y-1">
+          <div class="mt-4 border-t border-kharon-purple/15 pt-4">
+            <p class="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/40">Technology</p>
+            <ul class="space-y-1.5">
               {tier.tech.map((t) => (
-                <li class="flex items-start gap-2 text-sm text-kharon-grey">
+                <li class="flex items-start gap-2 text-sm text-white/75">
                   <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-kharon-purple"></span>
                   {t}
                 </li>
@@ -156,25 +97,25 @@ const integrationEvents = [
 </section>
 
 <!-- Block 2: CCTV Coverage Planning -->
-<section class="section-padding bg-kharon-light">
+<section class="section-padding bg-kharon-charcoal">
   <div class="mx-auto max-w-7xl px-6">
     <div class="max-w-3xl">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">CCTV Coverage Planning</span>
-      <h2 class="mt-2 text-3xl font-bold leading-tight text-kharon-black">
+      <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">CCTV Coverage Planning — SANS 10222</span>
+      <h2 class="mt-2 text-3xl font-bold leading-tight text-white">
         Camera placement by zone, retention by risk.
       </h2>
     </div>
 
     <div class="mt-10 grid gap-5 md:grid-cols-2">
       {cctvZones.map((item) => (
-        <article class="rounded-lg border border-kharon-border bg-white p-6">
+        <article class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-6">
           <div class="flex items-start justify-between gap-4">
-            <h3 class="text-lg font-bold text-kharon-black">{item.zone}</h3>
-            <span class="shrink-0 rounded-md bg-kharon-blue/10 px-3 py-1 text-xs font-bold text-kharon-blue">
+            <h3 class="text-lg font-bold text-white">{item.zone}</h3>
+            <span class="shrink-0 rounded-md bg-kharon-cyan/15 px-3 py-1 text-xs font-bold text-kharon-cyan">
               {item.retention}
             </span>
           </div>
-          <p class="mt-2 text-sm leading-7 text-kharon-grey">{item.description}</p>
+          <p class="mt-2 text-sm leading-7 text-white/65">{item.description}</p>
         </article>
       ))}
     </div>
@@ -182,170 +123,70 @@ const integrationEvents = [
 </section>
 
 <!-- Block 3: Integration Points Diagram -->
-<section class="section-padding bg-white">
+<section class="section-padding bg-kharon-black">
   <div class="mx-auto max-w-7xl px-6">
     <div class="max-w-3xl">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Integration Points</span>
-      <h2 class="mt-2 text-3xl font-bold leading-tight text-kharon-black">
+      <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Integration Points</span>
+      <h2 class="mt-2 text-3xl font-bold leading-tight text-white">
         Security systems integrated with fire and life-safety.
       </h2>
     </div>
 
     <div class="mt-10 grid gap-10 lg:grid-cols-12 items-center">
       <div class="lg:col-span-7">
-        <svg viewBox="0 0 600 420" role="img" aria-label="Integration points diagram showing Building Management System connected to Access Control, CCTV, Fire Detection, Gas Suppression and Intruder Alarm" class="h-auto w-full" font-family="system-ui, -apple-system, sans-serif">
-          <defs>
-            <filter id="hubShadow" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.1" />
-            </filter>
-          </defs>
-        <!-- Connector lines from hub to nodes -->
-        {integrationNodes.map((node) => (
-          <line
-            x1="300"
-            y1="240"
-            x2={node.cx}
-            y2={node.cy}
-            stroke="#D6D9DD"
-            stroke-width="1.5"
-            stroke-dasharray="4 3"
-          />
-        ))}
+        <svg viewBox="0 0 600 420" role="img" aria-label="Integration diagram: Building Management System connected to Access Control, CCTV, Fire Detection, Gas Suppression and Intruder Alarm" class="h-auto w-full">
+          <!-- Connector lines from hub to nodes -->
+          {integrationNodes.map((node) => (
+            <line x1="300" y1="240" x2={node.cx} y2={node.cy} stroke="#4B2E83" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.5"/>
+          ))}
 
-        <!-- Event connector lines -->
-        {integrationEvents.map((evt) => (
-          <line
-            x1={evt.x1}
-            y1={evt.y1}
-            x2={evt.x2}
-            y2={evt.y2}
-            stroke={evt.color}
-            stroke-width="2"
-            stroke-dasharray="6 3"
-            opacity="0.7"
-          />
-        ))}
+          <!-- Central hub node -->
+          <rect x="205" y="200" width="190" height="80" rx="10" fill="#4B2E83" stroke="#00C2FF" stroke-width="1.5"/>
+          <text x="300" y="235" text-anchor="middle" fill="white" font-size="13" font-weight="700">Building Management</text>
+          <text x="300" y="255" text-anchor="middle" fill="white" font-size="13" font-weight="700">System</text>
 
-        <!-- Central hub node -->
-        <rect x="205" y="200" width="190" height="80" rx="10" fill="#4B2E83" filter="url(#hubShadow)" />
-        <text x="300" y="235" text-anchor="middle" fill="white" font-size="13" font-weight="700" font-family="Century Gothic, Arial">Building Management</text>
-        <text x="300" y="255" text-anchor="middle" fill="white" font-size="13" font-weight="700" font-family="Century Gothic, Arial">System</text>
-
-        <!-- System nodes -->
-        {integrationNodes.map((node) => (
-          <g>
-            <rect filter="url(#hubShadow)"
-              x={node.cx - 60}
-              y={node.cy - 22}
-              width="120"
-              height="44"
-              rx="8"
-              fill="#1F4E79"
-            />
-            <text
-              x={node.cx}
-              y={node.cy + 5}
-              text-anchor="middle"
-              fill="white"
-              font-size="12"
-              font-weight="600"
-              font-family="Century Gothic, Arial"
-            >
-              {node.label}
-            </text>
-          </g>
-        ))}
-
-        <!-- Event labels -->
-        <g class="hidden">
-          <!-- Fire alarm label -->
-          <rect x="290" y="145" width="72" height="18" rx="3" fill="#C4332F" opacity="0.15" />
-          <text x="326" y="158" text-anchor="middle" fill="#C4332F" font-weight="700">Fire alarm</text>
-
-          <!-- Gas release label -->
-          <rect x="170" y="300" width="82" height="18" rx="3" fill="#C4332F" opacity="0.15" />
-          <text x="211" y="313" text-anchor="middle" fill="#C4332F" font-weight="700">Gas release</text>
-
-          <!-- Intrusion label -->
-          <rect x="125" y="145" width="68" height="18" rx="3" fill="#C4332F" opacity="0.15" />
-          <text x="159" y="158" text-anchor="middle" fill="#C4332F" font-weight="700">Intrusion</text>
-
-          <!-- After-hours label -->
-          <rect x="380" y="175" width="82" height="18" rx="3" fill="#00C2FF" opacity="0.12" />
-          <text x="421" y="188" text-anchor="middle" fill="#00A3D6" font-weight="700">After-hours</text>
-        </g>
-
-        <!-- Event detail annotations -->
-        <g class="hidden">
-          <text x="395" y="105">Doors unlock (egress), Lifts recall,</text>
-          <text x="395" y="117">CCTV flags event</text>
-
-          <text x="60" y="395">Access lockout (zone),</text>
-          <text x="60" y="407">CCTV records pre/post</text>
-
-          <text x="10" y="100">CCTV switches to live view,</text>
-          <text x="10" y="112">Access logs frozen, Alert dispatched</text>
-
-          <text x="420" y="210">Reduced access zones,</text>
-          <text x="420" y="222">CCTV motion sensitivity increased</text>
-        </g>
-      </svg>
-    </div>
-
-    <div class="lg:col-span-5 space-y-6">
-      <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Integration Scenarios</p>
-      <div class="grid gap-4">
-        {integrationEvents.map((evt) => (
-          <div class="rounded-xl border border-kharon-border p-5 bg-kharon-light/80 transition-all hover:bg-white hover:shadow-sm">
-            <div class="flex items-center gap-2">
-              <span class="h-2 w-2 rounded-full" style={`background-color: ${evt.color}`}></span>
-              <h4 class="font-bold tracking-tight text-kharon-black">{evt.label}</h4>
-            </div>
-            <p class="mt-2 text-xs font-semibold leading-relaxed text-kharon-grey/80">{evt.detail}</p>
-          </div>
-        ))}
+          <!-- System nodes -->
+          {integrationNodes.map((node) => (
+            <g>
+              <rect x={node.cx - 60} y={node.cy - 22} width="120" height="44" rx="8" fill="#1F4E79" stroke="#00C2FF" stroke-width="1"/>
+              <text x={node.cx} y={node.cy + 5} text-anchor="middle" fill="white" font-size="12" font-weight="600">{node.label}</text>
+            </g>
+          ))}
+        </svg>
       </div>
-    </div>
+
+      <div class="lg:col-span-5 space-y-6">
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Integration Scenarios</p>
+        <div class="grid gap-4">
+          {integrationEvents.map((evt) => (
+            <div class="rounded-xl border border-kharon-purple/20 p-5 bg-kharon-graphite hover:bg-kharon-graphite/70 transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full" style={`background-color: ${evt.color}`}></span>
+                <h4 class="font-bold tracking-tight text-white">{evt.label}</h4>
+              </div>
+              <p class="mt-2 text-xs font-semibold leading-relaxed text-white/65">{evt.detail}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
 
     <!-- Integration event legend -->
-    <div class="mx-auto mt-12 flex max-w-3xl flex-wrap items-center gap-6 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">
+    <div class="mx-auto mt-12 flex max-w-3xl flex-wrap items-center gap-6 text-[0.625rem] font-bold uppercase tracking-widest text-white/50">
       <span class="flex items-center gap-2">
-        <span class="inline-block h-3 w-6 rounded-sm bg-[#4B2E83]"></span>
+        <span class="inline-block h-3 w-6 rounded-sm bg-kharon-purple"></span>
         Central BMS
       </span>
       <span class="flex items-center gap-2">
-        <span class="inline-block h-3 w-6 rounded-sm bg-[#1F4E79]"></span>
+        <span class="inline-block h-3 w-6 rounded-sm bg-kharon-blue"></span>
         Subsystem
       </span>
       <span class="flex items-center gap-2">
-        <span class="inline-block h-0.5 w-6 bg-[#C4332F]"></span>
+        <span class="inline-block h-0.5 w-6 bg-kharon-red"></span>
         Alert path
       </span>
       <span class="flex items-center gap-2">
-        <span class="inline-block h-0.5 w-6 bg-[#00C2FF]"></span>
-        Status path
-      </span>
-    </div>
-  </div>
-</section>
-    </span>
-    </div>
-  </div>
-</section>
-lock h-3 w-6 rounded-sm bg-[#4B2E83]"></span>
-        Central BMS
-      </span>
-      <span class="flex items-center gap-2">
-        <span class="inline-block h-3 w-6 rounded-sm bg-[#1F4E79]"></span>
-        Subsystem
-      </span>
-      <span class="flex items-center gap-2">
-        <span class="inline-block h-0.5 w-6 bg-[#C4332F]"></span>
-        Alert path
-      </span>
-      <span class="flex items-center gap-2">
-        <span class="inline-block h-0.5 w-6 bg-[#00C2FF]"></span>
+        <span class="inline-block h-0.5 w-6 bg-kharon-cyan"></span>
         Status path
       </span>
     </div>

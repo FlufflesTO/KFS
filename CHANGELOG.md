@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-30
 
+### SANS Regulatory Alignment & Content Review - 2026-05-31
+
+#### [Added]
+- Created `SansReferenceMatrix.astro` displaying all 9 SANS regulatory standards (10139, 14520, 369, 10400-T, 1475, 10222, 10198, 10142, 10090) in three columns (Fire, Security, and Supporting).
+- Added `docs/sans-coverage-matrix.md` detailing cross-references of all SANS standards against codebase components.
+- Added detailed SANS 10139 and SANS 14520 deep-dive sections on the `compliance.astro` page.
+- Created 8 custom stroke-based sector SVG icons under `public/brand/icons/sector-*.svg`.
+- Created 3 custom emergency severity SVG icons under `public/brand/icons/severity-*.svg`.
+
+#### [Changed]
+- Wired the 5 existing TechnicalBlocks components (`ComplianceTechnicalBlocks`, `DetectionTechnicalBlocks`, `SuppressionTechnicalBlocks`, `SecurityTechnicalBlocks`, `InfrastructureTechnicalBlocks`) into their respective pages (`compliance.astro`, `fire-detection.astro`, `gas-suppression.astro`, `security-systems.astro`, and `critical-infrastructure.astro`).
+- Replaced the cycling risk level formula in `industries.astro` with authentic, sector-specific values mapped from `site.ts`.
+- Integrated `EmergencyResponse.astro` component into `emergency-support.astro`.
+- Wired sector icons and SANS badges into `SectorRiskGrid.astro`.
+- Wired custom severity icons into `EmergencyResponse.astro`.
+
+#### [Fixed]
+- Resolved CSP violations by replacing element-level inline `style="..."` attributes with Tailwind classes in `Header.astro`, `Footer.astro`, and `ServiceIcons.astro`.
+- Mapped risk bar widths in `SectorRiskGrid.astro` to static Tailwind classes to avoid inline style CSP blocks.
+
 ### Portal Authentication Recovery - 2026-05-31
 
 - Removed the unsupported Cloudflare adapter `mode` option that blocked the portal CI deploy.

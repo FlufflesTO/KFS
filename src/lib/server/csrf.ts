@@ -44,7 +44,7 @@ function base64UrlDecode(input: string): Uint8Array {
 
 function getSecret(): string {
   // @ts-ignore
-  const secret = String(env.CSRF_SECRET || env.SESSION_SECRET || env.AUTH_SECRET || "");
+  const secret = String(env.CSRF_SECRET || env.ENCRYPTION_SECRET || env.SESSION_SECRET || env.AUTH_SECRET || "");
   if (secret.length < 32) {
     throw new Error("CSRF_SECRET or SESSION_SECRET must be configured with at least 32 characters.");
   }
