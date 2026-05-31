@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <circle cx="40" cy="40" r="38" stroke="#1F4E79" stroke-width="2.5" fill="#0B1520"/>
+  <circle cx="40" cy="40" r="34" stroke="#00C2FF" stroke-width="1" fill="none" opacity="0.3"/>
+  <!-- Two gas cylinders -->
+  <rect x="24" y="22" width="12" height="30" rx="4" fill="#4B2E83"/>
+  <rect x="44" y="22" width="12" height="30" rx="4" fill="#1F4E79"/>
+  <!-- Cylinder tops / valve heads -->
+  <rect x="22" y="18" width="16" height="6" rx="2" fill="#00C2FF" opacity="0.8"/>
+  <rect x="42" y="18" width="16" height="6" rx="2" fill="#00C2FF" opacity="0.6"/>
+  <!-- Valve stems -->
+  <rect x="28" y="14" width="4" height="6" rx="1" fill="#00C2FF"/>
+  <rect x="48" y="14" width="4" height="6" rx="1" fill="#00C2FF" opacity="0.8"/>
+  <!-- Pressure dials -->
+  <circle cx="30" cy="38" r="4" fill="#0B1520" stroke="#00C2FF" stroke-width="1" opacity="0.6"/>
+  <circle cx="50" cy="38" r="4" fill="#0B1520" stroke="#00C2FF" stroke-width="1" opacity="0.5"/>
+  <!-- Base -->
+  <rect x="20" y="52" width="40" height="4" rx="2" fill="#1F4E79" opacity="0.7"/>
+</svg>

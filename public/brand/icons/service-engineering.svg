@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <circle cx="40" cy="40" r="38" stroke="#1F4E79" stroke-width="2.5" fill="#0B1520"/>
+  <circle cx="40" cy="40" r="34" stroke="#00C2FF" stroke-width="1" fill="none" opacity="0.3"/>
+  <!-- Large gear -->
+  <path d="M40 20 L43 15 L47 16 L47 22 Q52 24 55 28 L61 27 L63 31 L59 34 Q60 37 60 40 Q60 43 59 46 L63 49 L61 53 L55 52 Q52 56 47 58 L47 64 L43 65 L40 60 L37 65 L33 64 L33 58 Q28 56 25 52 L19 53 L17 49 L21 46 Q20 43 20 40 Q20 37 21 34 L17 31 L19 27 L25 28 Q28 24 33 22 L33 16 L37 15 Z" fill="#15191D" stroke="#4B2E83" stroke-width="1.5"/>
+  <!-- Gear inner ring -->
+  <circle cx="40" cy="40" r="14" fill="#0B1520" stroke="#1F4E79" stroke-width="2"/>
+  <!-- Small gear top-right -->
+  <circle cx="56" cy="24" r="7" fill="#15191D" stroke="#00C2FF" stroke-width="1" opacity="0.6"/>
+  <circle cx="56" cy="24" r="4" fill="#0B1520" stroke="#4B2E83" stroke-width="1" opacity="0.6"/>
+  <!-- Center symbol -->
+  <circle cx="40" cy="40" r="5" fill="#4B2E83"/>
+  <circle cx="40" cy="40" r="2.5" fill="#00C2FF" opacity="0.8"/>
+  <!-- Wrench accent -->
+  <path d="M34 38 L33 42 L37 43 L38 39 Z" fill="#00C2FF" opacity="0.5"/>
+</svg>

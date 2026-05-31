@@ -127,7 +127,8 @@ debug.log
 # System
 Thumbs.db
 ehthumbs.db
-Icon?
+# macOS file resource fork — anchored to root only (was wrongly matching "icons/" dirs)
+/Icon?
 .CFUserTextEncoding
 
 # Local project directories to ignore

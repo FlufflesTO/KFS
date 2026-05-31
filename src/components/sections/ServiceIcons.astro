@@ -1,0 +1,71 @@
+---
+/**
+ * ServiceIcons Component
+ * Purpose: Visual service discipline strip with Kharon custom icons
+ * Structural Role: Homepage and about page service discipline overview
+ */
+
+const services = [
+  {
+    icon: "/brand/icons/service-fire-suppression.svg",
+    label: "Fire Suppression",
+    href: "/gas-suppression",
+    desc: "Clean-agent & engineered suppression"
+  },
+  {
+    icon: "/brand/icons/service-access-control.svg",
+    label: "Access Control",
+    href: "/security-systems",
+    desc: "Lenel, Paxton, Impro, Gallagher"
+  },
+  {
+    icon: "/brand/icons/service-fire-detection.svg",
+    label: "Fire Detection",
+    href: "/fire-detection",
+    desc: "Addressable & specialist detection"
+  },
+  {
+    icon: "/brand/icons/service-cctv.svg",
+    label: "CCTV",
+    href: "/security-systems",
+    desc: "Milestone, Bosch, Truvision"
+  },
+  {
+    icon: "/brand/icons/service-engineering.svg",
+    label: "Engineering",
+    href: "/compliance-maintenance",
+    desc: "Compliance, maintenance & service"
+  }
+];
+---
+
+<section class="bg-kharon-black border-y border-kharon-purple/10 py-10 sm:py-12">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-wrap justify-center gap-6 sm:gap-8 lg:gap-12">
+      {services.map((service) => (
+        <a
+          href={service.href}
+          class="group flex flex-col items-center text-center gap-3 min-w-[100px] max-w-[130px] transition-transform duration-300 hover:-translate-y-1"
+        >
+          <div class="relative">
+            <div class="absolute inset-0 bg-kharon-purple/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <img
+              src={service.icon}
+              alt=""
+              aria-hidden="true"
+              width="72"
+              height="72"
+              loading="lazy"
+              class="relative z-10 transition-transform duration-300 group-hover:scale-110"
+              style="height:72px;width:72px;"
+            />
+          </div>
+          <div>
+            <p class="text-[0.65rem] font-black uppercase tracking-widest text-white/90 group-hover:text-kharon-cyan transition-colors">{service.label}</p>
+            <p class="text-[0.55rem] font-medium uppercase tracking-wide text-white/30 mt-0.5 leading-snug">{service.desc}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

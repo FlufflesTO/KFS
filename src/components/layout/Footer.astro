@@ -2,73 +2,68 @@
 import { site, solutionLinks } from "../../data/site.js";
 ---
 
-<footer class="bg-gradient-to-b from-kharon-black to-kharon-charcoal text-white border-t border-kharon-purple/10 pt-12 pb-8">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="lg:col-span-2">
-        <a href="/" class="flex shrink-0 items-center gap-3.5 group">
-          <div class="relative flex h-10 w-8 items-center justify-center">
-            <div class="absolute inset-0 bg-kharon-purple/10 blur-md group-hover:bg-kharon-purple/20 transition-colors duration-500"></div>
-            <img src="/brand/letterhead/kharon-letterhead.svg" alt="" aria-hidden="true" width="110" height="38" class="relative z-10 flex-none transition-transform duration-300 group-hover:scale-105" />
+<footer class="bg-kharon-black border-t border-kharon-purple/15 text-white">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Top row: Brand + Services + Contact + Corporate -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+      <!-- Brand -->
+      <div>
+        <a href="/" class="group inline-flex items-center gap-2.5 mb-4" aria-label="Kharon home">
+          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" style="height:32px;width:32px;object-fit:contain;" class="transition-transform duration-300 group-hover:scale-110 flex-none"/>
+          <div>
+            <span class="block text-sm font-black uppercase tracking-[0.18em] text-white">Kharon</span>
+            <span class="block text-[0.55rem] font-bold uppercase tracking-[0.25em] text-kharon-purple/80">Fire &amp; Security</span>
           </div>
-          <span>
-            <span class="block whitespace-nowrap text-sm font-bold uppercase tracking-[0.15em] text-kharon-purple">{site.shortName}</span>
-            <span class="block whitespace-nowrap text-[0.6875rem] font-bold uppercase tracking-[0.25em] text-white/70">Fire &amp; Security Operations</span>
-          </span>
         </a>
-        <p class="mt-4 max-w-md text-sm leading-relaxed text-white/70 font-medium">
-          {site.description}
+        <p class="text-xs leading-relaxed text-white/50 max-w-[220px]">
+          Commercial and industrial fire detection, clean-agent gas suppression and compliance maintenance for critical environments.
         </p>
       </div>
 
-      <div class="space-y-4">
-        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-3">Contact</h3>
-        <p class="font-bold text-white/90 tracking-wide text-sm">{site.phone}</p>
-        <p class="tracking-tight text-sm">
-          <a href={`mailto:${site.email}`} class="hover:text-kharon-purple transition-colors hover:underline">{site.email}</a>
-        </p>
-        <p class="mt-2 text-xs leading-relaxed text-white/70 max-w-xs">{site.address}</p>
+      <!-- Services -->
+      <div>
+        <h3 class="text-[0.65rem] font-bold uppercase tracking-widest text-kharon-purple mb-3">Solutions</h3>
+        <ul class="space-y-2">
+          {solutionLinks.map((link) => (
+            <li><a href={link.href} class="text-xs text-white/60 hover:text-kharon-purple transition-colors">{link.label}</a></li>
+          ))}
+        </ul>
       </div>
 
-      <div class="space-y-4">
-        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-3">Corporate</h3>
-        <p class="text-xs font-bold uppercase tracking-widest text-white/70">Reg. {site.registration}</p>
-        <p class="text-xs font-bold uppercase tracking-widest text-white/70 mt-2">B-BBEE Level 4</p>
-        <p class="text-xs font-bold uppercase tracking-widest text-white/70">SAQCC FIRE-2024-0847</p>
+      <!-- Contact -->
+      <div>
+        <h3 class="text-[0.65rem] font-bold uppercase tracking-widest text-kharon-purple mb-3">Contact</h3>
+        <ul class="space-y-2 text-xs text-white/60">
+          <li><a href={`tel:${site.phone}`} class="hover:text-kharon-purple transition-colors font-semibold text-white/80">{site.phone}</a></li>
+          <li><a href={`mailto:${site.email}`} class="hover:text-kharon-purple transition-colors">{site.email}</a></li>
+          <li class="leading-relaxed pt-1 text-white/40">{site.address}</li>
+        </ul>
+      </div>
+
+      <!-- Corporate -->
+      <div>
+        <h3 class="text-[0.65rem] font-bold uppercase tracking-widest text-kharon-purple mb-3">Corporate</h3>
+        <ul class="space-y-1.5 text-[0.65rem] text-white/50 uppercase tracking-wider font-bold">
+          <li>Reg. {site.registration}</li>
+          <li>B-BBEE Level 4 Contributor</li>
+          <li>SAQCC FIRE-2024-0847</li>
+        </ul>
       </div>
     </div>
 
-    <div class="mt-12 pt-8 border-t border-kharon-purple/5 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <h3 class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-4">Services</h3>
-        <div class="grid grid-cols-2 gap-2">
-          {solutionLinks.slice(0, 4).map((link) => (
-            <a href={link.href} class="text-xs font-medium uppercase tracking-wide text-white/70 hover:text-kharon-purple transition-colors py-1 block">{link.label}</a>
-          ))}
-          {solutionLinks.slice(4).map((link) => (
-            <a href={link.href} class="text-xs font-medium uppercase tracking-wide text-white/70 hover:text-kharon-purple transition-colors py-1 block">{link.label}</a>
-          ))}
-        </div>
-      </div>
-
-      <div class="space-y-4">
-        <div class="flex flex-wrap gap-x-6 gap-y-3 text-xs font-medium uppercase tracking-wide text-white/70">
-          <a href="/" class="hover:text-kharon-purple transition-colors">Home</a>
-          <a href="/about" class="hover:text-kharon-purple transition-colors">About</a>
-          <a href="/compliance" class="hover:text-kharon-purple transition-colors">Compliance</a>
-          <a href="/contact?intent=site-assessment" class="hover:text-kharon-purple transition-colors">Site Assessment</a>
-          <a href={site.portalLoginPath} title={site.portalStatus} class="hover:text-kharon-purple transition-colors">Secure Portal</a>
-        </div>
-        
-        <div class="pt-4 border-t border-kharon-purple/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-white/60">
-            &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
-          </p>
-          <div class="flex flex-wrap gap-4">
-            <a href="/legal/paia-manual.html" class="text-[0.6875rem] font-bold uppercase tracking-widest text-white/70 hover:text-kharon-purple transition-colors hover:underline" target="_blank" rel="noopener noreferrer">PAIA Manual</a>
-            <a href="/compliance" class="text-[0.6875rem] font-bold uppercase tracking-widest text-white/70 hover:text-kharon-purple transition-colors hover:underline">SANS Compliance</a>
-          </div>
-        </div>
+    <!-- Bottom bar -->
+    <div class="mt-8 pt-6 border-t border-kharon-purple/10 flex flex-col sm:flex-row justify-between items-center gap-3">
+      <p class="text-[0.6rem] font-bold uppercase tracking-widest text-white/30">
+        &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
+      </p>
+      <div class="flex gap-5">
+        <a href="/" class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-purple transition-colors">Home</a>
+        <a href="/about" class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-purple transition-colors">About</a>
+        <a href="/compliance" class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-purple transition-colors">SANS</a>
+        <a href="/legal/paia-manual.html" class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-purple transition-colors" target="_blank" rel="noopener noreferrer">PAIA</a>
+        <a href={site.portalLoginPath} class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-purple transition-colors">Portal</a>
       </div>
     </div>
   </div>

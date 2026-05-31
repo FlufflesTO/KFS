@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <circle cx="40" cy="40" r="38" stroke="#1F4E79" stroke-width="2.5" fill="#0B1520"/>
+  <circle cx="40" cy="40" r="34" stroke="#00C2FF" stroke-width="1" fill="none" opacity="0.3"/>
+  <!-- Dome camera body -->
+  <ellipse cx="40" cy="44" rx="20" ry="7" fill="#15191D" stroke="#4B2E83" stroke-width="1.5"/>
+  <path d="M20 44 Q20 24 40 22 Q60 24 60 44" fill="#1A2027" stroke="#4B2E83" stroke-width="1.5"/>
+  <!-- Camera lens -->
+  <circle cx="40" cy="38" r="9" fill="#0B1520" stroke="#1F4E79" stroke-width="2"/>
+  <circle cx="40" cy="38" r="6" fill="#0D0F12" stroke="#00C2FF" stroke-width="1" opacity="0.8"/>
+  <circle cx="40" cy="38" r="3.5" fill="#4B2E83" opacity="0.9"/>
+  <circle cx="38" cy="36" r="1.2" fill="white" opacity="0.3"/>
+  <!-- Mounting bracket -->
+  <rect x="36" y="14" width="8" height="10" rx="2" fill="#15191D" stroke="#4B2E83" stroke-width="1.5"/>
+  <rect x="37" y="10" width="6" height="6" rx="1" fill="#1F4E79" opacity="0.8"/>
+  <!-- Status indicator -->
+  <circle cx="52" cy="32" r="2.5" fill="#C4332F"/>
+  <!-- IR dots -->
+  <circle cx="28" cy="40" r="1.5" fill="#00C2FF" opacity="0.4"/>
+  <circle cx="52" cy="40" r="1.5" fill="#00C2FF" opacity="0.4"/>
+</svg>

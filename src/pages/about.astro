@@ -6,31 +6,84 @@ import { pageMeta } from "../data/site.js";
 const capabilityProof = [
   {
     title: "SAQCC competency signals",
-    text: "Legacy Kharon material surfaces SAQCC Fire and SAQCC Gas proof points for fire and suppression workstreams."
+    text: "Registered with SAQCC Fire and SAQCC Gas, enabling authorized design, installation, commissioning and maintenance across fire alarm and suppression workstreams."
   },
   {
     title: "Registered fire-system work",
-    text: "Published company material states capability to design, install, commission and maintain fire alarm and evacuation systems."
+    text: "Certified to design, install, commission and maintain fire alarm and evacuation systems, suppression systems, and specialist detection platforms."
   },
   {
     title: "Standards-led delivery",
-    text: "Fire and security systems are positioned around relevant industry regulation, installation standards and maintainable handover evidence."
+    text: "All works carried out to SANS 10139, SANS 10400, SANS 14520, and SANS 322 as applicable. Full documentation for regulatory handover."
+  }
+];
+
+const serviceCategories = [
+  {
+    title: "Fire Alarm & Evacuation",
+    items: [
+      "Fire detection and evacuation system design and installation",
+      "Fire detection system maintenance and repairs",
+      "Fire alarm system compliance, documentation and training",
+      "Specialist systems — aspiration detection, flame detection, linear detection",
+      "Evacuation system testing (PA and system based)"
+    ]
+  },
+  {
+    title: "Fire Suppression",
+    items: [
+      "Design depending on suppression agent (Inergen, ProInert, FM200, Argonite, Fireeater, Stat-X, Rotarax)",
+      "Suppression system installation, maintenance and repairs",
+      "Cylinder recertification and refill",
+      "Room integrity testing",
+      "Kitchen and generator suppression systems"
+    ]
+  },
+  {
+    title: "Access Control",
+    items: [
+      "Design, supply and installation based on Lenel, Impro, Paxton, Idemia, Gallagher platforms",
+      "Integration to existing suite systems for local authority compliance",
+      "Software health — upgrades, relicensing, tokens",
+      "Preventative service and maintenance",
+      "Break-fix services"
+    ]
+  },
+  {
+    title: "CCTV Systems",
+    items: [
+      "Design, supply and installation based on Milestone, Bosch, Lenel, Truvision platforms",
+      "Software health — upgrades, relicensing, tokens",
+      "Preventative service and maintenance",
+      "Break-fix services"
+    ]
+  },
+  {
+    title: "Security & Locking Systems",
+    items: [
+      "Design, supply and installation based on Paradox, Centurion, IDS platforms",
+      "Electronic locking — SEP, CISA, Stanley, Assa Abloy",
+      "Supply and installation of panic escape hardware",
+      "Custom manufacturing of strike plates and lock brackets",
+      "Service and maintenance of Assa Abloy EL lock series"
+    ]
   }
 ];
 ---
 
 <BaseLayout title={pageMeta.about.title} description={pageMeta.about.description}>
+
+  <!-- Hero -->
   <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
     <div class="mx-auto max-w-4xl px-6 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
-        About Kharon
-      </h1>
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">About Kharon</h1>
       <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
-        Kharon is positioned around engineered fire detection, gas suppression, compliance discipline and critical environment protection.
+        Established in 2016 with the vision to provide installation and maintenance of electronic safety and security systems to relevant industry standards.
       </p>
     </div>
   </section>
 
+  <!-- Company overview -->
   <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
     <div class="mx-auto max-w-4xl px-6">
       <SectionHeading
@@ -39,24 +92,48 @@ const capabilityProof = [
         description="Specialized in commercial and industrial fire protection systems with engineered solutions."
         center={true}
       />
-      
-      <div class="mt-12 prose prose-invert max-w-none">
-        <p class="text-kharon-light/80 text-lg leading-relaxed">
-          Kharon Fire and Security Solutions is a specialized provider of fire protection and security systems for commercial and industrial environments. Our focus is on engineered solutions that prioritize reliability, maintainability, and compliance in critical operational contexts.
+      <div class="mt-10 space-y-5 text-kharon-light/80 text-base leading-relaxed">
+        <p>
+          <strong class="text-white">Kharon Fire and Security Solutions</strong> was established in 2016 with the vision to provide installation and maintenance of electronic safety and security systems to relevant industry standards. We are located in Cape Town, South Africa and provide services to clients as far reaching as Botswana and Malawi.
         </p>
-        
-        <p class="text-kharon-light/80 text-lg leading-relaxed mt-6">
-          We specialize in gas suppression systems for server rooms, electrical rooms, and other sensitive operational assets. Our fire detection systems are designed around addressable detection, control panels, and response zones that provide maintainable layouts for commercial sites.
+        <p>
+          Kharon designs, builds and maintains electronic safety, surveillance and security systems to the client's requirements, based on the relevant industry regulation and installation standards. Our service department and small works division also provides 3rd party support for national and international service providers.
         </p>
-        
-        <p class="text-kharon-light/80 text-lg leading-relaxed mt-6">
+        <p>
           Our compliance and maintenance services ensure that your fire protection systems remain accountable, with inspection schedules, service records, and documentation outputs that serve as operational evidence.
         </p>
       </div>
     </div>
   </section>
 
+  <!-- Mission / Aim / Dedication -->
   <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+    <div class="mx-auto max-w-7xl px-6">
+      <SectionHeading
+        title="Our Mission"
+        subtitle="Operational Purpose"
+        description="Create a synergy between human and automated safety and security systems."
+        center={true}
+      />
+      <div class="mt-12 grid gap-6 md:grid-cols-2">
+        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-7">
+          <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-purple mb-3">Our Aim</h3>
+          <p class="text-kharon-light/80 leading-relaxed">
+            Provide an environmentally sustainable and safe approach to our business operations. Our teams are encouraged to participate in these activities wherever possible, ensuring our work leaves a positive environmental footprint.
+          </p>
+        </div>
+        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-7">
+          <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-purple mb-3">Our Dedication</h3>
+          <p class="text-kharon-light/80 leading-relaxed">
+            We are dedicated to our clients' satisfaction and our team's welfare. Profit is seen as a welcome by-product of sustainable practices and successful system implementation within the company.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Capability proof points -->
+  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
         title="Capability Proof Points"
@@ -64,18 +141,45 @@ const capabilityProof = [
         description="Demonstrated competencies and registered capabilities that establish our technical authority."
         center={true}
       />
-      
-      <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-12 grid gap-6 md:grid-cols-3">
         {capabilityProof.map((item) => (
           <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
-            <h3 class="text-lg font-semibold text-white mb-3">{item.title}</h3>
-            <p class="text-kharon-light/70">{item.text}</p>
+            <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-purple mb-3">{item.title}</h3>
+            <p class="text-kharon-light/70 text-sm leading-relaxed">{item.text}</p>
           </div>
         ))}
       </div>
     </div>
   </section>
 
+  <!-- Services overview -->
+  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+    <div class="mx-auto max-w-7xl px-6">
+      <SectionHeading
+        title="Service Disciplines"
+        subtitle="Operational Scope"
+        description="Full lifecycle capability across fire protection, suppression and security system disciplines."
+        center={true}
+      />
+      <div class="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {serviceCategories.map((cat) => (
+          <div class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-6">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-purple mb-4">{cat.title}</h3>
+            <ul class="space-y-2">
+              {cat.items.map((item) => (
+                <li class="flex gap-2 text-sm text-kharon-light/70 leading-snug">
+                  <span class="text-kharon-purple mt-0.5 flex-none">›</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Accreditation -->
   <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
     <div class="mx-auto max-w-4xl px-6">
       <SectionHeading
@@ -84,32 +188,22 @@ const capabilityProof = [
         description="Our work is strictly governed by South African national standards and recognized industry bodies."
         center={true}
       />
-      
       <div class="mt-12 grid gap-6 md:grid-cols-3">
-        <div class="rounded-lg border border-kharon-purple/30 bg-kharon-black p-6 flex flex-col items-center text-center">
-          <div class="h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-kharon-purple/10">
-            <span class="text-kharon-purple font-bold text-xl">SAQCC</span>
+        {[
+          { code: "SAQCC", title: "SAQCC Fire & Gas", text: "All technicians registered and certified for authorized fire and gas suppression work across all disciplines." },
+          { code: "SABS", title: "SANS Compliant", text: "Installations to SANS 10139, SANS 10400, SANS 14520, and SANS 322 national standards as applicable." },
+          { code: "BEE", title: "B-BBEE Level 4", text: "Committed to South African economic empowerment. Level 4 Contributor, supporting enterprise procurement requirements." }
+        ].map(item => (
+          <div class="rounded-lg border border-kharon-purple/30 bg-kharon-black p-6 flex flex-col items-center text-center">
+            <div class="h-14 w-14 mb-4 flex items-center justify-center rounded-full bg-kharon-purple/10 border border-kharon-purple/20">
+              <span class="text-kharon-purple font-bold text-sm">{item.code}</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mb-2">{item.title}</h3>
+            <p class="text-kharon-light/60 text-sm leading-relaxed">{item.text}</p>
           </div>
-          <h3 class="text-lg font-semibold text-white mb-2">SAQCC Fire & Gas</h3>
-          <p class="text-kharon-light/70 text-sm">All technicians are registered and certified for authorized fire and gas suppression work.</p>
-        </div>
-        
-        <div class="rounded-lg border border-kharon-purple/30 bg-kharon-black p-6 flex flex-col items-center text-center">
-          <div class="h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-kharon-purple/10">
-            <span class="text-kharon-purple font-bold text-xl">SABS</span>
-          </div>
-          <h3 class="text-lg font-semibold text-white mb-2">SANS Compliant</h3>
-          <p class="text-kharon-light/70 text-sm">Installations strictly adhere to SANS 10139, 14520, and 369 national standards.</p>
-        </div>
-
-        <div class="rounded-lg border border-kharon-purple/30 bg-kharon-black p-6 flex flex-col items-center text-center">
-          <div class="h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-kharon-purple/10">
-            <span class="text-kharon-purple font-bold text-xl">BEE</span>
-          </div>
-          <h3 class="text-lg font-semibold text-white mb-2">B-BBEE Certified</h3>
-          <p class="text-kharon-light/70 text-sm">Committed to South African economic empowerment and inclusive business growth.</p>
-        </div>
+        ))}
       </div>
     </div>
   </section>
+
 </BaseLayout>

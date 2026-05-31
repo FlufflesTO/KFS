@@ -162,6 +162,7 @@ const allowedPortalJsPatterns = [
   /^sites\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^systems\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^users\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^multi-client\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^dom\.[A-Za-z0-9_-]+\.js$/,
   /^portalApi\.[A-Za-z0-9_-]+\.js$/,
   /^_id_\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,

@@ -13,11 +13,10 @@ import CsrfInput from "../../components/ui/CsrfInput.astro";
   <section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
     <div class="w-full max-w-sm px-4">
       <div class="text-center mb-6">
-        <div class="flex justify-center mb-3">
-          <div class="p-1 rounded-lg bg-gradient-to-r from-kharon-purple to-kharon-blue">
-            <div class="bg-kharon-black rounded-md px-4 py-3 login-letterhead-box">
-              <img src="/brand/letterhead/kharon-letterhead.svg" alt="Kharon Logo" class="login-letterhead">
-            </div>
+        <div class="flex justify-center mb-4">
+          <div class="relative">
+            <div class="absolute inset-0 bg-kharon-purple/30 blur-2xl rounded-full"></div>
+            <img src="/brand/kharon-mark.svg" alt="Kharon Logo" class="login-mark relative z-10">
           </div>
         </div>
         <h1 class="text-xl font-bold text-white">Operations Portal</h1>
@@ -149,9 +148,7 @@ import CsrfInput from "../../components/ui/CsrfInput.astro";
   </script>
 
   <style>
-    /* Explicitly size the letterhead to bypass Tailwind's max-width:100% img reset.
-       The img reset collapses the image when the parent has only padding for width. */
-    .login-letterhead-box { width: 212px; }
-    .login-letterhead { display: block; height: 40px; width: 180px; max-width: none; }
+    /* Bypass Tailwind's max-width:100% img reset — explicit dimensions required */
+    .login-mark { display: block; height: 72px; width: 72px; max-width: none; }
   </style>
 </BaseLayout>

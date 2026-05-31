@@ -4,6 +4,7 @@ import KharonGuardianHero from "../components/brand/KharonGuardianHero.astro";
 import RouteMatrix from "../components/sections/RouteMatrix.astro";
 import AuthorityEvidence from "../components/sections/AuthorityEvidence.astro";
 import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
+import ServiceIcons from "../components/sections/ServiceIcons.astro";
 import Testimonials from "../components/trust/Testimonials.astro";
 import { pageMeta } from "../data/site.js";
 
@@ -40,6 +41,7 @@ const localBusinessJsonLd = JSON.stringify({
 <BaseLayout title={pageMeta.home.title} description={pageMeta.home.description}>
   <script is:inline type="application/ld+json" set:html={localBusinessJsonLd}></script>
   <KharonGuardianHero />
+  <ServiceIcons />
   <ComplianceStrip />
   <Testimonials />
   <RouteMatrix />
