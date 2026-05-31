@@ -7,6 +7,7 @@ import FinanceStatsPanel from "../../../components/portal/finance/FinanceStatsPa
 import FinanceExceptionPanel from "../../../components/portal/finance/FinanceExceptionPanel.astro";
 import FinanceSagePanel from "../../../components/portal/finance/FinanceSagePanel.astro";
 import FinanceLedgerTable from "../../../components/portal/finance/FinanceLedgerTable.astro";
+import DashboardFeatureCard from "../../../components/portal/DashboardFeatureCard.astro";
 
 export const prerender = false;
 
@@ -125,23 +126,75 @@ try {
 ---
 
 <PortalLayout title="Finance Ledger | Kharon Portal" active="finance" user={user}>
-  <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
+
+  {/* ── Page Header ── */}
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 rounded-xl border border-kharon-purple/10 mb-6 relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(75,46,131,0.09),transparent)]"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+          <svg class="h-[1.1rem] w-[1.1rem] text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Finance Console</p>
+      </div>
+      <h1 class="text-2xl font-black sm:text-3xl tracking-tight">Sage Control Register</h1>
+      <p class="mt-2 max-w-3xl text-sm text-white/60">Manage invoices, payments, and Sage integration with VAT compliance tracking.</p>
+    </div>
+  </section>
+
+  {/* ── Feature Navigation Hub ── */}
+  <section class="px-1 pb-2 pt-0 sm:px-4 sm:pb-4">
     <div class="mx-auto max-w-7xl">
-      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Finance Control Panel</p>
-      <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Sage Control Register</h1>
-      <p class="mt-3 max-w-3xl text-sm text-white/60">Manage invoices, payments, and Sage integration with VAT compliance tracking.</p>
+      <div class="mb-6">
+        <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3 px-1">Quick Access</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <DashboardFeatureCard
+            title="Sage Register"
+            description="Finance ledger, invoice management and VAT records."
+            href="/portal/finance/dashboard"
+            active={true}
+            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`}
+            badge={summary.pending_tasks > 0 ? summary.pending_tasks : undefined}
+            badgeVariant="warning"
+          />
+          <DashboardFeatureCard
+            title="Pending Tasks"
+            description="Outstanding invoices and finance tasks requiring action."
+            href="/portal/finance/dashboard#pending"
+            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />`}
+            badge={summary.pending_tasks > 0 ? summary.pending_tasks : undefined}
+            badgeVariant={summary.overdue_invoices > 0 ? "danger" : "warning"}
+          />
+          <DashboardFeatureCard
+            title="Sage Integration"
+            description={sageConnection.connected ? (sageConnection.expired ? "Sage token expired — reconnect required." : "Sage connection active.") : "Sage not connected — configure integration."}
+            href="/portal/finance/dashboard#sage"
+            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />`}
+            badge={sageConnection.expired ? "Expired" : (!sageConnection.connected ? "Offline" : undefined)}
+            badgeVariant={sageConnection.expired ? "danger" : (!sageConnection.connected ? "warning" : "success")}
+          />
+          <DashboardFeatureCard
+            title="Password Reset"
+            description="Update your portal login password."
+            href="/portal/account/password"
+            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`}
+          />
+        </div>
+      </div>
     </div>
   </section>
 
   <section class="px-4 py-6 sm:px-6 sm:py-8">
-    <div class="mx-auto max-w-7xl space-y-8"> <!-- Increased space-y from 6 to 8 for better mobile spacing -->
+    <div class="mx-auto max-w-7xl space-y-8">
       {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
 
       <FinanceCreateForm {sites} {linkableJobs} />
 
       <FinanceStatsPanel {summary} />
 
-      <div class="grid gap-8 lg:grid-cols-2"> <!-- Increased gap from 6 to 8 for better mobile spacing -->
+      <div class="grid gap-8 lg:grid-cols-2">
         <FinanceExceptionPanel {pendingTasks} {summary} />
         <FinanceSagePanel {missingSageRefs} {stats} {sageConnection} />
       </div>
