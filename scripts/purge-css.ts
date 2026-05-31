@@ -132,35 +132,85 @@ for (let i = 0; i < output.length; i++) {
 }
 if (currentRule) rules.push(currentRule);
 
-let prunedOutput = '';
+function pruneBlock(block: string): string {
+  // Extract rules from block
+  const innerRules: string[] = [];
+  let innerDepth = 0;
+  let innerCurrentRule = '';
+  
+  // Find the content inside the block's first { and last }
+  const startIdx = block.indexOf('{');
+  const endIdx = block.lastIndexOf('}');
+  if (startIdx === -1 || endIdx === -1) return block;
+  
+  const header = block.substring(0, startIdx + 1);
+  const footer = block.substring(endIdx);
+  const content = block.substring(startIdx + 1, endIdx);
+  
+  for (let i = 0; i < content.length; i++) {
+    const char = content[i];
+    innerCurrentRule += char;
+    if (char === '{') innerDepth++;
+    if (char === '}') {
+      innerDepth--;
+      if (innerDepth === 0) {
+        innerRules.push(innerCurrentRule);
+        innerCurrentRule = '';
+      }
+    }
+  }
+  if (innerCurrentRule) innerRules.push(innerCurrentRule);
+  
+  let result = header;
+  for (const rule of innerRules) {
+    result += pruneRule(rule);
+  }
+  result += footer;
+  return result;
+}
 
-for (let i = 0; i < rules.length; i++) {
-  const rule = rules[i].trim();
-  if (!rule) continue;
+function pruneRule(rule: string): string {
+  const trimmed = rule.trim();
+  if (!trimmed) return '';
   
-  // Skip pruning for media queries, keyframes, or complex nested structures
-  if (rule.startsWith('@') || rule.includes('{', rule.indexOf('{') + 1)) {
-    prunedOutput += rule;
-    continue;
+  // Handle nested blocks recursively (e.g. @media, @layer)
+  if (trimmed.startsWith('@media') || trimmed.startsWith('@layer')) {
+    return pruneBlock(trimmed);
   }
   
-  const parts = rule.split('{');
-  if (parts.length !== 2) {
-    prunedOutput += rule;
-    continue;
-  }
+  // Keep other @ rules (keyframes, etc.)
+  if (trimmed.startsWith('@')) return trimmed;
+  
+  // Keep complex nested structures (more than 2 levels)
+  if (trimmed.split('{').length > 2) return trimmed;
+
+  const parts = trimmed.split('{');
+  if (parts.length !== 2) return trimmed;
   
   const selector = parts[0].trim();
-  const body = parts[1].trim();
   
-  if (selector.startsWith('.') && !selector.includes(':') && !selector.includes('[') && !selector.includes(' ')) {
-    const className = selector.substring(1);
-    if (usedClasses.has(className)) {
-      prunedOutput += rule;
+  // Only prune simple class selectors (including those with escaped characters like :)
+  if (selector.startsWith('.') && !selector.includes('[') && !selector.includes(' ')) {
+    // Normalize selector: remove . at start, remove \ escape characters, remove pseudo-classes like :hover
+    let className = selector.substring(1).replace(/\\/g, '');
+    if (className.includes(':')) {
+      // If it's a pseudo-class like .class:hover, extract the class name
+      if (className.includes(':hover') || className.includes(':focus') || className.includes(':active') || className.includes(':after') || className.includes(':before')) {
+        className = className.split(':')[0];
+      }
     }
-  } else {
-    prunedOutput += rule;
+    
+    if (usedClasses.has(className)) {
+      return trimmed;
+    }
+    return '';
   }
+  return trimmed;
+}
+
+let prunedOutput = '';
+for (const rule of rules) {
+  prunedOutput += pruneRule(rule);
 }
 
 output = prunedOutput;
