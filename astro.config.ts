@@ -1,6 +1,7 @@
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
+import sitemap from "@astrojs/sitemap";
 
 const siteUrl = process.env.PUBLIC_SITE_URL || "https://www.tequit.co.za";
 
@@ -14,6 +15,7 @@ export default defineConfig({
     configPath: "wrangler.jsonc",
     persistState: true
   }),
+  integrations: [sitemap()],
   prefetch: true,
   vite: {
     plugins: [tailwindcss()],
