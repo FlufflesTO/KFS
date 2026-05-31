@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-30
 
+### Project Sync & Git Maintenance - 2026-05-31
+
+#### [Changed]
+- Updated `.gitignore` to exclude the `.codex/` directory containing local tool/environment configuration files from tracking.
+
 ### Portal Credentials & Site Audit Update - 2026-05-31
 
 #### [Changed]
