@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-30
 
+### Portal Credentials & Site Audit Update - 2026-05-31
+
+#### [Changed]
+- Updated the default/seeded user password hashes in [seed-users.sql](file:///C:/Users/User/Desktop/Astro/kharon-website/seed-users.sql) to use the new standard password `"Kharon123456"`.
+
+#### [Fixed]
+- Resolved a failing Site Audit check by removing the forbidden hover lift animation class (`hover:-translate-y-1`) from the anchor element in [ServiceIcons.astro](file:///C:/Users/User/Desktop/Astro/kharon-website/src/components/sections/ServiceIcons.astro).
+
 ### SANS Regulatory Alignment & Content Review - 2026-05-31
 
 #### [Added]
