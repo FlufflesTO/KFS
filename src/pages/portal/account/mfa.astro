@@ -72,16 +72,22 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               </button>
 
               <div id="mfa-setup" class="hidden grid gap-5 rounded border border-kharon-purple/10 bg-kharon-black/30 p-5">
-                <p class="text-sm font-semibold text-white">Add this account manually in your authenticator app.</p>
-                
-                <div class="grid gap-1.5">
-                  <label for="mfa-secret" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Setup Key</label>
-                  <input id="mfa-secret" class="kharon-field font-mono text-sm" readonly />
+                <div class="flex flex-col items-center gap-4 text-center">
+                  <p class="text-sm font-semibold text-white">Scan this QR code with your authenticator app.</p>
+                  <div class="rounded-lg bg-white p-2">
+                    <img id="mfa-qr" class="h-48 w-48" alt="MFA QR Code" />
+                  </div>
+                  <a id="mfa-link" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan hover:underline">
+                    Open in Authenticator App
+                  </a>
                 </div>
-                
-                <div class="grid gap-1.5">
-                  <label for="mfa-uri" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Authenticator URI</label>
-                  <textarea id="mfa-uri" class="kharon-field min-h-24 font-mono text-xs" readonly></textarea>
+
+                <div class="grid gap-5 border-t border-kharon-purple/10 pt-5">
+                  <p class="text-xs font-medium text-kharon-light/50">Manual setup alternative:</p>
+                  <div class="grid gap-1.5">
+                    <label for="mfa-secret" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Setup Key</label>
+                    <input id="mfa-secret" class="kharon-field font-mono text-sm" readonly />
+                  </div>
                 </div>
                 
                 <form id="enable-mfa-form" class="grid gap-4 border-t border-kharon-purple/10 pt-4">
@@ -123,8 +129,9 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
   <script>
     const startButton = document.querySelector<HTMLButtonElement>("#start-mfa");
     const setupPanel = document.querySelector<HTMLElement>("#mfa-setup");
+    const qrImage = document.querySelector<HTMLImageElement>("#mfa-qr");
+    const qrLink = document.querySelector<HTMLAnchorElement>("#mfa-link");
     const secretInput = document.querySelector<HTMLInputElement>("#mfa-secret");
-    const uriInput = document.querySelector<HTMLInputElement>("#mfa-uri");
     const enableForm = document.querySelector<HTMLFormElement>("#enable-mfa-form");
     const disableForm = document.querySelector<HTMLFormElement>("#disable-mfa-form");
     const result = document.querySelector<HTMLElement>("#mfa-result");
@@ -144,15 +151,16 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "setup" })
       });
-      const body = await response.json() as { ok?: boolean; message?: string; secret?: string; provisioningUri?: string } | null;
+      const body = await response.json() as { ok?: boolean; message?: string; secret?: string; provisioningUri?: string; qrCode?: string } | null;
       if (!response.ok || !body?.ok) {
         showResult(body?.message || "MFA setup could not be started.");
         return;
       }
       if (secretInput) secretInput.value = body.secret || "";
-      if (uriInput) uriInput.value = body.provisioningUri || "";
+      if (qrImage) qrImage.src = body.qrCode || "";
+      if (qrLink) qrLink.href = body.provisioningUri || "";
       setupPanel?.classList.remove("hidden");
-      showResult("Setup key generated. Verify the first authenticator code to enable MFA.", true);
+      showResult("Setup details generated. Scan the QR code or use the manual key.", true);
     });
 
     enableForm?.addEventListener("submit", async (event) => {
