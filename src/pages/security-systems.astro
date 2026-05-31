@@ -13,19 +13,23 @@ import { pageMeta } from "../data/site.js";
 const securityCapabilities = [
   {
     title: "Access control systems",
-    text: "Integrated access control solutions with configurable permissions, audit trails and emergency override capabilities."
+    text: "Integrated access control solutions with configurable permissions, audit trails and emergency override capabilities.",
+    icon: "/brand/icons/service-access-control.svg"
   },
   {
     title: "Perimeter security",
-    text: "Comprehensive perimeter protection with detection, deterrence and verification systems for critical site boundaries."
+    text: "Comprehensive perimeter protection with detection, deterrence and verification systems for critical site boundaries.",
+    icon: "/brand/icons/sector-warehouse.svg"
   },
   {
     title: "CCTV surveillance",
-    text: "High-definition surveillance systems with remote monitoring, event recording and intelligent analytics."
+    text: "High-definition surveillance systems with remote monitoring, event recording and intelligent analytics.",
+    icon: "/brand/icons/service-cctv.svg"
   },
   {
     title: "Integration with fire systems",
-    text: "Coordinated response between security and fire protection systems for comprehensive site protection."
+    text: "Coordinated response between security and fire protection systems for comprehensive site protection.",
+    icon: "/brand/icons/service-engineering.svg"
   }
 ];
 ---
@@ -55,8 +59,12 @@ const securityCapabilities = [
         {securityCapabilities.map((capability) => (
           <div class="rounded-xl border border-kharon-purple/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
             <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
-              <div class="w-12 h-12 rounded-lg bg-kharon-amber/10 flex items-center justify-center mb-5">
-                <div class="w-6 h-6 bg-kharon-purple rounded"></div>
+              <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
+                {capability.icon ? (
+                  <img src={capability.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
+                ) : (
+                  <div class="w-6 h-6 bg-kharon-purple rounded"></div>
+                )}
               </div>
               <h3 class="text-xl font-bold text-white mb-3">{capability.title}</h3>
               <p class="text-kharon-light/70">{capability.text}</p>

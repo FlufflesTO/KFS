@@ -9,6 +9,29 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import InfrastructureTechnicalBlocks from "../components/sections/InfrastructureTechnicalBlocks.astro";
 import { pageMeta } from "../data/site.js";
+
+const infrastructureCategories = [
+  {
+    title: "Data Centres",
+    text: "Clean-agent suppression systems designed for server rooms and technical spaces where water-based systems would cause catastrophic damage.",
+    icon: "/brand/icons/sector-server-rack.svg"
+  },
+  {
+    title: "Control Rooms",
+    text: "Fire detection and suppression architecture for spaces coordinating wider site response with continuity-sensitive operations.",
+    icon: "/brand/icons/sector-control-room.svg"
+  },
+  {
+    title: "Electrical Rooms",
+    text: "Rapid detection and asset protection with suppression methods that limit collateral damage to critical electrical infrastructure.",
+    icon: "/brand/icons/sector-switchgear.svg"
+  },
+  {
+    title: "High-Consequence Sites",
+    text: "Risk-segmented zones with rugged detection choices and maintenance access planning for critical operational environments.",
+    icon: "/brand/icons/sector-power-grid.svg"
+  }
+];
 ---
 
 <BaseLayout title={pageMeta.criticalInfrastructure.title} description={pageMeta.criticalInfrastructure.description}>
@@ -38,33 +61,21 @@ import { pageMeta } from "../data/site.js";
         </p>
         
         <div class="mt-8 grid gap-6 md:grid-cols-2">
-          <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
-            <h3 class="text-lg font-semibold text-white mb-3">Data Centres</h3>
-            <p class="text-kharon-light/70">
-              Clean-agent suppression systems designed for server rooms and technical spaces where water-based systems would cause catastrophic damage.
-            </p>
-          </div>
-          
-          <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
-            <h3 class="text-lg font-semibold text-white mb-3">Control Rooms</h3>
-            <p class="text-kharon-light/70">
-              Fire detection and suppression architecture for spaces coordinating wider site response with continuity-sensitive operations.
-            </p>
-          </div>
-          
-          <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
-            <h3 class="text-lg font-semibold text-white mb-3">Electrical Rooms</h3>
-            <p class="text-kharon-light/70">
-              Rapid detection and asset protection with suppression methods that limit collateral damage to critical electrical infrastructure.
-            </p>
-          </div>
-          
-          <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
-            <h3 class="text-lg font-semibold text-white mb-3">High-Consequence Sites</h3>
-            <p class="text-kharon-light/70">
-              Risk-segmented zones with rugged detection choices and maintenance access planning for critical operational environments.
-            </p>
-          </div>
+          {infrastructureCategories.map((item) => (
+            <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface flex gap-4 items-start">
+              {item.icon && (
+                <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center overflow-hidden flex-none">
+                  <img src={item.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
+                </div>
+              )}
+              <div>
+                <h3 class="text-lg font-semibold text-white mb-2">{item.title}</h3>
+                <p class="text-kharon-light/70 text-sm leading-relaxed">
+                  {item.text}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

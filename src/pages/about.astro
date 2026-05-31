@@ -6,15 +6,18 @@ import { pageMeta } from "../data/site.js";
 const capabilityProof = [
   {
     title: "SAQCC competency signals",
-    text: "Registered with SAQCC Fire and SAQCC Gas, enabling authorized design, installation, commissioning and maintenance across fire alarm and suppression workstreams."
+    text: "Registered with SAQCC Fire and SAQCC Gas, enabling authorized design, installation, commissioning and maintenance across fire alarm and suppression workstreams.",
+    icon: "/brand/icons/severity-planned.svg"
   },
   {
     title: "Registered fire-system work",
-    text: "Certified to design, install, commission and maintain fire alarm and evacuation systems, suppression systems, and specialist detection platforms."
+    text: "Certified to design, install, commission and maintain fire alarm and evacuation systems, suppression systems, and specialist detection platforms.",
+    icon: "/brand/icons/service-fire-detection.svg"
   },
   {
     title: "Standards-led delivery",
-    text: "All works carried out to SANS 10139, SANS 10400, SANS 14520, and SANS 322 as applicable. Full documentation for regulatory handover."
+    text: "All works carried out to SANS 10139, SANS 10400, SANS 14520, and SANS 322 as applicable. Full documentation for regulatory handover.",
+    icon: "/brand/icons/service-engineering.svg"
   }
 ];
 
@@ -143,9 +146,16 @@ const serviceCategories = [
       />
       <div class="mt-12 grid gap-6 md:grid-cols-3">
         {capabilityProof.map((item) => (
-          <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
-            <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-purple mb-3">{item.title}</h3>
-            <p class="text-kharon-light/70 text-sm leading-relaxed">{item.text}</p>
+          <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface flex flex-col justify-between">
+            <div>
+              {item.icon && (
+                <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-4 overflow-hidden">
+                  <img src={item.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
+                </div>
+              )}
+              <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-purple mb-3">{item.title}</h3>
+              <p class="text-kharon-light/70 text-sm leading-relaxed">{item.text}</p>
+            </div>
           </div>
         ))}
       </div>

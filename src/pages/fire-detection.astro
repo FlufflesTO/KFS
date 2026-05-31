@@ -13,27 +13,33 @@ import { pageMeta } from "../data/site.js";
 const detectionCapabilities = [
   {
     title: "Addressable detection",
-    text: "Addressable detection systems with individual device addressing for precise fault location and maintainable layouts across commercial and industrial sites."
+    text: "Addressable detection systems with individual device addressing for precise fault location and maintainable layouts across commercial and industrial sites.",
+    icon: "/brand/icons/service-fire-detection.svg"
   },
   {
     title: "Specialist detection",
-    text: "Aspiration detection, flame detection, and linear detection for environments requiring enhanced sensitivity or coverage beyond conventional point detection."
+    text: "Aspiration detection, flame detection, and linear detection for environments requiring enhanced sensitivity or coverage beyond conventional point detection.",
+    icon: "/brand/icons/service-fire-detection.svg"
   },
   {
     title: "Cause-and-effect logic",
-    text: "Programmed response logic defining specific detection events leading to specific response actions — aligned to occupancy, operations and suppression requirements."
+    text: "Programmed response logic defining specific detection events leading to specific response actions — aligned to occupancy, operations and suppression requirements.",
+    icon: "/brand/icons/service-engineering.svg"
   },
   {
     title: "Control panel integration",
-    text: "Centralized monitoring and control with event logging, fault diagnostics and remote access capability to SANS 10139 standards."
+    text: "Centralized monitoring and control with event logging, fault diagnostics and remote access capability to SANS 10139 standards.",
+    icon: "/brand/icons/service-fire-detection.svg"
   },
   {
     title: "Zone management",
-    text: "Configurable detection zones aligned to operational areas, evacuation paths and response requirements with documented zone schedules."
+    text: "Configurable detection zones aligned to operational areas, evacuation paths and response requirements with documented zone schedules.",
+    icon: "/brand/icons/sector-control-room.svg"
   },
   {
     title: "Evacuation & PA systems",
-    text: "Evacuation system design, installation and testing — including PA and system-based evacuation in compliance with SANS 10400 and SANS 322."
+    text: "Evacuation system design, installation and testing — including PA and system-based evacuation in compliance with SANS 10400 and SANS 322.",
+    icon: "/brand/icons/severity-urgent.svg"
   }
 ];
 ---
@@ -63,8 +69,12 @@ const detectionCapabilities = [
         {detectionCapabilities.map((capability) => (
           <div class="rounded-xl border border-kharon-purple/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
             <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
-              <div class="w-12 h-12 rounded-lg bg-kharon-blue/10 flex items-center justify-center mb-5">
-                <div class="w-6 h-6 bg-kharon-purple rounded"></div>
+              <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
+                {capability.icon ? (
+                  <img src={capability.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
+                ) : (
+                  <div class="w-6 h-6 bg-kharon-purple rounded"></div>
+                )}
               </div>
               <h3 class="text-xl font-bold text-white mb-3">{capability.title}</h3>
               <p class="text-kharon-light/70">{capability.text}</p>

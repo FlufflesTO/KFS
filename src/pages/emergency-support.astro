@@ -16,25 +16,29 @@ const emergencyRoutes = [
     text: "Use this route for live fire-panel faults, suppression impairments, isolated systems or a protection condition affecting operations.",
     action: "Call / Escalate Fault",
     href: "/contact?intent=emergency-support",
-    tel: "tel:+27615458830"
+    tel: "tel:+27615458830",
+    icon: "/brand/icons/severity-critical.svg"
   },
   {
     title: "Existing client records",
     text: "Open the portal for service history, system records, maintenance requests and linked jobcard documentation.",
     action: "Access Records",
-    href: site.portalLoginPath
+    href: site.portalLoginPath,
+    icon: "/brand/icons/service-engineering.svg"
   },
   {
     title: "Urgent technical request",
     text: "Route urgent assessment requests where a technician review, system diagnosis or maintenance intervention is required.",
     action: "Request Urgent Support",
-    href: "/contact?intent=urgent-technical-request"
+    href: "/contact?intent=urgent-technical-request",
+    icon: "/brand/icons/severity-urgent.svg"
   },
   {
     title: "Compliance intervention",
     text: "Use this path for overdue inspections, missing documentation, insurer queries or audit-sensitive system concerns.",
     action: "Start Compliance Route",
-    href: "/contact?intent=compliance-intervention"
+    href: "/contact?intent=compliance-intervention",
+    icon: "/brand/icons/severity-planned.svg"
   }
 ];
 ---
@@ -65,6 +69,13 @@ const emergencyRoutes = [
           <div class="rounded-xl border border-kharon-purple/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
             <div class="bg-kharon-surface-elevated rounded-xl p-6 flex flex-col justify-between h-full">
               <div>
+                <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
+                  {route.icon ? (
+                    <img src={route.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
+                  ) : (
+                    <div class="w-6 h-6 bg-kharon-purple rounded"></div>
+                  )}
+                </div>
                 <h3 class="text-xl font-bold text-white mb-4">{route.title}</h3>
                 <p class="text-kharon-light/70 mb-6">
                   {route.text}
