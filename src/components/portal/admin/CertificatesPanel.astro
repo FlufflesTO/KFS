@@ -11,20 +11,20 @@ const { certificates, systems, today } = Astro.props;
 ---
 
 <div id="ops-panel-certificates" class="ops-panel mx-auto grid max-w-7xl gap-6 lg:gap-10">
-  <article class="border border-kharon-border bg-white p-4 sm:p-5">
-    <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-white">
+  <article class="border border-kharon-purple/20 bg-kharon-charcoal p-4 sm:p-5">
+    <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-kharon-charcoal">
       <h2 class="text-xl font-bold">
-        Certificates <span class="ml-2 text-sm font-normal text-kharon-grey">({certificates.length})</span>
+        Certificates <span class="ml-2 text-sm font-normal text-white/70">({certificates.length})</span>
       </h2>
       <div class="flex flex-wrap gap-3">
         <input
           id="certificates-search"
           type="search"
-          class="rounded-md border border-kharon-border px-3 py-2 text-sm"
+          class="rounded-md border border-kharon-purple/20 px-3 py-2 text-sm"
           placeholder="Search site, area, type…"
           size="24"
         />
-        <select id="certificates-status-filter" class="rounded-md border border-kharon-border px-3 py-2 text-sm">
+        <select id="certificates-status-filter" class="rounded-md border border-kharon-purple/20 px-3 py-2 text-sm">
           <option value="">All statuses</option>
           <option value="Valid">Valid</option>
           <option value="Expired">Expired</option>
@@ -37,17 +37,17 @@ const { certificates, systems, today } = Astro.props;
     <div id="certificates-list" class="grid gap-4">
       {certificates.map((item) => (
         <article
-          class="grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-6"
+          class="grid gap-3 border border-kharon-purple/20 bg-kharon-charcoal p-4 lg:grid-cols-6"
           data-search={`${item.owner_company_name} ${item.coverage_area || ""} ${item.certificate_type || ""}`}
           data-status={item.status}
         >
           <div>
             <p class="font-semibold">{item.owner_company_name}</p>
-            <p class="text-sm text-kharon-grey">{item.system_type} / {item.coverage_area}</p>
+            <p class="text-sm text-white/70">{item.system_type} / {item.coverage_area}</p>
           </div>
           <div>
             <p class="text-sm font-semibold">{item.certificate_type}</p>
-            <p class="text-xs text-kharon-grey">Issued {item.issued_date}</p>
+            <p class="text-xs text-white/70">Issued {item.issued_date}</p>
           </div>
           <div>
             {item.expiry_date ? (
@@ -56,7 +56,7 @@ const { certificates, systems, today } = Astro.props;
                 {item.expiry_date < today && <p class="text-xs font-bold text-kharon-red">Expired</p>}
               </>
             ) : (
-              <p class="text-sm text-kharon-grey">No expiry date</p>
+              <p class="text-sm text-white/70">No expiry date</p>
             )}
           </div>
           <div class="flex items-center gap-2">
@@ -64,7 +64,7 @@ const { certificates, systems, today } = Astro.props;
               item.status === "Valid"   ? "bg-emerald-100 text-emerald-800" :
               item.status === "Blocked" ? "bg-amber-100 text-amber-800" :
               item.status === "Revoked" ? "bg-red-100 text-red-800" :
-                                          "bg-kharon-grey/20 text-kharon-grey"
+                                          "bg-kharon-grey/20 text-white/70"
             }`}>{item.status}</span>
             {item.blocking_severity && (
               <span class="rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">
@@ -77,43 +77,43 @@ const { certificates, systems, today } = Astro.props;
               <button type="button" class="revoke-cert rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-900" data-id={item.id}>Revoke</button>
             )}
             {item.status === "Valid" && (
-              <button type="button" class="expire-cert rounded-md border border-kharon-grey px-3 py-2 text-xs font-semibold text-kharon-grey" data-id={item.id}>Expire</button>
+              <button type="button" class="expire-cert rounded-md border border-kharon-grey px-3 py-2 text-xs font-semibold text-white/70" data-id={item.id}>Expire</button>
             )}
           </div>
-          <p class="text-xs text-kharon-grey lg:col-span-6">{item.id}</p>
+          <p class="text-xs text-white/70 lg:col-span-6">{item.id}</p>
         </article>
       ))}
     </div>
-    <p id="certificates-no-results" class="hidden py-4 text-sm text-kharon-grey">No certificates match your filter.</p>
+    <p id="certificates-no-results" class="hidden py-4 text-sm text-white/70">No certificates match your filter.</p>
   </article>
 
-  <article class="border border-kharon-border bg-white p-4 sm:p-5">
+  <article class="border border-kharon-purple/20 bg-kharon-charcoal p-4 sm:p-5">
     <h2 class="text-xl font-bold">Create certificate</h2>
     <form class="admin-form mt-5 grid gap-3" data-endpoint="/portal/api/admin/certificates">
       <input type="hidden" name="action" value="create" />
-      <select class="rounded-md border border-kharon-border px-4 py-3" name="systemId" required>
+      <select class="rounded-md border border-kharon-purple/20 px-4 py-3" name="systemId" required>
         <option value="">Select system</option>
         {systems.map((s) => (
           <option value={s.id}>{s.owner_company_name} / {s.coverage_area}</option>
         ))}
       </select>
-      <input class="rounded-md border border-kharon-border px-4 py-3" name="jobId" placeholder="Job ID (optional)" />
+      <input class="rounded-md border border-kharon-purple/20 px-4 py-3" name="jobId" placeholder="Job ID (optional)" />
       <div class="grid gap-3 sm:grid-cols-3">
-        <select class="rounded-md border border-kharon-border px-4 py-3" name="certificateType" required>
+        <select class="rounded-md border border-kharon-purple/20 px-4 py-3" name="certificateType" required>
           <option value="Fire Detection">Fire Detection</option>
           <option value="Gas Suppression">Gas Suppression</option>
           <option value="Emergency Lighting">Emergency Lighting</option>
           <option value="Evacuation">Evacuation</option>
           <option value="Combined">Combined</option>
         </select>
-        <input class="rounded-md border border-kharon-border px-4 py-3" name="issuedDate" type="date" value={today} required />
-        <input class="rounded-md border border-kharon-border px-4 py-3" name="expiryDate" type="date" placeholder="Expiry date (optional)" />
+        <input class="rounded-md border border-kharon-purple/20 px-4 py-3" name="issuedDate" type="date" value={today} required />
+        <input class="rounded-md border border-kharon-purple/20 px-4 py-3" name="expiryDate" type="date" placeholder="Expiry date (optional)" />
       </div>
-      <select class="rounded-md border border-kharon-border px-4 py-3" name="status">
+      <select class="rounded-md border border-kharon-purple/20 px-4 py-3" name="status">
         <option value="Valid">Valid</option>
         <option value="Blocked">Blocked</option>
       </select>
-      <p class="text-xs text-kharon-grey">
+      <p class="text-xs text-white/70">
         Creating a Valid certificate will be blocked if there are open certificate-blocking defects on the selected system.
       </p>
       <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Create certificate</button>

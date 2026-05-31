@@ -35,7 +35,7 @@ const { sites } = Astro.props;
       aria-label={`${site.name}: ${site.status} compliance status. ${site.reason}`}
     >
       <div 
-        class={`w-2 h-2 rounded-full mb-2 shadow-lg ${
+        class={`w-2.5 h-2.5 rounded-full mb-2 shadow-lg ${
           site.status === 'red' 
             ? 'bg-kharon-red shadow-kharon-red/20' 
             : site.status === 'amber' 

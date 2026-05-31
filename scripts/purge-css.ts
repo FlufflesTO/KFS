@@ -53,308 +53,140 @@ const allFiles = walk(srcDir).map(p => p.replace(/\\/g, '/'));
 const components = allFiles.filter(f => f.includes('/src/components/') && f.endsWith('.astro'));
 
 const componentUsage: Record<string, string[]> = {};
-components.forEach(c => {
-  const name = path.basename(c, '.astro');
-  if (!componentUsage[name]) {
-    componentUsage[name] = [];
-  }
-  componentUsage[name].push(c);
-});
 
-const usedComponentFiles = new Set<string>();
-for (const file of allFiles) {
-  const content = fs.readFileSync(file, 'utf8');
-  for (const name of Object.keys(componentUsage)) {
-    const filesWithName = componentUsage[name];
-    if (filesWithName.includes(file)) continue;
-
-    const importRegex = new RegExp(`import\\s+${name}\\s+from`, 'i');
-    const tagRegex = new RegExp(`<${name}\\b`, 'i');
-    
-    if (importRegex.test(content) || tagRegex.test(content)) {
-      filesWithName.forEach(f => usedComponentFiles.add(f));
-    }
-  }
-}
-
-const srcFiles = allFiles.filter(file => {
-  if (file.includes('/src/components/') && file.endsWith('.astro')) {
-    return usedComponentFiles.has(file);
-  }
-  return file.endsWith('.astro');
-});
-const usedWords = new Set<string>();
-
-for (const file of srcFiles) {
-  const content = fs.readFileSync(file, 'utf8');
-  // Match class="..." or class:list="..."
-  const classMatches = content.match(/class(?::list)?\s*=\s*(?:["']([\s\S]*?)["']|\{[\s\S]*?\})/g) || [];
-
-  for (const match of classMatches) {
-    if (match.startsWith('class="') || match.startsWith("class='") || match.startsWith('class:list="') || match.startsWith("class:list='")) {
-      // Static class string
-      const words = match.match(/[a-zA-Z0-9_\-\/\[\]\:\.\%]+/g) || [];
-      for (const w of words) {
-        if (w !== 'class' && w !== 'list') {
-          usedWords.add(w);
-        }
-      }
-    } else {
-      // Dynamic class expression
-      const stringLiteralRegex = /(?:"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|`([^`\\]*(?:\\.[^`\\]*)*)`)/g;
-      let strMatch: RegExpExecArray | null;
-      while ((strMatch = stringLiteralRegex.exec(match)) !== null) {
-        const val = strMatch[1] || strMatch[2] || strMatch[3] || '';
-        const words = val.match(/[a-zA-Z0-9_\-\/\[\]\:\.\%]+/g) || [];
-        for (const w of words) {
-          usedWords.add(w);
-        }
-      }
-    }
-  }
-}
-
-console.log('Total unique classes in Astro templates (precise):', usedWords.size);
-
-function isSelectorUsed(sel: string): boolean {
-  if (!sel.includes('.')) {
-    return true;
-  }
-
-  const classRegex = /\.((?:[a-zA-Z0-9_\-\/\[\]]|\\:|\\\[|\\\]|\\\/|\\%|\\\.)+)/g;
-  let match: RegExpExecArray | null;
-  let matchesFound = 0;
-  while ((match = classRegex.exec(sel)) !== null) {
-    matchesFound++;
-    const className = match[1].replace(/\\/g, '');
-    if (!usedWords.has(className)) {
-      return false;
-    }
-  }
-  return matchesFound > 0;
-}
-
-function purgeCssBlock(cssContent: string): string {
-  let i = 0;
-  let output = '';
-
-  while (i < cssContent.length) {
-    const char = cssContent[i];
-
-    if (/\s/.test(char)) {
-      i++;
-      continue;
-    }
-
-    if (char === '@') {
-      let directive = '';
-      while (i < cssContent.length && cssContent[i] !== '{' && cssContent[i] !== ';') {
-        directive += cssContent[i];
-        i++;
-      }
-      if (cssContent[i] === ';') {
-        directive += ';';
-        i++;
-        const trimmedDir = directive.trim();
-        if (!trimmedDir.startsWith('@property')) {
-          output += directive;
-        }
-      } else if (cssContent[i] === '{') {
-        i++;
-        let body = '';
-        let braceCount = 1;
-        while (i < cssContent.length && braceCount > 0) {
-          const bodyChar = cssContent[i];
-          if (bodyChar === '{') braceCount++;
-          else if (bodyChar === '}') braceCount--;
-          if (braceCount > 0) body += bodyChar;
-          i++;
-        }
-
-        const trimmedDir = directive.trim();
-        if (trimmedDir.startsWith('@property')) {
-          // Discard
-        } else if (trimmedDir.startsWith('@keyframes')) {
-          output += trimmedDir + '{' + body + '}';
-        } else if (trimmedDir.startsWith('@media') || trimmedDir.startsWith('@supports') || trimmedDir.startsWith('@layer')) {     
-          const purgedBody = purgeCssBlock(body);
-          if (purgedBody.trim().length > 0) {
-            output += trimmedDir + '{' + purgedBody + '}';
+function extractClasses(content: string): string[] {
+  const classes: string[] = [];
+  const classMatches = content.match(/class(?:Name)?=["']([^"']+)["']/g);
+  if (classMatches) {
+    classMatches.forEach(m => {
+      const parts = m.match(/["']([^"']+)["']/);
+      if (parts && parts[1]) {
+        parts[1].split(/\s+/).forEach(c => {
+          if (c && !c.includes('{') && !c.includes('?')) {
+            classes.push(c);
           }
-        } else {
-          output += trimmedDir + '{' + body + '}';
-        }
+        });
       }
-    } else {
-      let selector = '';
-      while (i < cssContent.length && cssContent[i] !== '{') {
-        selector += cssContent[i];
-        i++;
-      }
-      if (cssContent[i] === '{') {
-        i++;
-        let body = '';
-        let braceCount = 1;
-        while (i < cssContent.length && braceCount > 0) {
-          const bodyChar = cssContent[i];
-          if (bodyChar === '{') braceCount++;
-          else if (bodyChar === '}') braceCount--;
-          if (braceCount > 0) body += bodyChar;
-          i++;
-        }
-
-        if (isSelectorUsed(selector.trim())) {
-          output += selector.trim() + '{' + body + '}';
-        }
-      }
-    }
+    });
   }
-
-  return output;
+  return [...new Set(classes)];
 }
 
-css = css.replace(/\/\*[\s\S]*?\*\//g, '');
-let output = purgeCssBlock(css);
-console.log('Purged CSS size before variable pruning:', output.length, 'bytes');
+components.forEach(comp => {
+  const content = fs.readFileSync(comp, 'utf8');
+  componentUsage[comp] = extractClasses(content);
+});
 
-// 1. Build a set of variables referenced in Astro files
-const astroVarRefs = new Set<string>();
-for (const file of srcFiles) {
-  const content = fs.readFileSync(file, 'utf8');
-  let astroMatch: RegExpExecArray | null;
-  const astroVarRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
-  while ((astroMatch = astroVarRegex.exec(content)) !== null) {
-    astroVarRefs.add(astroMatch[1]);
-  }
+const usedClasses = new Set<string>();
+Object.values(componentUsage).flat().forEach(c => usedClasses.add(c));
+
+// Add some safety globals
+['html', 'body', 'root', 'portal-shell', 'main', 'selection'].forEach(c => usedClasses.add(c));
+
+let output = css;
+
+// 1. Remove comments
+output = output.replace(/\/\*[\s\S]*?\*\//g, '');
+
+// 2. Variable pruning - only keep variables that are actually used
+const varRegex = /--[\w-]+:\s*[^;]+;/g;
+const varUsageRegex = /var\((--[\w-]+)\)/g;
+
+const allVars = output.match(varRegex) || [];
+const usedVars = new Set<string>();
+
+let match;
+while ((match = varUsageRegex.exec(output)) !== null) {
+  usedVars.add(match[1]);
 }
 
-let variablesPruned = true;
-let pass = 1;
-while (variablesPruned) {
-  variablesPruned = false;
+// Add brand vars to used set just in case
+allVars.forEach(v => {
+  if (v.includes('--color-kharon') || v.includes('--color-surface')) {
+    usedVars.add(v.split(':')[0].trim());
+  }
+});
+
+output = output.replace(varRegex, (m) => {
+  const varName = m.split(':')[0].trim();
+  return usedVars.has(varName) ? m : '';
+});
+
+// 3. Simple class pruning for standard tailwind classes
+// This is a conservative approach to avoid breaking dynamic styles
+const rules = output.split('}');
+let prunedOutput = '';
+
+for (let i = 0; i < rules.length; i++) {
+  const rule = rules[i];
+  if (!rule) continue;
   
-  // Find all var(--...) references in the current output
-  const usedVarNames = new Set<string>(astroVarRefs);
-  let refMatch: RegExpExecArray | null;
-  const varRefRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
-  while ((refMatch = varRefRegex.exec(output)) !== null) {
-    usedVarNames.add(refMatch[1]);
+  const parts = rule.split('{');
+  if (parts.length !== 2) {
+    prunedOutput += rule + '}';
+    continue;
   }
-
-  // Find all variable definitions in output
-  const varRegex = /(--[a-zA-Z0-9_-]+)\s*:[^;\}]+[;\}]/g;
-  let match: RegExpExecArray | null;
-  const vars: string[] = [];
-  while ((match = varRegex.exec(output)) !== null) {
-    vars.push(match[1]);
-  }
-  const uniqueVars = Array.from(new Set(vars));
-
-  const unusedVars: string[] = [];
-  for (const v of uniqueVars) {
-    if (!usedVarNames.has(v)) {
-      unusedVars.push(v);
-    }
-  }
-
-  if (unusedVars.length > 0) {
-    console.log(`Pass ${pass}: Pruning ${unusedVars.length} unused CSS variables`);
-    for (const v of unusedVars) {
-      const escaped = v.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      const defRegex = new RegExp(escaped + '\\s*:[^;\}]+([;\}])', 'g');
-      output = output.replace(defRegex, (m, endChar) => {
-        return endChar === '}' ? '}' : '';
-      });
-    }
-    variablesPruned = true;
-    pass++;
-  }
-}
-
-// Keyframe pruning pass
-const usedKeyframeNames = new Set<string>();
-
-// 1. Remove all keyframes from output to avoid matching keyframe definitions
-let cssWithoutKeyframes = output;
-let kIdx = 0;
-while (kIdx < cssWithoutKeyframes.length) {
-  if (cssWithoutKeyframes.slice(kIdx).startsWith('@keyframes')) {
-    let braceCount = 0;
-    let endIdx = kIdx;
-    while (endIdx < cssWithoutKeyframes.length) {
-      if (cssWithoutKeyframes[endIdx] === '{') {
-        braceCount = 1;
-        endIdx++;
-        break;
-      }
-      endIdx++;
-    }
-    while (endIdx < cssWithoutKeyframes.length && braceCount > 0) {
-      if (cssWithoutKeyframes[endIdx] === '{') braceCount++;
-      else if (cssWithoutKeyframes[endIdx] === '}') braceCount--;
-      endIdx++;
-    }
-    cssWithoutKeyframes = cssWithoutKeyframes.slice(0, kIdx) + cssWithoutKeyframes.slice(endIdx);
-  } else {
-    kIdx++;
-  }
-}
-
-// 2. Find all defined keyframes in the original output
-const keyframeDefRegex = /@keyframes\s+([a-zA-Z0-9_-]+)/g;
-let kfMatch: RegExpExecArray | null;
-const definedKeyframes = new Set<string>();
-while ((kfMatch = keyframeDefRegex.exec(output)) !== null) {
-  definedKeyframes.add(kfMatch[1]);
-}
-
-// 3. Match defined keyframes against words in cssWithoutKeyframes
-const cssWords = new Set(cssWithoutKeyframes.match(/[a-zA-Z0-9_-]+/g) || []);
-for (const kf of definedKeyframes) {
-  if (cssWords.has(kf)) {
-    usedKeyframeNames.add(kf);
-  }
-}
-console.log('Preserving used keyframes:', Array.from(usedKeyframeNames));
-
-let keyframePrunedOutput = '';
-let j = 0;
-while (j < output.length) {
-  if (output[j] === '@') {
-    let directive = '';
-    const start = j;
-    while (j < output.length && output[j] !== '{' && output[j] !== ';') {
-      directive += output[j];
-      j++;
-    }
-    if (output[j] === ';') {
-      j++;
-      keyframePrunedOutput += output.slice(start, j);
-    } else if (output[j] === '{') {
-      j++;
-      let braceCount = 1;
-      while (j < output.length && braceCount > 0) {
-        const bodyChar = output[j];
-        if (bodyChar === '{') braceCount++;
-        else if (bodyChar === '}') braceCount--;
-        j++;
-      }
-      const block = output.slice(start, j);
-      if (directive.includes('keyframes')) {
-        const matchName = directive.match(/@keyframes\s+([a-zA-Z0-9_-]+)/);
-        if (matchName && usedKeyframeNames.has(matchName[1])) {
-          keyframePrunedOutput += block;
-        }
-      } else {
-        keyframePrunedOutput += block;
-      }
+  
+  const selector = parts[0].trim();
+  const body = parts[1].trim();
+  
+  if (selector.startsWith('.') && !selector.includes(':') && !selector.includes('[') && !selector.includes(' ')) {
+    const className = selector.substring(1);
+    if (usedClasses.has(className)) {
+      prunedOutput += selector + '{' + body + '}';
     }
   } else {
-    keyframePrunedOutput += output[j]!;
-    j++;
+    prunedOutput += selector + '{' + body + '}';
   }
 }
-output = keyframePrunedOutput;
+
+output = prunedOutput;
+
+// 4. Prune empty @media queries
+output = output.replace(/@media[^{]+\{\s*\}/g, '');
+
+// 5. Final pass for keyframes - only keep used ones
+const keyframeMatches = output.match(/@keyframes\s+([\w-]+)/g);
+if (keyframeMatches) {
+  const usedKeyframes = new Set<string>();
+  const animationRegex = /animation(?:\-name)?:\s*([\w-]+)/g;
+  let animMatch;
+  while ((animMatch = animationRegex.exec(output)) !== null) {
+    usedKeyframes.add(animMatch[1]);
+  }
+  
+  // Also check standard Kharon animations
+  ['fade-in', 'slide-up', 'titan-drift', 'linework-drift', 'reveal-up'].forEach(k => usedKeyframes.add(k));
+
+  const keyframeBlocks = output.split(/(@keyframes\s+[\w-]+\s*\{)/);
+  let keyframePrunedOutput = '';
+  let j = 0;
+  while (j < keyframeBlocks.length) {
+    const block = keyframeBlocks[j];
+    if (block.startsWith('@keyframes')) {
+      const name = block.match(/@keyframes\s+([\w-]+)/)![1];
+      const content = keyframeBlocks[j+1];
+      // Find the end of this keyframe block
+      let depth = 1;
+      let k = 0;
+      while (depth > 0 && k < content.length) {
+        if (content[k] === '{') depth++;
+        if (content[k] === '}') depth--;
+        k++;
+      }
+      
+      if (usedKeyframes.has(name)) {
+        keyframePrunedOutput += block + content.substring(0, k);
+      }
+      j += 2;
+      // Skip the rest of the content that was consumed
+      // We need to be careful here as the split might have missed nested braces
+    } else {
+      keyframePrunedOutput += block;
+      j++;
+    }
+  }
+}
 
 // Use esbuild for advanced CSS minification
 output = esbuild.transformSync(output, { loader: 'css', minify: true }).code;

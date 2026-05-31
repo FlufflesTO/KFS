@@ -9,66 +9,66 @@ interface Props {
 const { sites, linkableJobs } = Astro.props;
 ---
 
-<details class="rounded-xl border border-kharon-border bg-white shadow-sm">
+<details class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal shadow-sm">
   <summary class="flex cursor-pointer list-none items-center justify-between px-4 py-4 sm:px-5">
     <span class="text-sm font-bold uppercase text-kharon-purple">Create financial record</span>
-    <span class="text-xs text-kharon-grey">Quote or invoice</span>
+    <span class="text-xs text-white/70">Quote or invoice</span>
   </summary>
-  <div class="border-t border-kharon-border p-4 sm:p-5">
+  <div class="border-t border-kharon-purple/20 p-4 sm:p-5">
     <form id="finance-create-form" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+      <label class="grid gap-2 text-sm font-semibold text-white">
         Item type
-        <select name="itemType" class="rounded-md border border-kharon-border px-3 py-2 font-normal">
+        <select name="itemType" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal">
           <option value="Quote">Quote</option>
           <option value="Invoice">Invoice</option>
         </select>
       </label>
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+      <label class="grid gap-2 text-sm font-semibold text-white">
         Client site
-        <select id="finance-site-id" name="siteId" class="rounded-md border border-kharon-border px-3 py-2 font-normal" required>
+        <select id="finance-site-id" name="siteId" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal" required>
           <option value="">Select client site</option>
           {sites.map((s) => (
             <option value={s.id}>{s.owner_company_name}</option>
           ))}
         </select>
       </label>
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-        Link to job <span class="font-normal text-kharon-grey">(optional)</span>
-        <select id="finance-job-id" name="jobId" class="rounded-md border border-kharon-border px-3 py-2 font-normal" disabled>
+      <label class="grid gap-2 text-sm font-semibold text-white">
+        Link to job <span class="font-normal text-white/70">(optional)</span>
+        <select id="finance-job-id" name="jobId" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal" disabled>
           <option value="">Select site first</option>
         </select>
       </label>
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+      <label class="grid gap-2 text-sm font-semibold text-white">
         Amount ex VAT (ZAR)
-        <input type="number" name="amountExVat" class="rounded-md border border-kharon-border px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" required />
+        <input type="number" name="amountExVat" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" required />
       </label>
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-        VAT amount (ZAR) <span class="font-normal text-kharon-grey">(auto 15%)</span>
-        <input id="finance-vat-amount" type="number" name="vatAmount" class="rounded-md border border-kharon-border px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" />
+      <label class="grid gap-2 text-sm font-semibold text-white">
+        VAT amount (ZAR) <span class="font-normal text-white/70">(auto 15%)</span>
+        <input id="finance-vat-amount" type="number" name="vatAmount" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" />
       </label>
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+      <label class="grid gap-2 text-sm font-semibold text-white">
         Amount inc VAT (ZAR)
-        <input id="finance-amount-inc-vat" type="number" name="amountIncVat" class="rounded-md border border-kharon-border px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" />
+        <input id="finance-amount-inc-vat" type="number" name="amountIncVat" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal" min="0" max="9999999" step="0.01" placeholder="0.00" />
       </label>
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
+      <label class="grid gap-2 text-sm font-semibold text-white">
         Distribution date
-        <input id="finance-dist-date" type="date" name="distributionDate" class="rounded-md border border-kharon-border px-3 py-2 font-normal" required />
+        <input id="finance-dist-date" type="date" name="distributionDate" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal" required />
       </label>
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-        Sage document date <span class="font-normal text-kharon-grey">(optional)</span>
-        <input type="date" name="sageDocumentDate" class="rounded-md border border-kharon-border px-3 py-2 font-normal" />
+      <label class="grid gap-2 text-sm font-semibold text-white">
+        Sage document date <span class="font-normal text-white/70">(optional)</span>
+        <input type="date" name="sageDocumentDate" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal" />
       </label>
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-        Due date <span class="font-normal text-kharon-grey">(optional)</span>
-        <input type="date" name="sageDueDate" class="rounded-md border border-kharon-border px-3 py-2 font-normal" />
+      <label class="grid gap-2 text-sm font-semibold text-white">
+        Due date <span class="font-normal text-white/70">(optional)</span>
+        <input type="date" name="sageDueDate" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal" />
       </label>
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black">
-        Reference <span class="font-normal text-kharon-grey">(optional)</span>
-        <input type="text" name="reference" class="rounded-md border border-kharon-border px-3 py-2 font-normal" maxlength="120" placeholder="PO number, quote ref…" />
+      <label class="grid gap-2 text-sm font-semibold text-white">
+        Reference <span class="font-normal text-white/70">(optional)</span>
+        <input type="text" name="reference" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal" maxlength="120" placeholder="PO number, quote ref…" />
       </label>
-      <label class="grid gap-2 text-sm font-semibold text-kharon-black lg:col-span-2">
-        Finance notes <span class="font-normal text-kharon-grey">(optional)</span>
-        <input type="text" name="financeNotes" class="rounded-md border border-kharon-border px-3 py-2 font-normal" maxlength="500" placeholder="Internal finance notes…" />
+      <label class="grid gap-2 text-sm font-semibold text-white lg:col-span-2">
+        Finance notes <span class="font-normal text-white/70">(optional)</span>
+        <input type="text" name="financeNotes" class="rounded-md border border-kharon-purple/20 px-3 py-2 font-normal" maxlength="500" placeholder="Internal finance notes…" />
       </label>
       <div class="flex flex-wrap items-center gap-3 lg:col-span-3">
         <button id="finance-create-submit" type="submit" class="rounded-md bg-kharon-purple px-5 py-3 text-sm font-semibold text-white hover:bg-kharon-blue" data-label="Create record">

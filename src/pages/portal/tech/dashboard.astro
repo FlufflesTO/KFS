@@ -9,6 +9,7 @@ import { auditError } from "../../../lib/server/audit";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import OfflineBanner from "../../../components/portal/OfflineBanner.astro";
+import DashboardFeatureCard from "../../../components/portal/DashboardFeatureCard.astro";
 
 export const prerender = false;
 
@@ -72,7 +73,7 @@ function priorityBadgeClass(priority: string): string {
     <div class="mx-auto max-w-7xl relative z-10">
       <div class="flex items-center gap-3 mb-4">
         <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
-          <svg class="h-4 w-4 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="h-4.5 w-4.5 text-kharon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -86,7 +87,47 @@ function priorityBadgeClass(priority: string): string {
     </div>
   </section>
 
-  <section class="px-1 py-4 sm:px-4">
+  {/* ── Feature Navigation Hub ── */}
+  <section class="px-1 pb-2 pt-0 sm:px-4 sm:pb-4">
+    <div class="mx-auto max-w-7xl">
+      <div class="mb-6">
+        <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3 px-1">Quick Access</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <DashboardFeatureCard
+            title="Active Dispatches"
+            description="View and action your current assigned field jobs."
+            href="/portal/tech/dashboard"
+            active={true}
+            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />`}
+            badge={jobs.length > 0 ? jobs.length : undefined}
+            badgeVariant="default"
+          />
+          <DashboardFeatureCard
+            title="Job History"
+            description="Review completed dispatches, jobcard records and documentation."
+            href="/portal/tech/history"
+            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`}
+          />
+          <DashboardFeatureCard
+            title="Password Reset"
+            description="Update your portal login password."
+            href="/portal/account/password"
+            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`}
+          />
+          <DashboardFeatureCard
+            title="Today's Summary"
+            description={`${todayCount} dispatches today · ${inProgressCount} in progress`}
+            href="/portal/tech/dashboard#action-required"
+            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />`}
+            badge={todayCount > 0 ? todayCount : undefined}
+            badgeVariant={todayCount > 0 ? "warning" : "default"}
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="action-required" class="px-1 py-4 sm:px-4">
     <div class="mx-auto max-w-7xl">
       {loadError && (
         <div class="rounded-lg border border-kharon-red/30 bg-kharon-red/10 p-4 mb-6">
@@ -98,27 +139,27 @@ function priorityBadgeClass(priority: string): string {
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/80 p-5 text-center shadow-lg shadow-black/30 backdrop-blur-md relative overflow-hidden group hover:border-kharon-purple/40 transition-all duration-300">
             <div class="absolute top-0 right-0 h-16 w-16 bg-kharon-purple/5 rounded-bl-full pointer-events-none"></div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple mb-2">Today's Dispatch</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple mb-1.5">Today's Dispatch</p>
             <p class="text-3xl font-black text-white">{todayCount}</p>
-            <div class="mt-2 flex items-center justify-center gap-2">
+            <div class="mt-2.5 flex items-center justify-center gap-1.5">
               <span class="h-2 w-2 rounded-full bg-kharon-cyan animate-pulse"></span>
               <span class="text-[9px] font-bold uppercase tracking-wider text-kharon-cyan">Ready for field</span>
             </div>
           </div>
           <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/80 p-5 text-center shadow-lg shadow-black/30 backdrop-blur-md relative overflow-hidden group hover:border-kharon-purple/40 transition-all duration-300">
             <div class="absolute top-0 right-0 h-16 w-16 bg-kharon-blue/5 rounded-bl-full pointer-events-none"></div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple mb-2">Upcoming Schedule</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple mb-1.5">Upcoming Schedule</p>
             <p class="text-3xl font-black text-white">{upcomingJobs.length}</p>
-            <div class="mt-2 flex items-center justify-center gap-2">
+            <div class="mt-2.5 flex items-center justify-center gap-1.5">
               <span class="h-2 w-2 rounded-full bg-kharon-purple/50"></span>
               <span class="text-[9px] font-bold uppercase tracking-wider text-white/50">Scheduled queue</span>
             </div>
           </div>
           <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/80 p-5 text-center shadow-lg shadow-black/30 backdrop-blur-md relative overflow-hidden group hover:border-kharon-purple/40 transition-all duration-300">
             <div class="absolute top-0 right-0 h-16 w-16 bg-kharon-cyan/5 rounded-bl-full pointer-events-none"></div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple mb-2">Active In-Progress</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple mb-1.5">Active In-Progress</p>
             <p class="text-3xl font-black text-kharon-cyan">{inProgressCount}</p>
-            <div class="mt-2 flex items-center justify-center gap-2">
+            <div class="mt-2.5 flex items-center justify-center gap-1.5">
               <span class="h-2 w-2 rounded-full bg-kharon-green animate-pulse"></span>
               <span class="text-[9px] font-bold uppercase tracking-wider text-kharon-green">Live monitoring</span>
             </div>
@@ -143,7 +184,7 @@ function priorityBadgeClass(priority: string): string {
       {actionJobs.length > 0 && (
         <div class="mt-6 flex items-center gap-3 mb-4">
           <div class="flex items-center justify-center rounded-lg bg-kharon-purple/10 p-2 ring-1 ring-kharon-purple/20">
-            <span class="h-2 w-2 rounded-full bg-kharon-cyan animate-pulse"></span>
+            <span class="h-2.5 w-2.5 rounded-full bg-kharon-cyan animate-pulse"></span>
           </div>
           <h2 class="text-xs font-black uppercase tracking-[0.15em] text-kharon-cyan">Action Required Today</h2>
         </div>
@@ -153,20 +194,20 @@ function priorityBadgeClass(priority: string): string {
         {actionJobs.map((job) => {
           const isEmergency = job.is_emergency === 1;
           return (
-            <article class={`rounded-xl border bg-kharon-charcoal/80 p-6 shadow-xl backdrop-blur-md relative overflow-hidden transition-all duration-300 ${isEmergency ? 'border-kharon-red/40 hover:border-kharon-red/60 shadow-kharon-red/5' : 'border-kharon-purple/20 hover:border-kharon-purple/40 shadow-black/30'}`}>
+            <article class={`rounded-xl border bg-kharon-charcoal/80 p-6 shadow-xl backdrop-blur-md relative overflow-hidden transition-all duration-300 ${isEmergency ? 'border-kharon-red/40 hover:border-kharon-red/60 shadow-kharon-red/5' : 'border-kharon-purple/25 hover:border-kharon-purple/40 shadow-black/30'}`}>
               {isEmergency && (
                 <div class="absolute top-0 right-0 bg-kharon-red px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white shadow-md flex items-center gap-1 z-10 rounded-bl-lg">
-                  <span class="h-2 w-2 rounded-full bg-white animate-pulse"></span>
+                  <span class="h-1.5 w-1.5 rounded-full bg-kharon-charcoal animate-pulse"></span>
                   Emergency dispatch
                 </div>
               )}
               
               <div class="flex flex-wrap items-center gap-2 mb-4">
-                <span class={`rounded-full px-3 py-0.5 text-[9px] font-bold uppercase tracking-widest ${priorityBadgeClass(job.priority || "Normal")}`}>{job.priority || "Normal"}</span>
-                <span class={`rounded-full px-3 py-0.5 text-[9px] font-bold uppercase tracking-widest ${job.status === 'In Progress' ? 'bg-kharon-cyan/20 text-kharon-cyan border border-kharon-cyan/30' : 'bg-kharon-blue/20 text-kharon-blue border border-kharon-blue/20'}`}>{job.status}</span>
+                <span class={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${priorityBadgeClass(job.priority || "Normal")}`}>{job.priority || "Normal"}</span>
+                <span class={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${job.status === 'In Progress' ? 'bg-kharon-cyan/20 text-kharon-cyan border border-kharon-cyan/30' : 'bg-kharon-blue/20 text-kharon-blue border border-kharon-blue/30'}`}>{job.status}</span>
                 {job.required_by_date && (
                   <span class="text-[10px] font-bold text-kharon-amber flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Required by {job.required_by_date}
@@ -177,8 +218,8 @@ function priorityBadgeClass(priority: string): string {
               <h2 class="text-xl font-black text-white tracking-tight">{job.owner_company_name}</h2>
               <p class="text-xs font-bold text-kharon-cyan uppercase tracking-wider mt-1">{job.system_type} | {job.coverage_area}</p>
               
-              <div class="mt-4 flex items-start gap-2 text-white/90 bg-kharon-black/40 p-4 rounded-lg border border-kharon-purple/10">
-                <svg class="h-4 w-4 shrink-0 mt-0.5 text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div class="mt-4 flex items-start gap-2.5 text-white/90 bg-kharon-black/40 p-3.5 rounded-lg border border-kharon-purple/10">
+                <svg class="h-4.5 w-4.5 shrink-0 mt-0.5 text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -196,15 +237,15 @@ function priorityBadgeClass(priority: string): string {
                 </div>
                 <div class="col-span-2">
                   <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Dispatch Core ID</p>
-                  <p class="text-[10px] font-mono font-bold text-white/60 break-all">{job.id}</p>
+                  <p class="text-[10px] font-mono font-bold text-white/55 break-all">{job.id}</p>
                 </div>
               </div>
               
               {job.site_notes && (
                 <div class="mt-4 rounded-lg border border-kharon-purple/20 bg-kharon-purple/5 p-4 text-xs text-white relative overflow-hidden">
                   <div class="absolute top-0 left-0 w-1 h-full bg-kharon-cyan"></div>
-                  <p class="font-bold text-[10px] text-kharon-cyan uppercase tracking-widest mb-2">Site Instructions</p>
-                  <p class="leading-relaxed text-white/80 font-medium">{job.site_notes}</p>
+                  <p class="font-bold text-[10px] text-kharon-cyan uppercase tracking-widest mb-1.5">Site Instructions</p>
+                  <p class="leading-relaxed text-white/85 font-medium">{job.site_notes}</p>
                 </div>
               )}
               
@@ -214,7 +255,7 @@ function priorityBadgeClass(priority: string): string {
                 </a>
                 
                 {job.physical_address && (
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`} target="_blank" rel="noopener noreferrer" class="flex-1 px-4 py-3 border border-kharon-purple/30 text-kharon-cyan font-bold text-xs uppercase tracking-widest rounded-md text-center hover:bg-kharon-purple/10 transition-colors min-h-[44px] flex items-center justify-center gap-2">
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`} target="_blank" rel="noopener noreferrer" class="flex-1 px-4 py-3 border border-kharon-purple/30 text-kharon-cyan font-bold text-xs uppercase tracking-widest rounded-md text-center hover:bg-kharon-purple/10 transition-colors min-h-[44px] flex items-center justify-center gap-1.5">
                     <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                     </svg>
@@ -230,7 +271,7 @@ function priorityBadgeClass(priority: string): string {
       {upcomingJobs.length > 0 && (
         <div class="mt-8 flex items-center gap-3 mb-4">
           <div class="flex items-center justify-center rounded-lg bg-kharon-purple/10 p-2 ring-1 ring-kharon-purple/25">
-            <svg class="h-4 w-4 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="h-4.5 w-4.5 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
@@ -240,10 +281,10 @@ function priorityBadgeClass(priority: string): string {
 
       <div class="space-y-4">
         {upcomingJobs.map((job) => (
-          <article class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/60 p-5 shadow-md backdrop-blur-md relative overflow-hidden transition-all duration-300 hover:border-kharon-purple/30">
+          <article class="rounded-xl border border-kharon-purple/15 bg-kharon-charcoal/60 p-5 shadow-md backdrop-blur-md relative overflow-hidden transition-all duration-300 hover:border-kharon-purple/35">
             <div class="flex flex-wrap items-center gap-2 mb-3">
-              <span class={`rounded-full px-3 py-0.5 text-[9px] font-bold uppercase tracking-widest ${priorityBadgeClass(job.priority || "Normal")}`}>{job.priority || "Normal"}</span>
-              <span class="rounded-full bg-kharon-purple/20 text-kharon-purple border border-kharon-purple/30 px-3 py-0.5 text-[9px] font-bold uppercase tracking-widest">{job.status}</span>
+              <span class={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${priorityBadgeClass(job.priority || "Normal")}`}>{job.priority || "Normal"}</span>
+              <span class="rounded-full bg-kharon-purple/20 text-kharon-purple border border-kharon-purple/30 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest">{job.status}</span>
             </div>
             
             <h2 class="text-lg font-black text-white/90 tracking-tight">{job.owner_company_name}</h2>
@@ -261,7 +302,7 @@ function priorityBadgeClass(priority: string): string {
             </div>
             
             <div class="mt-4">
-              <a href={`/portal/tech/jobs/${job.id}`} class="block w-full px-4 py-3 border border-kharon-purple/30 text-kharon-cyan hover:bg-kharon-purple/10 text-center font-bold text-xs uppercase tracking-widest rounded-md transition-colors min-h-[44px] flex items-center justify-center">
+              <a href={`/portal/tech/jobs/${job.id}`} class="block w-full px-4 py-2.5 border border-kharon-purple/30 text-kharon-cyan hover:bg-kharon-purple/10 text-center font-bold text-xs uppercase tracking-widest rounded-md transition-colors min-h-[44px] flex items-center justify-center">
                 View Details
               </a>
             </div>

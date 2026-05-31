@@ -21,7 +21,7 @@ const { services = [] } = Astro.props;
 
     <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
       {services.map((service: any) => (
-        <div class="rounded-xl border border-kharon-purple/20 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+        <div class="rounded-xl border border-kharon-purple/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
           <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full flex flex-col justify-between">
             <div>
               <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
@@ -37,7 +37,7 @@ const { services = [] } = Astro.props;
               {service.sans && service.sans.length > 0 && (
                 <div class="flex flex-wrap gap-2 mb-6">
                   {service.sans.map((std: string) => (
-                    <span class="px-3 py-0.5 rounded-full text-xs font-semibold bg-kharon-purple/20 text-kharon-purple border border-kharon-purple/30">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-kharon-purple/15 text-kharon-purple border border-kharon-purple/30">
                       {std}
                     </span>
                   ))}

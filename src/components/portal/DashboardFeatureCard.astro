@@ -1,0 +1,101 @@
+---
+/**
+ * Project Sentinel - Dashboard Feature Card
+ * Purpose: Reusable dark-themed navigation card for role dashboard feature hubs.
+ * Usage: <DashboardFeatureCard title="..." description="..." href="..." iconPath="..." />
+ */
+
+export interface Props {
+  title: string;
+  description: string;
+  href: string;
+  /** SVG <path> element string to render inside the icon box */
+  iconPath: string;
+  /** Optional count/label badge shown top-right */
+  badge?: string | number;
+  /** Badge colour variant */
+  badgeVariant?: "default" | "warning" | "danger" | "success";
+  /** Highlight as active/current page */
+  active?: boolean;
+}
+
+const {
+  title,
+  description,
+  href,
+  iconPath,
+  badge,
+  badgeVariant = "default",
+  active = false,
+} = Astro.props;
+
+const badgeClasses: Record<string, string> = {
+  default: "bg-kharon-purple/20 text-kharon-purple/90 border border-kharon-purple/30",
+  warning: "bg-kharon-amber/20 text-kharon-amber border border-kharon-amber/30",
+  danger: "bg-kharon-red/20 text-kharon-red border border-kharon-red/30",
+  success: "bg-kharon-green/20 text-kharon-green border border-kharon-green/30",
+};
+---
+
+<a
+  href={href}
+  class={[
+    "group relative block overflow-hidden rounded-xl border p-5 transition-all duration-300",
+    "hover:shadow-lg hover:shadow-kharon-purple/10",
+    active
+      ? "border-kharon-purple/40 bg-kharon-charcoal/90 shadow-md shadow-kharon-purple/5"
+      : "border-kharon-purple/20 bg-kharon-charcoal/50 backdrop-blur-sm hover:border-kharon-purple/40 hover:bg-kharon-charcoal/80",
+  ].join(" ")}
+>
+  <!-- Ambient corner glow on hover -->
+  <div class="pointer-events-none absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_100%_0%,rgba(75,46,131,0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+  <div class="relative z-10 flex flex-col h-full">
+    <!-- Top: Icon + Badge row -->
+    <div class="flex items-start justify-between gap-2 mb-4">
+      <div class={[
+        "flex h-9 w-9 flex-none items-center justify-center rounded-lg ring-1 transition-all duration-300",
+        active
+          ? "bg-kharon-purple/25 ring-kharon-purple/40"
+          : "bg-kharon-purple/10 ring-kharon-purple/20 group-hover:bg-kharon-purple/20 group-hover:ring-kharon-purple/35",
+      ].join(" ")}>
+        <svg
+          class="h-[1.125rem] w-[1.125rem] text-kharon-cyan"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+          set:html={iconPath}
+        ></svg>
+      </div>
+      {badge !== undefined && (
+        <span class={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider leading-none ${badgeClasses[badgeVariant]}`}>
+          {badge}
+        </span>
+      )}
+    </div>
+
+    <!-- Title -->
+    <h3 class="text-sm font-bold text-white tracking-tight leading-snug group-hover:text-white transition-colors">
+      {title}
+    </h3>
+
+    <!-- Description -->
+    <p class="mt-1.5 text-[11px] text-white/50 leading-relaxed flex-1">
+      {description}
+    </p>
+
+    <!-- Bottom CTA indicator -->
+    <div class="mt-4 flex items-center gap-1">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple/60 group-hover:text-kharon-cyan transition-colors duration-200">
+        Open
+      </span>
+      <svg
+        class="h-3 w-3 text-kharon-purple/40 group-hover:text-kharon-cyan group-hover:translate-x-0.5 transition-all duration-200"
+        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </div>
+  </div>
+</a>

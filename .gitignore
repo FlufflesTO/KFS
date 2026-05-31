@@ -138,6 +138,8 @@ monitor-results/
 retention-reports/
 .qoder/
 .qwen/
+.codex/
+
 
 # Playwright
 playwright-report/

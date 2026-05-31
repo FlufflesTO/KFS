@@ -60,15 +60,22 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title={`Log Visit for Job ${jobId} | Kharon Portal`} active="tech" user={user}>
-  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment rounded-xl border border-kharon-purple/10 mb-6 shadow-inner relative overflow-hidden">
-    <div class="mx-auto max-w-4xl relative z-10">
-      <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Field Operations</p>
+  <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
+    <div class="mx-auto max-w-4xl">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+          <svg class="h-4 w-4 text-kharon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Field Operations</p>
+      </div>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Log Site Visit Details</h1>
-      <p class="mt-3 max-w-3xl text-sm text-white/50">Record your arrival, departure, and job outcomes for accurate tracking.</p>
+      <p class="mt-3 max-w-3xl text-sm text-white/60">Record your arrival, departure, and job outcomes for accurate tracking.</p>
     </div>
   </section>
 
-  <section class="mt-2">
+  <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto max-w-4xl">
       {loadError ? (
         <div class="rounded-xl border border-kharon-red bg-kharon-red/10 p-6 text-center shadow-sm">
