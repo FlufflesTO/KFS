@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restored typed Cloudflare runtime binding resolution for D1, R2 and auth secrets.
 - Added client-side login handling with redirect support and an optional TOTP authenticator-code field.
 - Blocked inactive or soft-deleted users at login and revalidated live account status, role, MFA and password-rotation flags in portal middleware.
+- Added the missing `0033_users_deleted_at.sql` migration so remote D1 matches the user repository and `schema.sql`.
 - Extended admin MFA controls to technician accounts and documented the auth recovery baseline in `docs/roadmap/OPERATIONS_SOP.md`.
 - Excluded the local untracked `test-auth.js` scratch helper from the site audit secret-marker scan.
 
