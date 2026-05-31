@@ -80,7 +80,7 @@ const srcFiles = allFiles.filter(file => {
   if (file.includes('/src/components/') && file.endsWith('.astro')) {
     return usedComponentFiles.has(file);
   }
-  return file.endsWith('.astro');
+  return file.endsWith('.astro') || file.endsWith('.ts') || file.endsWith('.js');
 });
 const usedWords = new Set<string>();
 
@@ -154,10 +154,7 @@ function purgeCssBlock(cssContent: string): string {
       if (cssContent[i] === ';') {
         directive += ';';
         i++;
-        const trimmedDir = directive.trim();
-        if (!trimmedDir.startsWith('@property')) {
-          output += directive;
-        }
+        output += directive;
       } else if (cssContent[i] === '{') {
         i++;
         let body = '';
@@ -172,7 +169,7 @@ function purgeCssBlock(cssContent: string): string {
 
         const trimmedDir = directive.trim();
         if (trimmedDir.startsWith('@property')) {
-          // Discard
+          output += trimmedDir + '{' + body + '}';
         } else if (trimmedDir.startsWith('@keyframes')) {
           output += trimmedDir + '{' + body + '}';
         } else if (trimmedDir.startsWith('@media') || trimmedDir.startsWith('@supports') || trimmedDir.startsWith('@layer')) {     
