@@ -1,13 +1,2 @@
 # Cloudflare Pages _redirects does not support domain-level redirects.
 # Configure apex/www forwarding with Cloudflare Redirect Rules or Bulk Redirects.
-
-/_astro/* /client/_astro/:splat 200
-/brand/* /client/brand/:splat 200
-/icons/* /client/icons/:splat 200
-/og/* /client/og/:splat 200
-/favicon.svg /client/favicon.svg 200
-/manifest.webmanifest /client/manifest.webmanifest 200
-/sw.js /client/sw.js 200
-/print.css /client/print.css 200
-/robots.txt /client/robots.txt 200
-/offline.html /client/offline.html 200

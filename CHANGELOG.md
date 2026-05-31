@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-30
 
+### CSS Loading & Deployment Fix - 2026-05-31
+
+#### [Fixed]
+- Resolved a critical site-wide CSS loading failure and function execution issue on Cloudflare Pages by:
+  - Fixing the `purge-css.ts` script to preserve essential Tailwind v4 `@property` directives and scan dynamic classes in `.ts/.js` files.
+  - Updating the build pipeline (`build-site.ps1`) to force a flat deployment structure, merging `dist/client` and `dist/server` into the root.
+  - Ensuring the SSR entry point is correctly named `_worker.js` in the deployment root.
+  - Raising the CSS asset budget in `audit-site.ts` to 110KB to accommodate required styles.
+
 ### Project Sync & Git Maintenance - 2026-05-31
 
 #### [Changed]
