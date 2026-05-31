@@ -17,6 +17,10 @@ npx playwright test tests/foo.spec.ts  # Single test file
 # D1 database
 npx wrangler d1 migrations apply kharon-portal --local   # Local migrations (MUST run before first login)
 npx wrangler d1 execute kharon-portal --local < seed-users.sql  # Seed test users
+# Seed users ship with an undocumented hash (plaintext removed from git for security).
+# To set a known local password, generate a new hash and UPDATE directly:
+#   node --input-type=module --eval "$(cat scripts/hash-password.ts | sed 's/process.argv\[2\]/\"YourLocalPassword\"/g')"
+# Then: wrangler d1 execute kharon-portal --local --command "UPDATE users SET password_hash='<hash>'"
 npx wrangler d1 migrations apply kharon-portal --remote  # Remote (production)
 
 # Deployment

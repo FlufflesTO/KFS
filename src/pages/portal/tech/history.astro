@@ -112,30 +112,30 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
     </div>
   </section>
 
-  <section class="px-4 py-6 sm:px-6 sm:py-8">
+  <section class="bg-kharon-black px-4 py-6 sm:px-6 sm:py-8 min-h-[40vh]">
     <div class="mx-auto max-w-7xl">
       {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
 
       {!loadError && jobs.length === 0 && (
-        <p class="text-kharon-grey">No completed jobs found.</p>
+        <p class="text-white/50">No completed jobs found.</p>
       )}
 
       {jobs.length > 0 && (
         <>
-          <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center gap-3 border-b border-kharon-border bg-kharon-light pb-3 pt-3">
+          <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center gap-3 border-b border-kharon-purple/20 bg-kharon-black pb-3 pt-3">
             <input
               id="history-search"
               type="search"
-              class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
+              class="kharon-field text-sm"
               placeholder="Search site, system or comments…"
               size="26"
             />
-            <select id="history-status-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
+            <select id="history-status-filter" class="kharon-field text-sm">
               <option value="">All statuses</option>
               <option value="Completed">Completed</option>
               <option value="Invoiced">Invoiced</option>
             </select>
-            <select id="history-type-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
+            <select id="history-type-filter" class="kharon-field text-sm">
               <option value="">All job types</option>
               <option value="Routine service">Routine service</option>
               <option value="Compliance inspection">Compliance inspection</option>
@@ -145,34 +145,34 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
               <option value="Suppression release infrastructure">Suppression release infrastructure</option>
               <option value="Follow-up required">Follow-up required</option>
             </select>
-            <button id="history-clear" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-xs font-semibold text-kharon-grey hover:bg-white">
+            <button id="history-clear" class="kharon-secondary-button px-3 py-2 text-xs font-semibold">
               Clear filters
             </button>
           </div>
           <div class="overflow-x-auto">
             <table class="min-w-full border-collapse text-sm">
               <thead>
-                <tr class="border-b border-kharon-border bg-kharon-light">
-                  <th class="px-4 py-3 text-left font-semibold">Completed</th>
-                  <th class="px-4 py-3 text-left font-semibold">Status</th>
-                  <th class="px-4 py-3 text-left font-semibold">Site</th>
-                  <th class="px-4 py-3 text-left font-semibold">System</th>
-                  <th class="px-4 py-3 text-left font-semibold">Type</th>
-                  <th class="px-4 py-3 text-left font-semibold">Comments</th>
-                  <th class="px-4 py-3 text-left font-semibold">Jobcard</th>
+                <tr class="border-b border-kharon-purple/20 bg-kharon-graphite">
+                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Completed</th>
+                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Status</th>
+                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Site</th>
+                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">System</th>
+                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Type</th>
+                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Comments</th>
+                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Jobcard</th>
                 </tr>
               </thead>
               <tbody id="history-rows">
                 {jobs.map((job) => (
                   <tr
-                    class="border-b border-kharon-border hover:bg-kharon-light"
+                    class="border-b border-kharon-purple/10 hover:bg-kharon-purple/5 text-white/80"
                     data-search={`${job.owner_company_name} ${job.coverage_area} ${job.system_type} ${job.job_type || ""} ${job.tech_comments || ""}`}
                     data-status={job.status}
                     data-jobtype={job.job_type || ""}
                   >
                     <td class="px-4 py-3 whitespace-nowrap">{job.completed_at ? job.completed_at.slice(0, 10) : "-"}</td>
                     <td class="px-4 py-3">
-                      <span class={`inline-block rounded px-2 py-0.5 text-xs font-bold uppercase ${job.status === "Invoiced" ? "bg-emerald-100 text-emerald-800" : "bg-kharon-light text-kharon-grey"}`}>
+                      <span class={`inline-block rounded px-2 py-0.5 text-xs font-bold uppercase ${job.status === "Invoiced" ? "bg-kharon-green/20 text-kharon-green" : "bg-kharon-purple/20 text-kharon-purple"}`}>
                         {job.status}
                       </span>
                     </td>

@@ -14,7 +14,8 @@ const emergencyRoutes = [
     title: "Critical system fault",
     text: "Use this route for live fire-panel faults, suppression impairments, isolated systems or a protection condition affecting operations.",
     action: "Call / Escalate Fault",
-    href: "/contact?intent=emergency-support"
+    href: "/contact?intent=emergency-support",
+    tel: "tel:+27615458830"
   },
   {
     title: "Existing client records",
@@ -68,9 +69,16 @@ const emergencyRoutes = [
                   {route.text}
                 </p>
               </div>
-              <a href={route.href} class="inline-flex items-center justify-center rounded bg-gradient-to-r from-kharon-purple to-kharon-blue px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all self-start">
-                {route.action}
-              </a>
+              <div class="flex flex-wrap gap-3 self-start">
+                {route.tel && (
+                  <a href={route.tel} class="inline-flex items-center justify-center rounded bg-kharon-red px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all">
+                    Call Now
+                  </a>
+                )}
+                <a href={route.href} class="inline-flex items-center justify-center rounded bg-gradient-to-r from-kharon-purple to-kharon-blue px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all">
+                  {route.action}
+                </a>
+              </div>
             </div>
           </div>
         ))}

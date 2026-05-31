@@ -135,6 +135,8 @@ backups/
 scratch/
 monitor-results/
 retention-reports/
+.qoder/
+.qwen/
 
 # Playwright
 playwright-report/

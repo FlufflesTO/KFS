@@ -102,8 +102,7 @@ export async function auditError(db: D1Database, request: Request, error: unknow
       ipHash,
       request.headers.get("user-agent") || null,
       JSON.stringify({
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        error: error instanceof Error ? error.message : String(error)
       })
     ).run();
   } catch (logError) {

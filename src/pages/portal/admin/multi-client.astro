@@ -1,29 +1,20 @@
 ---
 /**
  * Project Sentinel - Multi-Client Management
- * Purpose: Allows administrators to create, read, update, and delete client company entities
+ * Purpose: Create, read, update, and delete client company entities
  * Dependencies: PortalLayout, getDatabase, requireAdmin
- * Structural Role: Portal page for administrative client records management
+ * Structural Role: Administrative client records management
  */
-
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
 import { requireAdmin } from "../../../lib/server/access";
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
 
 export const prerender = false;
 
 const { user } = Astro.locals;
-
-// Verify admin access
 const adminError = requireAdmin(user);
-if (adminError) {
-  return {
-    redirect: {
-      destination: '/portal/login',
-      permanent: false,
-    },
-  };
-}
+if (adminError) return adminError;
 
 interface ClientRecord {
   id: string;
@@ -39,249 +30,187 @@ interface ClientRecord {
   finance_record_count: number;
 }
 
-// Fetch clients with counts
-const db = getDatabase();
-const rawClients = await db.prepare(`
-  SELECT 
-    c.id,
-    c.company_name,
-    c.contact_person,
-    c.contact_email,
-    c.contact_phone,
-    c.billing_address,
-    c.created_at,
-    COUNT(si.id) as site_count,
-    COUNT(s.id) as system_count,
-    COUNT(j.id) as job_count,
-    COUNT(fr.id) as finance_record_count
-  FROM clients c
-  LEFT JOIN sites si ON si.owner_company_name = c.company_name
-  LEFT JOIN systems s ON s.site_id = si.id
-  LEFT JOIN jobs j ON j.system_id = s.id
-  LEFT JOIN financial_records fr ON fr.site_id = si.id
-  WHERE c.deleted_at IS NULL
-  GROUP BY c.id, c.company_name
-  ORDER BY c.company_name ASC
-`).all();
+let clientRecords: ClientRecord[] = [];
+let loadError = "";
 
-const clientRecords = (rawClients.results ?? []) as unknown as ClientRecord[];
-import CsrfInput from "../../../components/ui/CsrfInput.astro";
+try {
+  const db = getDatabase();
+  const rawClients = await db.prepare(`
+    SELECT
+      c.id, c.company_name, c.contact_person, c.contact_email, c.contact_phone,
+      c.billing_address, c.created_at,
+      COUNT(DISTINCT si.id) AS site_count,
+      COUNT(DISTINCT s.id)  AS system_count,
+      COUNT(DISTINCT j.id)  AS job_count,
+      COUNT(DISTINCT fr.id) AS finance_record_count
+    FROM clients c
+    LEFT JOIN sites si ON si.owner_company_name = c.company_name AND si.deleted_at IS NULL
+    LEFT JOIN systems s  ON s.site_id = si.id AND s.deleted_at IS NULL
+    LEFT JOIN jobs j     ON j.system_id = s.id AND j.deleted_at IS NULL
+    LEFT JOIN financial_records fr ON fr.site_id = si.id
+    WHERE c.deleted_at IS NULL
+    GROUP BY c.id, c.company_name
+    ORDER BY c.company_name ASC
+  `).all();
+  clientRecords = (rawClients.results ?? []) as unknown as ClientRecord[];
+} catch (_err) {
+  loadError = "Client records could not be loaded.";
+}
 ---
 
-<PortalLayout title="Multi-Client Management | Kharon Portal" active="multi-client" user={user}>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="sm:flex sm:items-center sm:justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Multi-Client Management</h1>
-        <p class="mt-1 text-sm text-gray-500">Manage all clients and their associated resources</p>
-      </div>
-      <div class="mt-3 sm:mt-0 sm:ml-4">
-        <button 
-          id="add-client-btn"
-          type="button"
-          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-kharon-blue hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue"
-        >
-          Add Client
-        </button>
-      </div>
-    </div>
+<PortalLayout title="Multi-Client Management | Kharon Portal" active="clients" user={user}>
 
-    <div class="bg-white shadow overflow-hidden sm:rounded-md">
-      <ul class="divide-y divide-gray-200">
-        {clientRecords.map((client) => (
-          <li>
-            <div class="px-4 py-4 sm:px-6">
-              <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-kharon-blue truncate">{client.company_name}</p>
-                <div class="ml-2 flex-shrink-0 flex">
-                  <button 
-                    class="edit-client text-indigo-600 hover:text-indigo-900 mr-4"
+  <!-- Page header -->
+  <section class="border-b border-kharon-purple/20 bg-kharon-black px-4 py-8 sm:px-6">
+    <div class="mx-auto max-w-7xl flex items-end justify-between gap-4 flex-wrap">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Admin Operations</p>
+        <h1 class="mt-2 text-2xl font-bold text-white">Multi-Client Management</h1>
+        <p class="mt-1 text-sm text-white/50">Create and manage client company records linked to portal sites and users.</p>
+      </div>
+      <button id="add-client-btn" type="button"
+        class="kharon-command-button min-h-[44px] px-5 py-2.5 text-sm font-semibold">
+        + Add Client
+      </button>
+    </div>
+  </section>
+
+  <section class="bg-kharon-black min-h-[40vh] px-4 py-6 sm:px-6">
+    <div class="mx-auto max-w-7xl">
+
+      {loadError && (
+        <p class="mb-6 rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>
+      )}
+
+      <div id="page-result" class="mb-4 hidden rounded border px-4 py-3 text-sm font-semibold"></div>
+
+      {clientRecords.length === 0 && !loadError && (
+        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite px-8 py-12 text-center">
+          <p class="text-white/40 text-sm mb-4">No client companies registered yet.</p>
+          <button id="empty-add-btn" type="button"
+            class="kharon-command-button px-5 py-2.5 text-sm font-semibold">
+            Add First Client
+          </button>
+        </div>
+      )}
+
+      {clientRecords.length > 0 && (
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {clientRecords.map((client) => (
+            <article class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-5 flex flex-col gap-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <h2 class="text-base font-semibold text-white truncate">{client.company_name}</h2>
+                  {client.contact_person && (
+                    <p class="text-xs text-white/50 mt-0.5">{client.contact_person}</p>
+                  )}
+                  {client.contact_email && (
+                    <a href={`mailto:${client.contact_email}`} class="text-xs text-kharon-cyan hover:underline">{client.contact_email}</a>
+                  )}
+                </div>
+                <div class="flex gap-2 shrink-0">
+                  <button
+                    class="edit-client kharon-secondary-button px-3 py-1.5 text-xs"
+                    type="button"
                     data-client={JSON.stringify(client)}
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    class="delete-client text-red-600 hover:text-red-900"
+                  >Edit</button>
+                  <button
+                    class="delete-client rounded border border-kharon-red/40 bg-kharon-red/10 px-3 py-1.5 text-xs font-semibold text-kharon-red hover:bg-kharon-red/20 transition-colors min-h-[44px]"
+                    type="button"
                     data-client-id={client.id}
                     data-client-name={client.company_name}
-                  >
-                    Delete
-                  </button>
+                  >Delete</button>
                 </div>
               </div>
-              <div class="mt-2 sm:flex sm:justify-between">
-                <div class="sm:flex">
-                  <p class="flex items-center text-sm text-gray-500">
-                    {client.contact_person && <span class="font-medium">{client.contact_person}</span>}
-                    {client.contact_email && <span class="ml-2">{client.contact_email}</span>}
-                  </p>
-                </div>
-                <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                  <p>Created: {new Date(client.created_at).toLocaleDateString()}</p>
-                </div>
+
+              <div class="grid grid-cols-4 gap-2 border-t border-kharon-purple/10 pt-3">
+                {[
+                  { label: "Sites",    value: client.site_count },
+                  { label: "Systems",  value: client.system_count },
+                  { label: "Jobs",     value: client.job_count },
+                  { label: "Finance",  value: client.finance_record_count },
+                ].map(stat => (
+                  <div class="text-center">
+                    <p class="text-lg font-bold text-kharon-cyan">{stat.value}</p>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-white/40">{stat.label}</p>
+                  </div>
+                ))}
               </div>
-              <div class="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm text-gray-700">
-                <div class="flex items-center">
-                  <span class="font-medium">Sites:</span>
-                  <span class="ml-1">{client.site_count}</span>
-                </div>
-                <div class="flex items-center">
-                  <span class="font-medium">Systems:</span>
-                  <span class="ml-1">{client.system_count}</span>
-                </div>
-                <div class="flex items-center">
-                  <span class="font-medium">Jobs:</span>
-                  <span class="ml-1">{client.job_count}</span>
-                </div>
-                <div class="flex items-center">
-                  <span class="font-medium">Finance:</span>
-                  <span class="ml-1">{client.finance_record_count}</span>
-                </div>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+
+              <p class="text-[10px] text-white/30">
+                Added {new Date(client.created_at).toLocaleDateString("en-ZA")}
+              </p>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
-  </div>
+  </section>
 
-  <!-- Add/Edit Client Modal -->
-  <div id="client-modal" class="fixed z-[100] inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-      <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-        <div>
-          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-kharon-blue">
-            <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-          </div>
-          <div class="mt-3 text-center sm:mt-5">
-            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-              <span id="modal-action">Add</span> Client
-            </h3>
-            <div class="mt-2">
-              <form id="client-form">
+  <!-- Add/Edit Modal -->
+  <div id="client-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="fixed inset-0 bg-kharon-black/80 backdrop-blur-sm" id="modal-backdrop"></div>
+      <div class="relative w-full max-w-lg rounded-xl border border-kharon-purple/30 bg-kharon-graphite p-6 shadow-2xl">
+        <div class="mb-5">
+          <h2 id="modal-title" class="text-lg font-bold text-white">
+            <span id="modal-action">Add</span> Client
+          </h2>
+          <p class="mt-1 text-xs text-white/50">All client records link to portal sites by company name.</p>
+        </div>
+        <form id="client-form" class="grid gap-4">
           <CsrfInput />
-                <input type="hidden" id="client-id" name="id" />
-                
-                <div class="mb-4">
-                  <label for="company-name" class="block text-sm font-medium text-gray-700">Company Name *</label>
-                  <input 
-                    type="text" 
-                    id="company-name" 
-                    name="companyName" 
-                    required
-                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-kharon-blue focus:border-kharon-blue sm:text-sm"
-                  />
-                </div>
-                
-                <div class="mb-4">
-                  <label for="contact-person" class="block text-sm font-medium text-gray-700">Contact Person</label>
-                  <input 
-                    type="text" 
-                    id="contact-person" 
-                    name="contactPerson"
-                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-kharon-blue focus:border-kharon-blue sm:text-sm"
-                  />
-                </div>
-                
-                <div class="mb-4">
-                  <label for="contact-email" class="block text-sm font-medium text-gray-700">Contact Email</label>
-                  <input 
-                    type="email" 
-                    id="contact-email" 
-                    name="contactEmail"
-                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-kharon-blue focus:border-kharon-blue sm:text-sm"
-                  />
-                </div>
-                
-                <div class="mb-4">
-                  <label for="contact-phone" class="block text-sm font-medium text-gray-700">Contact Phone</label>
-                  <input 
-                    type="tel" 
-                    id="contact-phone" 
-                    name="contactPhone"
-                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-kharon-blue focus:border-kharon-blue sm:text-sm"
-                  />
-                </div>
-                
-                <div class="mb-6">
-                  <label for="billing-address" class="block text-sm font-medium text-gray-700">Billing Address</label>
-                  <textarea 
-                    id="billing-address" 
-                    name="billingAddress"
-                    rows="3"
-                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-kharon-blue focus:border-kharon-blue sm:text-sm"
-                  ></textarea>
-                </div>
-              </form>
+          <input type="hidden" id="client-id" name="id" />
+
+          <div class="grid gap-1">
+            <label for="company-name" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Company Name *</label>
+            <input type="text" id="company-name" name="companyName" required class="kharon-field" placeholder="e.g. Acme Industries (Pty) Ltd" />
+          </div>
+          <div class="grid gap-1">
+            <label for="contact-person" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Contact Person</label>
+            <input type="text" id="contact-person" name="contactPerson" class="kharon-field" placeholder="Full name" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="grid gap-1">
+              <label for="contact-email" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Email</label>
+              <input type="email" id="contact-email" name="contactEmail" class="kharon-field" placeholder="contact@company.co.za" />
+            </div>
+            <div class="grid gap-1">
+              <label for="contact-phone" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Phone</label>
+              <input type="tel" id="contact-phone" name="contactPhone" class="kharon-field" placeholder="0xx xxx xxxx" />
             </div>
           </div>
-        </div>
-        <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-          <button
-            type="button"
-            id="save-client-btn"
-            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-kharon-blue text-base font-medium text-white hover:bg-kharon-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue sm:col-start-2 sm:text-sm"
-          >
-            Save Client
-          </button>
-          <button
-            type="button"
-            id="cancel-client-btn"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kharon-blue sm:mt-0 sm:col-start-1 sm:text-sm"
-          >
-            Cancel
-          </button>
-        </div>
+          <div class="grid gap-1">
+            <label for="billing-address" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Billing Address</label>
+            <textarea id="billing-address" name="billingAddress" rows="2" class="kharon-field" placeholder="Street, Suburb, City, Code"></textarea>
+          </div>
+
+          <div id="modal-result" class="hidden rounded border px-4 py-3 text-sm font-semibold"></div>
+
+          <div class="flex justify-end gap-3 pt-2">
+            <button type="button" id="cancel-client-btn" class="kharon-secondary-button px-5 py-2.5 text-sm">Cancel</button>
+            <button type="button" id="save-client-btn" class="kharon-command-button px-5 py-2.5 text-sm">Save Client</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div id="delete-modal" class="fixed z-[100] inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-      <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-        <div class="sm:flex sm:items-start">
-          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-            <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-              Deactivate Client
-            </h3>
-            <div class="mt-2">
-              <p class="text-sm text-gray-500">
-                Are you sure you want to deactivate <span id="delete-client-name" class="font-semibold"></span>? 
-                This will mark the client as inactive but preserve all associated data.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-          <button
-            type="button"
-            id="confirm-delete-btn"
-            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-          >
+  <div id="delete-modal" class="fixed inset-0 z-[110] hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="fixed inset-0 bg-kharon-black/80 backdrop-blur-sm" id="delete-backdrop"></div>
+      <div class="relative w-full max-w-md rounded-xl border border-kharon-red/30 bg-kharon-graphite p-6 shadow-2xl">
+        <h2 class="text-lg font-bold text-white mb-2">Deactivate Client?</h2>
+        <p class="text-sm text-white/60 mb-6">
+          This will soft-delete <strong id="delete-client-name" class="text-white"></strong> and preserve all associated records.
+        </p>
+        <div id="delete-result" class="hidden rounded border px-4 py-3 text-sm font-semibold mb-4"></div>
+        <div class="flex justify-end gap-3">
+          <button type="button" id="cancel-delete-btn" class="kharon-secondary-button px-5 py-2.5 text-sm">Cancel</button>
+          <button type="button" id="confirm-delete-btn"
+            class="rounded border border-kharon-red/40 bg-kharon-red/20 px-5 py-2.5 text-sm font-semibold text-kharon-red hover:bg-kharon-red/30 transition-colors min-h-[44px]">
             Deactivate
-          </button>
-          <button
-            type="button"
-            id="cancel-delete-btn"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:w-auto sm:text-sm"
-          >
-            Cancel
           </button>
         </div>
       </div>
@@ -289,9 +218,11 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
   </div>
 
   <script>
-    interface ClientModalPayload {
-      id: string;
-      company_name: string;
+    import { portalPost } from "../../../lib/client/portalApi";
+
+    interface ClientPayload {
+      id?: string;
+      company_name?: string;
       contact_person?: string | null;
       contact_email?: string | null;
       contact_phone?: string | null;
@@ -299,142 +230,100 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
     }
 
     let currentClientId: string | null = null;
-    
-    function openAddClientModal() {
-      const modalAction = document.getElementById('modal-action');
-      if (modalAction) modalAction.textContent = 'Add';
-      
-      const form = document.getElementById('client-form') as HTMLFormElement | null;
-      if (form) form.reset();
-      
-      const clientId = document.getElementById('client-id') as HTMLInputElement | null;
-      if (clientId) clientId.value = '';
-      
-      document.getElementById('client-modal')?.classList.remove('hidden');
+
+    function setResult(el: HTMLElement | null, text: string, variant: "success" | "error") {
+      if (!el) return;
+      el.textContent = text;
+      el.className = variant === "success"
+        ? "rounded border border-kharon-green/40 bg-kharon-green/10 px-4 py-3 text-sm font-semibold text-kharon-green"
+        : "rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red";
+      el.classList.remove("hidden");
     }
-    
-    function openEditClientModal(client: ClientModalPayload) {
-      const modalAction = document.getElementById('modal-action');
-      if (modalAction) modalAction.textContent = 'Edit';
-      
-      const clientId = document.getElementById('client-id') as HTMLInputElement | null;
-      if (clientId) clientId.value = client.id;
-      
-      const companyName = document.getElementById('company-name') as HTMLInputElement | null;
-      if (companyName) companyName.value = client.company_name || '';
-      
-      const contactPerson = document.getElementById('contact-person') as HTMLInputElement | null;
-      if (contactPerson) contactPerson.value = client.contact_person || '';
-      
-      const contactEmail = document.getElementById('contact-email') as HTMLInputElement | null;
-      if (contactEmail) contactEmail.value = client.contact_email || '';
-      
-      const contactPhone = document.getElementById('contact-phone') as HTMLInputElement | null;
-      if (contactPhone) contactPhone.value = client.contact_phone || '';
-      
-      const billingAddress = document.getElementById('billing-address') as HTMLTextAreaElement | null;
-      if (billingAddress) billingAddress.value = client.billing_address || '';
-      
-      document.getElementById('client-modal')?.classList.remove('hidden');
+
+    function openModal(client?: ClientPayload) {
+      const isEdit = !!client?.id;
+      document.getElementById("modal-action")!.textContent = isEdit ? "Edit" : "Add";
+      (document.getElementById("client-id") as HTMLInputElement).value = client?.id ?? "";
+      (document.getElementById("company-name") as HTMLInputElement).value = client?.company_name ?? "";
+      (document.getElementById("contact-person") as HTMLInputElement).value = client?.contact_person ?? "";
+      (document.getElementById("contact-email") as HTMLInputElement).value = client?.contact_email ?? "";
+      (document.getElementById("contact-phone") as HTMLInputElement).value = client?.contact_phone ?? "";
+      (document.getElementById("billing-address") as HTMLTextAreaElement).value = client?.billing_address ?? "";
+      document.getElementById("modal-result")?.classList.add("hidden");
+      document.getElementById("client-modal")!.classList.remove("hidden");
     }
-    
+
     function closeModal() {
-      document.getElementById('client-modal')?.classList.add('hidden');
+      document.getElementById("client-modal")!.classList.add("hidden");
     }
-    
-    function confirmDeleteClient(clientId: string, clientName: string) {
-      currentClientId = clientId;
-      const deleteClientName = document.getElementById('delete-client-name');
-      if (deleteClientName) deleteClientName.textContent = clientName;
-      document.getElementById('delete-modal')?.classList.remove('hidden');
+
+    function openDeleteModal(id: string, name: string) {
+      currentClientId = id;
+      document.getElementById("delete-client-name")!.textContent = name;
+      document.getElementById("delete-result")?.classList.add("hidden");
+      document.getElementById("delete-modal")!.classList.remove("hidden");
     }
-    
+
     function closeDeleteModal() {
-      document.getElementById('delete-modal')?.classList.add('hidden');
+      document.getElementById("delete-modal")!.classList.add("hidden");
       currentClientId = null;
     }
-    
+
     async function saveClient() {
-      const form = document.getElementById('client-form') as HTMLFormElement | null;
-      if (!form) return;
-      const formData = new FormData(form);
-      const clientData = Object.fromEntries(formData) as Record<string, unknown>;
-      clientData['clientId'] = clientData['id'];
-      
-      const method = clientData['id'] ? 'PUT' : 'POST';
-      const url = '/portal/admin/api/multi-client';
-      
-      try {
-        const response = await fetch(url, {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': (document.querySelector('meta[name="kharon-csrf-token"]') as HTMLMetaElement | null)?.content || ''
-          },
-          body: JSON.stringify(clientData)
-        });
-        
-        if (response.ok) {
-          const result = await response.json() as { message?: string } | null;
-          alert(result?.message || "Client saved successfully.");
-          closeModal();
-          // Refresh the page to show updated data
-          window.location.reload();
-        } else {
-          const error = await response.json() as { message?: string } | null;
-          alert(`Error: ${error?.message || 'Failed to save client'}`);
-        }
-      } catch (error) {
-        alert('An error occurred while saving the client');
-        console.error(error);
+      const clientId = (document.getElementById("client-id") as HTMLInputElement).value;
+      const payload: Record<string, unknown> = {
+        action: clientId ? "update" : "create",
+        id: clientId || undefined,
+        companyName: (document.getElementById("company-name") as HTMLInputElement).value,
+        contactPerson: (document.getElementById("contact-person") as HTMLInputElement).value,
+        contactEmail: (document.getElementById("contact-email") as HTMLInputElement).value,
+        contactPhone: (document.getElementById("contact-phone") as HTMLInputElement).value,
+        billingAddress: (document.getElementById("billing-address") as HTMLTextAreaElement).value,
+      };
+      const result = document.getElementById("modal-result");
+      const { body } = await portalPost("/portal/admin/api/multi-client", payload);
+      if (body.ok) {
+        setResult(result, body.message as string || "Client saved.", "success");
+        setTimeout(() => { closeModal(); window.location.reload(); }, 900);
+      } else {
+        setResult(result, body.message as string || "Failed to save client.", "error");
       }
     }
-    
+
     async function deleteClient() {
       if (!currentClientId) return;
-      
-      try {
-        const response = await fetch(`/portal/admin/api/multi-client?id=${encodeURIComponent(currentClientId)}`, {
-          method: 'DELETE',
-          headers: {
-            'X-CSRF-Token': (document.querySelector('meta[name="kharon-csrf-token"]') as HTMLMetaElement | null)?.content || ''
-          }
-        });
-        
-        if (response.ok) {
-          const result = await response.json() as { message?: string } | null;
-          alert(result?.message || "Client deleted successfully.");
-          closeDeleteModal();
-          // Refresh the page to show updated data
-          window.location.reload();
-        } else {
-          const error = await response.json() as { message?: string } | null;
-          alert(`Error: ${error?.message || 'Failed to delete client'}`);
-        }
-      } catch (error) {
-        alert('An error occurred while deleting the client');
-        console.error(error);
+      const result = document.getElementById("delete-result");
+      const { body } = await portalPost("/portal/admin/api/multi-client", { action: "delete", id: currentClientId });
+      if (body.ok) {
+        setResult(result, "Client deactivated.", "success");
+        setTimeout(() => { closeDeleteModal(); window.location.reload(); }, 900);
+      } else {
+        setResult(result, body.message as string || "Failed to deactivate client.", "error");
       }
     }
-    
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('add-client-btn')?.addEventListener('click', openAddClientModal);
-      document.getElementById('save-client-btn')?.addEventListener('click', saveClient);
-      document.getElementById('cancel-client-btn')?.addEventListener('click', closeModal);
-      document.getElementById('cancel-delete-btn')?.addEventListener('click', closeDeleteModal);
-      document.getElementById('confirm-delete-btn')?.addEventListener('click', deleteClient);
 
-      for (const button of document.querySelectorAll<HTMLButtonElement>('.edit-client')) {
-        button.addEventListener('click', () => {
-          openEditClientModal(JSON.parse(button.dataset.client || '{}') as ClientModalPayload);
-        });
-      }
+    // Wire up buttons
+    document.getElementById("add-client-btn")?.addEventListener("click", () => openModal());
+    document.getElementById("empty-add-btn")?.addEventListener("click", () => openModal());
+    document.getElementById("save-client-btn")?.addEventListener("click", saveClient);
+    document.getElementById("cancel-client-btn")?.addEventListener("click", closeModal);
+    document.getElementById("modal-backdrop")?.addEventListener("click", closeModal);
+    document.getElementById("confirm-delete-btn")?.addEventListener("click", deleteClient);
+    document.getElementById("cancel-delete-btn")?.addEventListener("click", closeDeleteModal);
+    document.getElementById("delete-backdrop")?.addEventListener("click", closeDeleteModal);
 
-      for (const button of document.querySelectorAll<HTMLButtonElement>('.delete-client')) {
-        button.addEventListener('click', () => {
-          confirmDeleteClient(button.dataset.clientId || '', button.dataset.clientName || 'this client');
-        });
-      }
+    document.querySelectorAll<HTMLButtonElement>(".edit-client").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const client = JSON.parse(btn.dataset.client ?? "{}") as ClientPayload;
+        openModal(client);
+      });
+    });
+
+    document.querySelectorAll<HTMLButtonElement>(".delete-client").forEach(btn => {
+      btn.addEventListener("click", () => {
+        openDeleteModal(btn.dataset.clientId ?? "", btn.dataset.clientName ?? "");
+      });
     });
   </script>
+
 </PortalLayout>
