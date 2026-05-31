@@ -114,7 +114,7 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
 
   <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto max-w-7xl">
-      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+      {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
 
       {!loadError && jobs.length === 0 && (
         <p class="text-kharon-grey">No completed jobs found.</p>

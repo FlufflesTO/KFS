@@ -42,7 +42,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 
   <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto grid max-w-3xl gap-6">
-      {loadError && <p class="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900">{loadError}</p>}
+      {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
 
       {!mfa.eligible && (
         <article class="kharon-surface p-6 sm:p-8">

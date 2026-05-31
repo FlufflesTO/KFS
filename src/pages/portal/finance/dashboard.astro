@@ -107,7 +107,15 @@ try {
   const sitesResult = await db.prepare("SELECT id, owner_company_name FROM sites ORDER BY owner_company_name ASC").all();
   sites = sitesResult.results || [];
 
-  const linkableJobsResult = await db.prepare("SELECT id, job_type, site_id FROM jobs WHERE status = 'Completed' OR status = 'In Progress' ORDER BY created_at DESC").all();
+  const linkableJobsResult = await db.prepare(`
+    SELECT j.id, j.job_type, j.status, j.scheduled_date, j.completed_at AS completed_date,
+           sys.system_type, sys.coverage_area, si.owner_company_name
+    FROM jobs j
+    JOIN systems sys ON sys.id = j.system_id AND sys.deleted_at IS NULL
+    JOIN sites si ON si.id = sys.site_id
+    WHERE (j.status = 'Completed' OR j.status = 'In Progress') AND j.deleted_at IS NULL
+    ORDER BY j.created_at DESC
+  `).all();
   linkableJobs = linkableJobsResult.results || [];
 
 } catch (error) {
@@ -127,7 +135,7 @@ try {
 
   <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto max-w-7xl space-y-8"> <!-- Increased space-y from 6 to 8 for better mobile spacing -->
-      {loadError && <p class="rounded border border-red-300 bg-red-50 p-4 text-sm text-red-800">{loadError}</p>}
+      {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
 
       <FinanceCreateForm {sites} {linkableJobs} />
 

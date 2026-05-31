@@ -199,7 +199,7 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
 
   <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto max-w-7xl">
-      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800 mb-6">{loadError}</p>}
+      {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red mb-6">{loadError}</p>}
       {!loadError && sectionErrors.length > 0 && (
         <div class="grid gap-2 mb-6">
           {sectionErrors.map((message) => <p class="border border-amber-300 bg-amber-50 p-4 text-amber-900">{message}</p>)}

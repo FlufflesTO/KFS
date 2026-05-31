@@ -40,12 +40,12 @@ try {
     bindParams.push(q, q, q);
   }
 
-  const countQuery = `SELECT COUNT(*) as total FROM contact_enquiries ${searchCondition}`;
+  const countQuery = `SELECT COUNT(*) as total FROM contact_submissions ${searchCondition}`;
   total = ((await db.prepare(countQuery).bind(...bindParams).first()) as { total: number } | null)?.total ?? 0;
 
   const dataQuery = `
     SELECT *
-    FROM contact_enquiries
+    FROM contact_submissions
     ${searchCondition}
     ORDER BY submitted_at DESC
     LIMIT ? OFFSET ?
@@ -65,13 +65,13 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Website Enquiries</h1>
-        <p class="mt-1 text-sm text-gray-500">View contact form submissions from the public website</p>
+        <h1 class="text-2xl font-bold text-white">Website Enquiries</h1>
+        <p class="mt-1 text-sm text-kharon-light/60">View contact form submissions from the public website</p>
       </div>
     </div>
 
     {loadError && (
-      <p class="mx-auto mb-6 max-w-7xl border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>
+      <p class="mx-auto mb-6 max-w-7xl rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>
     )}
 
     <article class="border border-kharon-border bg-white p-4 sm:p-5">

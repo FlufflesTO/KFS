@@ -92,7 +92,7 @@ function daysUntil(dateText: string): number | null {
 function riskForDueDate(dateText: string): { label: string; className: string } {
   const days = daysUntil(dateText);
   if (days === null) return { label: "Unknown", className: "border-kharon-border bg-kharon-light text-kharon-grey" };
-  if (days < 0) return { label: "Overdue", className: "border-red-300 bg-red-50 text-red-900" };
+  if (days < 0) return { label: "Overdue", className: "border-kharon-red/30 bg-kharon-red/10 text-kharon-red" };
   if (days <= 30) return { label: "Due <=30d", className: "border-amber-300 bg-amber-50 text-amber-900" };
   if (days <= 90) return { label: "Due <=90d", className: "border-kharon-blue/30 bg-kharon-blue/10 text-kharon-blue" };
   return { label: "Scheduled", className: "border-emerald-300 bg-emerald-50 text-emerald-900" };
@@ -260,7 +260,7 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
 
   <section class="px-4 py-6 sm:px-6 sm:py-8">
     <div class="mx-auto grid max-w-7xl gap-6">
-      {loadError && <p class="border border-red-300 bg-red-50 p-4 text-red-800">{loadError}</p>}
+      {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
 
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article class="border border-kharon-border bg-white p-4">
