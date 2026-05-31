@@ -189,32 +189,7 @@ summary::-webkit-details-marker {
   align-items: center;
 }
 
-/* Portal panel with dark industrial styling */
-.portal-panel {
-  min-width: 0;
-  background: #fff;
-  border: 1px solid var(--color-kharon-border);
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  animation: var(--animate-fade-in);
-}
 
-/* Kharon dark surface panel for industrial command interface */
-.kharon-panel {
-  background: var(--color-surface-charcoal);
-  border: 1px solid var(--color-line-cyan-soft);
-  border-radius: var(--radius-md);
-  box-shadow: 0 24px 80px rgba(0,0,0,.42),
-              inset 0 1px 0 var(--color-line-white-soft);
-  backdrop-filter: blur(0px);
-  color: var(--color-text-primary-dark);
-  animation: var(--animate-fade-in), panel-blur-in 0.8s ease-out forwards;
-}
-
-@keyframes panel-blur-in {
-  from { backdrop-filter: blur(0px); }
-  to { backdrop-filter: blur(8px); }
-}
 
 /* Kharon surface with industrial styling */
 .kharon-surface {

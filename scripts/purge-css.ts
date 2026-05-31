@@ -48,7 +48,40 @@ function walk(dir: string): string[] {
   });
 }
 
-const srcFiles = walk(srcDir).filter(f => f.endsWith('.astro'));
+const allFiles = walk(srcDir).map(p => p.replace(/\\/g, '/'));
+const components = allFiles.filter(f => f.includes('/src/components/') && f.endsWith('.astro'));
+
+const componentUsage: Record<string, string[]> = {};
+components.forEach(c => {
+  const name = path.basename(c, '.astro');
+  if (!componentUsage[name]) {
+    componentUsage[name] = [];
+  }
+  componentUsage[name].push(c);
+});
+
+const usedComponentFiles = new Set<string>();
+for (const file of allFiles) {
+  const content = fs.readFileSync(file, 'utf8');
+  for (const name of Object.keys(componentUsage)) {
+    const filesWithName = componentUsage[name];
+    if (filesWithName.includes(file)) continue;
+
+    const importRegex = new RegExp(`import\\s+${name}\\s+from`, 'i');
+    const tagRegex = new RegExp(`<${name}\\b`, 'i');
+    
+    if (importRegex.test(content) || tagRegex.test(content)) {
+      filesWithName.forEach(f => usedComponentFiles.add(f));
+    }
+  }
+}
+
+const srcFiles = allFiles.filter(file => {
+  if (file.includes('/src/components/') && file.endsWith('.astro')) {
+    return usedComponentFiles.has(file);
+  }
+  return file.endsWith('.astro');
+});
 const usedWords = new Set<string>();
 
 for (const file of srcFiles) {
@@ -183,54 +216,105 @@ css = css.replace(/\/\*[\s\S]*?\*\//g, '');
 let output = purgeCssBlock(css);
 console.log('Purged CSS size before variable pruning:', output.length, 'bytes');
 
-const usedVarNames = new Set<string>();
-let refMatch: RegExpExecArray | null;
-const varRefRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
-while ((refMatch = varRefRegex.exec(output)) !== null) {
-  usedVarNames.add(refMatch[1]);
-}
-for (const file of walk(srcDir).filter(f => f.endsWith('.astro'))) {
+// 1. Build a set of variables referenced in Astro files
+const astroVarRefs = new Set<string>();
+for (const file of srcFiles) {
   const content = fs.readFileSync(file, 'utf8');
   let astroMatch: RegExpExecArray | null;
   const astroVarRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
   while ((astroMatch = astroVarRegex.exec(content)) !== null) {
-    usedVarNames.add(astroMatch[1]);
+    astroVarRefs.add(astroMatch[1]);
   }
 }
 
-const varRegex = /(--[a-zA-Z0-9_-]+)\s*:[^;]+;/g;
-let match: RegExpExecArray | null;
-const vars: string[] = [];
-while ((match = varRegex.exec(output)) !== null) {
-  vars.push(match[1]);
-}
-const uniqueVars = Array.from(new Set(vars));
-console.log('Total CSS variables found:', uniqueVars.length);
-
-const unusedVars: string[] = [];
-for (const v of uniqueVars) {
-  if (!usedVarNames.has(v)) {
-    unusedVars.push(v);
+let variablesPruned = true;
+let pass = 1;
+while (variablesPruned) {
+  variablesPruned = false;
+  
+  // Find all var(--...) references in the current output
+  const usedVarNames = new Set<string>(astroVarRefs);
+  let refMatch: RegExpExecArray | null;
+  const varRefRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
+  while ((refMatch = varRefRegex.exec(output)) !== null) {
+    usedVarNames.add(refMatch[1]);
   }
-}
-console.log('Unused CSS variables to prune:', unusedVars.length);
 
-for (const v of unusedVars) {
-  const escaped = v.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const defRegex = new RegExp(escaped + '\\s*:[^;]+;', 'g');
-  output = output.replace(defRegex, '');
+  // Find all variable definitions in output
+  const varRegex = /(--[a-zA-Z0-9_-]+)\s*:[^;\}]+[;\}]/g;
+  let match: RegExpExecArray | null;
+  const vars: string[] = [];
+  while ((match = varRegex.exec(output)) !== null) {
+    vars.push(match[1]);
+  }
+  const uniqueVars = Array.from(new Set(vars));
+
+  const unusedVars: string[] = [];
+  for (const v of uniqueVars) {
+    if (!usedVarNames.has(v)) {
+      unusedVars.push(v);
+    }
+  }
+
+  if (unusedVars.length > 0) {
+    console.log(`Pass ${pass}: Pruning ${unusedVars.length} unused CSS variables`);
+    for (const v of unusedVars) {
+      const escaped = v.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const defRegex = new RegExp(escaped + '\\s*:[^;\}]+([;\}])', 'g');
+      output = output.replace(defRegex, (m, endChar) => {
+        return endChar === '}' ? '}' : '';
+      });
+    }
+    variablesPruned = true;
+    pass++;
+  }
 }
 
 // Keyframe pruning pass
-const animationRegex = /animation(?:-name)?\s*:\s*([^;\}]+)/g;
 const usedKeyframeNames = new Set<string>();
-let keyframeMatch: RegExpExecArray | null;
-while ((keyframeMatch = animationRegex.exec(output)) !== null) {
-  const words = keyframeMatch[1].match(/[a-zA-Z0-9_-]+/g) || [];
-  for (const w of words) {
-    usedKeyframeNames.add(w);
+
+// 1. Remove all keyframes from output to avoid matching keyframe definitions
+let cssWithoutKeyframes = output;
+let kIdx = 0;
+while (kIdx < cssWithoutKeyframes.length) {
+  if (cssWithoutKeyframes.slice(kIdx).startsWith('@keyframes')) {
+    let braceCount = 0;
+    let endIdx = kIdx;
+    while (endIdx < cssWithoutKeyframes.length) {
+      if (cssWithoutKeyframes[endIdx] === '{') {
+        braceCount = 1;
+        endIdx++;
+        break;
+      }
+      endIdx++;
+    }
+    while (endIdx < cssWithoutKeyframes.length && braceCount > 0) {
+      if (cssWithoutKeyframes[endIdx] === '{') braceCount++;
+      else if (cssWithoutKeyframes[endIdx] === '}') braceCount--;
+      endIdx++;
+    }
+    cssWithoutKeyframes = cssWithoutKeyframes.slice(0, kIdx) + cssWithoutKeyframes.slice(endIdx);
+  } else {
+    kIdx++;
   }
 }
+
+// 2. Find all defined keyframes in the original output
+const keyframeDefRegex = /@keyframes\s+([a-zA-Z0-9_-]+)/g;
+let kfMatch: RegExpExecArray | null;
+const definedKeyframes = new Set<string>();
+while ((kfMatch = keyframeDefRegex.exec(output)) !== null) {
+  definedKeyframes.add(kfMatch[1]);
+}
+
+// 3. Match defined keyframes against words in cssWithoutKeyframes
+const cssWords = new Set(cssWithoutKeyframes.match(/[a-zA-Z0-9_-]+/g) || []);
+for (const kf of definedKeyframes) {
+  if (cssWords.has(kf)) {
+    usedKeyframeNames.add(kf);
+  }
+}
+console.log('Preserving used keyframes:', Array.from(usedKeyframeNames));
 
 let keyframePrunedOutput = '';
 let j = 0;

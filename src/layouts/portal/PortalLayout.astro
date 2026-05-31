@@ -47,11 +47,121 @@ const roleLinks: Record<string, Array<{ label: string; href: string; key: string
   finance: [{ label: "Ledger", href: "/portal/finance/dashboard", key: "finance" }]
 };
 
-const links = [
-  ...(roleLinks[user?.role || ""] || []),
-  { label: "Password", href: "/portal/account/password", key: "password" },
-  ...(["admin", "finance"].includes(user?.role || "") ? [{ label: "MFA", href: "/portal/account/mfa", key: "mfa" }] : [])
-];
+interface NavLink {
+  label: string;
+  href: string;
+  key: string;
+}
+
+interface NavCategory {
+  title: string;
+  links: NavLink[];
+}
+
+// Helper to resolve icon SVGs for navigation keys
+function getIconPath(key: string): string {
+  switch (key) {
+    case "tech":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />`;
+    case "tech-history":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`;
+    case "admin":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />`;
+    case "planning":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />`;
+    case "dispatch":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />`;
+    case "operations":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />`;
+    case "jobs":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />`;
+    case "sites":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />`;
+    case "systems":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />`;
+    case "users":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />`;
+    case "exports":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />`;
+    case "compliance":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />`;
+    case "audit":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />`;
+    case "multi-client":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />`;
+    case "advanced-reporting":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />`;
+    case "feedback":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />`;
+    case "finance":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`;
+    case "client":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />`;
+    case "client-quotes":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />`;
+    case "password":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m-5 4a3.3 3.3 0 00-5-5 3.3 3.3 0 00-5 5 3.3 3.3 0 005 5 3.3 3.3 0 005-5zm0 0h5.5m0 0l2 2M15 13l2-2" />`;
+    case "mfa":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`;
+    default:
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />`;
+  }
+}
+
+// Categorized navigation setup
+const categories: NavCategory[] = [];
+if (user?.role === "admin") {
+  categories.push({
+    title: "Operations & Dispatch",
+    links: [
+      { label: "Admin Matrix", href: "/portal/admin/dashboard", key: "admin" },
+      { label: "Planning Calendar", href: "/portal/admin/planning", key: "planning" },
+      { label: "Dispatch Board", href: "/portal/admin/dispatch", key: "dispatch" },
+      { label: "Field Operations", href: "/portal/admin/operations", key: "operations" },
+      { label: "Jobs Registry", href: "/portal/admin/jobs", key: "jobs" }
+    ]
+  });
+  categories.push({
+    title: "Assets & Accounts",
+    links: [
+      { label: "Client Sites", href: "/portal/admin/sites", key: "sites" },
+      { label: "Protection Systems", href: "/portal/admin/systems", key: "systems" },
+      { label: "Technician Profiles", href: "/portal/admin/users", key: "users" },
+      { label: "Multi-Client Access", href: "/portal/admin/multi-client", key: "multi-client" }
+    ]
+  });
+  categories.push({
+    title: "Ledger & Compliance",
+    links: [
+      { label: "Sage Register", href: "/portal/finance/dashboard", key: "finance" },
+      { label: "Data Management", href: "/portal/admin/exports", key: "exports" },
+      { label: "SANS Compliance", href: "/portal/admin/compliance", key: "compliance" },
+      { label: "Security Audit Logs", href: "/portal/admin/audit", key: "audit" },
+      { label: "Advanced Reports", href: "/portal/admin/advanced-reporting", key: "advanced-reporting" }
+    ]
+  });
+  categories.push({
+    title: "Support & Viewports",
+    links: [
+      { label: "Feedback Log", href: "/portal/admin/feedback", key: "feedback" },
+      { label: "Technician View", href: "/portal/tech/dashboard", key: "tech" },
+      { label: "Completed Dispatches", href: "/portal/tech/history", key: "tech-history" }
+    ]
+  });
+} else {
+  categories.push({
+    title: "Operations Console",
+    links: roleLinks[user?.role || ""] || []
+  });
+}
+
+categories.push({
+  title: "Account Configuration",
+  links: [
+    { label: "Password Reset", href: "/portal/account/password", key: "password" },
+    ...(["admin", "finance"].includes(user?.role || "") ? [{ label: "MFA Configuration", href: "/portal/account/mfa", key: "mfa" }] : [])
+  ]
+});
 ---
 
 <!doctype html>
@@ -159,25 +269,76 @@ const links = [
   <div id="offline-conflict-banner" class="hidden border-b border-amber-400/40 bg-amber-950/80 px-4 py-3 text-sm font-semibold text-amber-100" role="status" aria-live="polite">
     Offline change conflict detected. Review the latest server data before resubmitting this work.
   </div>
+
+  <!-- Mobile Sliding Drawer Navigation -->
+  <div id="mobile-nav-drawer" class="fixed inset-0 z-[150] lg:hidden pointer-events-none" role="dialog" aria-modal="true" aria-label="Navigation drawer">
+    <!-- Overlay backdrop -->
+    <div id="mobile-drawer-backdrop" class="absolute inset-0 bg-[#0B0D0F]/80 backdrop-blur-sm opacity-0 transition-opacity duration-300 ease-out pointer-events-none"></div>
+    
+    <!-- Drawer panel -->
+    <div id="mobile-drawer-panel" class="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-gradient-to-b from-kharon-black to-kharon-charcoal border-r border-kharon-purple/20 shadow-2xl p-6 overflow-y-auto transform -translate-x-full transition-transform duration-300 ease-out pointer-events-auto flex flex-col">
+      <div class="flex items-center justify-between mb-8 pb-4 border-b border-kharon-purple/10">
+        <div class="flex items-center gap-3">
+          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="28" height="28" class="h-7 w-7" />
+          <span class="text-xs font-black uppercase tracking-[0.15em] text-white">Kharon Command</span>
+        </div>
+        <button id="mobile-drawer-close" class="text-white/60 hover:text-white transition-colors text-2xl font-bold h-10 w-10 flex items-center justify-center rounded-md hover:bg-kharon-purple/10">×</button>
+      </div>
+
+      <nav class="space-y-6 flex-1" aria-label="Portal mobile navigation">
+        {categories.map((category) => (
+          <div>
+            <h3 class="text-[9px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 px-3 mb-2">{category.title}</h3>
+            <div class="space-y-1">
+              {category.links.map((link) => (
+                <a
+                  href={link.href}
+                  aria-current={active === link.key ? "page" : undefined}
+                  class={`flex items-center gap-3 w-full rounded-md px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/35 shadow-inner border border-kharon-purple/50 border-l-4 border-l-kharon-cyan" : "text-white/75 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
+                >
+                  <svg class="h-4.5 w-4.5 shrink-0 text-kharon-cyan/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={getIconPath(link.key)}></svg>
+                  <span>{link.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      <div class="mt-6 pt-4 border-t border-kharon-purple/10 flex items-center gap-3">
+        <div class="h-1.5 w-1.5 rounded-full bg-kharon-green animate-pulse"></div>
+        <span class="text-[10px] uppercase font-bold tracking-wider text-white/50">{user?.role} Mode</span>
+      </div>
+    </div>
+  </div>
   
   <!-- Top Navigation Command Center -->
-  <header class="sticky top-0 z-50 w-full border-b border-kharon-purple/10 bg-kharon-black/80 backdrop-blur-md text-white shadow-lg shadow-kharon-black/20">
+  <header class="sticky top-0 z-50 w-full border-b border-kharon-purple/10 bg-kharon-black/85 backdrop-blur-md text-white shadow-lg shadow-kharon-black/20">
     <!-- Ambient top glow -->
     <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-kharon-purple/30 to-transparent"></div>
     
-    <div class="mx-auto flex min-h-[5rem] max-w-7xl flex-wrap items-center justify-between gap-4 sm:gap-6 px-4 py-3 sm:px-6 relative">
-      <a href="/portal" class="group flex shrink-0 items-center gap-3 transition-transform duration-300 hover:scale-[1.02]" aria-label="Kharon Operations Portal">
-        <div class="relative flex-none">
-          <div class="absolute inset-0 bg-kharon-purple/20 blur-lg group-hover:bg-kharon-purple/35 transition-colors duration-500 rounded-full"></div>
-          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" style="height:32px;width:32px;object-fit:contain;" class="relative z-10 block transition-transform duration-300 group-hover:scale-110" />
-        </div>
-        <span>
-          <span class="block whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-white group-hover:text-white transition-colors duration-300">Kharon Operations</span>
-          <span class="block whitespace-nowrap text-[10px] uppercase text-kharon-purple/70 tracking-wider">Secure Command Console</span>
-        </span>
-      </a>
+    <div class="mx-auto flex min-h-[5rem] max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 relative">
+      <div class="flex items-center gap-3">
+        <!-- Hamburger Toggle Button -->
+        <button id="mobile-drawer-toggle" class="lg:hidden flex items-center justify-center p-2 rounded-md text-white/80 hover:text-white hover:bg-kharon-purple/20 focus:outline-none focus:ring-2 focus:ring-kharon-cyan h-10 w-10 relative z-50" aria-label="Toggle navigation menu">
+          <svg class="h-6 w-6 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
 
-      <div class="ml-auto flex min-w-0 items-center gap-3 sm:gap-4 text-right text-xs">
+        <a href="/portal" class="group flex shrink-0 items-center gap-3 transition-transform duration-300 hover:scale-[1.02]" aria-label="Kharon Operations Portal">
+          <div class="relative flex-none">
+            <div class="absolute inset-0 bg-kharon-purple/20 blur-lg group-hover:bg-kharon-purple/35 transition-colors duration-500 rounded-full"></div>
+            <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" style="height:32px;width:32px;object-fit:contain;" class="relative z-10 block transition-transform duration-300 group-hover:scale-110" />
+          </div>
+          <span>
+            <span class="block whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-white group-hover:text-white transition-colors duration-300">Kharon Operations</span>
+            <span class="block whitespace-nowrap text-[10px] uppercase text-kharon-purple/70 tracking-wider">Secure Command Console</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="ml-auto flex items-center gap-3 sm:gap-4 text-right text-xs">
         <div class="min-w-0 leading-tight hidden xl:block">
           <p class="font-semibold text-white/90 truncate">{user?.name}</p>
           <div class="mt-0.5 flex items-center justify-end gap-1">
@@ -200,41 +361,26 @@ const links = [
   <div class="flex flex-col lg:flex-row max-w-7xl mx-auto">
     <!-- Left Navigation Rail - Desktop -->
     <aside class="hidden lg:block w-64 min-h-[calc(100vh-5rem)] border-r border-kharon-purple/10 bg-kharon-black/60 backdrop-blur-sm p-4">
-      <nav class="space-y-1" aria-label="Portal navigation">
-        {links.map((link) => (
-          <a
-            href={link.href}
-            aria-current={active === link.key ? "page" : undefined}
-            class={`block w-full text-left rounded-md px-4 py-3 text-sm font-semibold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/30 shadow-sm border border-kharon-purple/50" : "text-white/70 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
-          >
-            {link.label}
-          </a>
+      <nav class="space-y-6" aria-label="Portal navigation">
+        {categories.map((category) => (
+          <div>
+            <h3 class="text-[9px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 px-3 mb-2">{category.title}</h3>
+            <div class="space-y-1">
+              {category.links.map((link) => (
+                <a
+                  href={link.href}
+                  aria-current={active === link.key ? "page" : undefined}
+                  class={`flex items-center gap-3 w-full rounded-md px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/30 shadow-sm border border-kharon-purple/50 border-l-4 border-l-kharon-cyan" : "text-white/70 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
+                >
+                  <svg class="h-4.5 w-4.5 shrink-0 text-kharon-cyan/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={getIconPath(link.key)}></svg>
+                  <span>{link.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
     </aside>
-
-    <!-- Mobile/Responsive Navigation -->
-    <div class="lg:hidden w-full px-4 py-3 border-b border-kharon-purple/10 bg-kharon-black/40 backdrop-blur-sm">
-      <details class="mobile-menu">
-        <summary class="flex items-center justify-between w-full px-3 py-2 text-sm font-semibold uppercase tracking-wide text-white/80 rounded-md bg-kharon-charcoal/50 border border-kharon-purple/20 hover:bg-kharon-purple/10 cursor-pointer">
-          <span>Menu</span>
-          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </summary>
-        <div class="mt-2 space-y-1 bg-kharon-charcoal/80 backdrop-blur-md rounded-lg p-2 border border-kharon-purple/20">
-          {links.map((link) => (
-            <a
-              href={link.href}
-              aria-current={active === link.key ? "page" : undefined}
-              class={`block w-full text-left rounded-md px-4 py-3 text-sm font-semibold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/30 shadow-sm border border-kharon-purple/50" : "text-white/70 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-      </details>
-    </div>
 
     <!-- Main Content Area -->
     <main id="main-content" class="flex-1 min-h-[calc(100vh-5rem)] relative">
@@ -368,6 +514,38 @@ const links = [
         submitBtn.textContent = "Send Feedback";
       }
     });
+  </script>
+  <script is:inline>
+    // Sliding mobile menu drawer interactivity
+    (function() {
+      const openBtn = document.getElementById("mobile-drawer-toggle");
+      const closeBtn = document.getElementById("mobile-drawer-close");
+      const backdrop = document.getElementById("mobile-drawer-backdrop");
+      const drawer = document.getElementById("mobile-nav-drawer");
+      const panel = document.getElementById("mobile-drawer-panel");
+
+      function openDrawer() {
+        if (!drawer || !panel || !backdrop) return;
+        drawer.classList.remove("pointer-events-none");
+        backdrop.classList.remove("pointer-events-none");
+        backdrop.classList.add("opacity-100", "pointer-events-auto");
+        panel.classList.remove("-translate-x-full");
+      }
+
+      function closeDrawer() {
+        if (!drawer || !panel || !backdrop) return;
+        backdrop.classList.remove("opacity-100", "pointer-events-auto");
+        backdrop.classList.add("pointer-events-none");
+        panel.classList.add("-translate-x-full");
+        setTimeout(() => {
+          drawer.classList.add("pointer-events-none");
+        }, 300);
+      }
+
+      openBtn?.addEventListener("click", openDrawer);
+      closeBtn?.addEventListener("click", closeDrawer);
+      backdrop?.addEventListener("click", closeDrawer);
+    })();
   </script>
   <ClientOperationsManager />
 </body>
