@@ -85,7 +85,7 @@ try {
       <div id="page-result" class="mb-4 hidden rounded border px-4 py-3 text-sm font-semibold"></div>
 
       {clientRecords.length === 0 && !loadError && (
-        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite px-8 py-12 text-center">
+        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-charcoal px-8 py-12 text-center">
           <p class="text-white/40 text-sm mb-4">No client companies registered yet.</p>
           <button id="empty-add-btn" type="button"
             class="kharon-command-button px-5 py-2.5 text-sm font-semibold">
@@ -97,7 +97,7 @@ try {
       {clientRecords.length > 0 && (
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {clientRecords.map((client) => (
-            <article class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-5 flex flex-col gap-4">
+            <article class="rounded-lg border border-kharon-purple/20 bg-kharon-charcoal p-5 flex flex-col gap-4">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <h2 class="text-base font-semibold text-white truncate">{client.company_name}</h2>
@@ -151,7 +151,7 @@ try {
   <div id="client-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="flex min-h-screen items-center justify-center p-4">
       <div class="fixed inset-0 bg-kharon-black/80 backdrop-blur-sm" id="modal-backdrop"></div>
-      <div class="relative w-full max-w-lg rounded-xl border border-kharon-purple/30 bg-kharon-graphite p-6 shadow-2xl">
+      <div class="relative w-full max-w-lg rounded-xl border border-kharon-purple/30 bg-kharon-charcoal p-6 shadow-2xl">
         <div class="mb-5">
           <h2 id="modal-title" class="text-lg font-bold text-white">
             <span id="modal-action">Add</span> Client
@@ -200,7 +200,7 @@ try {
   <div id="delete-modal" class="fixed inset-0 z-[110] hidden overflow-y-auto" role="dialog" aria-modal="true">
     <div class="flex min-h-screen items-center justify-center p-4">
       <div class="fixed inset-0 bg-kharon-black/80 backdrop-blur-sm" id="delete-backdrop"></div>
-      <div class="relative w-full max-w-md rounded-xl border border-kharon-red/30 bg-kharon-graphite p-6 shadow-2xl">
+      <div class="relative w-full max-w-md rounded-xl border border-kharon-red/30 bg-kharon-charcoal p-6 shadow-2xl">
         <h2 class="text-lg font-bold text-white mb-2">Deactivate Client?</h2>
         <p class="text-sm text-white/60 mb-6">
           This will soft-delete <strong id="delete-client-name" class="text-white"></strong> and preserve all associated records.

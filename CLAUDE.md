@@ -132,7 +132,7 @@ Keep the exact banned-term list in `scripts/audit-site.ts` as the source of trut
 
 ## Size budgets
 
-- Global CSS: **< 95KB** (enforced by `scripts/purge-css.ts` post-build)
+- Global CSS: **< 100KB** hard limit, **95KB** warning threshold (enforced by `scripts/audit-site.ts`; purged by `scripts/purge-css.ts` post-build). Budget raised from 95KB on 2026-05-31 for the technical-depth content expansion.
 - Public client JS assets: **< 20KB** per asset
 
 ---

@@ -136,7 +136,7 @@ const sansLinks = [
           const tones = {
             red:     { border: "border-kharon-red/40",    bg: "bg-kharon-red/10",    label: "text-kharon-red"    },
             amber:   { border: "border-kharon-amber/40",  bg: "bg-kharon-amber/10",  label: "text-kharon-amber"  },
-            neutral: { border: "border-kharon-purple/30", bg: "bg-kharon-graphite",  label: "text-kharon-purple" }
+            neutral: { border: "border-kharon-purple/30", bg: "bg-kharon-charcoal",  label: "text-kharon-purple" }
           };
           const t = tones[sev.tone as keyof typeof tones];
           return (
@@ -266,7 +266,7 @@ const sansLinks = [
       </p>
       <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {sansLinks.map((s) => (
-          <div class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-5">
+          <div class="rounded-lg border border-kharon-purple/20 bg-kharon-charcoal p-5">
             <p class="text-base font-bold text-kharon-cyan tracking-tight">{s.code}</p>
             <p class="mt-2 text-xs leading-relaxed text-white/60">{s.scope}</p>
           </div>

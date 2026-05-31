@@ -124,7 +124,7 @@ try {
           {sites.map((site) => (
             <article class="border-l-4 border-kharon-blue bg-surface-charcoal/60 border border-transparent p-4 rounded">
               <p class="font-semibold text-white">{site.owner_company_name}</p>
-              <p class="mt-1 text-sm text-kharon-grey">{site.physical_address}</p>
+              <p class="mt-1 text-sm text-white/70">{site.physical_address}</p>
             </article>
           ))}
         </div>
@@ -163,7 +163,7 @@ try {
             </select>
           </div>
         </div>
-        <p id="quotes-no-results" class="hidden px-4 py-3 text-sm text-kharon-grey sm:px-5">No records match your filter.</p>
+        <p id="quotes-no-results" class="hidden px-4 py-3 text-sm text-white/70 sm:px-5">No records match your filter.</p>
         <div class="portal-scroll-x overflow-x-auto">
           <table class="kharon-table w-full min-w-[760px]">
             <thead>
@@ -180,7 +180,7 @@ try {
             </thead>
             <tbody id="quotes-tbody">
               {records.length === 0 && (
-                <tr><td class="p-4 text-kharon-grey" colspan="8">No quote, invoice or payment records are available.</td></tr>
+                <tr><td class="p-4 text-white/70" colspan="8">No quote, invoice or payment records are available.</td></tr>
               )}
               {records.map((record) => (
                 <tr
@@ -208,7 +208,7 @@ try {
                         Approve quote
                       </button>
                     ) : (
-                      <span class="text-xs uppercase text-kharon-grey/50">No action</span>
+                      <span class="text-xs uppercase text-white/40">No action</span>
                     )}
                   </td>
                 </tr>

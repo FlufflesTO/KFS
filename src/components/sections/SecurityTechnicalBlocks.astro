@@ -65,7 +65,7 @@ const integrationEvents = [
 
     <div class="mt-10 grid gap-5 md:grid-cols-3">
       {accessTiers.map((tier) => (
-        <article class={`rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-6 ${tier.level === 3 ? "border-l-4 border-l-kharon-purple" : ""}`}>
+        <article class={`rounded-lg border border-kharon-purple/20 bg-kharon-charcoal p-6 ${tier.level === 3 ? "border-l-4 border-l-kharon-purple" : ""}`}>
           <div class="flex items-center gap-3">
             <span class={`flex h-9 w-9 items-center justify-center rounded-md text-sm font-bold text-white ${tier.level === 3 ? "bg-kharon-purple" : "bg-kharon-blue"}`}>
               L{tier.level}
@@ -108,7 +108,7 @@ const integrationEvents = [
 
     <div class="mt-10 grid gap-5 md:grid-cols-2">
       {cctvZones.map((item) => (
-        <article class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-6">
+        <article class="rounded-lg border border-kharon-purple/20 bg-kharon-charcoal p-6">
           <div class="flex items-start justify-between gap-4">
             <h3 class="text-lg font-bold text-white">{item.zone}</h3>
             <span class="shrink-0 rounded-md bg-kharon-cyan/15 px-3 py-1 text-xs font-bold text-kharon-cyan">
@@ -159,7 +159,7 @@ const integrationEvents = [
         <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Integration Scenarios</p>
         <div class="grid gap-4">
           {integrationEvents.map((evt) => (
-            <div class="rounded-xl border border-kharon-purple/20 p-5 bg-kharon-graphite hover:bg-kharon-graphite/70 transition-colors">
+            <div class="rounded-xl border border-kharon-purple/20 p-5 bg-kharon-charcoal hover:bg-kharon-charcoal/70 transition-colors">
               <div class="flex items-center gap-2">
                 <span class="h-2 w-2 rounded-full" style={`background-color: ${evt.color}`}></span>
                 <h4 class="font-bold tracking-tight text-white">{evt.label}</h4>

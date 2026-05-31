@@ -257,34 +257,34 @@ try {
 
       {/* Compliance Summary Cards */}
       <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
-        <div class="rounded-xl border border-kharon-border bg-white p-4 shadow-sm flex flex-col justify-between">
+        <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal p-4 shadow-sm flex flex-col justify-between">
           <div>
             <p class="text-xs font-bold uppercase text-kharon-purple">Total Systems</p>
-            <p class="mt-2 text-2xl font-bold text-kharon-black">{complianceStats.totalSystems}</p>
+            <p class="mt-2 text-2xl font-bold text-white">{complianceStats.totalSystems}</p>
           </div>
         </div>
-        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.overdueSystems > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-border bg-white"}`}>
+        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.overdueSystems > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
           <div>
-            <p class={`text-xs font-bold uppercase ${complianceStats.overdueSystems > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Overdue</p>
-            <p class="mt-2 text-2xl font-bold text-kharon-black">{complianceStats.overdueSystems}</p>
+            <p class={`text-xs font-bold uppercase ${complianceStats.overdueSystems > 0 ? "text-kharon-red" : "text-white/70"}`}>Overdue</p>
+            <p class="mt-2 text-2xl font-bold text-white">{complianceStats.overdueSystems}</p>
           </div>
         </div>
-        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.dueSoonSystems > 0 ? "border-amber-200 bg-amber-50/50" : "border-kharon-border bg-white"}`}>
+        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.dueSoonSystems > 0 ? "border-amber-200 bg-amber-50/50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
           <div>
-            <p class={`text-xs font-bold uppercase ${complianceStats.dueSoonSystems > 0 ? "text-kharon-amber" : "text-kharon-grey"}`}>Due Soon</p>
-            <p class="mt-2 text-2xl font-bold text-kharon-black">{complianceStats.dueSoonSystems}</p>
+            <p class={`text-xs font-bold uppercase ${complianceStats.dueSoonSystems > 0 ? "text-kharon-amber" : "text-white/70"}`}>Due Soon</p>
+            <p class="mt-2 text-2xl font-bold text-white">{complianceStats.dueSoonSystems}</p>
           </div>
         </div>
-        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.blockedCertificates > 0 ? "border-amber-200 bg-amber-50/50" : "border-kharon-border bg-white"}`}>
+        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.blockedCertificates > 0 ? "border-amber-200 bg-amber-50/50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
           <div>
-            <p class={`text-xs font-bold uppercase ${complianceStats.blockedCertificates > 0 ? "text-amber-600" : "text-kharon-grey"}`}>Blocked Certs</p>
-            <p class="mt-2 text-2xl font-bold text-kharon-black">{complianceStats.blockedCertificates}</p>
+            <p class={`text-xs font-bold uppercase ${complianceStats.blockedCertificates > 0 ? "text-amber-600" : "text-white/70"}`}>Blocked Certs</p>
+            <p class="mt-2 text-2xl font-bold text-white">{complianceStats.blockedCertificates}</p>
           </div>
         </div>
-        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.criticalDefects > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-border bg-white"}`}>
+        <div class={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${complianceStats.criticalDefects > 0 ? "border-red-200 bg-red-50/50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
           <div>
-            <p class={`text-xs font-bold uppercase ${complianceStats.criticalDefects > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>Critical Issues</p>
-            <p class="mt-2 text-2xl font-bold text-kharon-black">{complianceStats.criticalDefects}</p>
+            <p class={`text-xs font-bold uppercase ${complianceStats.criticalDefects > 0 ? "text-kharon-red" : "text-white/70"}`}>Critical Issues</p>
+            <p class="mt-2 text-2xl font-bold text-white">{complianceStats.criticalDefects}</p>
           </div>
         </div>
       </div>
@@ -294,11 +294,11 @@ try {
         {/* Left Column - Systems and Defects */}
         <div class="space-y-6">
           {/* Systems Overview */}
-          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal p-5 shadow-sm">
+            <div class="flex items-center justify-between border-b border-kharon-purple/20 pb-4 mb-4">
               <div>
                 <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Asset Lifecycle</p>
-                <h2 class="text-lg font-bold text-kharon-black">Systems & Compliance Status</h2>
+                <h2 class="text-lg font-bold text-white">Systems & Compliance Status</h2>
               </div>
               <a href="/compliance" class="text-xs font-bold text-kharon-purple hover:underline">Standards reference →</a>
             </div>
@@ -306,25 +306,25 @@ try {
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead>
-                  <tr class="border-b border-kharon-border text-left">
-                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">System</th>
-                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">Coverage</th>
-                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">Next Due</th>
-                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">Defects</th>
-                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">Certificates</th>
-                    <th class="pb-2 pr-4 font-bold uppercase text-kharon-grey/70 text-[10px] tracking-wider">Status</th>
+                  <tr class="border-b border-kharon-purple/20 text-left">
+                    <th class="pb-2 pr-4 font-bold uppercase text-white/60 text-[10px] tracking-wider">System</th>
+                    <th class="pb-2 pr-4 font-bold uppercase text-white/60 text-[10px] tracking-wider">Coverage</th>
+                    <th class="pb-2 pr-4 font-bold uppercase text-white/60 text-[10px] tracking-wider">Next Due</th>
+                    <th class="pb-2 pr-4 font-bold uppercase text-white/60 text-[10px] tracking-wider">Defects</th>
+                    <th class="pb-2 pr-4 font-bold uppercase text-white/60 text-[10px] tracking-wider">Certificates</th>
+                    <th class="pb-2 pr-4 font-bold uppercase text-white/60 text-[10px] tracking-wider">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {systems.map((system) => (
-                    <tr class="border-b border-kharon-border/30 hover:bg-kharon-light/30">
+                    <tr class="border-b border-kharon-purple/15 hover:bg-kharon-charcoal/30">
                       <td class="py-3 pr-4">
                         <div>
-                          <span class="font-semibold text-kharon-black">{system.system_type}</span>
-                          <p class="text-xs text-kharon-grey">{system.owner_company_name}</p>
+                          <span class="font-semibold text-white">{system.system_type}</span>
+                          <p class="text-xs text-white/70">{system.owner_company_name}</p>
                         </div>
                       </td>
-                      <td class="py-3 pr-4 text-kharon-black">{system.coverage_area}</td>
+                      <td class="py-3 pr-4 text-white">{system.coverage_area}</td>
                       <td class="py-3 pr-4">
                         <span class={`text-xs font-medium ${getStatusClass(system.next_due_date)}`}>
                           {system.next_due_date || "N/A"}
@@ -347,7 +347,7 @@ try {
                             ? "text-kharon-red"
                             : system.valid_certificates_count > 0
                             ? "text-kharon-green"
-                            : "text-kharon-grey"
+                            : "text-white/70"
                         }`}>
                           {system.valid_certificates_count} valid, {system.blocked_certificates_count} blocked
                         </span>
@@ -365,15 +365,15 @@ try {
           </div>
 
           {/* Open Defects */}
-          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between border-b border-kharon-border pb-4 mb-4">
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal p-5 shadow-sm">
+            <div class="flex items-center justify-between border-b border-kharon-purple/20 pb-4 mb-4">
               <div>
                 <p class="text-xs font-bold uppercase tracking-wider text-kharon-red">Risk Management</p>
-                <h2 class="text-lg font-bold text-kharon-black">Open Defects Register</h2>
+                <h2 class="text-lg font-bold text-white">Open Defects Register</h2>
               </div>
-              <details class="text-xs text-kharon-grey relative">
+              <details class="text-xs text-white/70 relative">
                 <summary class="cursor-pointer font-semibold text-kharon-purple hover:underline">Severity Guide</summary>
-                <div class="absolute right-0 mt-2 z-10 w-64 rounded-md border border-kharon-border bg-white p-3 shadow-md text-xs">
+                <div class="absolute right-0 mt-2 z-10 w-64 rounded-md border border-kharon-purple/20 bg-kharon-charcoal p-3 shadow-md text-xs">
                   <ul class="grid gap-1.5">
                     <li><strong>Critical</strong> — Immediate attention required; affects safety or compliance.</li>
                     <li><strong>Major</strong> — Important issue; requires attention within 30 days.</li>
@@ -384,30 +384,30 @@ try {
             </div>
 
             <div class="space-y-3">
-              {openDefects.length === 0 && <p class="text-sm text-kharon-grey italic py-2">No open defects are recorded for your systems.</p>}
+              {openDefects.length === 0 && <p class="text-sm text-white/70 italic py-2">No open defects are recorded for your systems.</p>}
               {openDefects.map((defect) => (
-                <article class="flex items-start justify-between gap-4 p-4 rounded-lg border bg-kharon-light/30" class:list={[
+                <article class="flex items-start justify-between gap-4 p-4 rounded-lg border bg-kharon-charcoal/30" class:list={[
                   defect.severity === "Critical" ? "border-l-4 border-l-kharon-red bg-red-50/20" : 
                   defect.severity === "Major" ? "border-l-4 border-l-kharon-amber bg-amber-50/20" : 
-                  "border-l-4 border-l-kharon-grey bg-kharon-light/20"
+                  "border-l-4 border-l-kharon-grey bg-kharon-charcoal/20"
                 ]}>
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center justify-between">
-                      <span class="font-semibold text-kharon-black">{defect.owner_company_name}</span>
+                      <span class="font-semibold text-white">{defect.owner_company_name}</span>
                       <span class={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase border ${
                         defect.severity === "Critical" ? "border-red-200 bg-red-50 text-kharon-red" :
                         defect.severity === "Major" ? "border-amber-200 bg-amber-50 text-amber-700" :
-                        "border-kharon-border bg-white text-kharon-grey"
+                        "border-kharon-purple/20 bg-kharon-charcoal text-white/70"
                       }`}>{defect.severity}</span>
                     </div>
-                    <p class="text-kharon-grey mt-1">{defect.system_type} / {defect.coverage_area}</p>
-                    <p class="mt-1 text-xs text-kharon-grey/70 font-mono">ID: {defect.id.slice(0, 8)}...</p>
-                    {defect.sans_clause_ref && <p class="mt-1 text-[10px] text-kharon-grey/70 font-mono">SANS Clause: {defect.sans_clause_ref}</p>}
-                    <p class="mt-2 text-sm text-kharon-black bg-white border border-kharon-border/60 p-2.5 rounded">{defect.description}</p>
+                    <p class="text-white/70 mt-1">{defect.system_type} / {defect.coverage_area}</p>
+                    <p class="mt-1 text-xs text-white/60 font-mono">ID: {defect.id.slice(0, 8)}...</p>
+                    {defect.sans_clause_ref && <p class="mt-1 text-[10px] text-white/60 font-mono">SANS Clause: {defect.sans_clause_ref}</p>}
+                    <p class="mt-2 text-sm text-white bg-kharon-charcoal border border-kharon-purple/25 p-2.5 rounded">{defect.description}</p>
                     {defect.remediation_notes && (
                       <div class="mt-2">
                         <p class="text-[10px] font-bold uppercase text-kharon-purple">Remediation Notes</p>
-                        <p class="text-xs text-kharon-black bg-blue-50 border border-blue-200 p-2.5 rounded">{defect.remediation_notes}</p>
+                        <p class="text-xs text-white bg-blue-50 border border-blue-200 p-2.5 rounded">{defect.remediation_notes}</p>
                       </div>
                     )}
                   </div>
@@ -420,19 +420,19 @@ try {
         {/* Right Column - Certificates and Actions */}
         <div class="space-y-6">
           {/* Certificate Summary */}
-          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
-            <div class="border-b border-kharon-border pb-4 mb-4">
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal p-5 shadow-sm">
+            <div class="border-b border-kharon-purple/20 pb-4 mb-4">
               <p class="text-xs font-bold uppercase tracking-wider text-kharon-blue">Certification Status</p>
-              <h2 class="text-lg font-bold text-kharon-black">Certificate Register</h2>
+              <h2 class="text-lg font-bold text-white">Certificate Register</h2>
             </div>
 
             <div class="space-y-4">
               <div class="grid grid-cols-2 gap-4">
-                <div class={`rounded-lg border p-3 text-center ${complianceStats.validCertificates > 0 ? "border-green-200 bg-green-50" : "border-kharon-border bg-white"}`}>
+                <div class={`rounded-lg border p-3 text-center ${complianceStats.validCertificates > 0 ? "border-green-200 bg-green-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
                   <p class="text-2xl font-bold text-kharon-green">{complianceStats.validCertificates}</p>
                   <p class="text-xs font-bold text-kharon-green">Valid</p>
                 </div>
-                <div class={`rounded-lg border p-3 text-center ${complianceStats.blockedCertificates > 0 ? "border-amber-200 bg-amber-50" : "border-kharon-border bg-white"}`}>
+                <div class={`rounded-lg border p-3 text-center ${complianceStats.blockedCertificates > 0 ? "border-amber-200 bg-amber-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
                   <p class="text-2xl font-bold text-kharon-amber">{complianceStats.blockedCertificates}</p>
                   <p class="text-xs font-bold text-kharon-amber">Blocked</p>
                 </div>
@@ -440,16 +440,16 @@ try {
 
               <div class="space-y-3">
                 {certificates.map((cert) => (
-                  <div class="p-3 rounded-lg border bg-white" class:list={[
+                  <div class="p-3 rounded-lg border bg-kharon-charcoal" class:list={[
                     cert.status === "Valid" ? "border-l-4 border-l-kharon-green bg-green-50/30" :
                     cert.status === "Blocked" ? "border-l-4 border-l-kharon-amber bg-amber-50/30" :
                     cert.status === "Expired" ? "border-l-4 border-l-kharon-red bg-red-50/30" :
-                    "border-l-4 border-l-kharon-grey bg-kharon-light/30"
+                    "border-l-4 border-l-kharon-grey bg-kharon-charcoal/30"
                   ]}>
                     <div class="flex justify-between items-start">
                       <div>
-                        <p class="font-semibold text-kharon-black">{cert.certificate_type}</p>
-                        <p class="text-xs text-kharon-grey">{cert.system_type}</p>
+                        <p class="font-semibold text-white">{cert.certificate_type}</p>
+                        <p class="text-xs text-white/70">{cert.system_type}</p>
                       </div>
                       <span class={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
                         cert.status === "Valid" ? "bg-green-100 text-kharon-green border border-green-200" :
@@ -460,8 +460,8 @@ try {
                     </div>
                     
                     <div class="mt-2 text-xs">
-                      <p class="text-kharon-grey">Issued: {cert.issued_date}</p>
-                      {cert.expiry_date && <p class="text-kharon-grey">Expires: {cert.expiry_date}</p>}
+                      <p class="text-white/70">Issued: {cert.issued_date}</p>
+                      {cert.expiry_date && <p class="text-white/70">Expires: {cert.expiry_date}</p>}
                     </div>
                     
                     {cert.status === "Blocked" && cert.blocking_defect_description && (
@@ -477,23 +477,23 @@ try {
           </div>
 
           {/* Quick Actions */}
-          <div class="rounded-xl border border-kharon-border bg-white p-5 shadow-sm">
-            <div class="border-b border-kharon-border pb-4 mb-4">
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal p-5 shadow-sm">
+            <div class="border-b border-kharon-purple/20 pb-4 mb-4">
               <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Quick Actions</p>
-              <h2 class="text-lg font-bold text-kharon-black">Support Options</h2>
+              <h2 class="text-lg font-bold text-white">Support Options</h2>
             </div>
 
             <div class="space-y-3">
-              <a href="/portal/client/quotes" class="block w-full rounded border border-kharon-purple bg-white px-4 py-3 text-left text-sm font-bold text-kharon-purple hover:bg-kharon-purple hover:text-white transition-colors">
+              <a href="/portal/client/quotes" class="block w-full rounded border border-kharon-purple bg-kharon-charcoal px-4 py-3 text-left text-sm font-bold text-kharon-purple hover:bg-kharon-purple hover:text-white transition-colors">
                 Request Quote
               </a>
-              <a href="/portal/client/maintenance-request" class="block w-full rounded border border-kharon-blue bg-white px-4 py-3 text-left text-sm font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
+              <a href="/portal/client/maintenance-request" class="block w-full rounded border border-kharon-blue bg-kharon-charcoal px-4 py-3 text-left text-sm font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
                 Submit Service Request
               </a>
-              <a href="/compliance" class="block w-full rounded border border-kharon-purple bg-white px-4 py-3 text-left text-sm font-bold text-kharon-purple hover:bg-kharon-purple hover:text-white transition-colors">
+              <a href="/compliance" class="block w-full rounded border border-kharon-purple bg-kharon-charcoal px-4 py-3 text-left text-sm font-bold text-kharon-purple hover:bg-kharon-purple hover:text-white transition-colors">
                 Compliance Resources
               </a>
-              <a href="/contact" class="block w-full rounded border border-kharon-grey bg-white px-4 py-3 text-left text-sm font-bold text-kharon-grey hover:bg-kharon-grey hover:text-white transition-colors">
+              <a href="/contact" class="block w-full rounded border border-kharon-grey bg-kharon-charcoal px-4 py-3 text-left text-sm font-bold text-white/70 hover:bg-kharon-grey hover:text-white transition-colors">
                 Contact Support
               </a>
             </div>

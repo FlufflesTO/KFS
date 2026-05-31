@@ -47,19 +47,19 @@ try {
       )}
 
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p class="text-sm text-kharon-grey">
+        <p class="text-sm text-white/70">
           {feedback.length} submission{feedback.length === 1 ? "" : "s"}
         </p>
       </div>
 
       <div class="grid gap-4">
         {feedback.length === 0 && !loadError && (
-          <p class="border border-kharon-border bg-white p-6 text-center text-kharon-grey">
+          <p class="border border-kharon-purple/20 bg-kharon-charcoal p-6 text-center text-white/70">
             No feedback submissions found.
           </p>
         )}
         {feedback.map((f) => (
-          <article class="border border-kharon-border bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+          <article class="border border-kharon-purple/20 bg-kharon-charcoal p-5 rounded-lg shadow-sm hover:shadow-md transition-shadow">
             <div class="flex flex-wrap items-start justify-between gap-4">
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-3 flex-wrap">
@@ -70,7 +70,7 @@ try {
                   }`}>
                     {f.category}
                   </span>
-                  <span class="text-xs text-kharon-grey font-medium">
+                  <span class="text-xs text-white/70 font-medium">
                     {new Date(f.submitted_at).toLocaleString('en-ZA')}
                   </span>
                   <span class={`rounded px-1.5 py-0.5 text-[10px] font-mono font-bold ${

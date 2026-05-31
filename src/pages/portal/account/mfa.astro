@@ -60,7 +60,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Current Status</p>
               <h2 class="mt-2 text-xl font-bold text-white">{mfa.enabled ? "MFA Enabled" : mfa.required ? "MFA Required" : "MFA Available"}</h2>
             </div>
-            <span class={`rounded px-3 py-1 text-xs font-bold uppercase border tracking-widest ${mfa.enabled ? "border-kharon-green bg-kharon-green/10 text-kharon-green" : mfa.required ? "border-kharon-amber bg-kharon-amber/10 text-kharon-amber" : "border-kharon-purple/20 bg-kharon-graphite text-kharon-light/60"}`}>
+            <span class={`rounded px-3 py-1 text-xs font-bold uppercase border tracking-widest ${mfa.enabled ? "border-kharon-green bg-kharon-green/10 text-kharon-green" : mfa.required ? "border-kharon-amber bg-kharon-amber/10 text-kharon-amber" : "border-kharon-purple/20 bg-kharon-charcoal text-kharon-light/60"}`}>
               {mfa.enabled ? "Protected" : mfa.required ? "Setup required" : "Optional"}
             </span>
           </div>
