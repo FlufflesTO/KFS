@@ -114,16 +114,39 @@ output = output.replace(varRegex, (m) => {
 
 // 3. Simple class pruning for standard tailwind classes
 // This is a conservative approach to avoid breaking dynamic styles
-const rules = output.split('}');
+const rules: string[] = [];
+let depth = 0;
+let currentRule = '';
+
+for (let i = 0; i < output.length; i++) {
+  const char = output[i];
+  currentRule += char;
+  if (char === '{') depth++;
+  if (char === '}') {
+    depth--;
+    if (depth === 0) {
+      rules.push(currentRule);
+      currentRule = '';
+    }
+  }
+}
+if (currentRule) rules.push(currentRule);
+
 let prunedOutput = '';
 
 for (let i = 0; i < rules.length; i++) {
-  const rule = rules[i];
+  const rule = rules[i].trim();
   if (!rule) continue;
+  
+  // Skip pruning for media queries, keyframes, or complex nested structures
+  if (rule.startsWith('@') || rule.includes('{', rule.indexOf('{') + 1)) {
+    prunedOutput += rule;
+    continue;
+  }
   
   const parts = rule.split('{');
   if (parts.length !== 2) {
-    prunedOutput += rule + '}';
+    prunedOutput += rule;
     continue;
   }
   
@@ -133,10 +156,10 @@ for (let i = 0; i < rules.length; i++) {
   if (selector.startsWith('.') && !selector.includes(':') && !selector.includes('[') && !selector.includes(' ')) {
     const className = selector.substring(1);
     if (usedClasses.has(className)) {
-      prunedOutput += selector + '{' + body + '}';
+      prunedOutput += rule;
     }
   } else {
-    prunedOutput += selector + '{' + body + '}';
+    prunedOutput += rule;
   }
 }
 
