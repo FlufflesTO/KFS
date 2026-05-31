@@ -112,81 +112,8 @@ output = output.replace(varRegex, (m) => {
   return usedVars.has(varName) ? m : '';
 });
 
-// 3. Simple class pruning for standard tailwind classes
-// This is a conservative approach to avoid breaking dynamic styles
-const rules = output.split('}');
-let prunedOutput = '';
-
-for (let i = 0; i < rules.length; i++) {
-  const rule = rules[i];
-  if (!rule) continue;
-  
-  const parts = rule.split('{');
-  if (parts.length !== 2) {
-    prunedOutput += rule + '}';
-    continue;
-  }
-  
-  const selector = parts[0].trim();
-  const body = parts[1].trim();
-  
-  if (selector.startsWith('.') && !selector.includes(':') && !selector.includes('[') && !selector.includes(' ')) {
-    const className = selector.substring(1);
-    if (usedClasses.has(className)) {
-      prunedOutput += selector + '{' + body + '}';
-    }
-  } else {
-    prunedOutput += selector + '{' + body + '}';
-  }
-}
-
-output = prunedOutput;
-
-// 4. Prune empty @media queries
+// 3. Prune empty @media queries (safe regex, doesn't break nesting)
 output = output.replace(/@media[^{]+\{\s*\}/g, '');
-
-// 5. Final pass for keyframes - only keep used ones
-const keyframeMatches = output.match(/@keyframes\s+([\w-]+)/g);
-if (keyframeMatches) {
-  const usedKeyframes = new Set<string>();
-  const animationRegex = /animation(?:\-name)?:\s*([\w-]+)/g;
-  let animMatch;
-  while ((animMatch = animationRegex.exec(output)) !== null) {
-    usedKeyframes.add(animMatch[1]);
-  }
-  
-  // Also check standard Kharon animations
-  ['fade-in', 'slide-up', 'titan-drift', 'linework-drift', 'reveal-up'].forEach(k => usedKeyframes.add(k));
-
-  const keyframeBlocks = output.split(/(@keyframes\s+[\w-]+\s*\{)/);
-  let keyframePrunedOutput = '';
-  let j = 0;
-  while (j < keyframeBlocks.length) {
-    const block = keyframeBlocks[j];
-    if (block.startsWith('@keyframes')) {
-      const name = block.match(/@keyframes\s+([\w-]+)/)![1];
-      const content = keyframeBlocks[j+1];
-      // Find the end of this keyframe block
-      let depth = 1;
-      let k = 0;
-      while (depth > 0 && k < content.length) {
-        if (content[k] === '{') depth++;
-        if (content[k] === '}') depth--;
-        k++;
-      }
-      
-      if (usedKeyframes.has(name)) {
-        keyframePrunedOutput += block + content.substring(0, k);
-      }
-      j += 2;
-      // Skip the rest of the content that was consumed
-      // We need to be careful here as the split might have missed nested braces
-    } else {
-      keyframePrunedOutput += block;
-      j++;
-    }
-  }
-}
 
 // Use esbuild for advanced CSS minification
 output = esbuild.transformSync(output, { loader: 'css', minify: true }).code;
