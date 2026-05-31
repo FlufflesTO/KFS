@@ -85,7 +85,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Site Management | Kharon Portal" active="sites" user={user}>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="py-2">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
         <h1 class="text-2xl font-bold text-white tracking-tight font-heading">Site Management</h1>
@@ -263,7 +263,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           </div>
           
           <div class="grid gap-1 justify-end self-end">
-            <button class="kharon-command-button py-2.5 px-6 h-[40px] text-xs">Grant Access</button>
+            <button class="kharon-command-button py-3 px-6 h-[40px] text-xs">Grant Access</button>
           </div>
           <p class="client-site-access-result hidden rounded border px-4 py-3 text-sm font-semibold lg:col-span-3"></p>
         </form>
@@ -287,7 +287,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               <input type="hidden" name="action" value="revoke" />
               <input type="hidden" name="userId" value={mapping.user_id} />
               <input type="hidden" name="siteId" value={mapping.site_id} />
-              <button class="kharon-danger-button py-1.5 px-3 text-xs">Revoke</button>
+              <button class="kharon-danger-button py-2 px-3 text-xs">Revoke</button>
               <p class="client-site-access-result hidden w-full rounded border px-4 py-3 text-sm font-semibold"></p>
             </form>
           ))}

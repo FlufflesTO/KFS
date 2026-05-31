@@ -91,18 +91,18 @@ function daysUntil(dateText: string): number | null {
 
 function riskForDueDate(dateText: string): { label: string; className: string } {
   const days = daysUntil(dateText);
-  if (days === null) return { label: "Unknown", className: "border-kharon-border bg-kharon-light text-kharon-grey" };
-  if (days < 0) return { label: "Overdue", className: "border-kharon-red/30 bg-kharon-red/10 text-kharon-red" };
-  if (days <= 30) return { label: "Due <=30d", className: "border-amber-300 bg-amber-50 text-amber-900" };
-  if (days <= 90) return { label: "Due <=90d", className: "border-kharon-blue/30 bg-kharon-blue/10 text-kharon-blue" };
-  return { label: "Scheduled", className: "border-emerald-300 bg-emerald-50 text-emerald-900" };
+  if (days === null) return { label: "Unknown", className: "border-kharon-purple/20 bg-white/5 text-white/50" };
+  if (days < 0) return { label: "Overdue", className: "border-kharon-red/30 bg-kharon-red/20 text-kharon-red" };
+  if (days <= 30) return { label: "Due <=30d", className: "border-kharon-amber/35 bg-kharon-amber/20 text-kharon-amber" };
+  if (days <= 90) return { label: "Due <=90d", className: "border-kharon-blue/40 bg-kharon-blue/20 text-kharon-cyan" };
+  return { label: "Scheduled", className: "border-kharon-green/35 bg-kharon-green/20 text-kharon-green" };
 }
 
 function priorityBadge(p: string): string {
-  if (p === "Critical") return "bg-kharon-red text-white";
-  if (p === "High") return "border border-amber-400 bg-amber-50 text-amber-800";
-  if (p === "Low") return "border border-kharon-border bg-white text-kharon-grey";
-  return "bg-kharon-light text-kharon-grey";
+  if (p === "Critical") return "bg-kharon-red/20 text-kharon-red border border-kharon-red/30";
+  if (p === "High") return "bg-kharon-amber/20 text-kharon-amber border border-kharon-amber/35";
+  if (p === "Low") return "bg-white/5 text-white/50 border border-white/10";
+  return "bg-kharon-purple/20 text-kharon-cyan border border-kharon-purple/30";
 }
 
 function slaLabel(requiredByDate: string | null): { text: string; cls: string } | null {
@@ -248,11 +248,11 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
 ---
 
 <PortalLayout title="Planning | Kharon Portal" active="planning" user={user}>
-  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment rounded-xl border border-kharon-purple/10 mb-6 shadow-inner relative overflow-hidden">
     <div class="mx-auto max-w-7xl">
       <p class="text-xs font-bold uppercase text-kharon-purple">Operational planning</p>
       <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Dispatch load and lifecycle due calendar</h1>
-      <p class="mt-4 max-w-3xl text-white/65">
+      <p class="mt-4 max-w-3xl text-white/60">
         Admin planning view for scheduled jobs, technician load, lifecycle exposure and unresolved client requests.
       </p>
     </div>
@@ -263,51 +263,51 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
       {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
 
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article class="border border-kharon-border bg-white p-4">
+        <article class="rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-4 backdrop-blur-sm text-white">
           <p class="text-xs font-bold uppercase text-kharon-purple">Scheduled</p>
-          <p class="mt-2 text-2xl font-bold">{management.scheduledJobs}</p>
+          <p class="mt-2 text-2xl font-bold text-white">{management.scheduledJobs}</p>
         </article>
-        <article class="border border-kharon-border bg-white p-4">
-          <p class="text-xs font-bold uppercase text-kharon-blue">In progress</p>
-          <p class="mt-2 text-2xl font-bold">{management.inProgressJobs}</p>
+        <article class="rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-4 backdrop-blur-sm text-white">
+          <p class="text-xs font-bold uppercase text-kharon-cyan">In progress</p>
+          <p class="mt-2 text-2xl font-bold text-white">{management.inProgressJobs}</p>
         </article>
-        <article class={`border p-4 ${management.overdueSystems > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
-          <p class="text-xs font-bold uppercase text-kharon-red">Overdue systems</p>
-          <p class={`mt-2 text-2xl font-bold ${management.overdueSystems > 0 ? "text-red-700" : ""}`}>{management.overdueSystems}</p>
+        <article class={`rounded-lg border p-4 backdrop-blur-sm ${management.overdueSystems > 0 ? "border-kharon-red/30 bg-kharon-surface-elevated text-white" : "border-kharon-purple/20 bg-kharon-surface-elevated text-white"}`}>
+          <p class={`text-xs font-bold uppercase ${management.overdueSystems > 0 ? "text-kharon-red" : "text-kharon-purple"}`}>Overdue systems</p>
+          <p class="mt-2 text-2xl font-bold text-white">{management.overdueSystems}</p>
         </article>
-        <article class="border border-kharon-border bg-white p-4">
+        <article class="rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-4 backdrop-blur-sm text-white">
           <p class="text-xs font-bold uppercase text-kharon-purple">Due within 30d</p>
-          <p class="mt-2 text-2xl font-bold">{management.dueSoonSystems}</p>
+          <p class="mt-2 text-2xl font-bold text-white">{management.dueSoonSystems}</p>
         </article>
-        <article class={`border p-4 ${management.openCriticalRequests > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
-          <p class="text-xs font-bold uppercase text-kharon-red">Critical requests</p>
-          <p class={`mt-2 text-2xl font-bold ${management.openCriticalRequests > 0 ? "text-red-700" : ""}`}>{management.openCriticalRequests}</p>
+        <article class={`rounded-lg border p-4 backdrop-blur-sm ${management.openCriticalRequests > 0 ? "border-kharon-red/30 bg-kharon-surface-elevated text-white" : "border-kharon-purple/20 bg-kharon-surface-elevated text-white"}`}>
+          <p class={`text-xs font-bold uppercase ${management.openCriticalRequests > 0 ? "text-kharon-red" : "text-kharon-purple"}`}>Critical requests</p>
+          <p class="mt-2 text-2xl font-bold text-white">{management.openCriticalRequests}</p>
         </article>
-        <article class={`border p-4 ${management.unassignedJobs > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
-          <p class="text-xs font-bold uppercase text-kharon-grey">Unassigned jobs</p>
-          <p class={`mt-2 text-2xl font-bold ${management.unassignedJobs > 0 ? "text-red-700" : ""}`}>{management.unassignedJobs}</p>
-          <a href="/portal/admin/dispatch" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Dispatch board →</a>
+        <article class={`rounded-lg border p-4 backdrop-blur-sm ${management.unassignedJobs > 0 ? "border-kharon-amber/30 bg-kharon-surface-elevated text-white" : "border-kharon-purple/20 bg-kharon-surface-elevated text-white"}`}>
+          <p class={`text-xs font-bold uppercase ${management.unassignedJobs > 0 ? "text-kharon-amber" : "text-kharon-purple"}`}>Unassigned jobs</p>
+          <p class="mt-2 text-2xl font-bold text-white">{management.unassignedJobs}</p>
+          <a href="/portal/admin/dispatch" class="mt-2 block text-xs font-semibold text-kharon-cyan hover:underline">Dispatch board →</a>
         </article>
-        <article class={`border p-4 ${management.slaBreachJobs > 0 ? "border-red-300 bg-red-50" : "border-kharon-border bg-white"}`}>
-          <p class={`text-xs font-bold uppercase ${management.slaBreachJobs > 0 ? "text-kharon-red" : "text-kharon-grey"}`}>SLA breached</p>
-          <p class={`mt-2 text-2xl font-bold ${management.slaBreachJobs > 0 ? "text-red-700" : ""}`}>{management.slaBreachJobs}</p>
-          <p class="mt-1 text-xs text-kharon-grey">required-by date passed</p>
+        <article class={`rounded-lg border p-4 backdrop-blur-sm ${management.slaBreachJobs > 0 ? "border-kharon-red/30 bg-kharon-surface-elevated text-white" : "border-kharon-purple/20 bg-kharon-surface-elevated text-white"}`}>
+          <p class={`text-xs font-bold uppercase ${management.slaBreachJobs > 0 ? "text-kharon-red" : "text-kharon-purple"}`}>SLA breached</p>
+          <p class="mt-2 text-2xl font-bold text-white">{management.slaBreachJobs}</p>
+          <p class="mt-1 text-xs text-white/50">required-by date passed</p>
         </article>
-        <article class={`border p-4 ${management.slaWarningJobs > 0 ? "border-amber-300 bg-amber-50" : "border-kharon-border bg-white"}`}>
-          <p class={`text-xs font-bold uppercase ${management.slaWarningJobs > 0 ? "text-amber-700" : "text-kharon-grey"}`}>SLA warning</p>
-          <p class={`mt-2 text-2xl font-bold ${management.slaWarningJobs > 0 ? "text-amber-700" : ""}`}>{management.slaWarningJobs}</p>
-          <p class="mt-1 text-xs text-kharon-grey">due within 3 days</p>
+        <article class={`rounded-lg border p-4 backdrop-blur-sm ${management.slaWarningJobs > 0 ? "border-kharon-amber/30 bg-kharon-surface-elevated text-white" : "border-kharon-purple/20 bg-kharon-surface-elevated text-white"}`}>
+          <p class={`text-xs font-bold uppercase ${management.slaWarningJobs > 0 ? "text-kharon-amber" : "text-kharon-purple"}`}>SLA warning</p>
+          <p class="mt-2 text-2xl font-bold text-white">{management.slaWarningJobs}</p>
+          <p class="mt-1 text-xs text-white/50">due within 3 days</p>
         </article>
       </div>
 
       <section class="grid gap-6 xl:grid-cols-2">
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <article class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-4 sm:p-5 backdrop-blur-sm text-white">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p class="text-xs font-bold uppercase text-kharon-purple">Dispatch planner</p>
-              <h2 class="mt-2 text-xl font-bold">Active schedule</h2>
+              <h2 class="mt-2 text-xl font-bold text-white">Active schedule</h2>
             </div>
-            <a class="rounded-md border border-kharon-blue px-4 py-2 text-sm font-semibold text-kharon-blue" href="/portal/admin/operations">
+            <a class="rounded-md border border-kharon-purple/40 bg-kharon-charcoal/60 px-4 py-2 text-sm font-semibold text-kharon-cyan hover:bg-kharon-purple/20 hover:text-white transition-all hover:border-kharon-purple" href="/portal/admin/operations">
               Create or adjust job
             </a>
           </div>
@@ -316,54 +316,54 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
             <input
               id="schedule-search"
               type="search"
-              class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
+              class="kharon-field text-sm sm:w-auto"
               placeholder="Search site or area…"
               size="22"
             />
-            <select id="schedule-status-filter" class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm">
+            <select id="schedule-status-filter" class="kharon-field text-sm sm:w-auto">
               <option value="">All statuses</option>
               <option value="Scheduled">Scheduled</option>
               <option value="In Progress">In progress</option>
             </select>
           </div>
           <div id="schedule-list" class="grid gap-3">
-            {scheduled.length === 0 && <p class="text-kharon-grey">No scheduled or in-progress dispatches.</p>}
+            {scheduled.length === 0 && <p class="text-white/50 italic py-2 text-sm">No scheduled or in-progress dispatches.</p>}
             {scheduled.map((job) => {
               const jPriority = job.priority || "Normal";
               const jEmergency = job.is_emergency === 1;
               const jSla = slaLabel(job.required_by_date ?? null);
               const jSlaBreached = jSla !== null && jSla.cls.includes("red");
               const jSlaWarning  = jSla !== null && jSla.cls.includes("amber");
-              const jBorderCls   = jSlaBreached ? "border-l-4 border-kharon-red bg-red-50"
-                                 : jSlaWarning  ? "border-l-4 border-amber-400 bg-amber-50"
-                                 : "border-l-4 border-kharon-blue bg-kharon-light";
+              const jBorderCls   = jSlaBreached ? "border-l-4 border-kharon-red bg-red-950/10 border-kharon-red/20 text-white"
+                                 : jSlaWarning  ? "border-l-4 border-kharon-amber bg-amber-950/10 border-kharon-amber/20 text-white"
+                                 : "border-l-4 border-kharon-blue bg-kharon-black/35 border-kharon-purple/10 text-white";
               return (
                 <article
-                  class={`grid gap-3 ${jBorderCls} p-4 lg:grid-cols-2`}
+                  class={`grid gap-3 ${jBorderCls} p-4 rounded-lg lg:grid-cols-2`}
                   data-search={`${job.owner_company_name} ${job.coverage_area} ${job.technician_name || ""} ${job.job_type || ""}`}
                   data-status={job.status}
                 >
                   <div class="min-w-0">
-                    <div class="mb-1 flex flex-wrap gap-1.5">
+                    <div class="mb-1 flex flex-wrap gap-2">
                       {jPriority !== "Normal" && (
-                        <span class={`rounded px-1.5 py-0.5 text-xs font-bold ${priorityBadge(jPriority)}`}>{jPriority}</span>
+                        <span class={`rounded px-2 py-0.5 text-xs font-bold ${priorityBadge(jPriority)}`}>{jPriority}</span>
                       )}
                       {jEmergency && (
-                        <span class="rounded bg-kharon-red px-1.5 py-0.5 text-xs font-bold text-white">Emergency</span>
+                        <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Emergency</span>
                       )}
                     </div>
-                    <p class="font-semibold">{job.owner_company_name}</p>
-                    <p class="mt-1 text-sm text-kharon-grey">{job.system_type} / {job.coverage_area}</p>
-                    <p class="mt-1 text-sm text-kharon-grey">{job.physical_address}</p>
+                    <p class="font-semibold text-white">{job.owner_company_name}</p>
+                    <p class="mt-1 text-sm text-white/60">{job.system_type} / {job.coverage_area}</p>
+                    <p class="mt-1 text-sm text-white/50">{job.physical_address}</p>
                   </div>
                   <dl class="grid gap-2 text-sm sm:grid-cols-2">
-                    <div><dt class="font-bold uppercase text-kharon-grey/70">Date</dt><dd>{job.scheduled_date}</dd></div>
-                    <div><dt class="font-bold uppercase text-kharon-grey/70">Status</dt><dd>{job.status}</dd></div>
-                    <div><dt class="font-bold uppercase text-kharon-grey/70">Technician</dt><dd>{job.technician_name || "Unassigned"}</dd></div>
-                    <div><dt class="font-bold uppercase text-kharon-grey/70">Type</dt><dd>{job.job_type}</dd></div>
+                    <div><dt class="font-bold uppercase text-white/40">Date</dt><dd class="text-white/80">{job.scheduled_date}</dd></div>
+                    <div><dt class="font-bold uppercase text-white/40">Status</dt><dd class="text-white/80">{job.status}</dd></div>
+                    <div><dt class="font-bold uppercase text-white/40">Technician</dt><dd class="text-white/80">{job.technician_name || "Unassigned"}</dd></div>
+                    <div><dt class="font-bold uppercase text-white/40">Type</dt><dd class="text-white/80">{job.job_type}</dd></div>
                     {jSla && (
                       <div class="col-span-2">
-                        <dt class="font-bold uppercase text-kharon-grey/70">Required by</dt>
+                        <dt class="font-bold uppercase text-white/40">Required by</dt>
                         <dd class={jSla.cls}>{jSla.text}</dd>
                       </div>
                     )}
@@ -372,40 +372,40 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
               );
             })}
           </div>
-          <p id="schedule-no-results" class="hidden py-3 text-sm text-kharon-grey">No dispatches match your filter.</p>
+          <p id="schedule-no-results" class="hidden py-3 text-sm text-white/50">No dispatches match your filter.</p>
           {scheduleTotalPages > 1 && (
-            <nav class="mt-5 flex items-center justify-between border-t border-kharon-border pt-4">
+            <nav class="mt-5 flex items-center justify-between border-t border-kharon-purple/10 pt-4">
               {schedulePage > 1 ? (
-                <a href={`?schedulePage=${schedulePage - 1}&lifecyclePage=${lifecyclePage}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black hover:bg-kharon-light">Previous</a>
+                <a href={`?schedulePage=${schedulePage - 1}&lifecyclePage=${lifecyclePage}`} class="rounded border border-kharon-purple/30 bg-kharon-charcoal/60 px-4 py-2 text-sm font-semibold text-white hover:bg-kharon-purple/20 hover:border-kharon-purple transition-all">Previous</a>
               ) : (
-                <span class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey/50">Previous</span>
+                <span class="rounded border border-kharon-purple/10 bg-kharon-charcoal/30 px-4 py-2 text-sm font-semibold text-white/30 cursor-not-allowed">Previous</span>
               )}
-              <span class="text-sm text-kharon-grey">Dispatch page {schedulePage} of {scheduleTotalPages}</span>
+              <span class="text-sm text-white/60">Dispatch page {schedulePage} of {scheduleTotalPages}</span>
               {schedulePage < scheduleTotalPages ? (
-                <a href={`?schedulePage=${schedulePage + 1}&lifecyclePage=${lifecyclePage}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black hover:bg-kharon-light">Next</a>
+                <a href={`?schedulePage=${schedulePage + 1}&lifecyclePage=${lifecyclePage}`} class="rounded border border-kharon-purple/30 bg-kharon-charcoal/60 px-4 py-2 text-sm font-semibold text-white hover:bg-kharon-purple/20 hover:border-kharon-purple transition-all">Next</a>
               ) : (
-                <span class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey/50">Next</span>
+                <span class="rounded border border-kharon-purple/10 bg-kharon-charcoal/30 px-4 py-2 text-sm font-semibold text-white/30 cursor-not-allowed">Next</span>
               )}
             </nav>
           )}
         </article>
 
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
-          <p class="text-xs font-bold uppercase text-kharon-blue">Technician load</p>
-          <h2 class="mt-2 text-xl font-bold">Capacity snapshot</h2>
+        <article class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-4 sm:p-5 backdrop-blur-sm text-white">
+          <p class="text-xs font-bold uppercase text-kharon-cyan">Technician load</p>
+          <h2 class="mt-2 text-xl font-bold text-white">Capacity snapshot</h2>
           <div class="mt-5 grid gap-3">
-            {technicianLoad.length === 0 && <p class="text-kharon-grey">No active technicians found.</p>}
+            {technicianLoad.length === 0 && <p class="text-white/50 italic py-2 text-sm">No active technicians found.</p>}
             {technicianLoad.map((tech) => (
-              <article class="border border-kharon-border bg-kharon-light p-4">
+              <article class="border border-kharon-purple/10 bg-kharon-black/35 p-4 rounded-lg text-white">
                 <div class="flex flex-wrap items-start justify-between gap-3">
-                  <p class="font-semibold">{tech.name}</p>
-                  <span class="rounded-md border border-kharon-border bg-white px-3 py-1 text-xs font-bold uppercase text-kharon-grey">
+                  <p class="font-semibold text-white">{tech.name}</p>
+                  <span class="rounded-md border border-kharon-purple/20 bg-kharon-charcoal/60 px-3 py-1 text-xs font-bold uppercase text-white/70">
                     Next {tech.next_dispatch_date || "none"}
                   </span>
                 </div>
                 <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div><dt class="font-bold uppercase text-kharon-grey/70">Scheduled</dt><dd>{tech.scheduled_count || 0}</dd></div>
-                  <div><dt class="font-bold uppercase text-kharon-grey/70">In progress</dt><dd>{tech.in_progress_count || 0}</dd></div>
+                  <div><dt class="font-bold uppercase text-white/40">Scheduled</dt><dd class="text-white/80">{tech.scheduled_count || 0}</dd></div>
+                  <div><dt class="font-bold uppercase text-white/40">In progress</dt><dd class="text-white/80">{tech.in_progress_count || 0}</dd></div>
                 </dl>
               </article>
             ))}
@@ -414,83 +414,83 @@ const lifecycleTotalPages = Math.max(1, Math.ceil(lifecycleTotal / planningPageS
       </section>
 
       <section class="grid gap-6 xl:grid-cols-2">
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <article class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-4 sm:p-5 backdrop-blur-sm text-white">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p class="text-xs font-bold uppercase text-kharon-red">Lifecycle due calendar</p>
-              <h2 class="mt-2 text-xl font-bold">Due and overdue systems through {ninetyDaysFromNow}</h2>
+              <h2 class="mt-2 text-xl font-bold text-white">Due and overdue systems through {ninetyDaysFromNow}</h2>
             </div>
-            <span class="rounded-md border border-kharon-border px-3 py-2 text-xs font-bold uppercase text-kharon-grey">Today {todayIso}</span>
+            <span class="rounded-md border border-kharon-purple/20 bg-kharon-charcoal/60 px-3 py-2 text-xs font-bold uppercase text-white/70">Today {todayIso}</span>
           </div>
 
           <div class="mt-5 mb-3">
             <input
               id="lifecycle-search"
               type="search"
-              class="rounded-md border border-kharon-border bg-white px-3 py-2 text-sm"
+              class="kharon-field text-sm"
               placeholder="Search site, system or area…"
               size="28"
             />
           </div>
           <div id="lifecycle-list" class="grid gap-3">
-            {lifecycle.length === 0 && <p class="text-kharon-grey">No systems are due in the next 90 days.</p>}
+            {lifecycle.length === 0 && <p class="text-white/50 italic py-2 text-sm">No systems are due in the next 90 days.</p>}
             {lifecycle.map((system) => {
               const risk = riskForDueDate(system.next_due_date);
               return (
                 <article
-                  class="grid gap-3 border border-kharon-border bg-kharon-light p-4 lg:grid-cols-2"
+                  class="grid gap-3 border border-kharon-purple/10 bg-kharon-black/35 p-4 rounded-lg lg:grid-cols-2 text-white"
                   data-search={`${system.owner_company_name} ${system.system_type} ${system.coverage_area} ${system.manufacturer || ""} ${system.model_reference || ""}`}
                 >
                   <div class="min-w-0">
-                    <p class="font-semibold">{system.owner_company_name}</p>
-                    <p class="mt-1 text-sm text-kharon-grey">{system.system_type} / {system.coverage_area}</p>
-                    <p class="mt-1 text-xs uppercase text-kharon-grey/70">{system.manufacturer || "Manufacturer not recorded"} / {system.model_reference || "Model not recorded"}</p>
+                    <p class="font-semibold text-white">{system.owner_company_name}</p>
+                    <p class="mt-1 text-sm text-white/60">{system.system_type} / {system.coverage_area}</p>
+                    <p class="mt-1 text-xs uppercase text-white/40">{system.manufacturer || "Manufacturer not recorded"} / {system.model_reference || "Model not recorded"}</p>
                   </div>
                   <div class="grid gap-2 text-sm">
                     <span class={`rounded-md border px-3 py-2 text-xs font-bold uppercase ${risk.className}`}>{risk.label}</span>
-                    <p><span class="font-bold uppercase text-kharon-grey/70">Next due:</span> {system.next_due_date}</p>
-                    <p><span class="font-bold uppercase text-kharon-grey/70">Last service:</span> {system.last_service_date || "Not recorded"}</p>
+                    <p><span class="font-bold uppercase text-white/40">Next due:</span> <span class="text-white/90">{system.next_due_date}</span></p>
+                    <p><span class="font-bold uppercase text-white/40">Last service:</span> <span class="text-white/90">{system.last_service_date || "Not recorded"}</span></p>
                   </div>
                 </article>
               );
             })}
           </div>
-          <p id="lifecycle-no-results" class="hidden py-3 text-sm text-kharon-grey">No systems match your search.</p>
+          <p id="lifecycle-no-results" class="hidden py-3 text-sm text-white/50">No systems match your search.</p>
           {lifecycleTotalPages > 1 && (
-            <nav class="mt-5 flex items-center justify-between border-t border-kharon-border pt-4">
+            <nav class="mt-5 flex items-center justify-between border-t border-kharon-purple/10 pt-4">
               {lifecyclePage > 1 ? (
-                <a href={`?schedulePage=${schedulePage}&lifecyclePage=${lifecyclePage - 1}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black hover:bg-kharon-light">Previous</a>
+                <a href={`?schedulePage=${schedulePage}&lifecyclePage=${lifecyclePage - 1}`} class="rounded border border-kharon-purple/30 bg-kharon-charcoal/60 px-4 py-2 text-sm font-semibold text-white hover:bg-kharon-purple/20 hover:border-kharon-purple transition-all">Previous</a>
               ) : (
-                <span class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey/50">Previous</span>
+                <span class="rounded border border-kharon-purple/10 bg-kharon-charcoal/30 px-4 py-2 text-sm font-semibold text-white/30 cursor-not-allowed">Previous</span>
               )}
-              <span class="text-sm text-kharon-grey">Lifecycle page {lifecyclePage} of {lifecycleTotalPages}</span>
+              <span class="text-sm text-white/60">Lifecycle page {lifecyclePage} of {lifecycleTotalPages}</span>
               {lifecyclePage < lifecycleTotalPages ? (
-                <a href={`?schedulePage=${schedulePage}&lifecyclePage=${lifecyclePage + 1}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-black hover:bg-kharon-light">Next</a>
+                <a href={`?schedulePage=${schedulePage}&lifecyclePage=${lifecyclePage + 1}`} class="rounded border border-kharon-purple/30 bg-kharon-charcoal/60 px-4 py-2 text-sm font-semibold text-white hover:bg-kharon-purple/20 hover:border-kharon-purple transition-all">Next</a>
               ) : (
-                <span class="rounded border border-kharon-border px-4 py-2 text-sm font-semibold text-kharon-grey/50">Next</span>
+                <span class="rounded border border-kharon-purple/10 bg-kharon-charcoal/30 px-4 py-2 text-sm font-semibold text-white/30 cursor-not-allowed">Next</span>
               )}
             </nav>
           )}
         </article>
 
-        <article class="border border-kharon-border bg-white p-4 sm:p-5">
+        <article class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-4 sm:p-5 backdrop-blur-sm text-white">
           <p class="text-xs font-bold uppercase text-kharon-purple">Open client requests</p>
-          <h2 class="mt-2 text-xl font-bold">Review queue</h2>
+          <h2 class="mt-2 text-xl font-bold text-white">Review queue</h2>
           <div class="mt-5 grid gap-3">
-            {openRequests.length === 0 && <p class="text-kharon-grey">No open client requests need planning review.</p>}
+            {openRequests.length === 0 && <p class="text-white/50 italic py-2 text-sm">No open client requests need planning review.</p>}
             {openRequests.map((request) => (
-              <article class="border-l-4 border-kharon-purple bg-kharon-light p-4">
+              <article class="border-l-4 border-kharon-purple bg-kharon-black/35 border border-kharon-purple/10 p-4 rounded-lg text-white">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                   <div class="min-w-0">
-                    <p class="font-semibold">{request.owner_company_name}</p>
-                    <p class="mt-1 text-sm text-kharon-grey">{request.subject}</p>
-                    <p class="mt-1 text-xs uppercase text-kharon-grey/70">{request.request_type} / {request.coverage_area || "General site request"}</p>
+                    <p class="font-semibold text-white">{request.owner_company_name}</p>
+                    <p class="mt-1 text-sm text-white/70">{request.subject}</p>
+                    <p class="mt-1 text-xs uppercase text-white/40">{request.request_type} / {request.coverage_area || "General site request"}</p>
                   </div>
-                  <span class="rounded-md border border-kharon-border bg-white px-3 py-2 text-xs font-bold uppercase text-kharon-grey">
+                  <span class="rounded-md border border-kharon-purple/20 bg-kharon-charcoal/60 px-3 py-2 text-xs font-bold uppercase text-white/70">
                     {request.priority}
                   </span>
                 </div>
-                <p class="mt-3 text-xs uppercase text-kharon-grey/70">{request.status} / {request.created_at}</p>
+                <p class="mt-3 text-xs uppercase text-white/40">{request.status} / {request.created_at}</p>
               </article>
             ))}
           </div>

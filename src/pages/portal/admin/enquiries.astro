@@ -62,74 +62,73 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Website Enquiries | Kharon Portal" active="enquiries" user={user}>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="sm:flex sm:items-center sm:justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-white">Website Enquiries</h1>
-        <p class="mt-1 text-sm text-kharon-light/60">View contact form submissions from the public website</p>
-      </div>
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment rounded-xl border border-kharon-purple/10 mb-6 shadow-inner relative overflow-hidden">
+    <div class="mx-auto max-w-7xl relative z-10">
+      <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Admin operations</p>
+      <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Website Enquiries</h1>
+      <p class="mt-3 max-w-3xl text-sm text-white/50">View contact form submissions from the public website</p>
+    </div>
+  </section>
+
+  {loadError && (
+    <p class="mx-auto mb-6 max-w-7xl rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>
+  )}
+
+  <article class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-4 sm:p-5 backdrop-blur-sm">
+    <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-kharon-surface-elevated pb-3">
+      <h2 class="text-xl font-bold text-white">
+        Enquiries <span class="ml-2 text-sm font-normal text-white/40">({total})</span>
+      </h2>
+      <form class="flex flex-wrap gap-3" method="get">
+        <CsrfInput />
+        <input
+          name="q"
+          type="search"
+          class="kharon-field"
+          placeholder="Search name, email, message…"
+          value={searchQuery}
+          size="24"
+        />
+        <button type="submit" class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white text-sm hover:shadow-md hover:shadow-kharon-blue/20 transition-all">Search</button>
+        {searchQuery && (
+          <a href="/portal/admin/enquiries" class="rounded-md border border-kharon-purple/30 bg-kharon-charcoal/60 px-4 py-2 font-semibold text-white text-sm hover:bg-kharon-purple/10 hover:border-kharon-purple/50">Clear</a>
+        )}
+      </form>
     </div>
 
-    {loadError && (
-      <p class="mx-auto mb-6 max-w-7xl rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>
+    <div class="mt-5 grid gap-3">
+      {contactEnquiries.length === 0 && (
+        <p class="text-white/40 py-4 italic text-sm">No contact enquiries found.</p>
+      )}
+      {contactEnquiries.map((item) => (
+        <article class="grid gap-2 border-l-4 border-kharon-blue bg-kharon-black/35 border border-kharon-purple/10 p-4 lg:grid-cols-2 rounded-lg">
+          <div class="min-w-0">
+            <p class="font-semibold text-white">{item.name}</p>
+            <p class="text-sm text-kharon-cyan">
+              <a href={`mailto:${item.email}`} class="hover:underline">{item.email}</a>
+            </p>
+            <p class="mt-1 text-xs font-bold uppercase tracking-wider text-kharon-purple">{item.request_type}</p>
+            <p class="mt-2 text-sm leading-relaxed text-kharon-light/80">{item.message}</p>
+          </div>
+          <div class="text-xs text-white/40 flex justify-between flex-col lg:items-end">
+            <p>{item.submitted_at?.slice(0, 16).replace("T", " ")} UTC</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </article>
+
+  <nav class="mt-6 mb-8 flex items-center justify-between border-t border-kharon-purple/20 pt-4">
+    {page > 1 ? (
+      <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}`} class="rounded border border-kharon-purple/30 bg-kharon-charcoal/60 px-4 py-2 text-sm font-semibold text-white hover:bg-kharon-purple/10 hover:border-kharon-purple/50">Previous</a>
+    ) : (
+      <span class="cursor-not-allowed rounded border border-kharon-purple/10 bg-kharon-charcoal/30 px-4 py-2 text-sm font-semibold text-white/30">Previous</span>
     )}
-
-    <article class="border border-kharon-border bg-white p-4 sm:p-5">
-      <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-white">
-        <h2 class="text-xl font-bold">
-          Enquiries <span class="ml-2 text-sm font-normal text-kharon-grey">({total})</span>
-        </h2>
-        <form class="flex flex-wrap gap-3" method="get">
-          <CsrfInput />
-          <input
-            name="q"
-            type="search"
-            class="rounded-md border border-kharon-border px-3 py-2 text-sm"
-            placeholder="Search name, email, message…"
-            value={searchQuery}
-            size="24"
-          />
-          <button type="submit" class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white text-sm">Search</button>
-          {searchQuery && (
-            <a href="/portal/admin/enquiries" class="rounded-md border border-kharon-border px-4 py-2 font-semibold text-kharon-grey text-sm">Clear</a>
-          )}
-        </form>
-      </div>
-
-      <div class="mt-5 grid gap-3">
-        {contactEnquiries.length === 0 && (
-          <p class="text-kharon-grey py-4">No contact enquiries found.</p>
-        )}
-        {contactEnquiries.map((item) => (
-          <article class="grid gap-2 border-l-4 border-kharon-blue bg-kharon-light p-4 lg:grid-cols-2">
-            <div class="min-w-0">
-              <p class="font-semibold">{item.name}</p>
-              <p class="text-sm text-kharon-purple">
-                <a href={`mailto:${item.email}`} class="hover:underline">{item.email}</a>
-              </p>
-              <p class="mt-1 text-xs font-bold uppercase text-kharon-grey">{item.request_type}</p>
-              <p class="mt-2 text-sm leading-6 text-kharon-black">{item.message}</p>
-            </div>
-            <div class="text-xs text-kharon-grey flex justify-between flex-col lg:items-end">
-              <p>{item.submitted_at?.slice(0, 16).replace("T", " ")} UTC</p>
-            </div>
-          </article>
-        ))}
-      </div>
-    </article>
-
-    <nav class="mt-6 mb-8 flex items-center justify-between border-t border-kharon-border pt-4">
-      {page > 1 ? (
-        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Previous</a>
-      ) : (
-        <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Previous</span>
-      )}
-      <span class="text-sm text-kharon-grey">Page {page} of {totalPages}</span>
-      {page < totalPages ? (
-        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}`} class="rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-black hover:bg-kharon-light">Next</a>
-      ) : (
-        <span class="cursor-not-allowed rounded border border-kharon-border px-4 py-2 text-sm font-medium text-kharon-grey/50">Next</span>
-      )}
-    </nav>
-  </div>
+    <span class="text-sm text-white/60">Page {page} of {totalPages}</span>
+    {page < totalPages ? (
+      <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}`} class="rounded border border-kharon-purple/30 bg-kharon-charcoal/60 px-4 py-2 text-sm font-semibold text-white hover:bg-kharon-purple/10 hover:border-kharon-purple/50">Next</a>
+    ) : (
+      <span class="cursor-not-allowed rounded border border-kharon-purple/10 bg-kharon-charcoal/30 px-4 py-2 text-sm font-semibold text-white/30">Next</span>
+    )}
+  </nav>
 </PortalLayout>

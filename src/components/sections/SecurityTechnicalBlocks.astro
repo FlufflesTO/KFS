@@ -77,14 +77,14 @@ const integrationEvents = [
           </div>
 
           <p class="mt-4 text-sm font-semibold text-kharon-cyan">Purpose: {tier.purpose}</p>
-          <p class="mt-2 text-sm text-white/65">{tier.examples}</p>
+          <p class="mt-2 text-sm text-white/60">{tier.examples}</p>
 
-          <div class="mt-4 border-t border-kharon-purple/15 pt-4">
+          <div class="mt-4 border-t border-kharon-purple/20 pt-4">
             <p class="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/40">Technology</p>
-            <ul class="space-y-1.5">
+            <ul class="space-y-2">
               {tier.tech.map((t) => (
-                <li class="flex items-start gap-2 text-sm text-white/75">
-                  <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-kharon-purple"></span>
+                <li class="flex items-start gap-2 text-sm text-white/70">
+                  <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-kharon-purple"></span>
                   {t}
                 </li>
               ))}
@@ -111,11 +111,11 @@ const integrationEvents = [
         <article class="rounded-lg border border-kharon-purple/20 bg-kharon-graphite p-6">
           <div class="flex items-start justify-between gap-4">
             <h3 class="text-lg font-bold text-white">{item.zone}</h3>
-            <span class="shrink-0 rounded-md bg-kharon-cyan/15 px-3 py-1 text-xs font-bold text-kharon-cyan">
+            <span class="shrink-0 rounded-md bg-kharon-cyan/20 px-3 py-1 text-xs font-bold text-kharon-cyan">
               {item.retention}
             </span>
           </div>
-          <p class="mt-2 text-sm leading-7 text-white/65">{item.description}</p>
+          <p class="mt-2 text-sm leading-7 text-white/60">{item.description}</p>
         </article>
       ))}
     </div>
@@ -164,7 +164,7 @@ const integrationEvents = [
                 <span class="h-2 w-2 rounded-full" style={`background-color: ${evt.color}`}></span>
                 <h4 class="font-bold tracking-tight text-white">{evt.label}</h4>
               </div>
-              <p class="mt-2 text-xs font-semibold leading-relaxed text-white/65">{evt.detail}</p>
+              <p class="mt-2 text-xs font-semibold leading-relaxed text-white/60">{evt.detail}</p>
             </div>
           ))}
         </div>

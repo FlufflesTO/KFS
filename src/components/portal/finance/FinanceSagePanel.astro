@@ -34,13 +34,13 @@ const { missingSageRefs, sageConnection, stats } = Astro.props;
         <h2 class="text-base font-black text-white tracking-tight">Sage Cloud Accounting API</h2>
       </div>
       {sageConnection.connected ? (
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-kharon-green/20 px-2.5 py-0.5 text-[9px] font-bold uppercase text-kharon-green border border-kharon-green/30">
-          <span class="h-1.5 w-1.5 rounded-full bg-kharon-green animate-pulse"></span>
+        <span class="inline-flex items-center gap-2 rounded-full bg-kharon-green/20 px-3 py-0.5 text-[9px] font-bold uppercase text-kharon-green border border-kharon-green/30">
+          <span class="h-2 w-2 rounded-full bg-kharon-green animate-pulse"></span>
           Connected
         </span>
       ) : (
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-kharon-red/20 px-2.5 py-0.5 text-[9px] font-bold uppercase text-kharon-red border border-kharon-red/30">
-          <span class="h-1.5 w-1.5 rounded-full bg-kharon-red"></span>
+        <span class="inline-flex items-center gap-2 rounded-full bg-kharon-red/20 px-3 py-0.5 text-[9px] font-bold uppercase text-kharon-red border border-kharon-red/30">
+          <span class="h-2 w-2 rounded-full bg-kharon-red"></span>
           Disconnected
         </span>
       )}
@@ -56,7 +56,7 @@ const { missingSageRefs, sageConnection, stats } = Astro.props;
           </p>
           <button
             id="disconnect-sage-btn"
-            class="w-full inline-flex justify-center items-center rounded-md border border-kharon-red/35 bg-kharon-red/5 px-3 py-2 text-xs font-bold uppercase tracking-widest text-kharon-red hover:bg-kharon-red/10 transition-all cursor-pointer min-h-[44px]"
+            class="w-full inline-flex justify-center items-center rounded-md border border-kharon-red/30 bg-kharon-red/5 px-3 py-2 text-xs font-bold uppercase tracking-widest text-kharon-red hover:bg-kharon-red/10 transition-all cursor-pointer min-h-[44px]"
           >
             Disconnect Sage Pipeline
           </button>
@@ -68,7 +68,7 @@ const { missingSageRefs, sageConnection, stats } = Astro.props;
           </p>
           <a
             href="/portal/api/finance/sage-auth"
-            class="w-full inline-flex justify-center items-center rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-kharon-purple/20 hover:shadow-kharon-purple/40 transition-all text-center min-h-[44px]"
+            class="w-full inline-flex justify-center items-center rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue px-3 py-3 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-kharon-purple/20 hover:shadow-kharon-purple/40 transition-all text-center min-h-[44px]"
           >
             Authenticate Sage Account
           </a>
@@ -84,24 +84,24 @@ const { missingSageRefs, sageConnection, stats } = Astro.props;
         <p class="text-[9px] font-bold uppercase tracking-widest text-kharon-purple">Exception Queue</p>
         <h2 class="text-base font-black text-white tracking-tight">Missing Sage References</h2>
       </div>
-      <span class="rounded-full bg-kharon-purple/30 border border-kharon-purple/50 px-2.5 py-0.5 text-[9px] font-bold uppercase text-white">{missingSageRefs.length}</span>
+      <span class="rounded-full bg-kharon-purple/30 border border-kharon-purple/50 px-3 py-0.5 text-[9px] font-bold uppercase text-white">{missingSageRefs.length}</span>
     </div>
     
-    <div class="space-y-3.5 max-h-96 overflow-y-auto pr-1">
+    <div class="space-y-4 max-h-96 overflow-y-auto pr-1">
       {missingSageRefs.length === 0 ? (
-        <p class="text-xs text-white/45 italic py-3 text-center">All completed ledger tasks are successfully reconciled in Sage.</p>
+        <p class="text-xs text-white/40 italic py-3 text-center">All completed ledger tasks are successfully reconciled in Sage.</p>
       ) : (
         missingSageRefs.map((task) => (
-          <article class="flex items-center justify-between gap-4 p-4 rounded-lg border border-kharon-purple/15 bg-kharon-black/30 hover:border-kharon-purple/35 transition-colors">
+          <article class="flex items-center justify-between gap-4 p-4 rounded-lg border border-kharon-purple/20 bg-kharon-black/30 hover:border-kharon-purple/30 transition-colors">
             <div class="min-w-0 flex-1">
               <div class="flex items-center justify-between flex-wrap gap-1">
                 <span class="font-bold text-white text-xs truncate">{task.owner_company_name}</span>
                 <span class="rounded bg-kharon-amber/20 border border-kharon-amber/30 px-2 py-0.5 text-[8px] font-bold uppercase text-kharon-amber">Reconcile</span>
               </div>
               <p class="text-[11px] text-white/60 mt-1 font-medium">{task.task_type} &bull; Internal Ref: {task.reference || "N/A"}</p>
-              <p class="mt-1.5 text-[9px] text-white/40 font-bold uppercase tracking-wider">Completed: {task.updated_at ? new Date(task.updated_at).toLocaleDateString() : "N/A"}</p>
+              <p class="mt-2 text-[9px] text-white/40 font-bold uppercase tracking-wider">Completed: {task.updated_at ? new Date(task.updated_at).toLocaleDateString() : "N/A"}</p>
             </div>
-            <button class="rounded border border-kharon-cyan bg-kharon-cyan/5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-kharon-cyan hover:bg-kharon-cyan hover:text-black transition-all cursor-pointer min-h-[36px] flex items-center justify-center">
+            <button class="rounded border border-kharon-cyan bg-kharon-cyan/5 px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-kharon-cyan hover:bg-kharon-cyan hover:text-black transition-all cursor-pointer min-h-[36px] flex items-center justify-center">
               Reconcile
             </button>
           </article>
@@ -121,18 +121,18 @@ const { missingSageRefs, sageConnection, stats } = Astro.props;
     
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-4">
-        <div class="rounded-lg border border-kharon-purple/15 bg-kharon-black/30 p-3.5">
-          <p class="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-0.5">Total Excl. VAT</p>
+        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-black/30 p-4">
+          <p class="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-1">Total Excl. VAT</p>
           <p class="text-sm font-bold text-white">{formatCurrency(stats.totalSageAmountExVat)}</p>
         </div>
-        <div class="rounded-lg border border-kharon-purple/15 bg-kharon-black/30 p-3.5">
-          <p class="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-0.5">VAT Declared</p>
+        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-black/30 p-4">
+          <p class="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-1">VAT Declared</p>
           <p class="text-sm font-bold text-kharon-cyan">{formatCurrency(stats.totalSageVatAmount)}</p>
         </div>
       </div>
       
-      <div class="rounded-lg border border-kharon-purple/25 bg-kharon-purple/5 p-4">
-        <p class="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-0.5">Consolidated Incl. VAT</p>
+      <div class="rounded-lg border border-kharon-purple/20 bg-kharon-purple/5 p-4">
+        <p class="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-1">Consolidated Incl. VAT</p>
         <p class="text-base font-black text-white">{formatCurrency(stats.totalSageAmountIncVat)}</p>
       </div>
       

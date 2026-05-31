@@ -86,17 +86,17 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Dispatch Detail | Kharon Portal" active="tech" user={user}>
-  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment kharon-logo-watermark">
-    <div class="mx-auto max-w-7xl">
-      <a href="/portal/tech/dashboard" class="text-xs font-bold uppercase tracking-widest text-kharon-purple hover:underline hover:text-white transition-colors">&larr; Back to Dashboard</a>
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment rounded-xl border border-kharon-purple/10 mb-6 shadow-inner relative overflow-hidden">
+    <div class="mx-auto max-w-7xl relative z-10">
+      <a href="/portal/tech/dashboard" class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple hover:underline hover:text-white transition-colors">&larr; Back to Dashboard</a>
       <h1 class="mt-3 text-2xl font-bold sm:text-3xl tracking-tight">Focused Dispatch Workflow</h1>
-      <p class="mt-2 max-w-3xl text-sm text-white/70">
+      <p class="mt-3 max-w-3xl text-sm text-white/50">
         Review the site package, record visit activity, capture structured evidence, and close the jobcard from one controlled workspace.
       </p>
     </div>
   </section>
 
-  <section class="px-4 py-6 sm:px-6">
+  <section class="mt-2">
     <div class="mx-auto max-w-7xl gap-6">
       {loadError && (
         <div class="rounded-xl border border-kharon-red/30 bg-kharon-red/10 p-6 text-center mb-6">
@@ -108,46 +108,46 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
       {job && (
         <>
           {/* Dispatch Site Package Card */}
-          <div class="grid gap-6 border border-kharon-purple/20 bg-kharon-surface-elevated p-6 kharon-surface lg:grid-cols-[1.2fr_0.8fr] mb-6">
+          <div class="grid gap-6 border border-kharon-purple/20 bg-kharon-surface-elevated p-6 kharon-surface lg:grid-cols-[1.5fr_1fr] mb-6">
             <div>
               <div class="flex flex-wrap items-center gap-2 mb-3">
-                <span class="rounded bg-kharon-blue/20 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-kharon-purple">{job.status}</span>
-                <span class="rounded bg-kharon-purple/20 px-2.5 py-0.5 text-xs font-bold text-kharon-purple uppercase tracking-wider">{job.priority || "Normal"}</span>
-                {job.is_emergency === 1 && <span class="rounded bg-kharon-red/20 px-2.5 py-0.5 text-xs font-bold text-kharon-red uppercase tracking-wider flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-kharon-red animate-pulse"></span>Emergency</span>}
+                <span class="rounded bg-kharon-blue/20 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-kharon-purple">{job.status}</span>
+                <span class="rounded bg-kharon-purple/20 px-3 py-0.5 text-xs font-bold text-kharon-purple uppercase tracking-wider">{job.priority || "Normal"}</span>
+                {job.is_emergency === 1 && <span class="rounded bg-kharon-red/20 px-3 py-0.5 text-xs font-bold text-kharon-red uppercase tracking-wider flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-kharon-red animate-pulse"></span>Emergency</span>}
               </div>
               <h2 class="text-xl font-bold text-white mb-2">{job.owner_company_name}</h2>
               <p class="text-sm text-white/70 mb-4">{job.physical_address}</p>
               <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
                 <div>
-                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-0.5">System</dt>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-1">System</dt>
                   <dd class="text-white font-semibold">{job.system_type}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-0.5">Coverage</dt>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-1">Coverage</dt>
                   <dd class="text-white font-semibold">{job.coverage_area}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-0.5">Job Type</dt>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-1">Job Type</dt>
                   <dd class="text-white font-semibold">{job.job_type}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-0.5">Scheduled</dt>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-1">Scheduled</dt>
                   <dd class="text-white font-semibold">{job.scheduled_date}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-0.5">Required By</dt>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-1">Required By</dt>
                   <dd class="text-white font-semibold">{job.required_by_date || "Not set"}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-0.5">Estimated Duration</dt>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-1">Estimated Duration</dt>
                   <dd class="text-white font-semibold">{job.estimated_duration_minutes ? `${job.estimated_duration_minutes} minutes` : "Not set"}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-0.5">Site Contact</dt>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-1">Site Contact</dt>
                   <dd class="text-white font-semibold">{job.site_contact_person || "Not listed"}{job.site_contact_phone ? ` / ${job.site_contact_phone}` : ""}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-0.5">Job ID</dt>
+                  <dt class="text-xs font-bold uppercase tracking-widest text-kharon-purple mb-1">Job ID</dt>
                   <dd class="text-white/60 font-mono break-all">{job.id}</dd>
                 </div>
               </dl>
@@ -181,7 +181,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
             </aside>
           </div>
 
-          <div class="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
+          <div class="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
             {/* Visit Activity Side Panel */}
             <article class="border border-kharon-purple/20 bg-kharon-surface-elevated p-6 kharon-surface space-y-6 self-start">
               <h2 class="text-lg font-bold text-white mb-2">Visit Activity Logs</h2>
@@ -227,7 +227,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
                       <textarea class="kharon-field min-h-16" name="notes" maxlength="500" placeholder="E.g. System checked, keys handed over"></textarea>
                     </div>
                     <button class="w-full kharon-command-button cursor-pointer">Log Arrival</button>
-                    <p class="log-arrival-result hidden text-sm font-semibold p-2.5 rounded"></p>
+                    <p class="log-arrival-result hidden text-sm font-semibold p-2 rounded"></p>
                   </form>
 
                   <form class="visit-outcome-form space-y-4 border-t border-kharon-purple/10 pt-6">
@@ -274,7 +274,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
                       <textarea class="kharon-field min-h-16" name="notes" maxlength="1000" placeholder="Describe the outcome of the visit..."></textarea>
                     </div>
                     <button class="w-full kharon-command-button cursor-pointer">Save Visit Outcome</button>
-                    <p class="visit-outcome-result hidden text-sm font-semibold p-2.5 rounded"></p>
+                    <p class="visit-outcome-result hidden text-sm font-semibold p-2 rounded"></p>
                   </form>
                 </div>
               )}
@@ -283,7 +283,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
                 <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Visit History Logs</p>
                 {visits.length === 0 && <p class="text-xs text-white/50 italic">No visit records captured yet.</p>}
                 {visits.map((visit) => (
-                  <article class="rounded-lg border border-kharon-purple/10 bg-kharon-charcoal/50 p-3 text-sm space-y-1">
+                  <article class="rounded-lg border border-kharon-purple/10 bg-kharon-charcoal/60 p-3 text-sm space-y-1">
                     <div class="flex justify-between">
                       <p class="font-semibold text-white">{visit.visit_date} • {visit.arrival_time || "N/A"}</p>
                       <span class="text-xs text-kharon-purple uppercase tracking-wider font-semibold">{visit.visit_status || "Arrived"}</span>
@@ -358,7 +358,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
                     </div>
                   </div>
 
-                  <div class="grid gap-2 border border-kharon-purple/10 bg-kharon-charcoal/50 p-4 rounded-lg">
+                  <div class="grid gap-2 border border-kharon-purple/10 bg-kharon-charcoal/60 p-4 rounded-lg">
                     <label class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Photo Evidence (Optional)</label>
                     <p class="text-xs text-white/50">Attach up to 3 JPEG, PNG or WebP images (max 1.5 MB each).</p>
                     <div class="grid gap-2 sm:grid-cols-2 mt-1">
@@ -383,7 +383,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
                     </div>
                     <div class="defect-list grid gap-2"></div>
 
-                    <div class="defect-form hidden grid gap-3 rounded-lg border border-kharon-red/40 bg-kharon-charcoal/50 p-4 sm:grid-cols-2">
+                    <div class="defect-form hidden grid gap-3 rounded-lg border border-kharon-red/40 bg-kharon-charcoal/60 p-4 sm:grid-cols-2">
                       <div class="grid gap-1">
                         <label class="text-xs text-white/70">Severity</label>
                         <select class="defect-severity kharon-field" required>
@@ -425,7 +425,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
                     <button type="button" class="clear-signature w-1/3 kharon-secondary-button cursor-pointer">Clear Signature</button>
                     <button class="w-2/3 kharon-command-button cursor-pointer">Submit Completed Jobcard</button>
                   </div>
-                  <p class="jobcard-result hidden text-sm font-semibold p-2.5 rounded"></p>
+                  <p class="jobcard-result hidden text-sm font-semibold p-2 rounded"></p>
                 </form>
               ) : (
                 <div class="rounded-lg border border-kharon-purple/10 bg-kharon-charcoal/30 p-4 text-center">
@@ -612,11 +612,11 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
         for (let i = 0; i < defects.length; i++) {
           const d = defects[i];
           const card = document.createElement("article");
-          card.className = "flex items-start justify-between gap-3 rounded border border-kharon-purple/10 bg-kharon-charcoal/50 p-3 text-sm";
+          card.className = "flex items-start justify-between gap-3 rounded border border-kharon-purple/10 bg-kharon-charcoal/60 p-3 text-sm";
           const body = document.createElement("div");
           body.className = "min-w-0";
           const severity = document.createElement("span");
-          severity.className = "rounded bg-kharon-purple/20 px-1.5 py-0.5 text-xs font-bold text-kharon-purple";
+          severity.className = "rounded bg-kharon-purple/20 px-2 py-0.5 text-xs font-bold text-kharon-purple";
           severity.textContent = d.severity;
           body.appendChild(severity);
           if (d.sansClauseRef) {
@@ -755,7 +755,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
         const evidenceFiles = Array.from(evidenceInput?.files || []);
         if (evidenceFiles.length > 3) {
           result.textContent = "A maximum of 3 evidence photos can be attached.";
-          result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
+          result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2 mt-4";
           result.classList.remove("hidden");
           return;
         }
@@ -770,21 +770,21 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
             // Validate compressed output
             if (compressedFile.size > 2097152) {
               result.textContent = `Evidence photo ${index + 1} could not be compressed below 2MB.`;
-              result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
+              result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2 mt-4";
               result.classList.remove("hidden");
               return;
             }
             evidencePhotos.push({ dataUri: compressed.dataUri, caption: `${evidenceCategory}: ${file.name || `Evidence photo ${index + 1}`}` });
           } catch (error) {
             result.textContent = `Evidence photo ${index + 1} processing failed: ${error instanceof Error ? error.message : "Unknown error"}`;
-            result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
+            result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2 mt-4";
             result.classList.remove("hidden");
             return;
           }
         }
         if (!data.get("signatureBase64")) {
           result.textContent = "A captured signature is required.";
-          result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
+          result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2 mt-4";
           result.classList.remove("hidden");
           return;
         }
@@ -809,7 +809,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
           });
           const body = await response.json();
           result.textContent = body.ok ? `Completed successfully. Document path: ${body.documentationPath || "jobcards/job-" + data.get("jobId") + "-completed.pdf"}` : body.message || "Submission failed.";
-          result.className = `jobcard-result text-sm font-semibold p-2.5 mt-4 ${body.ok ? "text-kharon-purple bg-kharon-purple/10" : "text-kharon-red bg-kharon-red/10"}`;
+          result.className = `jobcard-result text-sm font-semibold p-2 mt-4 ${body.ok ? "text-kharon-purple bg-kharon-purple/10" : "text-kharon-red bg-kharon-red/10"}`;
           result.classList.remove("hidden");
           if (body.ok) {
             setTimeout(() => {
@@ -818,7 +818,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
           }
         } catch (error) {
           result.textContent = error.message || "An unexpected error occurred during submission.";
-          result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2.5 mt-4";
+          result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2 mt-4";
           result.classList.remove("hidden");
         }
       });

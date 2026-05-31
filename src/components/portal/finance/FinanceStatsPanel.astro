@@ -18,21 +18,21 @@ const { summary } = Astro.props;
 <div class="grid gap-4 grid-cols-2 sm:grid-cols-4 mb-6">
   <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/80 p-5 shadow-xl backdrop-blur-md flex flex-col justify-between hover:border-kharon-purple/40 transition-all duration-300">
     <p class="text-[10px] font-bold uppercase tracking-widest text-white/60">Pending Tasks</p>
-    <p class="mt-2.5 text-2xl font-black text-white">{summary.pending_tasks}</p>
+    <p class="mt-2 text-2xl font-black text-white">{summary.pending_tasks}</p>
   </div>
 
   <div class={`rounded-xl border p-5 shadow-xl backdrop-blur-md flex flex-col justify-between hover:border-kharon-purple/40 transition-all duration-300 ${summary.pending_tasks > 0 ? "border-kharon-amber/30 bg-kharon-charcoal/80" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
     <p class={`text-[10px] font-bold uppercase tracking-widest ${summary.pending_tasks > 0 ? "text-kharon-amber" : "text-white/60"}`}>Pending Value</p>
-    <p class="mt-2.5 text-2xl font-black text-white">{formatCurrency(summary.total_pending_value)}</p>
+    <p class="mt-2 text-2xl font-black text-white">{formatCurrency(summary.total_pending_value)}</p>
   </div>
 
-  <div class={`rounded-xl border p-5 shadow-xl backdrop-blur-md flex flex-col justify-between hover:border-kharon-purple/40 transition-all duration-300 ${summary.overdue_invoices > 0 ? "border-kharon-red/35 bg-kharon-charcoal/80 shadow-kharon-red/5" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
+  <div class={`rounded-xl border p-5 shadow-xl backdrop-blur-md flex flex-col justify-between hover:border-kharon-purple/40 transition-all duration-300 ${summary.overdue_invoices > 0 ? "border-kharon-red/30 bg-kharon-charcoal/80 shadow-kharon-red/5" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
     <p class={`text-[10px] font-bold uppercase tracking-widest ${summary.overdue_invoices > 0 ? "text-kharon-red" : "text-white/60"}`}>Overdue Invoices</p>
-    <p class="mt-2.5 text-2xl font-black text-white">{summary.overdue_invoices}</p>
+    <p class="mt-2 text-2xl font-black text-white">{summary.overdue_invoices}</p>
   </div>
 
-  <div class={`rounded-xl border p-5 shadow-xl backdrop-blur-md flex flex-col justify-between hover:border-kharon-purple/40 transition-all duration-300 ${summary.unpaid_amount > 0 ? "border-kharon-red/35 bg-kharon-charcoal/80 shadow-kharon-red/5" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
+  <div class={`rounded-xl border p-5 shadow-xl backdrop-blur-md flex flex-col justify-between hover:border-kharon-purple/40 transition-all duration-300 ${summary.unpaid_amount > 0 ? "border-kharon-red/30 bg-kharon-charcoal/80 shadow-kharon-red/5" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
     <p class={`text-[10px] font-bold uppercase tracking-widest ${summary.unpaid_amount > 0 ? "text-kharon-red" : "text-white/60"}`}>Unpaid Value</p>
-    <p class="mt-2.5 text-2xl font-black text-white">{formatCurrency(summary.unpaid_amount)}</p>
+    <p class="mt-2 text-2xl font-black text-white">{formatCurrency(summary.unpaid_amount)}</p>
   </div>
 </div>

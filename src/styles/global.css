@@ -111,10 +111,9 @@ main {
 }
 
 /* Typography - Standardized font weights */
-.kharon-h1,.kharon-h2,.kharon-h3{font-weight:600;text-wrap:balance}
+.kharon-h1,.kharon-h2{font-weight:600;text-wrap:balance}
 .kharon-h1{font-size:clamp(1.75rem,3.5rem,2.75rem);line-height:1.1;letter-spacing:0}
 .kharon-h2{font-size:clamp(1.375rem,2.5rem,2rem);line-height:1.2;letter-spacing:0}
-.kharon-h3{font-size:clamp(1rem,1.25rem,1.25rem);line-height:1.3;letter-spacing:0}
 
 @media (min-width: 1024px) {
   .kharon-h1 { font-size: 2.75rem; }
@@ -126,10 +125,6 @@ main {
 }
 
 img,svg{max-width:100%;height:auto;display:block}
-
-.text-balance {
-  text-wrap: balance;
-}
 
 ::selection {
   background: var(--color-kharon-purple);
@@ -299,11 +294,6 @@ summary::-webkit-details-marker {
   transform: translateY(-1px);
 }
 
-.kharon-command-button:focus {
-  outline: 2px solid var(--color-kharon-cyan);
-  outline-offset: 2px;
-}
-
 /* Secondary button with glass effect */
 .kharon-secondary-button {
   background: var(--color-surface-glass);
@@ -323,7 +313,7 @@ summary::-webkit-details-marker {
   border-color: var(--color-kharon-purple);
 }
 
-.kharon-secondary-button:focus {
+.kharon-command-button:focus,.kharon-secondary-button:focus {
   outline: 2px solid var(--color-kharon-cyan);
   outline-offset: 2px;
 }

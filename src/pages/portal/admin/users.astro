@@ -81,7 +81,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="User Management | Kharon Portal" active="users" user={user}>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="py-2">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
         <h1 class="text-2xl font-bold text-white tracking-tight font-heading">User Management</h1>
@@ -182,9 +182,9 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
                 <input id={`password-${record.id}`} class="kharon-field py-1" name="password" type="password" placeholder="Optional reset password" />
               </div>
               <div class="flex gap-2">
-                <button class="flex-1 kharon-command-button py-1.5 text-xs">Save</button>
+                <button class="flex-1 kharon-command-button py-2 text-xs">Save</button>
                 <button
-                  class="generate-reset-link kharon-secondary-button py-1.5 text-xs"
+                  class="generate-reset-link kharon-secondary-button py-2 text-xs"
                   type="button"
                   data-user-id={record.id}
                   data-user-email={record.email}
@@ -194,7 +194,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               </div>
               {record.mfa_enabled ? (
                 <button
-                  class="reset-mfa kharon-danger-button py-1.5 text-xs"
+                  class="reset-mfa kharon-danger-button py-2 text-xs"
                   type="button"
                   data-user-id={record.id}
                   data-user-email={record.email}

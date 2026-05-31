@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as esbuild from 'esbuild';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -355,15 +356,8 @@ while (j < output.length) {
 }
 output = keyframePrunedOutput;
 
-// Simple CSS minifier to strip whitespace
-output = output
-  .replace(/\s+/g, ' ')             // collapse multiple spaces
-  .replace(/\s*([{};:,])\s*/g, '$1') // remove space around separators
-  .replace(/;}/g, '}')              // remove trailing semicolons
-  .replace(/([: ,\(])0(?:px|em|rem|%|vw|vh)/g, '$10') // remove zero units
-  .replace(/([: ,\(])0\.([0-9]+)/g, '$1.$2') // Minify decimals (0.5 -> .5)
-  .replace(/#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3/g, '#$1$2$3') // Shorten hex colors
-  .trim();
+// Use esbuild for advanced CSS minification
+output = esbuild.transformSync(output, { loader: 'css', minify: true }).code;
 
 console.log('Purged CSS size after variable pruning & minification:', output.length, 'bytes');
 fs.writeFileSync(cssPath, output);

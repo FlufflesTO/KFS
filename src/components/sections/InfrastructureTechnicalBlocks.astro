@@ -76,7 +76,7 @@ const matrixRows: Array<[string, string, string, string]> = [
         const t = tones[tier.tone as keyof typeof tones];
         return (
           <article class={`rounded-xl border ${t.border} bg-kharon-graphite p-6 sm:p-7 transition-all hover:border-kharon-purple/50`}>
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2">
               <div class={`h-2 w-2 rounded-full ${t.dot}`}></div>
               <p class={`text-[0.625rem] font-bold uppercase tracking-widest ${t.label}`}>{tier.band}</p>
             </div>
@@ -84,7 +84,7 @@ const matrixRows: Array<[string, string, string, string]> = [
             <p class="mt-2 text-xs font-semibold text-white/50 uppercase tracking-wider">{tier.sectors}</p>
             <dl class="mt-6 space-y-4">
               {tier.rows.map(([label, val]) => (
-                <div class="border-b border-kharon-purple/15 pb-2.5">
+                <div class="border-b border-kharon-purple/20 pb-2.5">
                   <dt class="text-[0.625rem] font-bold uppercase tracking-widest text-white/40">{label}</dt>
                   <dd class="mt-1 text-sm font-bold text-white">{val}</dd>
                 </div>

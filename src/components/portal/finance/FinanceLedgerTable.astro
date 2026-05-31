@@ -56,7 +56,7 @@ const { completedTasks } = Astro.props;
               <td class="p-4 font-semibold">{task.owner_company_name}</td>
               <td class="p-4">{task.task_type}</td>
               <td class="p-4">
-                <div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-800">
+                <div class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-800">
                   {task.status}
                 </div>
               </td>
@@ -83,15 +83,15 @@ const { completedTasks } = Astro.props;
               </td>
               <td class="p-4">
                 <div class="flex min-w-52 flex-col gap-2">
-                  <form class="sage-ref-form grid gap-1.5" data-task-id={task.id}>
-                    <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="sageDocumentRef" maxlength="60"
+                  <form class="sage-ref-form grid gap-2" data-task-id={task.id}>
+                    <input class="rounded border border-kharon-border px-2 py-2 text-xs" name="sageDocumentRef" maxlength="60"
                       placeholder="Sage Document Ref"
                       value={task.sage_document_ref || ""} />
                     
-                    <input class="rounded border border-kharon-border px-2 py-1.5 text-xs" name="notes" maxlength="500"
+                    <input class="rounded border border-kharon-border px-2 py-2 text-xs" name="notes" maxlength="500"
                       placeholder="Finance notes (optional)" value={task.notes || ""} />
                       
-                    <button class="rounded bg-kharon-grey px-2 py-1.5 text-xs font-semibold text-white hover:bg-kharon-black" type="submit">
+                    <button class="rounded bg-kharon-grey px-2 py-2 text-xs font-semibold text-white hover:bg-kharon-black" type="submit">
                       {task.sage_document_ref ? "Update Ref" : "Save Ref"}
                     </button>
                     <p class="sage-ref-result text-xs text-kharon-grey" aria-live="polite"></p>

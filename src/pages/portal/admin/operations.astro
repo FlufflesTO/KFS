@@ -103,17 +103,17 @@ const groups = [
 ---
 
 <PortalLayout title="Operations Hub | Kharon Portal" active="operations" user={user}>
-  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment kharon-logo-watermark">
-    <div class="mx-auto max-w-7xl">
-      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Admin operations</p>
-      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Operations Command Center</h1>
-      <p class="mt-4 max-w-3xl text-sm leading-6 text-white/65">
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment rounded-xl border border-kharon-purple/10 mb-6 shadow-inner relative overflow-hidden">
+    <div class="mx-auto max-w-7xl relative z-10">
+      <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Admin operations</p>
+      <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Operations Command Center</h1>
+      <p class="mt-3 max-w-3xl text-sm text-white/50">
         The original operations workspace has been split into focused admin pages. This hub keeps the operational entrypoint stable while routing each task to the right surface.
       </p>
     </div>
   </section>
 
-  <section class="px-4 py-8 sm:px-6">
+  <section class="mt-2">
     <div class="mx-auto max-w-7xl gap-6">
       {loadError && <p class="rounded-md rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
 

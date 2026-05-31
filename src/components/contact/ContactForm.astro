@@ -26,7 +26,7 @@
   />
   
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-    <div class="grid gap-1.5">
+    <div class="grid gap-2">
       <label for="name" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Full Name *</label>
       <input 
         type="text" 
@@ -38,7 +38,7 @@
       />
     </div>
     
-    <div class="grid gap-1.5">
+    <div class="grid gap-2">
       <label for="email" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Email Address *</label>
       <input 
         type="email" 
@@ -51,7 +51,7 @@
     </div>
   </div>
   
-  <div class="grid gap-1.5">
+  <div class="grid gap-2">
     <label for="phone" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Phone Number</label>
     <input 
       type="tel" 
@@ -62,7 +62,7 @@
     />
   </div>
   
-  <div class="grid gap-1.5">
+  <div class="grid gap-2">
     <label for="subject" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Subject *</label>
     <input 
       type="text" 
@@ -74,7 +74,7 @@
     />
   </div>
   
-  <div class="grid gap-1.5">
+  <div class="grid gap-2">
     <label for="message" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Message *</label>
     <textarea 
       id="message" 
@@ -107,7 +107,7 @@
     <button 
       type="submit"
       :disabled="submitting"
-      class="w-full kharon-command-button py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
+      class="w-full kharon-command-button py-4 disabled:opacity-50 disabled:cursor-not-allowed"
       x-bind:class="{ 'opacity-75': submitting }"
     >
       <span x-show="!submitting" x-cloak>Send Message</span>
@@ -131,7 +131,7 @@
     <button 
       type="button"
       data-reset-contact-form
-      class="mt-6 kharon-secondary-button py-2.5 px-6"
+      class="mt-6 kharon-secondary-button py-3 px-6"
     >
       Send Another Message
     </button>

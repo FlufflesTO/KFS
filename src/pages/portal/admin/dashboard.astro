@@ -42,9 +42,9 @@ const today    = new Date().toISOString().slice(0, 10);
 const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
 function dueDateCls(nd: string | null | undefined): string {
-  if (!nd || nd > soonDate) return "border-l-4 border-kharon-blue bg-kharon-light";
-  if (nd > today) return "border-l-4 border-amber-300 bg-amber-50";
-  return "border-l-4 border-kharon-red bg-kharon-light";
+  if (!nd || nd > soonDate) return "border-l-4 border-kharon-blue bg-kharon-black/35 border-kharon-purple/10 text-white";
+  if (nd > today) return "border-l-4 border-kharon-amber bg-amber-950/10 border-kharon-amber/20 text-white";
+  return "border-l-4 border-kharon-red bg-red-950/10 border-kharon-red/20 text-white";
 }
 function dueDateLabel(nd: string | null | undefined): string {
   if (!nd) return "Not scheduled";
@@ -188,7 +188,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Admin Control Panel | Kharon Portal" active="admin" user={user}>
-  <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-8 text-white sm:px-6 sm:py-10 shadow-inner">
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment rounded-xl border border-kharon-purple/10 mb-6 shadow-inner relative overflow-hidden">
     <div class="mx-auto max-w-7xl">
       <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Office control panel</p>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Operational dispatch and lifecycle matrix</h1>
@@ -201,7 +201,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
       {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red mb-6">{loadError}</p>}
 
       {/* Consolidated Priority Health Metrics */}
-      <div class="mb-8 grid gap-6 lg:grid-cols-[1.6fr_1fr]"> <!-- Increased gap from 4 to 6 for better mobile spacing -->
+      <div class="mb-8 grid gap-6 lg:grid-cols-[1.5fr_1fr]"> <!-- Increased gap from 4 to 6 for better mobile spacing -->
         <KharonCard variant={stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'danger' : 'primary'} padding="lg">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-8 h-full">
             <div>
@@ -209,25 +209,25 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               <h2 class="mt-2 text-xl font-bold tracking-tight text-kharon-black">
                 {stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'Action Required' : 'All Systems Nominal'}
               </h2>
-              <p class="mt-2 text-[0.875rem] text-kharon-grey/70 max-w-sm">
+              <p class="mt-2 text-sm text-kharon-grey/60 max-w-sm">
                 Monitor and resolve critical compliance and dispatch blockers to maintain operational SLA.
               </p>
             </div>
             
             <div class="flex gap-6">
               <div class="text-center">
-                <p class={`text-3xl font-bold tracking-tighter ${stats.unassignedJobs > 0 ? 'text-kharon-red' : 'text-kharon-grey/30'}`}>{stats.unassignedJobs}</p>
-                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">Unassigned</p>
+                <p class={`text-3xl font-bold tracking-tighter ${stats.unassignedJobs > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.unassignedJobs}</p>
+                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Unassigned</p>
               </div>
               <div class="w-px bg-kharon-border/40"></div>
               <div class="text-center">
-                <p class={`text-3xl font-bold tracking-tighter ${stats.overdueSystems > 0 ? 'text-kharon-red' : 'text-kharon-grey/30'}`}>{stats.overdueSystems}</p>
-                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">Overdue</p>
+                <p class={`text-3xl font-bold tracking-tighter ${stats.overdueSystems > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.overdueSystems}</p>
+                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Overdue</p>
               </div>
               <div class="w-px bg-kharon-border/40"></div>
               <div class="text-center">
-                <p class={`text-3xl font-bold tracking-tighter ${stats.openDefects > 0 ? 'text-kharon-red' : 'text-kharon-grey/30'}`}>{stats.openDefects}</p>
-                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/50">Defects</p>
+                <p class={`text-3xl font-bold tracking-tighter ${stats.openDefects > 0 ? 'text-kharon-red' : 'text-kharon-grey/40'}`}>{stats.openDefects}</p>
+                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Defects</p>
               </div>
             </div>
           </div>
@@ -274,17 +274,17 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           <KharonButton href="/portal/tech/history" variant="secondary" size="sm" className="px-0 font-bold">View all →</KharonButton>
           <div class="mt-6 grid gap-4"> <!-- Increased gap from 3 to 4 for better mobile spacing -->
             {completed.map((item) => (
-              <article class="border border-kharon-border border-l-4 border-l-kharon-blue bg-kharon-light/30 p-5 rounded shadow-sm hover:bg-white transition-colors"> <!-- Increased padding from p-4 to p-5 -->
-                <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
-                <p class="text-sm text-kharon-grey/80 mt-1 font-medium">{item.system_type} / {item.coverage_area}</p>
-                <p class="mt-3 text-[0.625rem] text-kharon-grey/50 uppercase font-bold tracking-widest">{item.completed_at || "PENDING TIMESTAMP"}</p>
+              <article class="border border-kharon-purple/10 border-l-4 border-l-kharon-blue bg-kharon-black/35 p-5 rounded-lg shadow-sm hover:bg-kharon-black/60 transition-colors">
+                <p class="font-bold text-white tracking-tight">{item.owner_company_name}</p>
+                <p class="text-sm text-white/60 mt-1 font-medium">{item.system_type} / {item.coverage_area}</p>
+                <p class="mt-3 text-[0.625rem] text-white/40 uppercase font-bold tracking-widest">{item.completed_at || "PENDING TIMESTAMP"}</p>
                 {item.status === "Completed" && (
-                  <button class="mark-invoiced-btn mt-4 w-full rounded border border-kharon-blue/20 bg-white px-3 py-2.5 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-blue hover:bg-kharon-blue hover:text-white hover:border-kharon-blue transition-all" data-job-id={item.id}> <!-- Increased padding from py-2 to py-2.5 -->
+                  <button class="mark-invoiced-btn mt-4 w-full rounded border border-kharon-blue/40 bg-kharon-charcoal/60 px-3 py-3 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-cyan hover:bg-kharon-blue/20 hover:text-white hover:border-kharon-blue transition-all" data-job-id={item.id}>
                     Raise Sage Invoice
                   </button>
                 )}
                 {item.status === "Invoiced" && (
-                  <span class="mt-4 block text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/30 border border-dashed border-kharon-border bg-white/50 text-center py-2.5 rounded">Invoiced</span> <!-- Increased padding from py-2 to py-2.5 -->
+                  <span class="mt-4 block text-[0.625rem] font-bold uppercase tracking-widest text-white/30 border border-dashed border-kharon-purple/20 bg-kharon-charcoal/30 text-center py-3 rounded">Invoiced</span>
                 )}
               </article>
             ))}
@@ -295,10 +295,10 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           <KharonButton href="/portal/admin/planning" variant="secondary" size="sm" className="px-0 font-bold">View board →</KharonButton>
           <div class="mt-6 grid gap-4"> <!-- Increased gap from 3 to 4 for better mobile spacing -->
             {active.map((item) => (
-              <article class="border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-5 rounded shadow-sm hover:bg-white transition-colors"> <!-- Increased padding from p-4 to p-5 -->
-                <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
-                <p class="text-sm text-kharon-grey/80 mt-1 font-medium">{item.status} / {item.technician_name || "Unassigned"}</p>
-                <p class="mt-3 text-[0.625rem] text-kharon-grey/50 uppercase font-bold tracking-widest">{item.scheduled_date}</p>
+              <article class="border border-kharon-purple/10 border-l-4 border-l-kharon-purple bg-kharon-black/35 p-5 rounded-lg shadow-sm hover:bg-kharon-black/60 transition-colors">
+                <p class="font-bold text-white tracking-tight">{item.owner_company_name}</p>
+                <p class="text-sm text-white/60 mt-1 font-medium">{item.status} / {item.technician_name || "Unassigned"}</p>
+                <p class="mt-3 text-[0.625rem] text-white/40 uppercase font-bold tracking-widest">{item.scheduled_date}</p>
               </article>
             ))}
           </div>
@@ -308,10 +308,16 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           <KharonButton href="/portal/admin/planning" variant="secondary" size="sm" className="px-0 font-bold">Manage board →</KharonButton>
           <div class="mt-6 grid gap-4"> <!-- Increased gap from 3 to 4 for better mobile spacing -->
             {due.map((item) => (
-              <article class={`border border-kharon-border p-5 rounded shadow-sm hover:bg-white transition-colors ${dueDateCls(item.next_due_date)}`}> <!-- Increased padding from p-4 to p-5 -->
-                <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
-                <p class="text-sm text-kharon-grey/80 mt-1 font-medium">{item.system_type} / {item.coverage_area}</p>
-                <p class="mt-3 text-[0.625rem] uppercase font-bold tracking-widest">{dueDateLabel(item.next_due_date)}  -  {item.next_due_date}</p>
+              <article class={`border p-5 rounded-lg shadow-sm hover:bg-kharon-black/60 transition-colors ${dueDateCls(item.next_due_date)}`}>
+                <p class="font-bold text-white tracking-tight">{item.owner_company_name}</p>
+                <p class="text-sm text-white/60 mt-1 font-medium">{item.system_type} / {item.coverage_area}</p>
+                <p class:list={[
+                  "mt-3 text-[0.625rem] uppercase font-bold tracking-widest",
+                  !item.next_due_date || item.next_due_date > soonDate ? "text-white/40" :
+                  item.next_due_date > today ? "text-kharon-amber" : "text-kharon-red"
+                ]}>
+                  {dueDateLabel(item.next_due_date)}  -  {item.next_due_date}
+                </p>
               </article>
             ))}
           </div>
@@ -321,64 +327,64 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
       <section class="grid gap-8 lg:grid-cols-2 mt-8"> <!-- Increased gap from 6 to 8 for better mobile spacing -->
         <KharonCard title="Client request queue" subtitle="Customer Support">
           <div class="mt-6 grid gap-4">
-            {clientRequests.length === 0 && <p class="text-sm text-kharon-grey italic py-2">No new client requests require review.</p>}
+            {clientRequests.length === 0 && <p class="text-sm text-white/50 italic py-2">No new client requests require review.</p>}
             {clientRequests.map((item) => (
-              <article class="request-card border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-5 rounded shadow-sm" data-request-id={item.id}>
+              <article class="request-card border border-kharon-purple/20 border-l-4 border-l-kharon-purple bg-kharon-black/35 p-5 rounded-lg shadow-sm" data-request-id={item.id}>
                 <div class="flex flex-wrap justify-between gap-4">
                   <div class="min-w-0 flex-1">
-                    <p class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</p>
-                    <p class="text-xs font-bold text-kharon-purple mt-1 uppercase tracking-wide">{item.subject}</p>
-                    <p class="mt-2 text-[0.625rem] uppercase font-bold tracking-widest text-kharon-grey/50">{item.request_type} / {item.coverage_area || "General site request"}</p>
-                    <p class="mt-4 text-[0.8125rem] text-kharon-grey leading-relaxed bg-white border border-kharon-border/40 p-3 rounded">{item.message}</p>
-                    {item.linked_job_id && <p class="mt-3 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-blue bg-blue-50 border border-blue-100 px-2 py-1 rounded w-fit">Scheduled Dispatch: {item.linked_job_id}</p>}
+                    <p class="font-bold text-white tracking-tight">{item.owner_company_name}</p>
+                    <p class="text-xs font-bold text-kharon-cyan mt-1 uppercase tracking-wide">{item.subject}</p>
+                    <p class="mt-2 text-[0.625rem] uppercase font-bold tracking-widest text-white/40">{item.request_type} / {item.coverage_area || "General site request"}</p>
+                    <p class="mt-4 text-[0.8125rem] text-white/80 leading-relaxed bg-kharon-charcoal/60 border border-kharon-purple/10 p-3 rounded-lg">{item.message}</p>
+                    {item.linked_job_id && <p class="mt-3 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-cyan bg-kharon-blue/10 border border-kharon-blue/20 px-2 py-1 rounded w-fit">Scheduled Dispatch: {item.linked_job_id}</p>}
                   </div>
-                  <span class="h-fit rounded border border-kharon-border bg-white px-2.5 py-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey">{item.priority} / {item.status}</span>
+                  <span class="h-fit rounded border border-kharon-purple/20 bg-kharon-charcoal/60 px-3 py-1 text-[0.625rem] font-bold uppercase tracking-widest text-white/70">{item.priority} / {item.status}</span>
                 </div>
-                <div class="mt-6 pt-5 border-t border-kharon-border/40 grid gap-4">
+                <div class="mt-6 pt-5 border-t border-kharon-purple/10 grid gap-4">
                   <form class="request-status-form flex flex-wrap gap-2" data-request-id={item.id}>
           <CsrfInput />
                     <input type="hidden" name="requestId" value={item.id} />
-                    <select class="portal-field sm:w-auto rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="status">
+                    <select class="kharon-field sm:w-auto text-sm" name="status">
                       {["New", "Reviewing", "Closed"].map((status) => <option value={status} selected={item.status === status}>{status}</option>)}
                     </select>
                     <KharonButton type="submit" size="sm">Update</KharonButton>
                     <p class="request-result hidden text-sm font-semibold"></p>
                   </form>
                   {!item.linked_job_id && (
-                    <form class="request-schedule-form grid gap-4 border-t border-kharon-border/40 pt-5" data-request-id={item.id}>
+                    <form class="request-schedule-form grid gap-4 border-t border-kharon-purple/10 pt-5" data-request-id={item.id}>
           <CsrfInput />
                       <input type="hidden" name="requestId" value={item.id} />
                       <div class="grid gap-3 sm:grid-cols-2">
-                        <div class="grid gap-1.5">
-                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">System</label>
-                          <select class="portal-field rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="systemId" required>
+                        <div class="grid gap-2">
+                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-white/40">System</label>
+                          <select class="kharon-field text-sm" name="systemId" required>
                             <option value="">Select system</option>
                             {requestSystems.filter((system) => system.site_id === item.site_id).map((system) => (
                               <option value={system.id} selected={system.id === item.system_id}>{system.system_type} / {system.coverage_area}</option>
                             ))}
                           </select>
                         </div>
-                        <div class="grid gap-1.5">
-                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Technician</label>
-                          <select class="portal-field rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="assignedTechnicianId">
+                        <div class="grid gap-2">
+                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-white/40">Technician</label>
+                          <select class="kharon-field text-sm" name="assignedTechnicianId">
                             <option value="">Unassigned</option>
                             {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
                           </select>
                         </div>
                       </div>
                       <div class="grid gap-3 sm:grid-cols-2">
-                        <div class="grid gap-1.5">
-                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Scheduled Date</label>
-                          <input class="portal-field rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="scheduledDate" type="date" required />
+                        <div class="grid gap-2">
+                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-white/40">Scheduled Date</label>
+                          <input class="kharon-field text-sm" name="scheduledDate" type="date" required />
                         </div>
-                        <div class="grid gap-1.5">
-                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Job Type</label>
-                          <input class="portal-field rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="jobType" value={item.request_type} />
+                        <div class="grid gap-2">
+                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-white/40">Job Type</label>
+                          <input class="kharon-field text-sm" name="jobType" value={item.request_type} />
                         </div>
                       </div>
-                      <div class="grid gap-1.5">
-                        <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/60">Site Notes</label>
-                        <input class="portal-field rounded border border-kharon-border bg-white px-3 py-1.5 text-xs focus:outline-none" name="siteNotes" value={`${item.subject}: ${item.message}`.slice(0, 900)} />
+                      <div class="grid gap-2">
+                        <label class="text-[0.625rem] font-bold uppercase tracking-widest text-white/40">Site Notes</label>
+                        <input class="kharon-field text-sm" name="siteNotes" value={`${item.subject}: ${item.message}`.slice(0, 900)} />
                       </div>
                       <KharonButton type="submit" variant="primary" className="mt-2">Schedule dispatch</KharonButton>
                     </form>
@@ -394,11 +400,11 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <div>
               <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-red mb-4">Overdue systems</p>
               <div class="grid gap-2">
-                {overdue.length === 0 && <p class="text-sm text-kharon-grey italic py-1">No overdue lifecycle items.</p>}
+                {overdue.length === 0 && <p class="text-sm text-white/50 italic py-1">No overdue lifecycle items.</p>}
                 {overdue.map((item) => (
-                  <div class="border border-kharon-border border-l-4 border-l-kharon-red bg-kharon-light/30 p-3.5 text-[0.75rem] rounded shadow-sm flex items-center justify-between">
-                    <span class="font-bold text-kharon-black">{item.owner_company_name}</span>
-                    <span class="text-kharon-grey font-medium">{item.system_type} / {item.coverage_area}</span>
+                  <div class="border border-kharon-purple/10 border-l-4 border-l-kharon-red bg-kharon-black/35 p-4 text-xs rounded-lg shadow-sm flex items-center justify-between">
+                    <span class="font-bold text-white">{item.owner_company_name}</span>
+                    <span class="text-white/60 font-medium">{item.system_type} / {item.coverage_area}</span>
                   </div>
                 ))}
               </div>
@@ -407,11 +413,11 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <div>
               <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple mb-4">Missing documentation</p>
               <div class="grid gap-2">
-                {missingDocs.length === 0 && <p class="text-sm text-kharon-grey italic py-1">No completed jobs are missing documentation.</p>}
+                {missingDocs.length === 0 && <p class="text-sm text-white/50 italic py-1">No completed jobs are missing documentation.</p>}
                 {missingDocs.map((item) => (
-                  <div class="border border-kharon-border border-l-4 border-l-kharon-purple bg-kharon-light/30 p-3.5 text-[0.75rem] rounded shadow-sm flex items-center justify-between">
-                    <span class="font-bold text-kharon-black">{item.owner_company_name}</span>
-                    <span class="text-kharon-grey font-mono text-[10px]">{item.id.slice(0, 8)}... / {item.completed_at || "completed"}</span>
+                  <div class="border border-kharon-purple/10 border-l-4 border-l-kharon-purple bg-kharon-black/35 p-4 text-xs rounded-lg shadow-sm flex items-center justify-between">
+                    <span class="font-bold text-white">{item.owner_company_name}</span>
+                    <span class="text-white/60 font-mono text-[10px]">{item.id.slice(0, 8)}... / {item.completed_at || "completed"}</span>
                   </div>
                 ))}
               </div>
@@ -420,11 +426,11 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <div>
               <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-blue mb-4">Finance follow-up</p>
               <div class="grid gap-2">
-                {financeFollowup.length === 0 && <p class="text-sm text-kharon-grey italic py-1">No pending finance follow-up.</p>}
+                {financeFollowup.length === 0 && <p class="text-sm text-white/50 italic py-1">No pending finance follow-up.</p>}
                 {financeFollowup.map((item) => (
-                  <div class="border border-kharon-border border-l-4 border-l-kharon-blue bg-kharon-light/30 p-3.5 text-[0.75rem] rounded shadow-sm flex items-center justify-between">
-                    <span class="font-bold text-kharon-black">{item.owner_company_name}</span>
-                    <span class="text-kharon-grey font-bold">{item.record_count} open / {formatCurrency(item.amount || 0)}</span>
+                  <div class="border border-kharon-purple/10 border-l-4 border-l-kharon-blue bg-kharon-black/35 p-4 text-xs rounded-lg shadow-sm flex items-center justify-between">
+                    <span class="font-bold text-white">{item.owner_company_name}</span>
+                    <span class="text-white/60 font-bold">{item.record_count} open / {formatCurrency(item.amount || 0)}</span>
                   </div>
                 ))}
               </div>
@@ -433,21 +439,21 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <div>
               <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-red mb-4">Open defects</p>
               <div class="grid gap-3">
-                {openDefects.length === 0 && <p class="text-sm text-kharon-grey italic py-1">No open defects require attention.</p>}
+                {openDefects.length === 0 && <p class="text-sm text-white/50 italic py-1">No open defects require attention.</p>}
                 {openDefects.map((item) => (
-                  <a href={`/portal/admin/systems?q=${encodeURIComponent(item.system_id)}`} class="block border border-kharon-border border-l-4 p-4 rounded shadow-sm hover:bg-white transition-all" class:list={[
-                    item.severity === "Critical" ? "border-l-kharon-red bg-red-50/20" : item.severity === "Major" ? "border-l-kharon-amber bg-amber-50/20" : "border-l-kharon-grey bg-kharon-light/20"
+                  <a href={`/portal/admin/systems?q=${encodeURIComponent(item.system_id)}`} class="block border border-kharon-purple/20 border-l-4 p-4 rounded-lg shadow-sm hover:bg-kharon-black/60 transition-all text-white" class:list={[
+                    item.severity === "Critical" ? "border-l-kharon-red bg-red-950/10" : item.severity === "Major" ? "border-l-kharon-amber bg-amber-950/10" : "border-l-kharon-purple/30 bg-kharon-black/35"
                   ]}>
                     <div class="flex items-center justify-between">
-                      <span class="font-bold text-kharon-black tracking-tight">{item.owner_company_name}</span>
-                      <span class={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase border tracking-widest ${
-                        item.severity === "Critical" ? "border-red-200 bg-red-50 text-kharon-red" :
-                        item.severity === "Major" ? "border-amber-200 bg-amber-50 text-amber-700" :
-                        "border-kharon-border bg-white text-kharon-grey"
+                      <span class="font-bold text-white tracking-tight">{item.owner_company_name}</span>
+                      <span class={`rounded px-2 py-0.5 text-[9px] font-bold uppercase border tracking-widest ${
+                        item.severity === "Critical" ? "border-kharon-red/30 bg-kharon-red/20 text-kharon-red" :
+                        item.severity === "Major" ? "border-kharon-amber/30 bg-kharon-amber/20 text-kharon-amber" :
+                        "border-kharon-purple/20 bg-kharon-charcoal/60 text-white/60"
                       }`}>{item.severity}</span>
                     </div>
-                    <p class="text-kharon-grey text-xs mt-1.5 font-medium">{item.system_type} / {item.coverage_area}</p>
-                    {item.sans_clause_ref && <p class="mt-2 font-mono text-[9px] text-kharon-grey/40 uppercase tracking-widest">SANS Clause: {item.sans_clause_ref}</p>}
+                    <p class="text-white/60 text-xs mt-2 font-medium">{item.system_type} / {item.coverage_area}</p>
+                    {item.sans_clause_ref && <p class="mt-2 font-mono text-[9px] text-white/40 uppercase tracking-widest">SANS Clause: {item.sans_clause_ref}</p>}
                   </a>
                 ))}
               </div>
@@ -532,7 +538,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         try {
           await postJson("/portal/api/admin/jobs", { action: "markInvoiced", id: jobId });
           const confirmed = document.createElement("span");
-          confirmed.className = "mt-4 block text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/30 border border-dashed border-kharon-border bg-white/50 text-center py-2 rounded";
+          confirmed.className = "mt-4 block text-[0.625rem] font-bold uppercase tracking-widest text-kharon-grey/40 border border-dashed border-kharon-border bg-white/50 text-center py-2 rounded";
           confirmed.textContent = "Invoiced";
           btn.replaceWith(confirmed);
         } catch (error) {

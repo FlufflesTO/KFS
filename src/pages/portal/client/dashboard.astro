@@ -251,7 +251,7 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
           <div class={`rounded-xl border p-5 shadow-xl backdrop-blur-md relative overflow-hidden flex flex-col justify-between ${overdueCount > 0 ? "border-kharon-red/30 bg-kharon-charcoal/80" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
             <div>
               <span class="text-[10px] font-bold uppercase tracking-widest text-white/60">Overdue Maintenance</span>
-              <div class="flex items-baseline gap-2.5 mt-2">
+              <div class="flex items-baseline gap-2 mt-2">
                 <span class={`text-3xl font-black tracking-tight ${overdueCount > 0 ? "text-kharon-red" : "text-white"}`}>{overdueCount}</span>
                 {overdueCount > 0 && <span class="text-[9px] font-black text-kharon-red bg-kharon-red/10 border border-kharon-red/20 px-2 py-0.5 rounded uppercase tracking-wider">Overdue</span>}
               </div>
@@ -261,7 +261,7 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
           <div class={`rounded-xl border p-5 shadow-xl backdrop-blur-md relative overflow-hidden flex flex-col justify-between ${dueSoonCount > 0 ? "border-kharon-amber/30 bg-kharon-charcoal/80" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
             <div>
               <span class="text-[10px] font-bold uppercase tracking-widest text-white/60">Due Within 30 Days</span>
-              <div class="flex items-baseline gap-2.5 mt-2">
+              <div class="flex items-baseline gap-2 mt-2">
                 <span class={`text-3xl font-black tracking-tight ${dueSoonCount > 0 ? "text-kharon-amber" : "text-white"}`}>{dueSoonCount}</span>
                 {dueSoonCount > 0 && <span class="text-[9px] font-black text-kharon-amber bg-kharon-amber/10 border border-kharon-amber/20 px-2 py-0.5 rounded uppercase tracking-wider">Due Soon</span>}
               </div>
@@ -291,7 +291,7 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
       )}
 
       {/* Main Dashboard Grid */}
-      <div class="grid gap-8 lg:grid-cols-[1.9fr_1.1fr]">
+      <div class="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
         
         {/* ==================== LEFT / MAIN COLUMN ==================== */}
         <div class="space-y-8">
@@ -305,11 +305,11 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
             <div class="grid gap-6 sm:grid-cols-2">
               {systemsWithStatus.map((system) => {
                 return (
-                  <article class={`rounded-xl border p-5 flex flex-col justify-between bg-kharon-charcoal/50 hover:border-kharon-purple/40 transition-all duration-300 ${system.isOverdue ? 'border-kharon-red/20 shadow-lg shadow-kharon-red/2' : 'border-kharon-purple/15'}`}>
+                  <article class={`rounded-xl border p-5 flex flex-col justify-between bg-kharon-charcoal/60 hover:border-kharon-purple/40 transition-all duration-300 ${system.isOverdue ? 'border-kharon-red/20 shadow-lg shadow-kharon-red/2' : 'border-kharon-purple/20'}`}>
                     <div>
-                      <div class="flex items-start justify-between gap-2.5">
-                        <span class="rounded bg-kharon-purple/20 px-2 py-0.5 text-[9px] font-bold uppercase text-kharon-cyan border border-kharon-purple/35">{system.system_type}</span>
-                        <span class={`rounded px-2.5 py-0.5 text-[9px] font-bold uppercase border ${
+                      <div class="flex items-start justify-between gap-2">
+                        <span class="rounded bg-kharon-purple/20 px-2 py-0.5 text-[9px] font-bold uppercase text-kharon-cyan border border-kharon-purple/30">{system.system_type}</span>
+                        <span class={`rounded px-3 py-0.5 text-[9px] font-bold uppercase border ${
                           system.isOverdue
                              ? "border-kharon-red/30 bg-kharon-red/10 text-kharon-red"
                              : system.isDueSoon
@@ -319,7 +319,7 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
                           {system.isOverdue ? "Overdue: " : "Due "}{system.next_due_date || "Not scheduled"}
                         </span>
                       </div>
-                      <h3 class="mt-3.5 font-bold text-white leading-snug">{system.coverage_area}</h3>
+                      <h3 class="mt-4 font-bold text-white leading-snug">{system.coverage_area}</h3>
                       <p class="text-xs text-white/50 mt-1">{system.owner_company_name}</p>
                       
                       <dl class="mt-4 grid grid-cols-2 gap-3 text-xs border-t border-kharon-purple/10 pt-3 text-white/70">
@@ -329,14 +329,14 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
                         </div>
                         <div>
                           <dt class="font-bold text-kharon-purple uppercase text-[9px] tracking-widest">System ID</dt>
-                          <dd class="mt-1 font-mono font-bold text-white/55 truncate">{system.id.slice(0, 8)}...</dd>
+                          <dd class="mt-1 font-mono font-bold text-white/60 truncate">{system.id.slice(0, 8)}...</dd>
                         </div>
                       </dl>
                     </div>
                     
                     <div class="mt-5 pt-3 border-t border-kharon-purple/10">
                       {system.documentation_path ? (
-                        <a href={`/portal/api/file/${system.documentation_path}`} class="flex items-center justify-center gap-1.5 w-full px-4 py-2.5 bg-gradient-to-r from-kharon-purple to-kharon-blue text-white font-bold text-xs uppercase tracking-widest rounded-md text-center hover:shadow-lg hover:shadow-kharon-purple/30 transition-all min-h-[44px]">
+                        <a href={`/portal/api/file/${system.documentation_path}`} class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-kharon-purple to-kharon-blue text-white font-bold text-xs uppercase tracking-widest rounded-md text-center hover:shadow-lg hover:shadow-kharon-purple/30 transition-all min-h-[44px]">
                           Download Jobcard PDF
                         </a>
                       ) : (
@@ -364,23 +364,23 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
             <div class="mt-4 space-y-4">
               {openDefects.length === 0 && <p class="text-xs text-white/50 italic py-2">No open defects are recorded for your systems.</p>}
               {openDefects.map((item) => (
-                <article class="flex flex-col gap-4 p-5 rounded-xl border border-kharon-purple/15 bg-kharon-charcoal/50">
+                <article class="flex flex-col gap-4 p-5 rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/60">
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center justify-between flex-wrap gap-2">
                       <span class="font-bold text-white text-sm">{item.owner_company_name}</span>
-                      <span class={`rounded px-2.5 py-0.5 text-[9px] font-bold uppercase border ${
-                        item.severity === "Critical" ? "border-kharon-red/35 bg-kharon-red/10 text-kharon-red" :
+                      <span class={`rounded px-3 py-0.5 text-[9px] font-bold uppercase border ${
+                        item.severity === "Critical" ? "border-kharon-red/30 bg-kharon-red/10 text-kharon-red" :
                         item.severity === "Major" ? "border-kharon-amber/30 bg-kharon-amber/10 text-kharon-amber" :
                         "border-kharon-purple/20 bg-kharon-purple/5 text-white/60"
                       }`}>{item.severity}</span>
                     </div>
-                    <p class="text-xs text-kharon-cyan uppercase tracking-wider font-bold mt-1.5">{item.system_type} / {item.coverage_area}</p>
+                    <p class="text-xs text-kharon-cyan uppercase tracking-wider font-bold mt-2">{item.system_type} / {item.coverage_area}</p>
                     {item.sans_clause_ref && <p class="mt-1 font-mono text-[9px] text-white/40 font-bold uppercase tracking-wider">SANS Clause: {item.sans_clause_ref}</p>}
                     <p class="mt-3 text-xs text-white/80 bg-kharon-black/40 border border-kharon-purple/10 p-3 rounded-lg leading-relaxed">{item.description}</p>
                     {item.remediation_notes && (
                       <div class="mt-3">
                         <p class="text-[9px] font-bold uppercase text-kharon-cyan tracking-wider">Remediation Notes</p>
-                        <p class="text-xs text-white/85 bg-kharon-purple/5 border border-kharon-purple/20 p-3 rounded-lg mt-1 leading-relaxed">{item.remediation_notes}</p>
+                        <p class="text-xs text-white/80 bg-kharon-purple/5 border border-kharon-purple/20 p-3 rounded-lg mt-1 leading-relaxed">{item.remediation_notes}</p>
                       </div>
                     )}
                   </div>
@@ -395,20 +395,20 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
           
           {/* Section: Outstanding Quotes */}
           <KharonCard title="Outstanding Quotes" subtitle="Finance">
-            <div class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-kharon-purple/15 bg-kharon-charcoal/40 px-4 py-3 text-xs" data-approval-endpoint="/portal/api/approve-quote">
+            <div class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/40 px-4 py-3 text-xs" data-approval-endpoint="/portal/api/approve-quote">
               <span class="font-bold text-white/60">Mapped client sites: {sites.length}</span>
-              <a href="/portal/client/quotes" class="px-3 py-1.5 border border-kharon-purple/35 text-white hover:bg-kharon-purple/10 font-bold text-[10px] uppercase tracking-widest rounded-md">Approvals</a>
+              <a href="/portal/client/quotes" class="px-3 py-2 border border-kharon-purple/30 text-white hover:bg-kharon-purple/10 font-bold text-[10px] uppercase tracking-widest rounded-md">Approvals</a>
             </div>
             <div class="mt-4 space-y-4">
               {quotes.length === 0 && <p class="text-xs text-white/50 italic py-2">No outstanding quotes require your approval.</p>}
               {quotes.map((quote) => (
-                <article class="flex flex-col gap-3 p-4 rounded-xl border border-kharon-purple/15 bg-kharon-charcoal/50">
+                <article class="flex flex-col gap-3 p-4 rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/60">
                   <div class="min-w-0 flex-1">
                     <p class="font-bold text-white truncate">{quote.owner_company_name}</p>
                     <p class="text-[9px] text-white/40 uppercase tracking-widest font-mono mt-0.5">Quote #{quote.reference || quote.id.slice(0, 8)}</p>
                     <p class="mt-2 text-base font-black text-kharon-cyan">{formatCurrency(quote.amount)}</p>
                   </div>
-                  <a href="/portal/client/quotes" class="w-full text-center px-4 py-2.5 bg-gradient-to-r from-kharon-purple to-kharon-blue text-white font-bold text-xs uppercase tracking-widest rounded-md min-h-[44px] flex items-center justify-center">
+                  <a href="/portal/client/quotes" class="w-full text-center px-4 py-3 bg-gradient-to-r from-kharon-purple to-kharon-blue text-white font-bold text-xs uppercase tracking-widest rounded-md min-h-[44px] flex items-center justify-center">
                     Review Quote
                   </a>
                 </article>
@@ -421,9 +421,9 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
             <div class="mt-4 space-y-4">
               {certificates.length === 0 && <p class="text-xs text-white/50 italic py-2">No certificates are registered for your systems.</p>}
               {certificates.map((cert) => (
-                <article class="flex flex-col gap-3.5 p-4 rounded-xl border border-kharon-purple/15 bg-kharon-charcoal/50">
+                <article class="flex flex-col gap-4 p-4 rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/60">
                   <div class="min-w-0 flex-1">
-                    <div class="flex items-center justify-between gap-2.5">
+                    <div class="flex items-center justify-between gap-2">
                       <p class="font-bold text-white text-sm">{cert.certificate_type}</p>
                       <span class={`rounded px-2 py-0.5 text-[9px] font-black uppercase ${
                         cert.status === "Valid" ? "bg-kharon-green/20 text-kharon-green border border-kharon-green/30" : 
@@ -433,14 +433,14 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
                       }`}>{cert.status}</span>
                     </div>
                     <p class="text-[10px] text-kharon-cyan uppercase font-bold tracking-wider mt-1">{cert.system_type} / {cert.coverage_area}</p>
-                    <div class="mt-3.5 text-xs text-white/60 leading-relaxed grid grid-cols-2 gap-2 border-t border-kharon-purple/10 pt-2.5">
+                    <div class="mt-4 text-xs text-white/60 leading-relaxed grid grid-cols-2 gap-2 border-t border-kharon-purple/10 pt-2.5">
                       <div>
                         <span class="text-[9px] font-bold uppercase text-kharon-purple block">Issued</span>
-                        <span class="font-medium text-white/95">{cert.issued_date}</span>
+                        <span class="font-medium text-white">{cert.issued_date}</span>
                       </div>
                       <div>
                         <span class="text-[9px] font-bold uppercase text-kharon-purple block">Expires</span>
-                        <span class="font-medium text-white/95">{cert.expiry_date || "N/A"}</span>
+                        <span class="font-medium text-white">{cert.expiry_date || "N/A"}</span>
                       </div>
                     </div>
                   </div>
@@ -455,16 +455,16 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
               {requests.length === 0 && <p class="text-xs text-white/50 italic py-2">No recent service requests.</p>}
               {requests.map((request) => (
                 <article class={`p-4 rounded-xl border ${
-                  request.priority === "Critical" ? "border-kharon-red/25 bg-kharon-red/5" : 
+                  request.priority === "Critical" ? "border-kharon-red/20 bg-kharon-red/5" : 
                   request.priority === "Urgent" ? "border-kharon-amber/20 bg-kharon-amber/5" : 
-                  "border-kharon-purple/25 bg-kharon-purple/5"
+                  "border-kharon-purple/20 bg-kharon-purple/5"
                 }`}>
                   <div class="flex flex-col gap-3">
                     <div class="min-w-0 flex-1">
-                      <div class="flex justify-between items-start gap-2.5">
+                      <div class="flex justify-between items-start gap-2">
                         <p class="font-bold text-white truncate text-sm">{request.owner_company_name}</p>
                         <span class={`rounded px-2 py-0.5 text-[9px] font-black uppercase ${
-                          request.priority === "Critical" ? "bg-kharon-red/20 text-kharon-red border border-kharon-red/35" : 
+                          request.priority === "Critical" ? "bg-kharon-red/20 text-kharon-red border border-kharon-red/30" : 
                           request.priority === "Urgent" ? "bg-kharon-amber/20 text-kharon-amber border border-kharon-amber/35" : 
                           "bg-white/5 text-white/50 border border-white/10"
                         }`}>{request.priority}</span>
@@ -472,7 +472,7 @@ const siteStatuses: SiteStatus[] = sites.map(site => {
                       <p class="text-xs font-bold text-kharon-cyan mt-1">{request.request_type}</p>
                       <p class="text-xs text-white/50 mt-1 truncate">{request.coverage_area || "General site request"}</p>
                       
-                      <div class="mt-3.5 text-xs text-white/60 leading-normal border-t border-kharon-purple/10 pt-2.5">
+                      <div class="mt-4 text-xs text-white/60 leading-normal border-t border-kharon-purple/10 pt-2.5">
                         <p class="truncate"><span class="font-bold text-kharon-purple uppercase text-[9px] tracking-widest block">Subject</span> {request.subject}</p>
                         <p class="mt-1"><span class="font-bold text-kharon-purple uppercase text-[9px] tracking-widest block">Created</span> {request.created_at}</p>
                       </div>

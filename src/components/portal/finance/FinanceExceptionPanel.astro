@@ -23,7 +23,7 @@ const otherTasks = pendingTasks.filter(t => !t.task_type.includes('Invoice'));
         <p class="text-xs font-bold uppercase tracking-wider text-amber-600">Finance Tasks</p>
         <h2 class="text-lg font-bold text-kharon-black">Pending Actions</h2>
       </div>
-      <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-amber-800">{otherTasks.length}</span>
+      <span class="rounded-full bg-amber-100 px-3 py-0.5 text-[10px] font-bold uppercase text-amber-800">{otherTasks.length}</span>
     </div>
     <div class="space-y-3 max-h-96 overflow-y-auto">
       {otherTasks.length === 0 ? (
@@ -34,12 +34,12 @@ const otherTasks = pendingTasks.filter(t => !t.task_type.includes('Invoice'));
             <div class="min-w-0 flex-1">
               <div class="flex items-center justify-between">
                 <span class="font-semibold text-kharon-black">{task.owner_company_name}</span>
-                <span class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-800">{task.task_type}</span>
+                <span class="rounded bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-800">{task.task_type}</span>
               </div>
               <p class="text-sm text-kharon-grey mt-0.5">{task.job_type || 'General'} / {task.reference || "No ref"}</p>
               <p class="mt-2 text-xs text-kharon-black font-semibold">{formatCurrency(task.amount)}</p>
             </div>
-            <a href={`/portal/finance/task/${task.id}`} class="rounded border border-kharon-blue bg-white px-3 py-1.5 text-[10px] font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
+            <a href={`/portal/finance/task/${task.id}`} class="rounded border border-kharon-blue bg-white px-3 py-2 text-[10px] font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
               Process
             </a>
           </article>
@@ -55,7 +55,7 @@ const otherTasks = pendingTasks.filter(t => !t.task_type.includes('Invoice'));
         <p class="text-xs font-bold uppercase tracking-wider text-kharon-red">Collections</p>
         <h2 class="text-lg font-bold text-kharon-black">Overdue Invoices</h2>
       </div>
-      <span class="rounded-full bg-red-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-red-800">{summary.overdue_invoices}</span>
+      <span class="rounded-full bg-red-100 px-3 py-0.5 text-[10px] font-bold uppercase text-red-800">{summary.overdue_invoices}</span>
     </div>
     <div class="space-y-3 max-h-96 overflow-y-auto">
       {overdueTasks.length === 0 ? (
@@ -66,12 +66,12 @@ const otherTasks = pendingTasks.filter(t => !t.task_type.includes('Invoice'));
             <div class="min-w-0 flex-1">
               <div class="flex items-center justify-between">
                 <span class="font-semibold text-kharon-black">{task.owner_company_name}</span>
-                <span class="rounded bg-red-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-red-800">Overdue</span>
+                <span class="rounded bg-red-100 px-2 py-0.5 text-[9px] font-bold uppercase text-red-800">Overdue</span>
               </div>
               <p class="text-sm text-kharon-grey mt-0.5">{task.task_type} / Ref: {task.reference || "N/A"}</p>
               <p class="mt-2 text-xs text-kharon-black font-semibold">{formatCurrency(task.amount)}</p>
             </div>
-            <a href={`/portal/finance/task/${task.id}`} class="rounded border border-kharon-blue bg-white px-3 py-1.5 text-[10px] font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
+            <a href={`/portal/finance/task/${task.id}`} class="rounded border border-kharon-blue bg-white px-3 py-2 text-[10px] font-bold text-kharon-blue hover:bg-kharon-blue hover:text-white transition-colors">
               Process
             </a>
           </article>

@@ -9,8 +9,8 @@ const {
 
 const Element = href ? "a" : "div";
 const baseClass = dark
-  ? "group block rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 text-white hover:border-kharon-purple/40 backdrop-blur-sm kharon-surface"
-  : "group block rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 text-white hover:border-kharon-purple/40 backdrop-blur-sm kharon-surface";
+  ? "group block rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-6 text-white hover:border-kharon-purple/40 backdrop-blur-sm kharon-surface"
+  : "group block rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-6 text-white hover:border-kharon-purple/40 backdrop-blur-sm kharon-surface";
 ---
 
 <Element href={href} class={baseClass}>
@@ -25,7 +25,7 @@ const baseClass = dark
   </h3>
 
   {text && (
-    <p class={`mt-3 leading-7 ${dark ? "text-white/65" : "text-white/70"}`}>
+    <p class={`mt-3 leading-7 ${dark ? "text-white/60" : "text-white/70"}`}>
       {text}
     </p>
   )}

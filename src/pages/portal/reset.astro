@@ -30,12 +30,12 @@ import CsrfInput from "../../components/ui/CsrfInput.astro";
           <CsrfInput />
           <input type="hidden" name="token" value={token} />
           
-          <div class="grid gap-1.5">
+          <div class="grid gap-2">
             <label for="reset-password" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">New Password</label>
             <input id="reset-password" class="kharon-field" name="password" type="password" minlength="14" autocomplete="new-password" required placeholder="Min 14 characters" />
           </div>
 
-          <div class="grid gap-1.5">
+          <div class="grid gap-2">
             <label for="reset-confirmPassword" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Confirm Password</label>
             <input id="reset-confirmPassword" class="kharon-field" name="confirmPassword" type="password" minlength="14" autocomplete="new-password" required placeholder="Confirm new password" />
           </div>
@@ -47,7 +47,7 @@ import CsrfInput from "../../components/ui/CsrfInput.astro";
             class="hidden rounded px-4 py-3 text-sm font-semibold"
           ></p>
           
-          <button id="reset-submit-btn" class="w-full kharon-command-button py-3.5 mt-2">
+          <button id="reset-submit-btn" class="w-full kharon-command-button py-4 mt-2">
             Reset Password
           </button>
         </form>

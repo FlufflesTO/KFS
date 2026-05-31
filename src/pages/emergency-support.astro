@@ -66,7 +66,7 @@ const emergencyRoutes = [
       
       <div class="mt-12 grid gap-8 md:grid-cols-2">
         {emergencyRoutes.map((route) => (
-          <div class="rounded-xl border border-kharon-purple/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
+          <div class="rounded-xl border border-kharon-purple/20 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
             <div class="bg-kharon-surface-elevated rounded-xl p-6 flex flex-col justify-between h-full">
               <div>
                 <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
@@ -83,11 +83,11 @@ const emergencyRoutes = [
               </div>
               <div class="flex flex-wrap gap-3 self-start">
                 {route.tel && (
-                  <a href={route.tel} class="inline-flex items-center justify-center rounded bg-kharon-red px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all">
+                  <a href={route.tel} class="inline-flex items-center justify-center rounded bg-kharon-red px-4 py-3 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all">
                     Call Now
                   </a>
                 )}
-                <a href={route.href} class="inline-flex items-center justify-center rounded bg-gradient-to-r from-kharon-purple to-kharon-blue px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all">
+                <a href={route.href} class="inline-flex items-center justify-center rounded bg-gradient-to-r from-kharon-purple to-kharon-blue px-4 py-3 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all">
                   {route.action}
                 </a>
               </div>

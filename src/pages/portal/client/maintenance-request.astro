@@ -58,17 +58,17 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Submit Service Request | Kharon Portal" active="client" user={user}>
-  <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-8 text-white sm:px-6 sm:py-10 shadow-inner">
-    <div class="mx-auto max-w-4xl">
-      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Support Intake Portal</p>
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 kharon-environment rounded-xl border border-kharon-purple/10 mb-6 shadow-inner relative overflow-hidden">
+    <div class="mx-auto max-w-4xl relative z-10">
+      <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Support Intake Portal</p>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Submit Maintenance & Service Request</h1>
-      <p class="mt-3 max-w-2xl text-sm text-white/60 font-medium">
+      <p class="mt-3 max-w-2xl text-sm text-white/50">
         Submit a technical request, log a fault, request compliance documentation, or request an emergency follow-up.
       </p>
     </div>
   </section>
 
-  <section class="px-4 py-6 sm:px-6 sm:py-8">
+  <section class="mt-2">
     <div class="mx-auto max-w-2xl">
       {loadError && (
         <div class="rounded border border-kharon-red bg-kharon-red/10 p-4 text-sm font-semibold text-red-200 mb-6">
@@ -80,7 +80,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         <div class="kharon-surface p-6 sm:p-8">
           <form id="maintenance-request-form" class="grid gap-5">
           <CsrfInput />
-            <div class="grid gap-1.5">
+            <div class="grid gap-2">
               <label for="req-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Select Site *</label>
               <select id="req-siteId" class="kharon-field" name="siteId" required>
                 {sites.map((site) => (
@@ -89,7 +89,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               </select>
             </div>
 
-            <div class="grid gap-1.5">
+            <div class="grid gap-2">
               <label for="req-systemId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Select System (Optional)</label>
               <select id="req-systemId" class="kharon-field" name="systemId">
                 <option value="">General Site Request (No specific system)</option>
@@ -101,7 +101,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               </select>
             </div>
 
-            <div class="grid gap-1.5">
+            <div class="grid gap-2">
               <label for="req-requestType" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Request Type *</label>
               <select id="req-requestType" class="kharon-field" name="requestType" required>
                 {requestTypes.map((type) => (
@@ -110,7 +110,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               </select>
             </div>
 
-            <div class="grid gap-1.5">
+            <div class="grid gap-2">
               <label for="req-priority" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Priority Level *</label>
               <select id="req-priority" class="kharon-field" name="priority" required>
                 {priorities.map((prio) => (
@@ -119,19 +119,19 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               </select>
             </div>
 
-            <div class="grid gap-1.5">
+            <div class="grid gap-2">
               <label for="req-subject" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Subject *</label>
               <input id="req-subject" class="kharon-field" name="subject" type="text" minlength="3" maxlength="160" required placeholder="Brief description of the request" />
             </div>
 
-            <div class="grid gap-1.5">
+            <div class="grid gap-2">
               <label for="req-message" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Detailed Description *</label>
               <textarea id="req-message" class="kharon-field min-h-32" name="message" minlength="10" maxlength="2000" required placeholder="Provide details such as system symptoms, location details, fault indicators..."></textarea>
             </div>
 
             <p id="request-result" class="hidden rounded border px-4 py-3 text-sm font-semibold" role="alert" aria-live="polite"></p>
 
-            <button type="submit" id="request-submit-btn" class="w-full kharon-command-button py-3.5 mt-2">
+            <button type="submit" id="request-submit-btn" class="w-full kharon-command-button py-4 mt-2">
               Submit Request
             </button>
           </form>

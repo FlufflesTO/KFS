@@ -294,9 +294,9 @@ categories.push({
                 <a
                   href={link.href}
                   aria-current={active === link.key ? "page" : undefined}
-                  class={`flex items-center gap-3 w-full rounded-md px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/35 shadow-inner border border-kharon-purple/50 border-l-4 border-l-kharon-cyan" : "text-white/75 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
+                  class={`flex items-center gap-3 w-full rounded-md px-3 py-3 text-xs font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/40 shadow-inner border border-kharon-purple/50 border-l-4 border-l-kharon-cyan" : "text-white/70 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
                 >
-                  <svg class="h-4.5 w-4.5 shrink-0 text-kharon-cyan/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={getIconPath(link.key)}></svg>
+                  <svg class="h-4 w-4 shrink-0 text-kharon-cyan/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={getIconPath(link.key)}></svg>
                   <span>{link.label}</span>
                 </a>
               ))}
@@ -306,7 +306,7 @@ categories.push({
       </nav>
 
       <div class="mt-6 pt-4 border-t border-kharon-purple/10 flex items-center gap-3">
-        <div class="h-1.5 w-1.5 rounded-full bg-kharon-green animate-pulse"></div>
+        <div class="h-2 w-2 rounded-full bg-kharon-green animate-pulse"></div>
         <span class="text-[10px] uppercase font-bold tracking-wider text-white/50">{user?.role} Mode</span>
       </div>
     </div>
@@ -328,7 +328,7 @@ categories.push({
 
         <a href="/portal" class="group flex shrink-0 items-center gap-3 transition-transform duration-300 hover:scale-[1.02]" aria-label="Kharon Operations Portal">
           <div class="relative flex-none">
-            <div class="absolute inset-0 bg-kharon-purple/20 blur-lg group-hover:bg-kharon-purple/35 transition-colors duration-500 rounded-full"></div>
+            <div class="absolute inset-0 bg-kharon-purple/20 blur-lg group-hover:bg-kharon-purple/40 transition-colors duration-500 rounded-full"></div>
             <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" style="height:32px;width:32px;object-fit:contain;" class="relative z-10 block transition-transform duration-300 group-hover:scale-110" />
           </div>
           <span>
@@ -342,15 +342,15 @@ categories.push({
         <div class="min-w-0 leading-tight hidden xl:block">
           <p class="font-semibold text-white/90 truncate">{user?.name}</p>
           <div class="mt-0.5 flex items-center justify-end gap-1">
-            <span class="h-1.5 w-1.5 rounded-full bg-kharon-purple"></span>
+            <span class="h-2 w-2 rounded-full bg-kharon-purple"></span>
             <p class="uppercase text-kharon-purple/80 font-semibold tracking-wide text-xs">{user?.role}</p>
           </div>
         </div>
-        <button id="open-feedback" class="hidden md:flex items-center gap-2 rounded-md border border-kharon-purple/20 bg-kharon-charcoal/50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white/70 hover:text-white hover:border-kharon-purple/40 transition-all min-h-[40px] backdrop-blur-sm">
+        <button id="open-feedback" class="hidden md:flex items-center gap-2 rounded-md border border-kharon-purple/20 bg-kharon-charcoal/60 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white/70 hover:text-white hover:border-kharon-purple/40 transition-all min-h-[40px] backdrop-blur-sm">
           Feedback
         </button>
         <form id="portal-logout-form">
-          <button class="flex items-center justify-center rounded-md border border-kharon-red/30 bg-kharon-charcoal/50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-kharon-red/70 transition-all hover:border-kharon-red/50 hover:bg-kharon-red/10 hover:text-kharon-red min-h-[40px] backdrop-blur-sm" type="submit">
+          <button class="flex items-center justify-center rounded-md border border-kharon-red/30 bg-kharon-charcoal/60 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-kharon-red/70 transition-all hover:border-kharon-red/50 hover:bg-kharon-red/10 hover:text-kharon-red min-h-[40px] backdrop-blur-sm" type="submit">
             Logout
           </button>
         </form>
@@ -370,9 +370,9 @@ categories.push({
                 <a
                   href={link.href}
                   aria-current={active === link.key ? "page" : undefined}
-                  class={`flex items-center gap-3 w-full rounded-md px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/30 shadow-sm border border-kharon-purple/50 border-l-4 border-l-kharon-cyan" : "text-white/70 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
+                  class={`flex items-center gap-3 w-full rounded-md px-3 py-3 text-xs font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/30 shadow-sm border border-kharon-purple/50 border-l-4 border-l-kharon-cyan" : "text-white/70 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
                 >
-                  <svg class="h-4.5 w-4.5 shrink-0 text-kharon-cyan/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={getIconPath(link.key)}></svg>
+                  <svg class="h-4 w-4 shrink-0 text-kharon-cyan/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={getIconPath(link.key)}></svg>
                   <span>{link.label}</span>
                 </a>
               ))}
@@ -398,7 +398,7 @@ categories.push({
       </div>
       <form id="feedback-form" class="p-6 space-y-4">
         <div>
-          <label class="block text-[10px] font-bold uppercase tracking-widest text-kharon-purple/80 mb-1.5">Category</label>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-kharon-purple/80 mb-2">Category</label>
           <select name="category" required class="w-full rounded-lg border border-kharon-purple/20 bg-kharon-graphite px-3 py-2 text-sm focus:border-kharon-purple focus:ring-1 focus:ring-kharon-purple outline-none transition-all text-white">
             <option value="ui">UI / Layout</option>
             <option value="performance">Performance / Speed</option>
@@ -407,7 +407,7 @@ categories.push({
           </select>
         </div>
         <div>
-          <label class="block text-[10px] font-bold uppercase tracking-widest text-kharon-purple/80 mb-1.5">Your Message</label>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-kharon-purple/80 mb-2">Your Message</label>
           <textarea name="message" required rows="4" placeholder="How can we improve this page?" class="w-full rounded-lg border border-kharon-purple/20 bg-kharon-graphite px-3 py-2 text-sm focus:border-kharon-purple focus:ring-1 focus:ring-kharon-purple outline-none transition-all resize-none text-white"></textarea>
         </div>
         <div id="feedback-result" class="hidden text-xs font-bold p-3 rounded-lg"></div>

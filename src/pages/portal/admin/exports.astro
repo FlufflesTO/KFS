@@ -13,7 +13,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Data Import & Export | Kharon Portal" active="exports" user={user}>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="py-2">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
         <h1 class="text-2xl font-bold text-white tracking-tight font-heading">Data Import & Export</h1>
@@ -29,37 +29,37 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
             <h3 class="text-md font-bold text-white">Sites Export</h3>
             <p class="mt-1 text-xs text-white/60 mb-3">Export all site information to CSV.</p>
-            <a href="/portal/api/admin/export?table=sites" class="kharon-command-button text-xs py-1.5 px-3">Export Sites</a>
+            <a href="/portal/api/admin/export?table=sites" class="kharon-command-button text-xs py-2 px-3">Export Sites</a>
           </div>
 
           <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
             <h3 class="text-md font-bold text-white">Jobs Export</h3>
             <p class="mt-1 text-xs text-white/60 mb-3">Export job information to CSV.</p>
-            <a href="/portal/api/admin/export?table=jobs" class="kharon-command-button text-xs py-1.5 px-3">Export Jobs</a>
+            <a href="/portal/api/admin/export?table=jobs" class="kharon-command-button text-xs py-2 px-3">Export Jobs</a>
           </div>
 
           <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
             <h3 class="text-md font-bold text-white">Systems Export</h3>
             <p class="mt-1 text-xs text-white/60 mb-3">Export system information to CSV.</p>
-            <a href="/portal/api/admin/export?table=systems" class="kharon-command-button text-xs py-1.5 px-3">Export Systems</a>
+            <a href="/portal/api/admin/export?table=systems" class="kharon-command-button text-xs py-2 px-3">Export Systems</a>
           </div>
 
           <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
             <h3 class="text-md font-bold text-white">Financial Export</h3>
             <p class="mt-1 text-xs text-white/60 mb-3">Export financial records to CSV.</p>
-            <a href="/portal/api/admin/export?table=financial_records" class="kharon-command-button text-xs py-1.5 px-3">Export Finance</a>
+            <a href="/portal/api/admin/export?table=financial_records" class="kharon-command-button text-xs py-2 px-3">Export Finance</a>
           </div>
 
           <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
             <h3 class="text-md font-bold text-white">Clients Export</h3>
             <p class="mt-1 text-xs text-white/60 mb-3">Export client information to CSV.</p>
-            <a href="/portal/api/admin/export?table=clients" class="kharon-command-button text-xs py-1.5 px-3">Export Clients</a>
+            <a href="/portal/api/admin/export?table=clients" class="kharon-command-button text-xs py-2 px-3">Export Clients</a>
           </div>
 
           <div class="bg-surface-charcoal/40 border border-line-cyan-soft/50 rounded-lg p-4">
             <h3 class="text-md font-bold text-white">Audit Logs Export</h3>
             <p class="mt-1 text-xs text-white/60 mb-3">Export audit logs to CSV.</p>
-            <a href="/portal/api/admin/export?table=audit_events" class="kharon-command-button text-xs py-1.5 px-3">Export Audits</a>
+            <a href="/portal/api/admin/export?table=audit_events" class="kharon-command-button text-xs py-2 px-3">Export Audits</a>
           </div>
         </div>
       </article>
@@ -86,7 +86,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </p>
             <div class="grid gap-1">
               <label for="sites-csv-input" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Sites CSV Data</label>
-              <textarea id="sites-csv-input" class="kharon-field min-h-40 font-mono text-xs" name="csv" placeholder="Paste sites CSV here"></textarea>
+              <textarea id="sites-csv-input" class="kharon-field min-h-40 font-mono text-sm" name="csv" placeholder="Paste sites CSV here"></textarea>
             </div>
             
             <div class="flex items-center justify-between mt-2">
@@ -109,7 +109,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </p>
             <div class="grid gap-1">
               <label for="systems-csv-input" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Systems CSV Data</label>
-              <textarea id="systems-csv-input" class="kharon-field min-h-40 font-mono text-xs" name="csv" placeholder="Paste systems CSV here"></textarea>
+              <textarea id="systems-csv-input" class="kharon-field min-h-40 font-mono text-sm" name="csv" placeholder="Paste systems CSV here"></textarea>
             </div>
             
             <div class="flex items-center justify-between mt-2">
