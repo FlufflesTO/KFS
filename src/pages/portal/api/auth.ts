@@ -112,6 +112,19 @@ export async function POST({ request }: APIContext): Promise<Response> {
       return unauthorized("Invalid email or password.");
     }
 
+    const userDeletedAt = (user as typeof user & { deleted_at?: string | null }).deleted_at;
+    if (!user.is_active || userDeletedAt) {
+      await auditEvent(db!, request, {
+        eventType: "auth.login",
+        entityType: "user",
+        entityId: user.id,
+        outcome: "failure",
+        subject: email,
+        metadata: { reason: "inactive_or_deleted" }
+      });
+      return unauthorized("Invalid email or password.");
+    }
+
     const verified = await verifyPassword(password, user.password_hash);
     if (!verified) {
       await auditEvent(db!, request, {

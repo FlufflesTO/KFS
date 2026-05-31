@@ -170,7 +170,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <div class="grid gap-2 text-xs self-center">
               <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="isActive" checked={Boolean(record.is_active)} /> Active</label>
               <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="forcePasswordChange" checked={Boolean(record.force_password_change)} /> Rotate password</label>
-              {(record.role === "admin" || record.role === "finance") && (
+              {(record.role === "admin" || record.role === "finance" || record.role === "tech") && (
                 <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
               )}
               {record.mfa_enabled ? <span class="text-[10px] font-bold uppercase text-kharon-purple">MFA enabled</span> : null}
@@ -267,7 +267,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <input type="checkbox" name="forcePasswordChange" checked /> Force password change
           </label>
           <label class="flex items-center gap-2 cursor-pointer font-semibold text-white/80">
-            <input type="checkbox" name="mfaRequired" /> Require MFA for admin/finance
+            <input type="checkbox" name="mfaRequired" /> Require MFA for admin/finance/tech
           </label>
         </div>
 

@@ -23,7 +23,7 @@ import CsrfInput from "../../components/ui/CsrfInput.astro";
       </div>
 
       <KharonCard variant="command" className="kharon-surface-strong">
-        <form method="post" action="/portal/api/auth" class="space-y-5">
+        <form id="portal-login-form" method="post" action="/portal/api/auth" class="space-y-5">
           <CsrfInput />
           <div>
             <label class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Email Address</label>
@@ -43,6 +43,20 @@ import CsrfInput from "../../components/ui/CsrfInput.astro";
               name="password"
               required
               placeholder="Enter your password"
+              class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-purple/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-purple focus:border-transparent kharon-field kharon-focus-ring"
+            />
+          </div>
+
+          <div>
+            <label class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Authenticator Code</label>
+            <input
+              type="text"
+              name="mfaCode"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              pattern="[0-9]{6}"
+              maxlength="6"
+              placeholder="Required if MFA is enabled"
               class="w-full px-4 py-3 bg-kharon-graphite border border-kharon-purple/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-kharon-purple focus:border-transparent kharon-field kharon-focus-ring"
             />
           </div>
@@ -67,10 +81,12 @@ import CsrfInput from "../../components/ui/CsrfInput.astro";
           
           <button 
             type="submit"
+            id="portal-login-submit"
             class="w-full px-4 py-4 bg-gradient-to-r from-kharon-purple to-kharon-blue text-white font-bold uppercase tracking-widest rounded-md hover:shadow-lg hover:shadow-kharon-purple/30 transition-all kharon-command-button"
           >
             Secure Login
           </button>
+          <p id="portal-login-result" class="hidden rounded border px-4 py-3 text-sm font-semibold" aria-live="polite"></p>
         </form>
       </KharonCard>
 
@@ -81,4 +97,50 @@ import CsrfInput from "../../components/ui/CsrfInput.astro";
       </div>
     </div>
   </section>
+  <script>
+    const form = document.querySelector("#portal-login-form");
+    const submit = document.querySelector("#portal-login-submit");
+    const result = document.querySelector("#portal-login-result");
+
+    function setLoginResult(message: string, ok = false) {
+      if (!(result instanceof HTMLElement)) return;
+      result.textContent = message;
+      result.classList.remove("hidden", "border-red-500", "bg-red-950/40", "text-red-100", "border-green-500", "bg-green-950/40", "text-green-100");
+      result.classList.add(ok ? "border-green-500" : "border-red-500", ok ? "bg-green-950/40" : "bg-red-950/40", ok ? "text-green-100" : "text-red-100");
+    }
+
+    if (form instanceof HTMLFormElement) {
+      form.addEventListener("submit", async (event: SubmitEvent) => {
+        event.preventDefault();
+        if (submit instanceof HTMLButtonElement) {
+          submit.disabled = true;
+          submit.textContent = "Checking...";
+        }
+
+        const payload = Object.fromEntries(new FormData(form).entries());
+        try {
+          const response = await fetch("/portal/api/auth", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify(payload)
+          });
+          const body = await response.json().catch(() => ({})) as Record<string, any>;
+          if (!response.ok || !body.ok) {
+            setLoginResult(body.message || "Authentication could not be completed.");
+            return;
+          }
+          setLoginResult("Login accepted. Redirecting...", true);
+          window.location.assign(body.redirectTo || "/portal");
+        } catch (error) {
+          setLoginResult("Network error. Check your connection and try again.");
+        } finally {
+          if (submit instanceof HTMLButtonElement) {
+            submit.disabled = false;
+            submit.textContent = "Secure Login";
+          }
+        }
+      });
+    }
+  </script>
 </BaseLayout>

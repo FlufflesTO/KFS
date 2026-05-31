@@ -33,8 +33,9 @@ export interface Env {
 function resolveBindings(): any {
   try {
     // Use cloudflare:workers module (the correct way for Pages/Workers)
-    if (env && (env.DB || env.STORAGE)) {
-      return env;
+    const runtimeEnv = env as Env | undefined;
+    if (runtimeEnv && (runtimeEnv.DB || runtimeEnv.STORAGE || runtimeEnv.SESSION_SECRET || runtimeEnv.MFA_SECRET)) {
+      return runtimeEnv;
     }
   } catch (e) {
     // Module not available in this context

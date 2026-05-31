@@ -10,12 +10,13 @@ import { cleanBoolean, cleanChoice, cleanEmail, cleanId, cleanText, readJson, re
 export const prerender = false;
 
 const roles = ["tech", "admin", "client", "finance"];
+const mfaEligibleRoles = ["admin", "finance", "tech"];
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const adminError = requireAdmin(locals.user);
   if (adminError) return adminError;
 
-  let db: ReturnType<typeof getDatabase>;
+  let db: ReturnType<typeof getDatabase> | null = null;
   try {
     db = getDatabase();
 
@@ -31,7 +32,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const password = cleanText(body.password, "password", { min: 14, max: 200 });
       const passwordHash = await hashPassword(password);
       const forcePasswordChange = cleanBoolean(body.forcePasswordChange ?? true);
-      const mfaRequired = ["admin", "finance"].includes(role) ? cleanBoolean(body.mfaRequired) : 0;
+      const mfaRequired = mfaEligibleRoles.includes(role) ? cleanBoolean(body.mfaRequired) : 0;
 
       await db
         .prepare(
@@ -117,7 +118,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
       const target = await db.prepare(`SELECT id, role, is_active FROM users WHERE id = ?1 LIMIT 1`).bind(id).first() as TargetUser | null;
       if (!target || !target.is_active) return badRequest("Only active users can have MFA reset.");
-      if (!["admin", "finance"].includes(target.role)) return badRequest("MFA reset is limited to admin and finance accounts.");
+      if (!mfaEligibleRoles.includes(target.role)) return badRequest("MFA reset is limited to admin, finance and technician accounts.");
 
       await db
         .prepare(
@@ -146,7 +147,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const siteId = cleanId(body.siteId, "siteId", { required: false });
     const isActive = cleanBoolean(body.isActive);
     const forcePasswordChange = cleanBoolean(body.forcePasswordChange);
-    const mfaRequired = ["admin", "finance"].includes(role) ? cleanBoolean(body.mfaRequired) : 0;
+    const mfaRequired = mfaEligibleRoles.includes(role) ? cleanBoolean(body.mfaRequired) : 0;
 
     await db
       .prepare(
@@ -182,7 +183,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return json({ ok: true, id });
   } catch (error) {
     if (error instanceof Error && error.message) return badRequest(error.message);
-    await auditError(db!, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin users failed" } });
+    if (db) {
+      await auditError(db, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin users failed" } });
+    }
     return serverError("User administration failed.");
   }
 };

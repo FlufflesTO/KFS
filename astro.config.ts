@@ -8,7 +8,6 @@ export default defineConfig({
   site: siteUrl,
   output: "server",
   adapter: cloudflare({
-    mode: "middleware",
     configPath: "wrangler.jsonc",
     persistState: true
   }),

@@ -8,6 +8,7 @@
 // @ts-ignore - defineMiddleware is used implicitly through MiddlewareHandler type
 import { sequence } from "astro:middleware";
 import type { MiddlewareHandler } from "astro";
+import type { SessionUser } from "./lib/server/auth.js";
 import { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } from "./lib/server/auth.js";
 import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
 import { getDatabase } from "./lib/server/bindings.ts";
@@ -154,6 +155,49 @@ function rateLimitConfig(pathname: string) {
   return configs[pathname] || { scope: `portal.write.${pathname.replaceAll("/", ".")}`.slice(0, 80), maxAttempts: 20, windowSeconds: 900 };
 }
 
+interface ActiveUserRow {
+  id: string;
+  name: string;
+  email: string;
+  role: "tech" | "admin" | "client" | "finance";
+  site_id: string | null;
+  is_active: number;
+  deleted_at: string | null;
+  force_password_change: number;
+  mfa_required: number;
+  mfa_enabled: number;
+}
+
+async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, sessionUser: SessionUser): Promise<SessionUser | null> {
+  const record = await db
+    .prepare(
+      `SELECT id, name, email, role, site_id, is_active, deleted_at, force_password_change, mfa_required, mfa_enabled
+       FROM users
+       WHERE id = ?1
+       LIMIT 1`
+    )
+    .bind(sessionUser.id)
+    .first<ActiveUserRow>();
+
+  if (!record || !record.is_active || record.deleted_at) return null;
+
+  return {
+    id: record.id,
+    name: record.name,
+    email: record.email,
+    role: record.role,
+    site_id: record.site_id,
+    siteId: record.site_id,
+    force_password_change: Boolean(record.force_password_change),
+    forcePasswordChange: Boolean(record.force_password_change),
+    mfa_required: Boolean(record.mfa_required),
+    mfaRequired: Boolean(record.mfa_required),
+    mfa_enabled: Boolean(record.mfa_enabled),
+    mfaEnabled: Boolean(record.mfa_enabled),
+    expiresAt: sessionUser.expiresAt
+  };
+}
+
 // 1. Core setup and AB testing
 const setupMiddleware: MiddlewareHandler = async (context, next) => {
   const nonce = createCspNonce();
@@ -225,7 +269,14 @@ const authMiddleware: MiddlewareHandler = async (context, next) => {
     return response;
   }
 
-  context.locals.user = user;
+  const activeUser = await loadActiveSessionUser(db, user);
+  if (!activeUser) {
+    const response = redirectToLogin(context, nonce);
+    response.headers.append("Set-Cookie", expiredSessionCookie());
+    return response;
+  }
+
+  context.locals.user = activeUser;
   return await next();
 };
 

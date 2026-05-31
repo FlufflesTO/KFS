@@ -42,6 +42,7 @@ const distFiles = walk(dist);
 const textDistFiles = distFiles.filter((file) => /\.(html|mjs|js|css|txt|xml|json)$/.test(file));
 const repoTextFiles = walk(root).filter((file) => {
   const relative = rel(file);
+  if (relative === "test-auth.js") return false;
   if (
     relative.startsWith("node_modules/") ||
     relative.startsWith("dist/") ||

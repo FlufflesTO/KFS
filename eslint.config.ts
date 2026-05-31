@@ -18,7 +18,8 @@ const config: Linter.Config[] = [
       ".astro/**/*",
       "node_modules/**/*",
       "public/**/*",
-      "scratch/**/*"
+      "scratch/**/*",
+      "test-auth.js"
     ]
   },
   {

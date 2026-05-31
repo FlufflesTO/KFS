@@ -114,7 +114,7 @@ Prerequisites:
 
 - Confirm the requested role: `tech`, `admin`, `finance` or `client`.
 - Confirm whether the user must be mapped to a client site.
-- Confirm whether MFA must be required. MFA should be required for admin and finance accounts unless management approves an exception.
+- Confirm whether MFA must be required. MFA should be required for admin, finance and technician accounts unless management approves an exception.
 - Confirm the delivery channel for the first reset link or temporary credential outside the repository.
 
 Admin steps:
@@ -126,7 +126,7 @@ Admin steps:
 5. Select the correct role.
 6. Map client users to the correct site only. Do not map technician, admin or finance users to a client site unless a specific workflow requires it.
 7. Set `Force password change` for every new user.
-8. Set `Require MFA` for admin and finance users where required.
+8. Set `Require MFA` for admin, finance and technician users where required.
 9. Save the user and confirm the account appears in the user list.
 10. Issue a reset link if password reset delivery is the chosen onboarding path.
 11. Deliver the reset link or temporary credential through the approved external channel only.
@@ -136,7 +136,7 @@ Acceptance checks:
 
 - The user can sign in.
 - Forced password rotation redirects to `/portal/account/password`.
-- Admin or finance users marked MFA-required redirect to `/portal/account/mfa`.
+- Admin, finance or technician users marked MFA-required redirect to `/portal/account/mfa`.
 - The user reaches only the dashboard allowed by their role.
 - Client users see only the mapped site.
 
@@ -322,16 +322,27 @@ Operational rule:
 
 ## MFA Operations
 
-Admin and finance users can enrol an authenticator app at `/portal/account/mfa`.
+Admin, finance and technician users can enrol an authenticator app at `/portal/account/mfa`.
 
 Operational rules:
 
 - MFA uses app-based 6-digit TOTP codes only in this foundation phase.
-- Admins can mark admin and finance users as MFA-required from `/portal/admin/operations`.
+- Admins can mark admin, finance and technician users as MFA-required from `/portal/admin/operations`.
 - A user marked as MFA-required is redirected to MFA setup after password rotation and before normal dashboard access.
 - Once MFA is enabled, login requires email, password and a valid authenticator code before issuing a session cookie.
 - TOTP secrets are encrypted before storage and must never be copied into documentation, tickets or screenshots.
 - If a user loses access to their authenticator, an admin must disable and re-issue MFA through a controlled support process after identity verification.
+
+## Portal Authentication Recovery Notes
+
+2026-05-31 recovery baseline:
+
+- Cloudflare Worker runtime bindings must resolve through `cloudflare:workers`; `DB`, `STORAGE`, `SESSION_SECRET` and `MFA_SECRET` are required for portal auth.
+- The installed Cloudflare adapter must not be configured with unsupported options; CI blocks deploys when adapter types drift.
+- Login is handled through the portal login page script so successful JSON API responses set the session cookie and redirect to the correct role dashboard or required setup page.
+- The auth API blocks inactive or soft-deleted users before password verification succeeds.
+- Middleware re-checks the live user record on each authenticated portal request so deactivated users, changed roles, password-rotation flags and MFA flags take effect without waiting for the session token to expire.
+- Admin user controls support password reset links, direct password changes, user deactivation and MFA reset for eligible privileged roles.
 
 ## Admin CSV Import And Export
 

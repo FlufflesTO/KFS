@@ -10,7 +10,7 @@ import { badRequest, json, methodNotAllowed, serverError, tooManyRequests } from
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
-  let db: ReturnType<typeof getDatabase>;
+  let db: ReturnType<typeof getDatabase> | null = null;
   try {
     db = getDatabase();
 
@@ -99,8 +99,9 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: true, redirectTo: "/portal/login" });
   } catch (error) {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
-    if (error instanceof Error && error.message) return badRequest(error.message);
-    await auditError(db!, request, error as Error, { metadata: { message: "password reset failed" } });
+    if (db) {
+      await auditError(db, request, error as Error, { metadata: { message: "password reset failed" } });
+    }
     return serverError("Password reset could not be completed.");
   }
 };

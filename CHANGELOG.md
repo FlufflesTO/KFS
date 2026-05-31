@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-30
 
+### Portal Authentication Recovery - 2026-05-31
+
+- Removed the unsupported Cloudflare adapter `mode` option that blocked the portal CI deploy.
+- Restored typed Cloudflare runtime binding resolution for D1, R2 and auth secrets.
+- Added client-side login handling with redirect support and an optional TOTP authenticator-code field.
+- Blocked inactive or soft-deleted users at login and revalidated live account status, role, MFA and password-rotation flags in portal middleware.
+- Extended admin MFA controls to technician accounts and documented the auth recovery baseline in `docs/roadmap/OPERATIONS_SOP.md`.
+- Excluded the local untracked `test-auth.js` scratch helper from the site audit secret-marker scan.
+
 ### Engineering Board Audit Remediation (Sprint 1) - COMPLETE
 
 #### Type Safety Infrastructure
