@@ -499,21 +499,23 @@ async function networkFirstWithStaleFallback(request: Request, cacheName: string
  * Cache-first strategy with network revalidation
  * Used for static assets that rarely change
  */
-async function cacheFirstWithNetworkRevalidation(request: Request, cacheName: string): Promise<Response> {
+async function cacheFirstWithNetworkRevalidation(request: Request, cacheName: string, event?: FetchEvent): Promise<Response> {
   // Try cache first
   const cachedResponse = await getCachedResponse(cacheName, request);
   
   if (cachedResponse) {
     // Return cached response, revalidate in background
-    event.waitUntil(
-      fetch(request.clone())
-        .then(async (networkResponse) => {
-          if (networkResponse.ok) {
-            await cacheResponse(cacheName, request, networkResponse);
-          }
-        })
-        .catch(() => {}) // Ignore network errors during revalidation
-    );
+    const revalidatePromise = fetch(request.clone())
+      .then(async (networkResponse) => {
+        if (networkResponse.ok) {
+          await cacheResponse(cacheName, request, networkResponse);
+        }
+      })
+      .catch(() => {}); // Ignore network errors during revalidation
+
+    if (event && typeof event.waitUntil === 'function') {
+      event.waitUntil(revalidatePromise);
+    }
     
     return cachedResponse;
   }
@@ -868,7 +870,7 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 
     // Reference/static API endpoints: Cache-first with network revalidation
     if (CACHE_FIRST_API_PATTERNS.some((pattern) => url.pathname.startsWith(pattern))) {
-      event.respondWith(cacheFirstWithNetworkRevalidation(event.request, API_CACHE));
+      event.respondWith(cacheFirstWithNetworkRevalidation(event.request, API_CACHE, event));
       return;
     }
 
@@ -891,7 +893,7 @@ self.addEventListener('fetch', (event: FetchEvent) => {
       url.pathname.endsWith('.jpeg') ||
       url.pathname.endsWith('.webp')
     ) {
-      event.respondWith(cacheFirstWithNetworkRevalidation(event.request, STATIC_CACHE));
+      event.respondWith(cacheFirstWithNetworkRevalidation(event.request, STATIC_CACHE, event));
       return;
     }
   }

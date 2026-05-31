@@ -132,6 +132,7 @@ Icon?
 
 # Local project directories to ignore
 backups/
+scratch/
 monitor-results/
 retention-reports/
 

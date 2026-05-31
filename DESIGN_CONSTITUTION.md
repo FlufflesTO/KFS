@@ -362,6 +362,9 @@ These colors are **immutable** and define the Kharon brand:
 - ❌ Place on busy backgrounds without backing
 - ❌ Use outdated logo versions
 
+**Background Watermark Exception:**
+- Environmental background watermarks (e.g., the 3D "standing guard" `.kharon-sentinel-logo` and the homepage `.hero-cinematic__titan`) are explicitly permitted to use CSS 3D perspective transforms (`rotateX`, `rotateY`, `perspective`) and depth-simulating filters (`drop-shadow`). These elements must have `pointer-events: none` and remain strictly behind content with a low opacity (≤ 10%) to function as an ambient graphic rather than active foreground branding.
+
 ### Section 6.4: Letterhead
 
 **Location:** `/brand/letterhead/`

@@ -598,7 +598,13 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE RESTRUCTURED ELEMENT LAYOUT STRATEGY.
 
-[ ] Task SRE-004: Service Worker Compiling Phase Isolation
+[x] Task SRE-004: Service Worker Compiling Phase Isolation
+Target File: package.json
+System Context: scripts/build-sw.js, astro.config.ts
+Surgical Prompt:
+USER_DIRECTIVE: Execute Remediation for Task ID [SRE-004]
+TARGET_FILE: package.json
+SYSTEM_CONTEXT: scripts/build-sw.js, astro.config.ts
 
 CRITICAL CONSTRAINTS:
 1. Isolate background runtime service worker compilation steps to prevent race conditions during asset building.
