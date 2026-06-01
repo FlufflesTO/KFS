@@ -42,6 +42,8 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.6.0",
+    "@openrouter/agent": "^0.7.0",
+    "@openrouter/sdk": "^0.12.79",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.3.3",
     "pdf-lib": "^1.17.1",
