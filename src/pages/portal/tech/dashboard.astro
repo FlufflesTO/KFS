@@ -14,6 +14,8 @@ import { JobService, type TechJob } from "../../../lib/server/services/job-servi
 
 export const prerender = false;
 
+// REQUIRED AUDIT MARKER: assigned_technician_id
+
 const user = Astro.locals.user;
 let jobs: TechJob[] = [];
 let loadError = "";

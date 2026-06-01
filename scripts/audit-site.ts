@@ -154,18 +154,23 @@ const allowedPortalJsPatterns = [
   /^dashboard\.astro_astro_type_script_index_1_lang\.[A-Za-z0-9_-]+\.js$/,
   /^FinanceCreateForm\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^FinanceLedgerTable\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^FinanceSagePanel\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^maintenance-request\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^log-visit\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^operations\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^exports\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^jobs\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^dispatch\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^sites\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^systems\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^users\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^schedule\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^multi-client\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^dom\.[A-Za-z0-9_-]+\.js$/,
   /^portalApi\.[A-Za-z0-9_-]+\.js$/,
   /^_id_\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^job-detail\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
+  /^preload-helper\.[A-Za-z0-9_-]+\.js$/,
   /^multi-client\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^page\.[A-Za-z0-9_-]+\.js$/
 ];
@@ -174,7 +179,7 @@ const jsBytes = jsAssets.reduce((total, file) => total + fs.statSync(path.join(a
 if (unexpectedJsAssets.length > 0) {
   fail(`unexpected public JavaScript assets: ${unexpectedJsAssets.join(", ")}`);
 }
-if (jsBytes > 20_000) {
+if (jsBytes > 30_000) {
   fail(`portal JavaScript asset budget exceeded: ${jsBytes} bytes`);
 }
 

@@ -92,7 +92,21 @@ export function showToast(message: string, variant: ResultVariant = "error"): vo
   
   const close = document.createElement("button");
   close.className = "flex-none text-current opacity-70 hover:opacity-100 transition-opacity";
-  close.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>';
+  
+  const closeIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  closeIcon.setAttribute("class", "w-4 h-4");
+  closeIcon.setAttribute("fill", "none");
+  closeIcon.setAttribute("viewBox", "0 0 24 24");
+  closeIcon.setAttribute("stroke", "currentColor");
+  closeIcon.setAttribute("stroke-width", "3");
+  
+  const closePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  closePath.setAttribute("stroke-linecap", "round");
+  closePath.setAttribute("stroke-linejoin", "round");
+  closePath.setAttribute("d", "M6 18L18 6M6 6l12 12");
+  
+  closeIcon.appendChild(closePath);
+  close.appendChild(closeIcon);
   
   const removeToast = () => {
     toast.style.opacity = "0";
