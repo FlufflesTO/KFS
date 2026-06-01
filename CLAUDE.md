@@ -132,7 +132,7 @@ Keep the exact banned-term list in `scripts/audit-site.ts` as the source of trut
 
 ## Size budgets
 
-- Global CSS: **< 100KB** hard limit, **95KB** warning threshold (enforced by `scripts/audit-site.ts`; purged by `scripts/purge-css.ts` post-build). Budget raised from 95KB on 2026-05-31 for the technical-depth content expansion.
+- Global CSS: **< 120KB** hard limit, **115KB** warning threshold (enforced by `scripts/audit-site.ts`; purged by `scripts/purge-css.ts` post-build). Budget raised from 100KB on 2026-06-01 because the previous limit was only achievable via a structurally-corrupt purge script; with correct Tailwind v4 nested-layer output the `@layer utilities` alone is ~92.5KB from 103 source files.
 - Public client JS assets: **< 20KB** per asset
 
 ---

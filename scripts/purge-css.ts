@@ -50,38 +50,112 @@ function walk(dir: string): string[] {
 }
 
 const allFiles = walk(srcDir).map(p => p.replace(/\\/g, '/'));
-const astroFiles = allFiles.filter(f => (f.includes('/src/components/') || f.includes('/src/layouts/') || f.includes('/src/pages/')) && f.endsWith('.astro'));
-
-const componentUsage: Record<string, string[]> = {};
+// Mirror Tailwind's @source directive: only scan .astro files
+const astroFiles = allFiles.filter(f => f.endsWith('.astro'));
 
 function extractClasses(content: string): string[] {
   const classes: string[] = [];
-  const classMatches = content.match(/class(?:Name)?=["']([^"']+)["']/g);
-  if (classMatches) {
-    classMatches.forEach(m => {
-      const parts = m.match(/["']([^"']+)["']/);
-      if (parts && parts[1]) {
-        parts[1].split(/\s+/).forEach(c => {
-          if (c && !c.includes('{') && !c.includes('?')) {
-            classes.push(c);
-          }
-        });
-      }
+  // class="..." and class='...' (static attributes)
+  const attrRe = /class(?:Name)?=["']([^"']+)["']/g;
+  let m;
+  while ((m = attrRe.exec(content)) !== null) {
+    m[1].split(/\s+/).forEach(c => {
+      if (c && !/[{?$]/.test(c)) classes.push(c);
+    });
+  }
+  // class={`...`} template literal expressions
+  const tmplRe = /class(?:Name)?=\{`([^`{}]+)`\}/g;
+  while ((m = tmplRe.exec(content)) !== null) {
+    m[1].split(/\s+/).forEach(c => {
+      if (c && !/[{?$]/.test(c)) classes.push(c);
     });
   }
   return [...new Set(classes)];
 }
 
-astroFiles.forEach(file => {
-  const content = fs.readFileSync(file, 'utf8');
-  componentUsage[file] = extractClasses(content);
+const usedClasses = new Set<string>();
+astroFiles.forEach(f => {
+  const content = fs.readFileSync(f, 'utf8');
+  extractClasses(content).forEach(c => usedClasses.add(c));
 });
 
-const usedClasses = new Set<string>();
-Object.values(componentUsage).flat().forEach(c => usedClasses.add(c));
+// Always keep element/global selectors
+['html', 'body', 'root', 'portal-shell', 'main', 'selection'].forEach(c => usedClasses.add(c));
 
-// Add some safety globals
-['html', 'body', 'root', 'portal-shell', 'main', 'selection', 'kharon-environment', 'kharon-page-shell', 'kharon-logo-watermark'].forEach(c => usedClasses.add(c));
+/**
+ * Brace-depth-aware CSS rule pruner (recursive).
+ *
+ * For each rule in `css`:
+ *   - Simple single-class selector (.foo) → drop if class not in `used`
+ *   - At-rule with a block (@layer, @media, @supports) → recurse into body
+ *   - @keyframes → always keep intact (no recursion, content is not selectors)
+ *   - Everything else → keep as-is
+ */
+function pruneClasses(css: string, used: Set<string>): string {
+  let result = '';
+  let i = 0;
+  const len = css.length;
+
+  while (i < len) {
+    const prelStart = i;
+
+    // Scan to next '{' or '}' (handles stray closing braces)
+    let j = i;
+    while (j < len && css[j] !== '{' && css[j] !== '}') j++;
+
+    if (j >= len) {
+      result += css.slice(i);
+      break;
+    }
+
+    if (css[j] === '}') {
+      result += css.slice(i, j + 1);
+      i = j + 1;
+      continue;
+    }
+
+    const prelude = css.slice(prelStart, j).trim();
+
+    // Collect the balanced { ... } body (inner content, not including braces)
+    let depth = 1;
+    let k = j + 1;
+    while (k < len && depth > 0) {
+      if (css[k] === '{') depth++;
+      else if (css[k] === '}') depth--;
+      k++;
+    }
+
+    // If brace was never closed, keep everything verbatim to avoid silent data loss
+    if (depth > 0) {
+      result += css.slice(i);
+      break;
+    }
+
+    const innerBody = css.slice(j + 1, k - 1);
+
+    const isSimpleClass = /^\.[a-zA-Z][\w-]*$/.test(prelude);
+    const isKeyframes = /^@keyframes\b/.test(prelude);
+    const isAtBlock = /^@/.test(prelude);
+
+    if (isSimpleClass) {
+      if (used.has(prelude.slice(1))) {
+        result += prelude + '{' + innerBody + '}';
+      }
+    } else if (isKeyframes) {
+      // Keep keyframes verbatim — their body contains percentage rules, not selectors
+      result += prelude + '{' + innerBody + '}';
+    } else if (isAtBlock) {
+      // Recurse into @layer / @media / @supports bodies
+      result += prelude + '{' + pruneClasses(innerBody, used) + '}';
+    } else {
+      result += prelude + '{' + innerBody + '}';
+    }
+
+    i = k;
+  }
+
+  return result;
+}
 
 let output = css;
 
@@ -100,159 +174,23 @@ while ((match = varUsageRegex.exec(output)) !== null) {
   usedVars.add(match[1]);
 }
 
+// Add brand vars to used set just in case
+allVars.forEach(v => {
+  if (v.includes('--color-kharon') || v.includes('--color-surface')) {
+    usedVars.add(v.split(':')[0].trim());
+  }
+});
+
 output = output.replace(varRegex, (m) => {
   const varName = m.split(':')[0].trim();
   return usedVars.has(varName) ? m : '';
 });
 
-// 3. Simple class pruning for standard tailwind classes
-// This is a conservative approach to avoid breaking dynamic styles
-const rules: string[] = [];
-let depth = 0;
-let currentRule = '';
+// 3. Prune unused simple class rules (brace-depth-aware, recurses into @layer/@media)
+output = pruneClasses(output, usedClasses);
 
-for (let i = 0; i < output.length; i++) {
-  const char = output[i];
-  currentRule += char;
-  if (char === '{') depth++;
-  if (char === '}') {
-    depth--;
-    if (depth === 0) {
-      rules.push(currentRule);
-      currentRule = '';
-    }
-  }
-}
-if (currentRule) rules.push(currentRule);
-
-function pruneBlock(block: string): string {
-  // Extract rules from block
-  const innerRules: string[] = [];
-  let innerDepth = 0;
-  let innerCurrentRule = '';
-  
-  // Find the content inside the block's first { and last }
-  const startIdx = block.indexOf('{');
-  const endIdx = block.lastIndexOf('}');
-  if (startIdx === -1 || endIdx === -1) return block;
-  
-  const header = block.substring(0, startIdx + 1);
-  const footer = block.substring(endIdx);
-  const content = block.substring(startIdx + 1, endIdx);
-  
-  for (let i = 0; i < content.length; i++) {
-    const char = content[i];
-    innerCurrentRule += char;
-    if (char === '{') innerDepth++;
-    if (char === '}') {
-      innerDepth--;
-      if (innerDepth === 0) {
-        innerRules.push(innerCurrentRule);
-        innerCurrentRule = '';
-      }
-    }
-  }
-  if (innerCurrentRule) innerRules.push(innerCurrentRule);
-  
-  let result = header;
-  for (const rule of innerRules) {
-    result += pruneRule(rule);
-  }
-  result += footer;
-  return result;
-}
-
-function pruneRule(rule: string): string {
-  const trimmed = rule.trim();
-  if (!trimmed) return '';
-  
-  // Handle nested blocks recursively (e.g. @media, @layer)
-  if (trimmed.startsWith('@media') || trimmed.startsWith('@layer')) {
-    return pruneBlock(trimmed);
-  }
-  
-  // Keep other @ rules (keyframes, etc.)
-  if (trimmed.startsWith('@')) return trimmed;
-  
-  // Keep complex nested structures (more than 2 levels)
-  if (trimmed.split('{').length > 2) return trimmed;
-
-  const parts = trimmed.split('{');
-  if (parts.length !== 2) return trimmed;
-  
-  const selector = parts[0].trim();
-  
-  // Only prune simple class selectors (including those with escaped characters like :)
-  if (selector.startsWith('.') && !selector.includes('[') && !selector.includes(' ')) {
-    // Normalize selector: remove . at start, remove \ escape characters, remove pseudo-classes like :hover
-    let className = selector.substring(1).replace(/\\/g, '');
-    if (className.includes(':')) {
-      // If it's a pseudo-class like .class:hover, extract the class name
-      if (className.includes(':hover') || className.includes(':focus') || className.includes(':active') || className.includes(':after') || className.includes(':before')) {
-        className = className.split(':')[0];
-      }
-    }
-    
-    if (usedClasses.has(className)) {
-      return trimmed;
-    }
-    return '';
-  }
-  return trimmed;
-}
-
-let prunedOutput = '';
-for (const rule of rules) {
-  prunedOutput += pruneRule(rule);
-}
-
-output = prunedOutput;
-
-// 4. Prune empty @media queries
+// 4. Prune empty @media queries (safe regex, doesn't break nesting)
 output = output.replace(/@media[^{]+\{\s*\}/g, '');
-
-// 5. Final pass for keyframes - only keep used ones
-const keyframeMatches = output.match(/@keyframes\s+([\w-]+)/g);
-if (keyframeMatches) {
-  const usedKeyframes = new Set<string>();
-  const animationRegex = /animation(?:\-name)?:\s*([\w-]+)/g;
-  let animMatch;
-  while ((animMatch = animationRegex.exec(output)) !== null) {
-    usedKeyframes.add(animMatch[1]);
-  }
-  
-  // Also check standard Kharon animations
-  ['fade-in', 'slide-up', 'titan-drift', 'linework-drift', 'reveal-up'].forEach(k => usedKeyframes.add(k));
-
-  const keyframeBlocks = output.split(/(@keyframes\s+[\w-]+\s*\{)/);
-  let keyframePrunedOutput = '';
-  let j = 0;
-  while (j < keyframeBlocks.length) {
-    const block = keyframeBlocks[j];
-    if (block.startsWith('@keyframes')) {
-      const name = block.match(/@keyframes\s+([\w-]+)/)![1];
-      const content = keyframeBlocks[j+1];
-      // Find the end of this keyframe block
-      let depth = 1;
-      let k = 0;
-      while (depth > 0 && k < content.length) {
-        if (content[k] === '{') depth++;
-        if (content[k] === '}') depth--;
-        k++;
-      }
-      
-      if (usedKeyframes.has(name)) {
-        keyframePrunedOutput += block + content.substring(0, k);
-      }
-      j += 2;
-      // Skip the rest of the content that was consumed
-      // We need to be careful here as the split might have missed nested braces
-    } else {
-      keyframePrunedOutput += block;
-      j++;
-    }
-  }
-}
 
 // Use esbuild for advanced CSS minification
 output = esbuild.transformSync(output, { loader: 'css', minify: true }).code;
