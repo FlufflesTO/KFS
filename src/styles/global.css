@@ -101,7 +101,7 @@ body.portal-shell {
   color: var(--color-kharon-light);
 }
 
-/* Typography - Standardized font weights and fluid scaling */
+/* Typography - Standardized font weights and professional responsive scaling */
 .kharon-h1, .kharon-h2, .kharon-h3 { 
   font-weight: 800; 
   text-wrap: balance; 
@@ -109,19 +109,36 @@ body.portal-shell {
   text-transform: uppercase;
   letter-spacing: -0.01em;
 }
-.kharon-h1 { font-size: clamp(2.5rem, 10vw, 4.5rem); line-height: 0.9; letter-spacing: -0.04em; }
-.kharon-h2 { font-size: clamp(1.75rem, 6vw, 2.75rem); line-height: 1.05; letter-spacing: -0.02em; }
-.kharon-h3 { font-size: clamp(1.25rem, 4vw, 1.75rem); line-height: 1.1; }
+.kharon-h1 { font-size: 2.5rem; line-height: 0.95; letter-spacing: -0.04em; }
+.kharon-h2 { font-size: 1.75rem; line-height: 1.05; letter-spacing: -0.02em; }
+.kharon-h3 { font-size: 1.25rem; line-height: 1.1; }
+
+@media (min-width: 640px) {
+  .kharon-h1 { font-size: 3.5rem; }
+  .kharon-h2 { font-size: 2.25rem; }
+  .kharon-h3 { font-size: 1.5rem; }
+}
+
+@media (min-width: 1024px) {
+  .kharon-h1 { font-size: 4.5rem; }
+  .kharon-h2 { font-size: 2.75rem; }
+  .kharon-h3 { font-size: 1.75rem; }
+}
 
 /* Responsive Spacing Utilities */
 .section-padding {
-  padding-top: clamp(5rem, 12vw, 10rem);
-  padding-bottom: clamp(5rem, 12vw, 10rem);
+  padding-top: 5rem;
+  padding-bottom: 5rem;
 }
 
 .hero-padding {
-  padding-top: clamp(10rem, 20vw, 15rem);
-  padding-bottom: clamp(5rem, 12vw, 10rem);
+  padding-top: 10rem;
+  padding-bottom: 5rem;
+}
+
+@media (min-width: 1024px) {
+  .section-padding { padding-top: 10rem; padding-bottom: 10rem; }
+  .hero-padding { padding-top: 15rem; padding-bottom: 10rem; }
 }
 
 .container-tight {
