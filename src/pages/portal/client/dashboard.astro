@@ -154,7 +154,7 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
         <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Client Portal</p>
       </div>
       <h1 class="text-2xl font-black sm:text-3xl tracking-tight">
-        Welcome{user?.full_name ? `, ${user.full_name.split(" ")[0]}` : ""}
+        Welcome{user?.name ? `, ${user.name.split(" ")[0]}` : ""}
       </h1>
       <p class="mt-2 max-w-2xl text-sm text-white/60">Your Kharon portal — system health, compliance status and service records at a glance.</p>
     </div>
@@ -177,7 +177,7 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
               Total value: <span class="font-bold text-white/80">{formatCurrency(pendingQuoteAmount)}</span> — action required before invoicing can proceed.
             </p>
           </div>
-          <KharonButton href="/portal/client/quotes?filter=pending" variant="warning" size="md" className="relative z-10 text-xs font-bold tracking-widest uppercase shrink-0">Review &amp; Approve →</KharonButton>
+          <KharonButton href="/portal/client/quotes?filter=pending" variant="secondary" size="md" className="relative z-10 text-xs font-bold tracking-widest uppercase shrink-0 border-kharon-amber/50 text-kharon-amber hover:bg-kharon-amber/10">Review &amp; Approve →</KharonButton>
         </div>
       )}
 
