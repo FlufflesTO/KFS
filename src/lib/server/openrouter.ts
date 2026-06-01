@@ -63,10 +63,12 @@ export async function chat(
   messages.push({ role: "user", content: userMessage });
 
   const response = await client().chat.send({
-    model,
-    messages,
-    temperature,
-    max_tokens: maxTokens,
+    chatRequest: {
+      model,
+      messages,
+      temperature,
+      maxTokens
+    }
   });
 
   return response.choices[0]?.message?.content ?? "";
@@ -125,11 +127,13 @@ export async function streamChat(
   messages.push({ role: "user", content: userMessage });
 
   const stream = await client().chat.send({
-    model,
-    messages,
-    temperature,
-    max_tokens: maxTokens,
-    stream: true,
+    chatRequest: {
+      model,
+      messages,
+      temperature,
+      maxTokens,
+      stream: true
+    }
   });
 
   let full = "";

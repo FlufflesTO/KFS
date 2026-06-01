@@ -91,12 +91,14 @@ function allowedForPath(pathname: string, role: string): boolean {
   if (pathname.startsWith("/portal/account/")) return true;
   
   if (pathname.startsWith("/portal/api/tech/")) return role === "tech" || role === "admin";
+  if (pathname.startsWith("/portal/api/staff/")) return role === "tech" || role === "admin" || role === "finance";
   if (pathname.startsWith("/portal/api/admin/")) return role === "admin";
   if (pathname.startsWith("/portal/api/finance/")) return role === "finance" || role === "admin";
   if (pathname.startsWith("/portal/api/client/")) return role === "client" || role === "admin";
   if (pathname.startsWith("/portal/api/")) {
     const sharedApiPaths = new Set([
       "/portal/api/logout",
+      "/portal/api/profile",
       "/portal/api/change-password",
       "/portal/api/mfa",
       "/portal/api/feedback",
@@ -113,6 +115,7 @@ function allowedForPath(pathname: string, role: string): boolean {
   }
 
   if (pathname.startsWith("/portal/tech/")) return role === "tech" || role === "admin";
+  if (pathname.startsWith("/portal/staff/")) return role === "tech" || role === "admin" || role === "finance";
   if (pathname.startsWith("/portal/admin/")) return role === "admin";
   if (pathname.startsWith("/portal/finance/")) return role === "finance" || role === "admin";
   if (pathname.startsWith("/portal/client/")) return role === "client" || role === "admin";
@@ -149,6 +152,8 @@ function rateLimitConfig(pathname: string) {
   const configs: Record<string, any> = {
     "/portal/api/auth": { scope: "portal.auth.login", maxAttempts: 5, windowSeconds: 900 },
     "/portal/api/reset-password": { scope: "portal.auth.reset", maxAttempts: 3, windowSeconds: 3600 },
+    "/portal/api/profile": { scope: "portal.profile", maxAttempts: 20, windowSeconds: 900 },
+    "/portal/api/staff/hr": { scope: "portal.staff.hr", maxAttempts: 20, windowSeconds: 900 },
     "/portal/api/change-password": { scope: "portal.change_password", maxAttempts: 5, windowSeconds: 900 },
     "/portal/api/mfa": { scope: "portal.mfa", maxAttempts: 5, windowSeconds: 900 },
     "/portal/api/logout": { scope: "portal.logout", maxAttempts: 10, windowSeconds: 900 },

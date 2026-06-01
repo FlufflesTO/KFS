@@ -3404,7 +3404,7 @@ Pending. Mirrors Outstanding Build Phase 21.
 Use PowerShell for Node/npm commands on Windows.
 
 ```powershell
-cd C:\Users\User\Desktop\Astro\kharon-website
+cd C:\Users\User\Desktop\Astro\kfs
 npm install
 npm run build
 npm audit --omit=dev

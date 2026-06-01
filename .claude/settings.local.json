@@ -3,7 +3,7 @@
     "allow": [
       "Bash(git add *)",
       "Bash(npm run *)",
-      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -Command { Get-Content \"C:\\\\Users\\\\User\\\\Desktop\\\\Astro\\\\kharon-website\\\\scripts\\\\portal-role-qa.ps1\" | Out-Null; $null = [System.Management.Automation.PSParser]::Tokenize\\(\\(Get-Content \"C:\\\\Users\\\\User\\\\Desktop\\\\Astro\\\\kharon-website\\\\scripts\\\\portal-role-qa.ps1\" -Raw\\), [ref]$null\\); \"Parse OK\" })",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -Command { Get-Content \"C:\\\\Users\\\\User\\\\Desktop\\\\Astro\\\\kfs\\\\scripts\\\\portal-role-qa.ps1\" | Out-Null; $null = [System.Management.Automation.PSParser]::Tokenize\\(\\(Get-Content \"C:\\\\Users\\\\User\\\\Desktop\\\\Astro\\\\kfs\\\\scripts\\\\portal-role-qa.ps1\" -Raw\\), [ref]$null\\); \"Parse OK\" })",
       "Bash(npx skills:*)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\conno\\\\Desktop\\\\Astro\\\\kfs\" -Recurse -Filter \"*.css\" -ErrorAction SilentlyContinue)",
       "Bash(Select-Object -ExpandProperty FullName)",

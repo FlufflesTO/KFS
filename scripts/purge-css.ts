@@ -12,6 +12,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as esbuild from 'esbuild';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -358,7 +359,9 @@ output = output
   .replace(/#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3/g, '#$1$2$3')
   .trim();
 
+output = output.replace(/@property [^{]+\{[^}]+\}/g, '');
+output = esbuild.transformSync(output, { loader: 'css', minify: true }).code.trim();
+
 console.log('Purged CSS size after variable pruning & minification:', output.length, 'bytes');
 fs.writeFileSync(cssPath, output);
 console.log('Purged CSS written.');
-

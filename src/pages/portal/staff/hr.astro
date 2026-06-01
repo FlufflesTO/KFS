@@ -1,0 +1,222 @@
+---
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings";
+import { StaffRepository } from "../../../lib/server/db/staff-repository";
+import type { DbStaffDocument, DbStaffLeaveBalance, DbStaffLeaveRequest } from "@sentinel/types";
+
+export const prerender = false;
+
+const { user } = Astro.locals;
+if (!user) {
+  return Astro.redirect("/portal/login");
+}
+
+if (!["admin", "finance", "tech"].includes(user.role)) {
+  return Astro.redirect("/portal");
+}
+
+let balance: DbStaffLeaveBalance | null = null;
+let requests: DbStaffLeaveRequest[] = [];
+let documents: DbStaffDocument[] = [];
+let loadError = "";
+
+const leaveLabels: Record<string, string> = {
+  annual: "Annual",
+  sick: "Sick",
+  family_responsibility: "Family Responsibility",
+  unpaid: "Unpaid"
+};
+
+const documentLabels: Record<string, string> = {
+  medical_certificate: "Medical Certificate",
+  payslip: "Payslip",
+  contract: "Contract",
+  training_certificate: "Training Certificate",
+  id_document: "Identity Document",
+  other: "Other"
+};
+
+try {
+  const repo = new StaffRepository(getDatabase());
+  balance = await repo.ensureLeaveBalance(user.id);
+  requests = await repo.recentLeaveRequests(user.id);
+  documents = await repo.recentDocuments(user.id);
+} catch (error) {
+  loadError = "HR records could not be loaded.";
+}
+---
+
+<PortalLayout title="Staff HR | Kharon Portal" active="staff-hr" user={user}>
+  <section class="grid gap-6">
+    <header class="flex flex-col gap-2 border-b border-kharon-purple/15 pb-5">
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-kharon-purple">Internal staff</p>
+      <h1 class="text-2xl font-bold text-white">HR & Document Vault</h1>
+      <p class="max-w-3xl text-sm leading-6 text-kharon-light/70">
+        Request leave, track available balances, and keep medical certificates, contracts, payslips, and training records in your staff vault.
+      </p>
+    </header>
+
+    {loadError && (
+      <p class="rounded border border-kharon-red bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-red-200">{loadError}</p>
+    )}
+
+    <div class="grid gap-4 md:grid-cols-3">
+      <article class="kharon-surface p-5">
+        <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Annual Leave</p>
+        <p class="mt-3 text-3xl font-black text-white">{balance?.annual_days_remaining ?? 0}</p>
+        <p class="mt-1 text-xs text-kharon-light/60">days remaining</p>
+      </article>
+      <article class="kharon-surface p-5">
+        <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Sick Leave</p>
+        <p class="mt-3 text-3xl font-black text-white">{balance?.sick_days_remaining ?? 0}</p>
+        <p class="mt-1 text-xs text-kharon-light/60">days remaining</p>
+      </article>
+      <article class="kharon-surface p-5">
+        <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Family Responsibility</p>
+        <p class="mt-3 text-3xl font-black text-white">{balance?.family_responsibility_days_remaining ?? 0}</p>
+        <p class="mt-1 text-xs text-kharon-light/60">days remaining</p>
+      </article>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <form id="leave-form" class="kharon-surface grid gap-4 p-5">
+        <div>
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-kharon-purple">Leave request</p>
+          <h2 class="mt-2 text-xl font-bold text-white">Submit Leave</h2>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="grid gap-1.5">
+            <label for="leaveType" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Leave Type</label>
+            <select id="leaveType" name="leaveType" class="kharon-field" required>
+              <option value="annual">Annual</option>
+              <option value="sick">Sick</option>
+              <option value="family_responsibility">Family Responsibility</option>
+              <option value="unpaid">Unpaid</option>
+            </select>
+          </div>
+          <div class="grid gap-1.5">
+            <label for="daysRequested" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Days</label>
+            <input id="daysRequested" name="daysRequested" class="kharon-field" type="number" min="1" max="60" value="1" required />
+          </div>
+          <div class="grid gap-1.5">
+            <label for="startDate" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Start Date</label>
+            <input id="startDate" name="startDate" class="kharon-field" type="date" required />
+          </div>
+          <div class="grid gap-1.5">
+            <label for="endDate" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">End Date</label>
+            <input id="endDate" name="endDate" class="kharon-field" type="date" required />
+          </div>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label for="reason" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Reason / Notes</label>
+          <textarea id="reason" name="reason" class="kharon-field min-h-28 resize-y" maxlength="500"></textarea>
+        </div>
+
+        <p id="leave-result" class="hidden rounded border px-4 py-3 text-sm font-semibold" role="alert" aria-live="polite"></p>
+        <button class="kharon-command-button min-h-[44px] px-5 py-2 text-xs" type="submit">Submit Leave Request</button>
+      </form>
+
+      <form id="document-form" class="kharon-surface grid gap-4 p-5">
+        <div>
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-kharon-purple">Staff vault</p>
+          <h2 class="mt-2 text-xl font-bold text-white">Upload Document</h2>
+        </div>
+
+        <input type="hidden" name="action" value="upload-document" />
+        <div class="grid gap-1.5">
+          <label for="category" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Document Category</label>
+          <select id="category" name="category" class="kharon-field" required>
+            <option value="medical_certificate">Medical Certificate</option>
+            <option value="training_certificate">Training Certificate</option>
+            <option value="contract">Contract</option>
+            <option value="payslip">Payslip</option>
+            <option value="id_document">Identity Document</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label for="file" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">PDF or Image</label>
+          <input id="file" name="file" class="kharon-field min-h-[44px]" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required />
+          <p class="text-xs text-kharon-light/55">Maximum 10MB. Files are stored in the internal R2 vault and served through role-checked portal routes.</p>
+        </div>
+
+        <p id="document-result" class="hidden rounded border px-4 py-3 text-sm font-semibold" role="alert" aria-live="polite"></p>
+        <button class="kharon-command-button min-h-[44px] px-5 py-2 text-xs" type="submit">Upload Document</button>
+      </form>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <article class="kharon-surface p-5">
+        <h2 class="text-lg font-bold text-white">Recent Leave Requests</h2>
+        <div class="mt-4 grid gap-3">
+          {requests.length === 0 && <p class="text-sm text-kharon-light/55">No leave requests submitted yet.</p>}
+          {requests.map((request) => (
+            <div class="rounded border border-kharon-purple/15 bg-kharon-black/30 p-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-sm font-bold text-white">{leaveLabels[request.leave_type] || request.leave_type}</p>
+                <span class="rounded border border-kharon-purple/20 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-kharon-purple">{request.status}</span>
+              </div>
+              <p class="mt-2 text-xs text-kharon-light/70">{request.start_date} to {request.end_date} - {request.days_requested} day{request.days_requested === 1 ? "" : "s"}</p>
+              {request.reason && <p class="mt-2 text-xs leading-5 text-kharon-light/60">{request.reason}</p>}
+            </div>
+          ))}
+        </div>
+      </article>
+
+      <article class="kharon-surface p-5">
+        <h2 class="text-lg font-bold text-white">Vault Documents</h2>
+        <div class="mt-4 grid gap-3">
+          {documents.length === 0 && <p class="text-sm text-kharon-light/55">No staff documents uploaded yet.</p>}
+          {documents.map((document) => (
+            <a href={`/portal/api/staff/documents/${document.id}`} class="block rounded border border-kharon-purple/15 bg-kharon-black/30 p-3 transition hover:border-kharon-cyan/50">
+              <p class="text-sm font-bold text-white">{document.file_name}</p>
+              <p class="mt-2 text-xs text-kharon-light/70">{documentLabels[document.category] || document.category} - {Math.ceil(document.size_bytes / 1024)} KB - {document.uploaded_at.slice(0, 10)}</p>
+            </a>
+          ))}
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <script>
+    const leaveForm = document.querySelector<HTMLFormElement>("#leave-form");
+    const documentForm = document.querySelector<HTMLFormElement>("#document-form");
+    const leaveResult = document.querySelector<HTMLElement>("#leave-result");
+    const documentResult = document.querySelector<HTMLElement>("#document-result");
+
+    function setHrResult(target: HTMLElement | null, message: string, ok: boolean) {
+      if (!target) return;
+      target.textContent = message;
+      target.className = ok
+        ? "rounded border border-kharon-green bg-kharon-green/10 px-4 py-3 text-sm font-semibold text-green-200"
+        : "rounded border border-kharon-red bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-red-200";
+    }
+
+    leaveForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(leaveForm).entries());
+      const response = await window.kharonPortalFetch("/portal/api/staff/hr", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "request-leave", ...data })
+      });
+      const body = await response.json() as { ok?: boolean; message?: string } | null;
+      setHrResult(leaveResult, body?.message || "Leave request could not be submitted.", response.ok && Boolean(body?.ok));
+      if (response.ok && body?.ok) window.setTimeout(() => window.location.reload(), 800);
+    });
+
+    documentForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const response = await window.kharonPortalFetch("/portal/api/staff/hr", {
+        method: "POST",
+        body: new FormData(documentForm)
+      });
+      const body = await response.json() as { ok?: boolean; message?: string } | null;
+      setHrResult(documentResult, body?.message || "Document could not be uploaded.", response.ok && Boolean(body?.ok));
+      if (response.ok && body?.ok) window.setTimeout(() => window.location.reload(), 800);
+    });
+  </script>
+</PortalLayout>

@@ -40,7 +40,7 @@ $env:PUBLIC_CONTACT_EMAIL="admin@kharon.co.za"
 Run from PowerShell:
 
 ```powershell
-cd C:\Users\User\Desktop\Astro\kharon-website
+cd C:\Users\User\Desktop\Astro\kfs
 npm install
 npm run build:staging
 npm audit --omit=dev

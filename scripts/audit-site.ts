@@ -62,108 +62,6 @@ if (!fs.existsSync(serverWrangler)) {
 }
 
 
-if (!isFlatOutput && !fs.existsSync(path.join(serverDist, "entry.mjs"))) {
-  fail("Cloudflare SSR server entry is missing.");
-}
-
-const serverWrangler = isFlatOutput ? path.join(dist, "wrangler.json") : path.join(serverDist, "wrangler.json");
-if (!fs.existsSync(serverWrangler)) {
-  fail("Generated server wrangler.json is missing.");
-} else {
-  const wrangler = read(serverWrangler);
-  for (const binding of ['"binding":"DB"', '"binding":"STORAGE"']) {
-    if (!wrangler.replace(/\s/g, "").includes(binding)) {
-      fail(`Generated wrangler config missing ${binding}`);
-    }
-  }
-}
-
-
-if (!isFlatOutput && !fs.existsSync(path.join(serverDist, "entry.mjs"))) {
-  fail("Cloudflare SSR server entry is missing.");
-}
-
-const serverWrangler = isFlatOutput ? path.join(dist, "wrangler.json") : path.join(serverDist, "wrangler.json");
-if (!fs.existsSync(serverWrangler)) {
-  fail("Generated server wrangler.json is missing.");
-} else {
-  const wrangler = read(serverWrangler);
-  for (const binding of ['"binding":"DB"', '"binding":"STORAGE"']) {
-    if (!wrangler.replace(/\s/g, "").includes(binding)) {
-      fail(`Generated wrangler config missing ${binding}`);
-    }
-  }
-}
-
-
-if (!isFlatOutput && !fs.existsSync(path.join(serverDist, "entry.mjs"))) {
-  fail("Cloudflare SSR server entry is missing.");
-}
-
-const serverWrangler = isFlatOutput ? path.join(dist, "wrangler.json") : path.join(serverDist, "wrangler.json");
-if (!fs.existsSync(serverWrangler)) {
-  fail("Generated server wrangler.json is missing.");
-} else {
-  const wrangler = read(serverWrangler);
-  for (const binding of ['"binding":"DB"', '"binding":"STORAGE"']) {
-    if (!wrangler.replace(/\s/g, "").includes(binding)) {
-      fail(`Generated wrangler config missing ${binding}`);
-    }
-  }
-}
-
-
-if (!isFlatOutput && !fs.existsSync(path.join(serverDist, "entry.mjs"))) {
-  fail("Cloudflare SSR server entry is missing.");
-}
-
-const serverWrangler = isFlatOutput ? path.join(dist, "wrangler.json") : path.join(serverDist, "wrangler.json");
-if (!fs.existsSync(serverWrangler)) {
-  fail("Generated server wrangler.json is missing.");
-} else {
-  const wrangler = read(serverWrangler);
-  for (const binding of ['"binding":"DB"', '"binding":"STORAGE"']) {
-    if (!wrangler.replace(/\s/g, "").includes(binding)) {
-      fail(`Generated wrangler config missing ${binding}`);
-    }
-  }
-}
-
-
-if (!isFlatOutput && !fs.existsSync(path.join(serverDist, "entry.mjs"))) {
-  fail("Cloudflare SSR server entry is missing.");
-}
-
-const serverWrangler = isFlatOutput ? path.join(dist, "wrangler.json") : path.join(serverDist, "wrangler.json");
-if (!fs.existsSync(serverWrangler)) {
-  fail("Generated server wrangler.json is missing.");
-} else {
-  const wrangler = read(serverWrangler);
-  for (const binding of ['"binding":"DB"', '"binding":"STORAGE"']) {
-    if (!wrangler.replace(/\s/g, "").includes(binding)) {
-      fail(`Generated wrangler config missing ${binding}`);
-    }
-  }
-}
-
-
-if (!isFlatOutput && !fs.existsSync(path.join(serverDist, "entry.mjs"))) {
-  fail("Cloudflare SSR server entry is missing.");
-}
-
-const serverWrangler = isFlatOutput ? path.join(dist, "wrangler.json") : path.join(serverDist, "wrangler.json");
-if (!fs.existsSync(serverWrangler)) {
-  fail("Generated server wrangler.json is missing.");
-} else {
-  const wrangler = read(serverWrangler);
-  for (const binding of ['"binding":"DB"', '"binding":"STORAGE"']) {
-    if (!wrangler.replace(/\s/g, "").includes(binding)) {
-      fail(`Generated wrangler config missing ${binding}`);
-    }
-  }
-}
-
-
 const sourceFiles = walk(src).filter((file) => /\.(astro|js|ts|css)$/.test(file));
 const publicSourceFiles = walk(publicDir).filter((file) => /\.(html|js|css)$/.test(file));
 const distFiles = walk(dist);
@@ -250,26 +148,6 @@ for (const file of [...sourceFiles, ...publicSourceFiles]) {
   for (const check of forbiddenSourcePatterns) {
     if (check.pattern.test(text)) {
       fail(`${check.label} found in ${rel(file)}`);
-    }
-  }
-}
-
-if (!fs.existsSync(clientDist) || !fs.existsSync(serverDist)) {
-  fail("Cloudflare SSR build should emit dist/client and dist/server.");
-}
-
-if (!fs.existsSync(path.join(serverDist, "entry.mjs"))) {
-  fail("Cloudflare SSR server entry is missing.");
-}
-
-const serverWrangler = path.join(serverDist, "wrangler.json");
-if (!fs.existsSync(serverWrangler)) {
-  fail("Generated server wrangler.json is missing.");
-} else {
-  const wrangler = read(serverWrangler);
-  for (const binding of ['"binding":"DB"', '"binding":"STORAGE"']) {
-    if (!wrangler.replace(/\s/g, "").includes(binding)) {
-      fail(`Generated wrangler config missing ${binding}`);
     }
   }
 }
