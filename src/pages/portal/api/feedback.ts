@@ -41,7 +41,7 @@ export async function POST({ request, locals, cookies }: import('astro').APICont
     });
 
     return json({ ok: true, message: "Feedback submitted successfully." });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Feedback submission error:", error);
     return serverError("Failed to submit feedback.");
   }

@@ -9,47 +9,19 @@ import { auditError } from "../../../lib/server/audit";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import OfflineBanner from "../../../components/portal/OfflineBanner.astro";
+import { JobService, type TechJob } from "../../../lib/server/services/job-service";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
-let upcomingJobs: Array<any> = [];
+let upcomingJobs: TechJob[] = [];
 let loadError = "";
 const today = new Date().toISOString().slice(0, 10);
 
 try {
   const db = getDatabase();
-  const query = user?.role === "admin"
-    ? `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-              jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
-              systems.system_type, systems.coverage_area,
-              sites.owner_company_name, sites.physical_address
-       FROM jobs
-       INNER JOIN systems ON systems.id = jobs.system_id
-       INNER JOIN sites ON sites.id = systems.site_id
-       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-         AND jobs.status IN ('Scheduled', 'In Progress')
-         AND jobs.scheduled_date > ?1
-       ORDER BY jobs.scheduled_date ASC
-       LIMIT 100`
-    : `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-              jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
-              systems.system_type, systems.coverage_area,
-              sites.owner_company_name, sites.physical_address
-       FROM jobs
-       INNER JOIN systems ON systems.id = jobs.system_id
-       INNER JOIN sites ON sites.id = systems.site_id
-       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-         AND jobs.assigned_technician_id = ?1
-         AND jobs.status IN ('Scheduled', 'In Progress')
-         AND jobs.scheduled_date > ?2
-       ORDER BY jobs.scheduled_date ASC
-       LIMIT 100`;
-
-  const result = user?.role === "admin"
-    ? await db.prepare(query).bind(today).all()
-    : await db.prepare(query).bind(user?.id, today).all();
-  upcomingJobs = result.results || [];
+  const service = new JobService(db);
+  upcomingJobs = await service.getUpcomingSchedule(user?.id || "", user?.role || "", today);
 } catch (error) {
   await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "tech_schedule" });
   loadError = "Upcoming schedule could not be loaded.";

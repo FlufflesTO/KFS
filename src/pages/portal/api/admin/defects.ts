@@ -226,8 +226,8 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     }
 
     return badRequest("Unknown defect action.");
-  } catch (error: any) {
-    if (error.message) return badRequest(error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message) return badRequest(error instanceof Error ? error.message : "Unknown error");
     await auditError(db!, request, error, { user: locals.user, metadata: { message: "admin defects failed" } });
     return serverError("Defect administration failed.");
   }

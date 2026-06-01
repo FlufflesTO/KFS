@@ -11,7 +11,7 @@ const user = Astro.locals.user;
 // ─── Database query ────────────────────────────────────────────────────────
 let feedback: DbUserFeedback[] = [];
 let loadError = "";
-let db: any = null;
+let db: import('@cloudflare/workers-types').D1Database | null = null;
 
 try {
   db = getDatabase();
@@ -22,7 +22,7 @@ try {
      LEFT JOIN users ON users.id = user_feedback.user_id
      ORDER BY submitted_at DESC
      LIMIT 100`
-  ).all()).results || []) as DbUserFeedback[];
+  ).all()).results as unknown as DbUserFeedback[] || []);
 } catch (error) {
   await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "feedback_console" });
   loadError = "Feedback data could not be loaded.";

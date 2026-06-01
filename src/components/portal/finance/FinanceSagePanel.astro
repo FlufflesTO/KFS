@@ -150,7 +150,6 @@ const { missingSageRefs, sageConnection, stats } = Astro.props;
     disconnectBtn.addEventListener("click", async () => {
       if (confirm("Are you sure you want to disconnect Sage Accounting API?")) {
         try {
-          // @ts-ignore
           const res = await window.kharonPortalFetch("/portal/api/finance/sage-status", {
             method: "POST",
             headers: {
@@ -161,11 +160,15 @@ const { missingSageRefs, sageConnection, stats } = Astro.props;
           if (res.ok) {
             window.location.reload();
           } else {
-            alert("Failed to disconnect Sage integration.");
+            import("../../../lib/client/portalApi.ts").then(({ showToast }) => {
+              showToast("Failed to disconnect Sage integration.", "error");
+            });
           }
         } catch (err) {
           console.error("Disconnect error:", err);
-          alert("An error occurred while disconnecting.");
+          import("../../../lib/client/portalApi.ts").then(({ showToast }) => {
+            showToast("An error occurred while disconnecting.", "error");
+          });
         }
       }
     });

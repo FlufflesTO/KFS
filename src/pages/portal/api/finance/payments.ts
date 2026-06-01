@@ -88,7 +88,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       paymentReference: sagePaymentRef,
       message: `Payment recorded in Sage with reference ${sagePaymentRef}. Finance task updated accordingly.`
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Payment processing failed:", error);
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     return serverError("Payment processing failed.");

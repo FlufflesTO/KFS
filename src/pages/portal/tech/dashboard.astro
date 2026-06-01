@@ -10,11 +10,12 @@ import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import OfflineBanner from "../../../components/portal/OfflineBanner.astro";
 import PortalQuickActions from "../../../components/portal/PortalQuickActions.astro";
+import { JobService, type TechJob } from "../../../lib/server/services/job-service";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
-let jobs: Array<any> = [];
+let jobs: TechJob[] = [];
 let loadError = "";
 const today = new Date().toISOString().slice(0, 10);
 
@@ -27,43 +28,17 @@ const techActions = [
 
 try {
   const db = getDatabase();
-  const query = user?.role === "admin"
-    ? `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-              jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
-              systems.system_type, systems.coverage_area,
-              sites.owner_company_name, sites.physical_address
-       FROM jobs
-       INNER JOIN systems ON systems.id = jobs.system_id
-       INNER JOIN sites ON sites.id = systems.site_id
-       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-         AND jobs.status IN ('Scheduled', 'In Progress')
-       ORDER BY jobs.scheduled_date ASC
-       LIMIT 100`
-    : `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-              jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
-              systems.system_type, systems.coverage_area,
-              sites.owner_company_name, sites.physical_address
-       FROM jobs
-       INNER JOIN systems ON systems.id = jobs.system_id
-       INNER JOIN sites ON sites.id = systems.site_id
-       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-         AND jobs.assigned_technician_id = ?1 AND jobs.status IN ('Scheduled', 'In Progress')
-       ORDER BY jobs.scheduled_date ASC
-       LIMIT 100`;
-
-  const result = user?.role === "admin"
-    ? await db.prepare(query).all()
-    : await db.prepare(query).bind(user?.id).all();
-  jobs = result.results || [];
+  const service = new JobService(db);
+  jobs = await service.getTechDashboardJobs(user?.id || "", user?.role || "");
 } catch (error) {
   await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "tech_dashboard" });
   loadError = "Assigned dispatches could not be loaded.";
 }
 
-const actionJobs = jobs.filter((j: any) => j.scheduled_date <= today);
-const upcomingJobs = jobs.filter((j: any) => j.scheduled_date > today);
-const todayCount = jobs.filter((j: any) => j.scheduled_date === today).length;
-const inProgressCount = jobs.filter((j: any) => j.status === "In Progress").length;
+const actionJobs = jobs.filter((j: TechJob) => j.scheduled_date <= today);
+const upcomingJobs = jobs.filter((j: TechJob) => j.scheduled_date > today);
+const todayCount = jobs.filter((j: TechJob) => j.scheduled_date === today).length;
+const inProgressCount = jobs.filter((j: TechJob) => j.status === "In Progress").length;
 
 function priorityBadgeClass(priority: string): string {
   if (priority === "Critical") return "bg-kharon-red/20 text-kharon-red border border-kharon-red/30";
@@ -231,7 +206,7 @@ function priorityBadgeClass(priority: string): string {
                 
                 {job.physical_address && (
                   <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`} target="_blank" rel="noopener noreferrer" class="flex-1 px-4 py-3 border border-kharon-purple/30 text-kharon-cyan font-bold text-xs uppercase tracking-widest rounded-md text-center hover:bg-kharon-purple/10 transition-colors min-h-[44px] flex items-center justify-center gap-1.5">
-                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="h-4.5 w-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                     </svg>
                     Navigate to Site
@@ -243,13 +218,46 @@ function priorityBadgeClass(priority: string): string {
         })}
       </div>
 
-      <div class="mt-2 mb-6">
-        <a href="/portal/tech/schedule" class="inline-flex items-center gap-2 px-5 py-3 border border-kharon-purple/30 text-kharon-cyan hover:bg-kharon-purple/10 font-bold text-xs uppercase tracking-widest rounded-md transition-colors min-h-[44px]">
-          <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          View Full Schedule ({upcomingJobs.length} upcoming) →
-        </a>
+      {upcomingJobs.length > 0 && (
+        <div class="mt-8 flex items-center gap-3 mb-4">
+          <div class="flex items-center justify-center rounded-lg bg-kharon-purple/10 p-2 ring-1 ring-kharon-purple/25">
+            <svg class="h-4.5 w-4.5 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h2 class="text-xs font-black uppercase tracking-[0.15em] text-white/70">Upcoming Fieldwork</h2>
+        </div>
+      )}
+
+      <div class="space-y-4">
+        {upcomingJobs.map((job) => (
+          <article class="rounded-xl border border-kharon-purple/15 bg-kharon-charcoal/60 p-5 shadow-md backdrop-blur-md relative overflow-hidden transition-all duration-300 hover:border-kharon-purple/35">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+              <span class={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest ${priorityBadgeClass(job.priority || "Normal")}`}>{job.priority || "Normal"}</span>
+              <span class="rounded-full bg-kharon-purple/20 text-kharon-purple border border-kharon-purple/30 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest">{job.status}</span>
+            </div>
+            
+            <h2 class="text-lg font-black text-white/90 tracking-tight">{job.owner_company_name}</h2>
+            <p class="text-xs font-semibold text-kharon-purple mt-1">{job.system_type} | {job.coverage_area}</p>
+            
+            <div class="mt-4 grid grid-cols-2 gap-4 border-t border-kharon-purple/10 pt-4">
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Scheduled Date</p>
+                <p class="text-xs font-semibold text-white/80">{job.scheduled_date}</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Job Type</p>
+                <p class="text-xs font-semibold text-white/80">{job.job_type}</p>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <a href={`/portal/tech/jobs/${job.id}`} class="block w-full px-4 py-2.5 border border-kharon-purple/30 text-kharon-cyan hover:bg-kharon-purple/10 text-center font-bold text-xs uppercase tracking-widest rounded-md transition-colors min-h-[44px] flex items-center justify-center">
+                View Details
+              </a>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   </section>

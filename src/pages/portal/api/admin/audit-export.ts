@@ -91,7 +91,7 @@ export async function GET({ request, locals }: import('astro').APIContext) {
         "content-disposition": `attachment; filename="kharon-audit-${date}.csv"`
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     await auditError(db!, request, error, { user, metadata: { message: "audit export failed" } });
     return serverError("Audit export could not be completed.");
   }

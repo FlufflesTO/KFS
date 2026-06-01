@@ -182,7 +182,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     return json({ ok: true, id });
   } catch (error) {
-    if (error instanceof Error && error.message) return badRequest(error.message);
+    if (error instanceof Error && error.message) return badRequest(error instanceof Error ? error.message : "Unknown error");
     if (db) {
       await auditError(db, request, error as Error, { user: locals.user || undefined, metadata: { message: "admin users failed" } });
     }

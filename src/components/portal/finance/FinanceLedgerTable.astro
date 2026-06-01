@@ -153,7 +153,6 @@ const { completedTasks } = Astro.props;
       buttonEl.disabled = true;
       
       try {
-        // @ts-ignore
         const res = await window.kharonPortalFetch(`/portal/api/finance/sage-sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -162,16 +161,20 @@ const { completedTasks } = Astro.props;
         
         if (res.ok) {
           buttonEl.textContent = "Success";
-          buttonEl.classList.add("bg-emerald-600");
+          buttonEl.classList.add("bg-kharon-green");
           setTimeout(() => window.location.reload(), 1000); // Reload to show updated table
         } else {
           const data = await res.json() as { error?: string } | null;
-          alert(`Sage Sync Failed: ${data?.error || 'Unknown error'}`);
+          import("../../../lib/client/portalApi.ts").then(({ showToast }) => {
+             showToast(`Sage Sync Failed: ${data?.error || 'Unknown error'}`, "error");
+          });
           buttonEl.textContent = "Retry Sync";
           buttonEl.disabled = false;
         }
       } catch (err) {
-        alert("Network error during Sage Sync");
+        import("../../../lib/client/portalApi.ts").then(({ showToast }) => {
+           showToast("Network error during Sage Sync", "error");
+        });
         buttonEl.textContent = "Retry Sync";
         buttonEl.disabled = false;
       }

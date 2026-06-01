@@ -1,7 +1,7 @@
 // Single source of truth for all portal form submissions.
 // Re-exports the core primitives from portalApi and adds finance-specific binders.
 export { portalPost, extractFormPayload, setResult, bindAdminForms } from "../client/portalApi.ts";
-import { portalPost, setResult } from "../client/portalApi.ts";
+import { portalPost, setResult, showToast } from "../client/portalApi.ts";
 
 // Binds all .sage-ref-form, .payment-form, .credit-note-btn, and
 // .finance-quick-status elements using kharonPortalFetch + portalPost.
@@ -82,7 +82,7 @@ export function bindFinanceForms(): void {
       if (response.ok && body.ok) {
         window.location.reload();
       } else {
-        alert(body.message ?? "Status update failed.");
+        showToast(body.message ?? "Status update failed.", "error");
         btn.disabled = false;
       }
     });
@@ -100,7 +100,7 @@ export function bindFinanceForms(): void {
       if (response.ok && body.ok) {
         window.location.reload();
       } else {
-        alert(body.message ?? "Credit note creation failed.");
+        showToast(body.message ?? "Credit note creation failed.", "error");
         btn.disabled = false;
       }
     });

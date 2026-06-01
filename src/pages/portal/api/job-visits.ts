@@ -60,8 +60,8 @@ export async function POST({ locals, request }: import('astro').APIContext) {
   let jobId;
   try {
     jobId = cleanId(body.jobId);
-  } catch (error: any) {
-    return json({ ok: false, message: error.message }, 400);
+  } catch (error: unknown) {
+    return json({ ok: false, message: error instanceof Error ? error.message : "Invalid Job ID" }, 400);
   }
 
   if (!action || !jobId) {
@@ -151,14 +151,15 @@ export async function POST({ locals, request }: import('astro').APIContext) {
     }
 
     return json({ ok: false, message: `Unknown action: ${action}` }, 400);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (db && mutationId) {
-      await finishIdempotentMutation(db, mutationId, "failed", 500, error.message || "Failed to update visit.");
+      await finishIdempotentMutation(db, mutationId, "failed", 500, (error instanceof Error ? error.message : null) || "Failed to update visit.");
     }
     if (db) {
-      await auditError(db, request, error, { user, metadata: { message: "job visit action failed" } });
+      await auditError(db, request, error as Error, { user, metadata: { message: "job visit action failed" } });
     }
-    return json({ ok: false, message: error.message || "Failed to update visit." }, error.message ? 400 : 500);
+    const errMsg = error instanceof Error ? error.message : "Failed to update visit.";
+    return json({ ok: false, message: errMsg }, error instanceof Error ? 400 : 500);
   }
 }
 

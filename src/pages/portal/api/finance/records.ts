@@ -83,8 +83,8 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     });
 
     return json({ ok: true, message: "Record created successfully.", task });
-  } catch (error: any) {
-    await auditError(db, request, error, {
+  } catch (error: unknown) {
+    await auditError(db, request, error as Error, {
       user: locals.user,
       metadata: { message: "Error creating finance task" },
     });

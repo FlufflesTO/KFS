@@ -138,7 +138,7 @@ export async function POST({ request, locals }: APIContext) {
     if (error instanceof SyntaxError) {
       return badRequest("Request body must be valid JSON.");
     }
-    await auditError(db, request, error, { user: user ?? null, metadata: { message: "sage reference update failed" } });
+    await auditError(db, request, error as Error, { user: user ?? null, metadata: { message: "sage reference update failed" } });
     return serverError("Sage reference update could not be completed.");
   }
 }

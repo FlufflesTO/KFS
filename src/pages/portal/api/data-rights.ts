@@ -57,8 +57,8 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     }
 
     return badRequest("Invalid data rights action.");
-  } catch (error: any) {
-    await auditError(db, request, error, { user, metadata: { message: "data rights action failed" } });
+  } catch (error: unknown) {
+    await auditError(db, request, error as Error, { user, metadata: { message: "data rights action failed" } });
     return serverError("Your request could not be processed at this time.");
   }
 }

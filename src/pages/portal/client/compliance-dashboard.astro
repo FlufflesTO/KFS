@@ -394,7 +394,7 @@ try {
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center justify-between">
                       <span class="font-semibold text-white">{defect.owner_company_name}</span>
-                      <span class={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase border ${
+                      <span class={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase border ${
                         defect.severity === "Critical" ? "border-red-200 bg-red-50 text-kharon-red" :
                         defect.severity === "Major" ? "border-amber-200 bg-amber-50 text-amber-700" :
                         "border-kharon-purple/20 bg-kharon-charcoal text-white/70"
@@ -451,7 +451,7 @@ try {
                         <p class="font-semibold text-white">{cert.certificate_type}</p>
                         <p class="text-xs text-white/70">{cert.system_type}</p>
                       </div>
-                      <span class={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                      <span class={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
                         cert.status === "Valid" ? "bg-green-100 text-kharon-green border border-green-200" :
                         cert.status === "Blocked" ? "bg-amber-100 text-kharon-amber border border-amber-200" :
                         cert.status === "Expired" ? "bg-red-100 text-kharon-red border border-red-200" :

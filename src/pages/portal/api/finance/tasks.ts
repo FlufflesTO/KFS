@@ -31,7 +31,7 @@ export async function GET({ locals }: import('astro').APIContext) {
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Finance tasks fetch failed:", error);
     return new Response(
       JSON.stringify({ error: "Failed to fetch finance tasks" }),
@@ -79,7 +79,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Finance task update failed:", error);
     return new Response(JSON.stringify({ error: "Finance task update failed" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
@@ -109,7 +109,7 @@ export async function PATCH({ request, locals }: import('astro').APIContext) {
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Finance task patch failed:", error);
     return new Response(JSON.stringify({ error: "Finance task patch failed" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }

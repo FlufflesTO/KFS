@@ -93,7 +93,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       message: "Offline draft recovered for server-side review."
     }, 202);
   } catch (error) {
-    await auditError(db, request, error, { user, metadata: { message: "offline sync failed" } });
+    await auditError(db, request, error as Error, { user, metadata: { message: "offline sync failed" } });
     return json({ ok: false, message: "Offline sync failed." }, 500);
   }
 }

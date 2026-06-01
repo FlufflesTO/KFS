@@ -27,7 +27,7 @@ interface UserRecord {
   force_password_change: number;
 }
 
-async function currentUserRecord(db: any, userId: string): Promise<UserRecord | null> {
+async function currentUserRecord(db: import('@cloudflare/workers-types').D1Database, userId: string): Promise<UserRecord | null> {
   return db
     .prepare(
       `SELECT id, name, email, role, site_id, mfa_required, mfa_enabled, mfa_secret_encrypted, force_password_change

@@ -80,7 +80,7 @@ let management = {
   slaWarningJobs: 0
 };
 let loadError = "";
-let db: any = null;
+let db: import('@cloudflare/workers-types').D1Database | null = null;
 
 function daysUntil(dateText: string): number | null {
   if (!dateText) return null;

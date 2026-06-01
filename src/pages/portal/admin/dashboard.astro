@@ -2,6 +2,7 @@
 import { auditError } from "../../../lib/server/audit.js";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
+import { DashboardService, type DashboardStats } from "../../../lib/server/services/dashboard-service";
 import DashboardFeatureCard from "../../../components/portal/DashboardFeatureCard.astro";
 import PortalQuickActions from "../../../components/portal/PortalQuickActions.astro";
 
@@ -15,7 +16,7 @@ const adminActions = [
 ];
 
 const user = Astro.locals.user;
-let stats = {
+let stats: DashboardStats = {
   activeJobs: 0, unassignedJobs: 0, overdueSystems: 0, openRequests: 0,
   missingDocuments: 0, openDefects: 0, criticalDefects: 0,
   blockedCertificates: 0, validCertificates: 0
@@ -24,30 +25,8 @@ let loadError = "";
 
 try {
   const db = getDatabase();
-  const [cntActive, cntUnassigned, cntOverdue, cntRequests, cntMissingDocs,
-         cntOpenDefects, cntCriticalDefects, cntBlockedCerts, cntValidCerts] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
-  ]);
-  interface CountResult { n: number; }
-  stats = {
-    activeJobs:          (cntActive.results[0]        as CountResult | undefined)?.n ?? 0,
-    unassignedJobs:      (cntUnassigned.results[0]    as CountResult | undefined)?.n ?? 0,
-    overdueSystems:      (cntOverdue.results[0]       as CountResult | undefined)?.n ?? 0,
-    openRequests:        (cntRequests.results[0]      as CountResult | undefined)?.n ?? 0,
-    missingDocuments:    (cntMissingDocs.results[0]   as CountResult | undefined)?.n ?? 0,
-    openDefects:         (cntOpenDefects.results[0]   as CountResult | undefined)?.n ?? 0,
-    criticalDefects:     (cntCriticalDefects.results[0] as CountResult | undefined)?.n ?? 0,
-    blockedCertificates: (cntBlockedCerts.results[0]  as CountResult | undefined)?.n ?? 0,
-    validCertificates:   (cntValidCerts.results[0]    as CountResult | undefined)?.n ?? 0
-  };
+  const service = new DashboardService(db);
+  stats = await service.getAdminStats();
 } catch (error) {
   await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "admin_dashboard" });
   loadError = "Admin matrix data could not be loaded.";
@@ -149,48 +128,46 @@ const exceptions = [
           <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Critical Defects</p>
           <p class={`text-2xl font-black ${stats.criticalDefects > 0 ? 'text-kharon-red' : 'text-white'}`}>{stats.criticalDefects}</p>
         </a>
-        <a href="/portal/admin/compliance" class={`kharon-surface p-4 text-center transition-colors ${stats.blockedCertificates > 0 ? 'border-kharon-red/40 hover:border-kharon-red/60' : 'hover:border-kharon-purple/40'}`}>
+        <a href="/portal/admin/compliance" class={`kharon-surface p-4 text-center transition-colors ${stats.blockedCertificates > 0 ? 'border-kharon-amber/30 hover:border-kharon-amber/50' : 'hover:border-kharon-purple/40'}`}>
           <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Blocked Certs</p>
-          <p class={`text-2xl font-black ${stats.blockedCertificates > 0 ? 'text-kharon-red' : 'text-white'}`}>{stats.blockedCertificates}</p>
+          <p class={`text-2xl font-black ${stats.blockedCertificates > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.blockedCertificates}</p>
         </a>
-        <a href="/portal/admin/compliance" class="kharon-surface p-4 text-center hover:border-kharon-green/40 transition-colors">
+        <div class="kharon-surface p-4 text-center">
           <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Valid Certs</p>
-          <p class="text-2xl font-black text-kharon-green">{stats.validCertificates}</p>
-        </a>
+          <p class="text-2xl font-black text-white">{stats.validCertificates}</p>
+        </div>
       </div>
     </section>
 
-    <section>
-      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Operations & Dispatch</p>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <DashboardFeatureCard title="Dispatch Board" description="Assign jobs to technicians and manage active dispatches." href="/portal/admin/dispatch" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />`} badge={stats.unassignedJobs > 0 ? stats.unassignedJobs : undefined} badgeVariant="danger" />
-        <DashboardFeatureCard title="Planning Calendar" description="View scheduled maintenance and plan upcoming fieldwork." href="/portal/admin/planning" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />`} />
-        <DashboardFeatureCard title="Jobs Registry" description="Browse all jobs, completion status and documentation." href="/portal/admin/jobs" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />`} badge={stats.missingDocuments > 0 ? stats.missingDocuments : undefined} badgeVariant="warning" />
-        <DashboardFeatureCard title="Client Requests" description="Maintenance requests from clients awaiting scheduling." href="/portal/admin/dispatch" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />`} badge={stats.openRequests > 0 ? stats.openRequests : undefined} badgeVariant="warning" />
-      </div>
-    </section>
-
-    <section>
-      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Assets & Accounts</p>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <DashboardFeatureCard title="Client Sites" description="Site register, address details and linked systems." href="/portal/admin/sites" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />`} />
-        <DashboardFeatureCard title="Protection Systems" description="All installed systems, compliance dates and defect log." href="/portal/admin/systems" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />`} badge={stats.overdueSystems > 0 ? stats.overdueSystems : undefined} badgeVariant="warning" />
-        <DashboardFeatureCard title="Users & Technicians" description="User accounts, roles and technician profiles." href="/portal/admin/users" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />`} />
-        <DashboardFeatureCard title="Multi-Client Access" description="Manage client portal accounts and site access mappings." href="/portal/admin/multi-client" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />`} />
-      </div>
-    </section>
-
-    <section>
-      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Ledger, Compliance & Data</p>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <DashboardFeatureCard title="Sage Register" description="Finance tasks, invoice management and VAT compliance." href="/portal/finance/dashboard" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`} />
-        <DashboardFeatureCard title="SANS Compliance" description="Certificate status, blocked certificates and SANS clause tracking." href="/portal/admin/compliance" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />`} badge={stats.blockedCertificates > 0 ? stats.blockedCertificates : undefined} badgeVariant="danger" />
-        <DashboardFeatureCard title="Security Audit Log" description="All portal activity, authentication events and access records." href="/portal/admin/audit" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`} />
-        <DashboardFeatureCard title="Data Export" description="Export jobs, systems and financial data for reporting." href="/portal/admin/exports" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />`} />
-        <DashboardFeatureCard title="Advanced Reports" description="Analytics, trend reports and portfolio-wide insights." href="/portal/admin/advanced-reporting" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />`} />
-        <DashboardFeatureCard title="Feedback Log" description="Client and technician feedback submitted through the portal." href="/portal/admin/feedback" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />`} />
-      </div>
-    </section>
-
+    <div class="grid gap-6 lg:grid-cols-2">
+      <DashboardFeatureCard
+        title="Planning Calendar"
+        description="Schedule maintenance, view job board and capacity."
+        href="/portal/admin/planning"
+        iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />`}
+      />
+      <DashboardFeatureCard
+        title="Dispatch Board"
+        description="Assign and track active field technician dispatches."
+        href="/portal/admin/dispatch"
+        iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />`}
+        badge={stats.unassignedJobs > 0 ? stats.unassignedJobs : undefined}
+        badgeVariant="warning"
+      />
+      <DashboardFeatureCard
+        title="Client Sites"
+        description="Manage all registered client sites and their metadata."
+        href="/portal/admin/sites"
+        iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />`}
+      />
+      <DashboardFeatureCard
+        title="Protection Systems"
+        description="All installed fire and security systems by site."
+        href="/portal/admin/systems"
+        iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />`}
+        badge={stats.overdueSystems > 0 ? stats.overdueSystems : undefined}
+        badgeVariant="danger"
+      />
+    </div>
   </div>
 </PortalLayout>

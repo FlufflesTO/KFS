@@ -92,8 +92,8 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     });
 
     return json({ ok: true, requestId, jobId, status: "Scheduled" });
-  } catch (error: any) {
-    if (error.message) return badRequest(error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message) return badRequest(error instanceof Error ? error.message : "Unknown error");
     await auditError(db!, request, error, { user: locals.user, metadata: { message: "admin maintenance request failed" } });
     return serverError("Maintenance request administration failed.");
   }

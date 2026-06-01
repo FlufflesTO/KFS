@@ -17,4 +17,10 @@ declare namespace App {
   }
 }
 
-declare var process: any;
+interface Window {
+  kharonPortalFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+
+declare var process: {
+  env: Record<string, string | undefined>;
+};

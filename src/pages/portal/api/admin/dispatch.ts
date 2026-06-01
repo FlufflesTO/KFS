@@ -89,7 +89,7 @@ export async function POST({ params, request, locals }: APIContext): Promise<Res
     }
 
     const db = getDatabase();
-    await auditError(db, request, error, {
+    await auditError(db, request, error as Error, {
       entityType: "admin_dispatch_api",
       entityId: params.jobId || "unknown"
     });

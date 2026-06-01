@@ -93,7 +93,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       success: true, 
       message: `Quote ${status}. A finance task has been created to track the next steps in Sage.`
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Quote approval failed:", error);
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     return serverError("Quote approval failed.");

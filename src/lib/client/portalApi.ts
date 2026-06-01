@@ -49,9 +49,9 @@ export function extractFormPayload(form: HTMLFormElement): Record<string, string
 type ResultVariant = "success" | "error" | "warning";
 
 const VARIANT_CSS: Record<ResultVariant, string> = {
-  success: "border-emerald-300 bg-emerald-50 text-emerald-900",
-  error:   "border-red-300 bg-red-50 text-red-900",
-  warning: "border-amber-300 bg-amber-50 text-amber-900",
+  success: "border-kharon-green/40 bg-kharon-green/10 text-kharon-green",
+  error:   "border-kharon-red/40 bg-kharon-red/10 text-kharon-red",
+  warning: "border-kharon-amber/40 bg-kharon-amber/10 text-kharon-amber",
 };
 
 // Writes a result message into a result element with the appropriate Tailwind classes.
@@ -69,6 +69,51 @@ export function setResult(
   el.className = [idClass, extraClasses, "rounded-md border px-4 py-3 text-sm font-semibold", VARIANT_CSS[variant]]
     .filter(Boolean)
     .join(" ");
+  el.classList.remove("hidden");
+}
+
+// Non-blocking toast notification to replace native alert()
+export function showToast(message: string, variant: ResultVariant = "error"): void {
+  const containerId = "kharon-toast-container";
+  let container = document.getElementById(containerId);
+  if (!container) {
+    container = document.createElement("div");
+    container.id = containerId;
+    container.className = "fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none";
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `max-w-md w-full backdrop-blur-xl shadow-2xl rounded-xl border p-4 pointer-events-auto flex items-start justify-between gap-4 transition-all duration-300 transform translate-y-8 opacity-0 ${VARIANT_CSS[variant]}`;
+  
+  const text = document.createElement("p");
+  text.className = "text-sm font-bold uppercase tracking-widest flex-1";
+  text.textContent = message;
+  
+  const close = document.createElement("button");
+  close.className = "flex-none text-current opacity-70 hover:opacity-100 transition-opacity";
+  close.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>';
+  
+  const removeToast = () => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(8px)";
+    setTimeout(() => toast.remove(), 300);
+  };
+  
+  close.addEventListener("click", removeToast);
+  
+  toast.appendChild(text);
+  toast.appendChild(close);
+  container.appendChild(toast);
+  
+  // Animate in
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateY(0)";
+  });
+  
+  // Auto remove after 5s
+  setTimeout(removeToast, 5000);
 }
 
 // Binds submit handlers to all .admin-form elements. Reads data-endpoint and

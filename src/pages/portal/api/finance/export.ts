@@ -96,8 +96,8 @@ export async function GET({ request, locals }: import('astro').APIContext) {
         "content-disposition": `attachment; filename="kharon-finance-ledger-${new Date().toISOString().slice(0, 10)}.csv"`
       }
     });
-  } catch (error: any) {
-    await auditError(db, request, error, { user: user ?? null, metadata: { message: "finance export failed" } });
+  } catch (error: unknown) {
+    await auditError(db, request, error as Error, { user: user ?? null, metadata: { message: "finance export failed" } });
     return serverError("Finance export could not be completed.");
   }
 }

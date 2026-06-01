@@ -95,10 +95,10 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     });
 
     return json({ ok: true, id, status: "New" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
-    if (error.message) return badRequest(error.message);
-    await auditError(db, request, error, { user, metadata: { message: "maintenance request failed" } });
+    if (error instanceof Error && error.message) return badRequest(error instanceof Error ? error.message : "Unknown error");
+    await auditError(db, request, error as Error, { user, metadata: { message: "maintenance request failed" } });
     return serverError("Maintenance request could not be submitted.");
   }
 }

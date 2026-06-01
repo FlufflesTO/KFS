@@ -34,7 +34,7 @@ const otherTasks = pendingTasks.filter(t => !t.task_type.includes('Invoice'));
             <div class="min-w-0 flex-1">
               <div class="flex items-center justify-between">
                 <span class="font-semibold text-white">{task.owner_company_name}</span>
-                <span class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-800">{task.task_type}</span>
+                <span class="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-800">{task.task_type}</span>
               </div>
               <p class="text-sm text-white/70 mt-0.5">{task.job_type || 'General'} / {task.reference || "No ref"}</p>
               <p class="mt-2 text-xs text-white font-semibold">{formatCurrency(task.amount)}</p>
@@ -66,7 +66,7 @@ const otherTasks = pendingTasks.filter(t => !t.task_type.includes('Invoice'));
             <div class="min-w-0 flex-1">
               <div class="flex items-center justify-between">
                 <span class="font-semibold text-white">{task.owner_company_name}</span>
-                <span class="rounded bg-red-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-red-800">Overdue</span>
+                <span class="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-red-800">Overdue</span>
               </div>
               <p class="text-sm text-white/70 mt-0.5">{task.task_type} / Ref: {task.reference || "N/A"}</p>
               <p class="mt-2 text-xs text-white font-semibold">{formatCurrency(task.amount)}</p>

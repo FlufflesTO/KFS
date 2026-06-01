@@ -74,8 +74,8 @@ async function importSites(db: import("@cloudflare/workers-types").D1Database, r
       }
 
       results.push({ row: row.rowNumber, id, ok: true, action: exists ? "updated" : "created" });
-    } catch (error: any) {
-      results.push({ row: row.rowNumber, ok: false, message: error.message || "Row import failed." });
+    } catch (error: unknown) {
+      results.push({ row: row.rowNumber, ok: false, message: (error instanceof Error ? error.message : null) || "Row import failed." });
     }
   }
   return results;
@@ -129,8 +129,8 @@ async function importSystems(db: import("@cloudflare/workers-types").D1Database,
       }
 
       results.push({ row: row.rowNumber, id, ok: true, action: exists ? "updated" : "created" });
-    } catch (error: any) {
-      results.push({ row: row.rowNumber, ok: false, message: error.message || "Row import failed." });
+    } catch (error: unknown) {
+      results.push({ row: row.rowNumber, ok: false, message: (error instanceof Error ? error.message : null) || "Row import failed." });
     }
   }
   return results;
@@ -168,9 +168,9 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     });
 
     return json({ ok: failures.length === 0, type, isDryRun, results, failures });
-  } catch (error: any) {
-    if (error.message) return badRequest(error.message);
-    await auditError(db, request, error, { user: user ?? null, metadata: { message: "admin import failed" } });
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message) return badRequest(error instanceof Error ? error.message : "Unknown error");
+    await auditError(db, request, error as Error, { user: user ?? null, metadata: { message: "admin import failed" } });
     return serverError("Import could not be completed.");
   }
 }

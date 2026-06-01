@@ -34,6 +34,15 @@ const OFFLINE_DB_VERSION = 2;
 const DRAFTS_STORE = 'drafts';
 const SYNC_QUEUE_STORE = 'sync_queue';
 const OFFLINE_SYNC_ENDPOINT = '/portal/api/offline-sync';
+const DEBUG = false;
+
+function debugLog(...args: any[]) {
+  if (DEBUG) console.log('[SW]', ...args);
+}
+
+function debugError(...args: any[]) {
+  if (DEBUG) console.error('[SW]', ...args);
+}
 
 // Static assets to pre-cache on install (cache-first)
 const PRECACHE_URLS = [
@@ -790,11 +799,11 @@ self.addEventListener('install', (event: ExtendableEvent) => {
     caches.open(STATIC_CACHE)
       .then((cache) => cache.addAll(PRECACHE_URLS))
       .then(() => {
-        console.log('[SW] Pre-cached static assets');
+        debugLog('Pre-cached static assets');
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.warn('[SW] Pre-cache failed:', error);
+        debugError('Pre-cache failed:', error);
         return self.skipWaiting();
       })
   );
@@ -814,13 +823,13 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
                      name !== API_CACHE;
             })
             .map((name) => {
-              console.log('[SW] Deleting old cache:', name);
+              debugLog('Deleting old cache:', name);
               return caches.delete(name);
             })
         );
       })
       .then(() => {
-        console.log('[SW] Claiming clients');
+        debugLog('Claiming clients');
         return self.clients.claim();
       })
       .then(() => {

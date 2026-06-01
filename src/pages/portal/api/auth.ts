@@ -233,7 +233,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
   } catch (error) {
     console.error("AUTH_API_ERROR_STACK:", error);
     if (db) {
-      await auditError(db, request, error, {
+      await auditError(db, request, error as Error, {
         entityType: "portal_api",
         entityId: "auth_login"
       });

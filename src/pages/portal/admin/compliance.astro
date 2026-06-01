@@ -20,7 +20,7 @@ let blockedCertificates: Array<any> = [];
 let dueSoonCertificates: Array<any> = [];
 let systemsAtRisk: Array<any> = [];
 let loadError = "";
-let db: any = null;
+let db: import('@cloudflare/workers-types').D1Database | null = null;
 
 try {
   db = getDatabase();

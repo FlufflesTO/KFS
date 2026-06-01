@@ -76,10 +76,10 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     });
 
     return json({ ok: true, jobId, status });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
-    if (error.message) return badRequest(error.message);
-    await auditError(db, request, error, { user, metadata: { message: "job status update failed" } });
+    if (error instanceof Error && error.message) return badRequest(error instanceof Error ? error.message : "Unknown error");
+    await auditError(db, request, error as Error, { user, metadata: { message: "job status update failed" } });
     return serverError("The job status could not be updated.");
   }
 }

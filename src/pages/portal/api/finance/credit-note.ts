@@ -134,8 +134,8 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     });
 
     return json({ ok: true, creditNoteId, amountIncVat });
-  } catch (error: any) {
-    await auditError(db, request, error, { user: user ?? null, metadata: { message: "credit note creation failed" } });
+  } catch (error: unknown) {
+    await auditError(db, request, error as Error, { user: user ?? null, metadata: { message: "credit note creation failed" } });
     return serverError("The credit note could not be created.");
   }
 }

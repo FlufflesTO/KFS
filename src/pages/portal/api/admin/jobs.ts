@@ -145,8 +145,8 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     });
 
     return json({ ok: true, id });
-  } catch (error: any) {
-    if (error.message) return badRequest(error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message) return badRequest(error instanceof Error ? error.message : "Unknown error");
     await auditError(db!, request, error, { user: locals.user, metadata: { message: "admin jobs failed" } });
     return serverError("Job administration failed.");
   }

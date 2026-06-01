@@ -74,7 +74,7 @@ export async function POST({ request }: { request: Request }) {
   }
 }
 
-async function handlePaymentReceived(db: any, data: any) {
+async function handlePaymentReceived(db: import('@cloudflare/workers-types').D1Database, data: any) {
   // Update financial records with Sage payment reference
   if (data.invoice_number && data.payment_reference) {
     await db.prepare(
@@ -88,7 +88,7 @@ async function handlePaymentReceived(db: any, data: any) {
   }
 }
 
-async function handleInvoicePaid(db: any, data: any) {
+async function handleInvoicePaid(db: import('@cloudflare/workers-types').D1Database, data: any) {
   // Update invoice status when paid in Sage
   if (data.invoice_number) {
     await db.prepare(
@@ -102,7 +102,7 @@ async function handleInvoicePaid(db: any, data: any) {
   }
 }
 
-async function handleQuoteApproved(db: any, data: any) {
+async function handleQuoteApproved(db: import('@cloudflare/workers-types').D1Database, data: any) {
   // Update quote status when approved in Sage
   if (data.quote_number) {
     await db.prepare(

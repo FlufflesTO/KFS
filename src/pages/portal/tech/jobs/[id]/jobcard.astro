@@ -659,7 +659,9 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
         const description = form.querySelector(".defect-desc")?.value.trim() || "";
         const certificateBlocking = Boolean(form.querySelector(".defect-blocking")?.checked);
         if (description.length < 5) {
-          alert("Defect description must be at least 5 characters.");
+          import("../../../../../lib/client/portalApi.ts").then(({ showToast }) => {
+            showToast("Defect description must be at least 5 characters.", "warning");
+          });
           return;
         }
         defects.push({ severity, sansClauseRef, description, certificateBlocking });
