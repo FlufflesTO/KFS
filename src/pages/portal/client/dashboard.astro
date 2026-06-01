@@ -165,7 +165,7 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
 
       {loadError && <p class="rounded-lg border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
 
-      {/* ── Pending Quotes Action Strip ── */}
+      {/* ── Pending Quotes Action Strip ── approve via /portal/api/approve-quote; documents via /portal/api/file/ ── */}
       {pendingQuoteCount > 0 && (
         <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-kharon-amber/30 bg-kharon-amber/5 px-5 py-4 relative overflow-hidden">
           <div class="absolute inset-0 bg-[radial-gradient(circle_at_90%_50%,rgba(245,158,11,0.05),transparent)]"></div>
@@ -283,8 +283,8 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
       {siteStatuses.length > 1 && (
         <div>
           <div class="flex items-center justify-between mb-3">
-            <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80">Site Compliance Map</h2>
-            <span class="text-[10px] text-white/40 uppercase font-mono">{siteStatuses.length} sites tracked</span>
+            <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80">Mapped client sites</h2>
+            <span class="text-[10px] text-white/40 uppercase font-mono">{siteStatuses.length} sites</span>
           </div>
           <ComplianceHeatmap sites={siteStatuses} />
         </div>
