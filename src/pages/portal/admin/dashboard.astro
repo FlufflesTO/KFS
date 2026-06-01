@@ -1,70 +1,29 @@
 ---
 import { auditError } from "../../../lib/server/audit.js";
-/**
- * Project Sentinel - Portal Admin Dashboard
- * Purpose: Admin hub with feature navigation + operational matrix (completed works, active dispatches, lifecycle, exception queue)
- * Dependencies: PortalLayout, bindings, financial-utils, KharonCard, KharonButton, DashboardFeatureCard
- * Structural Role: Admin main control view
- */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
-import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
-import KharonCard from "../../../components/ui/KharonCard.astro";
-import KharonButton from "../../../components/ui/KharonButton.astro";
 import DashboardFeatureCard from "../../../components/portal/DashboardFeatureCard.astro";
 import PortalQuickActions from "../../../components/portal/PortalQuickActions.astro";
 
 export const prerender = false;
 
 const adminActions = [
-  { label: "Dispatch Job", href: "/portal/admin/dispatch", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />`, accent: "cyan" as const },
-  { label: "Add Site", href: "/portal/admin/sites", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />`, accent: "purple" as const },
-  { label: "Sage Ledger", href: "/portal/finance/dashboard", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`, accent: "green" as const },
-  { label: "SANS Audit", href: "/portal/admin/compliance", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />`, accent: "amber" as const }
+  { label: "Dispatch Job",  href: "/portal/admin/dispatch",     icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />`,                                                                                                                                                                                                        accent: "cyan"   as const },
+  { label: "Add Site",      href: "/portal/admin/sites",        icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />`,                                                                         accent: "purple" as const },
+  { label: "Sage Ledger",   href: "/portal/finance/dashboard",  icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`,                                    accent: "green"  as const },
+  { label: "SANS Audit",    href: "/portal/admin/compliance",   icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />`,  accent: "amber"  as const }
 ];
 
 const user = Astro.locals.user;
-let completed: Array<any> = [];
-let active: Array<any> = [];
-let due: Array<any> = [];
-let clientRequests: Array<any> = [];
-let overdue: Array<any> = [];
-let missingDocs: Array<any> = [];
-let openDefects: Array<any> = [];
-let financeFollowup: Array<any> = [];
-let technicians: Array<any> = [];
-let requestSystems: Array<any> = [];
 let stats = {
-  activeJobs: 0,
-  unassignedJobs: 0,
-  overdueSystems: 0,
-  openRequests: 0,
-  missingDocuments: 0,
-  openDefects: 0,
-  criticalDefects: 0,
-  blockedCertificates: 0,
-  validCertificates: 0
+  activeJobs: 0, unassignedJobs: 0, overdueSystems: 0, openRequests: 0,
+  missingDocuments: 0, openDefects: 0, criticalDefects: 0,
+  blockedCertificates: 0, validCertificates: 0
 };
 let loadError = "";
-let db: any = null;
-const today    = new Date().toISOString().slice(0, 10);
-const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-
-function dueDateCls(nd: string | null | undefined): string {
-  if (!nd || nd > soonDate) return "border-l-4 border-l-kharon-blue border-kharon-purple/15";
-  if (nd > today) return "border-l-4 border-l-kharon-amber border-kharon-amber/20";
-  return "border-l-4 border-l-kharon-red border-kharon-red/20";
-}
-function dueDateLabel(nd: string | null | undefined): string {
-  if (!nd) return "Not scheduled";
-  if (nd > soonDate) return "Scheduled";
-  if (nd > today) return "Due soon";
-  return "Overdue";
-}
 
 try {
-  db = getDatabase();
-
+  const db = getDatabase();
   const [cntActive, cntUnassigned, cntOverdue, cntRequests, cntMissingDocs,
          cntOpenDefects, cntCriticalDefects, cntBlockedCerts, cntValidCerts] = await db.batch([
     db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
@@ -77,641 +36,161 @@ try {
     db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
     db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
   ]);
-  interface CountResult {
-    n: number;
-  }
+  interface CountResult { n: number; }
   stats = {
-    activeJobs:        (cntActive.results[0] as CountResult | undefined)?.n        ?? 0,
-    unassignedJobs:    (cntUnassigned.results[0] as CountResult | undefined)?.n    ?? 0,
-    overdueSystems:    (cntOverdue.results[0] as CountResult | undefined)?.n       ?? 0,
-    openRequests:      (cntRequests.results[0] as CountResult | undefined)?.n      ?? 0,
-    missingDocuments:  (cntMissingDocs.results[0] as CountResult | undefined)?.n   ?? 0,
-    openDefects:       (cntOpenDefects.results[0] as CountResult | undefined)?.n   ?? 0,
-    criticalDefects:   (cntCriticalDefects.results[0] as CountResult | undefined)?.n ?? 0,
-    blockedCertificates: (cntBlockedCerts.results[0] as CountResult | undefined)?.n ?? 0,
-    validCertificates: (cntValidCerts.results[0] as CountResult | undefined)?.n    ?? 0
+    activeJobs:          (cntActive.results[0]        as CountResult | undefined)?.n ?? 0,
+    unassignedJobs:      (cntUnassigned.results[0]    as CountResult | undefined)?.n ?? 0,
+    overdueSystems:      (cntOverdue.results[0]       as CountResult | undefined)?.n ?? 0,
+    openRequests:        (cntRequests.results[0]      as CountResult | undefined)?.n ?? 0,
+    missingDocuments:    (cntMissingDocs.results[0]   as CountResult | undefined)?.n ?? 0,
+    openDefects:         (cntOpenDefects.results[0]   as CountResult | undefined)?.n ?? 0,
+    criticalDefects:     (cntCriticalDefects.results[0] as CountResult | undefined)?.n ?? 0,
+    blockedCertificates: (cntBlockedCerts.results[0]  as CountResult | undefined)?.n ?? 0,
+    validCertificates:   (cntValidCerts.results[0]    as CountResult | undefined)?.n ?? 0
   };
-
-  completed = (await db.prepare(
-    `SELECT jobs.id, jobs.completed_at, jobs.status, systems.system_type, systems.coverage_area, sites.owner_company_name
-     FROM jobs
-     INNER JOIN systems ON systems.id = jobs.system_id
-     INNER JOIN sites ON sites.id = systems.site_id
-     WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND jobs.status IN ('Completed', 'Invoiced')
-     ORDER BY jobs.completed_at DESC
-     LIMIT 12`
-  ).all()).results || [];
-
-  active = (await db.prepare(
-    `SELECT jobs.id, jobs.status, jobs.scheduled_date, users.name AS technician_name, sites.owner_company_name
-     FROM jobs
-     LEFT JOIN users ON users.id = jobs.assigned_technician_id
-     INNER JOIN systems ON systems.id = jobs.system_id
-     INNER JOIN sites ON sites.id = systems.site_id
-     WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress')
-     ORDER BY jobs.scheduled_date ASC
-     LIMIT 12`
-  ).all()).results || [];
-
-  due = (await db.prepare(
-    `SELECT systems.id, systems.system_type, systems.coverage_area, systems.next_due_date, sites.owner_company_name
-     FROM systems
-     INNER JOIN sites ON sites.id = systems.site_id
-     WHERE systems.deleted_at IS NULL
-     ORDER BY systems.next_due_date ASC
-     LIMIT 12`
-  ).all()).results || [];
-
-  clientRequests = (await db.prepare(
-    `SELECT maintenance_requests.id, maintenance_requests.site_id, maintenance_requests.system_id,
-            maintenance_requests.request_type, maintenance_requests.priority,
-            maintenance_requests.status, maintenance_requests.subject, maintenance_requests.message,
-            maintenance_requests.created_at, maintenance_requests.linked_job_id,
-            sites.owner_company_name, systems.coverage_area
-     FROM maintenance_requests
-     INNER JOIN sites ON sites.id = maintenance_requests.site_id
-     LEFT JOIN systems ON systems.id = maintenance_requests.system_id AND systems.deleted_at IS NULL
-     WHERE maintenance_requests.status IN ('New', 'Reviewing', 'Scheduled')
-     ORDER BY
-       CASE maintenance_requests.priority WHEN 'Critical' THEN 1 WHEN 'Urgent' THEN 2 ELSE 3 END,
-       maintenance_requests.created_at ASC
-     LIMIT 12`
-  ).all()).results || [];
-
-  technicians = (await db.prepare(
-    `SELECT id, name FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name LIMIT 100`
-  ).all()).results || [];
-
-  requestSystems = (await db.prepare(
-    `SELECT id, site_id, system_type, coverage_area FROM systems WHERE deleted_at IS NULL ORDER BY coverage_area LIMIT 200`
-  ).all()).results || [];
-
-  overdue = (await db.prepare(
-    `SELECT systems.id, systems.system_type, systems.coverage_area, systems.next_due_date, sites.owner_company_name
-     FROM systems
-     INNER JOIN sites ON sites.id = systems.site_id
-     WHERE systems.deleted_at IS NULL AND date(systems.next_due_date) < date('now')
-     ORDER BY systems.next_due_date ASC
-     LIMIT 12`
-  ).all()).results || [];
-
-  missingDocs = (await db.prepare(
-    `SELECT jobs.id, jobs.completed_at, systems.system_type, systems.coverage_area, sites.owner_company_name
-     FROM jobs
-     INNER JOIN systems ON systems.id = jobs.system_id
-     INNER JOIN sites ON sites.id = systems.site_id
-     WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-       AND jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL
-     ORDER BY jobs.completed_at DESC
-     LIMIT 12`
-  ).all()).results || [];
-
-  openDefects = (await db.prepare(
-    `SELECT defects.id, defects.severity, defects.sans_clause_ref, defects.status,
-            systems.id AS system_id, systems.system_type, systems.coverage_area,
-            sites.owner_company_name
-     FROM defects
-     INNER JOIN systems ON systems.id = defects.system_id
-     INNER JOIN sites ON sites.id = systems.site_id
-     WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND defects.status = 'Open'
-     ORDER BY CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 ELSE 3 END,
-              defects.created_at ASC
-     LIMIT 12`
-  ).all()).results || [];
-
-  financeFollowup = (await db.prepare(
-    `SELECT sites.owner_company_name, COUNT(financial_records.id) AS record_count, SUM(financial_records.amount) AS amount
-     FROM financial_records
-     INNER JOIN sites ON sites.id = financial_records.site_id
-     WHERE financial_records.payment_status IN ('Pending Approval', 'Unpaid')
-     GROUP BY sites.id
-     ORDER BY amount DESC
-     LIMIT 8`
-  ).all()).results || [];
 } catch (error) {
   await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "admin_dashboard" });
   loadError = "Admin matrix data could not be loaded.";
 }
 
-import CsrfInput from "../../../components/ui/CsrfInput.astro";
+const exceptions = [
+  { condition: stats.unassignedJobs > 0,     count: stats.unassignedJobs,    label: "job(s) unassigned — technician allocation required",   href: "/portal/admin/dispatch",  severity: "red"   },
+  { condition: stats.criticalDefects > 0,    count: stats.criticalDefects,   label: "critical defect(s) open — immediate remediation needed", href: "/portal/admin/systems",  severity: "red"   },
+  { condition: stats.overdueSystems > 0,     count: stats.overdueSystems,    label: "system(s) overdue for scheduled service",               href: "/portal/admin/systems",  severity: "amber" },
+  { condition: stats.missingDocuments > 0,   count: stats.missingDocuments,  label: "completed job(s) missing sign-off documentation",       href: "/portal/admin/jobs",     severity: "amber" },
+  { condition: stats.openRequests > 0,       count: stats.openRequests,      label: "client request(s) awaiting review and scheduling",      href: "/portal/admin/dispatch", severity: "amber" },
+  { condition: stats.blockedCertificates > 0,count: stats.blockedCertificates,"label": "certificate(s) blocked — compliance action needed",  href: "/portal/admin/compliance",severity: "amber"},
+].filter(e => e.condition);
 ---
 
 <PortalLayout title="Admin Control Panel | Kharon Portal" active="admin" user={user}>
 
-  {/* ── Page Header ── */}
   <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 rounded-xl border border-kharon-purple/10 mb-6 relative overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(124,93,194,0.09),transparent)]"></div>
-    <div class="relative z-10">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(75,46,131,0.1),transparent)]"></div>
+    <div class="mx-auto max-w-7xl relative z-10">
       <div class="flex items-center gap-3 mb-4">
         <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
           <svg class="h-[1.1rem] w-[1.1rem] text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
           </svg>
         </div>
-        <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Admin Console</p>
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Admin Control Panel</p>
       </div>
-      <h1 class="text-2xl font-black sm:text-3xl tracking-tight text-white">Operations Control Centre</h1>
-      <p class="mt-2 max-w-3xl text-sm text-kharon-light/60">Navigate administrative features and monitor the operational lifecycle matrix.</p>
+      <h1 class="text-2xl font-black sm:text-3xl tracking-tight text-white">Operations Matrix</h1>
+      <p class="mt-2 max-w-2xl text-sm text-white/60">
+        Portfolio health at a glance — exceptions, dispatch status, and compliance standing across all client sites.
+      </p>
     </div>
   </section>
 
-  <section class="px-1 py-2 sm:px-4 sm:py-4">
-    <div class="mx-auto max-w-7xl">
-      {loadError && <p class="rounded-lg border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red mb-6">{loadError}</p>}
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 space-y-6 pb-10">
 
-      <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-4 px-1">Quick Command Matrix</h2>
+    {loadError && (
+      <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>
+    )}
+
+    <section>
+      <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Quick Actions</h2>
       <PortalQuickActions actions={adminActions} />
+    </section>
 
-      {/* ── Feature Navigation Hub ── */}
-      <div class="mb-10">
-        {/* Section: Operations & Dispatch */}
-        <div class="mb-6">
-          <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3 px-1">Operations &amp; Dispatch</h2>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <DashboardFeatureCard
-              title="Planning Calendar"
-              description="Schedule maintenance, view job board and capacity."
-              href="/portal/admin/planning"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />`}
-            />
-            <DashboardFeatureCard
-              title="Dispatch Board"
-              description="Assign and track active field technician dispatches."
-              href="/portal/admin/dispatch"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />`}
-            />
-            <DashboardFeatureCard
-              title="Jobs Registry"
-              description="View, manage and document all service jobs."
-              href="/portal/admin/jobs"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />`}
-              badge={stats.activeJobs > 0 ? stats.activeJobs : undefined}
-              badgeVariant="default"
-            />
-            <DashboardFeatureCard
-              title="Field Operations"
-              description="Enquiries, request queue and site operational tasks."
-              href="/portal/admin/dashboard"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />`}
-              badge={stats.openRequests > 0 ? stats.openRequests : undefined}
-              badgeVariant={stats.openRequests > 0 ? "warning" : "default"}
-            />
-            <DashboardFeatureCard
-              title="Tech Dispatches"
-              description="View active dispatches from the technician perspective."
-              href="/portal/tech/dashboard"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />`}
-            />
-          </div>
-        </div>
-
-        {/* Section: Assets & Accounts */}
-        <div class="mb-6">
-          <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3 px-1">Assets &amp; Accounts</h2>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <DashboardFeatureCard
-              title="Client Sites"
-              description="Manage all registered client sites and their metadata."
-              href="/portal/admin/sites"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />`}
-            />
-            <DashboardFeatureCard
-              title="Protection Systems"
-              description="All installed fire and security systems by site."
-              href="/portal/admin/systems"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />`}
-              badge={stats.overdueSystems > 0 ? stats.overdueSystems : undefined}
-              badgeVariant="danger"
-            />
-            <DashboardFeatureCard
-              title="User Profiles"
-              description="Technician accounts, roles and access configuration."
-              href="/portal/admin/users"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />`}
-            />
-            <DashboardFeatureCard
-              title="Multi-Client Access"
-              description="Cross-client portfolio and account delegation."
-              href="/portal/admin/multi-client"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />`}
-            />
-          </div>
-        </div>
-
-        {/* Section: Ledger & Compliance */}
-        <div class="mb-6">
-          <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3 px-1">Ledger &amp; Compliance</h2>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <DashboardFeatureCard
-              title="Sage Register"
-              description="Finance ledger, invoice management and VAT records."
-              href="/portal/finance/dashboard"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`}
-            />
-            <DashboardFeatureCard
-              title="SANS Compliance"
-              description="Compliance dashboard and SANS clause tracking."
-              href="/portal/admin/compliance"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />`}
-              badge={stats.openDefects > 0 ? stats.openDefects : undefined}
-              badgeVariant={stats.criticalDefects > 0 ? "danger" : "warning"}
-            />
-            <DashboardFeatureCard
-              title="Security Audit Logs"
-              description="Full audit trail of portal actions and changes."
-              href="/portal/admin/audit"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />`}
-            />
-            <DashboardFeatureCard
-              title="Advanced Reports"
-              description="Custom reports, analytics and export tools."
-              href="/portal/admin/advanced-reporting"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />`}
-            />
-            <DashboardFeatureCard
-              title="Data Management"
-              description="Data exports, imports and archive management."
-              href="/portal/admin/exports"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />`}
-            />
-          </div>
-        </div>
-
-        {/* Section: Support */}
-        <div class="mb-2">
-          <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3 px-1">Support &amp; Tools</h2>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <DashboardFeatureCard
-              title="Feedback Log"
-              description="Review and action user-submitted portal feedback."
-              href="/portal/admin/feedback"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />`}
-            />
-            <DashboardFeatureCard
-              title="Completed Dispatches"
-              description="Historical record of all completed field jobs."
-              href="/portal/tech/history"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`}
-            />
-            <DashboardFeatureCard
-              title="Account Settings"
-              description="Password and MFA configuration for your account."
-              href="/portal/account/password"
-              iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ── Divider before Operational Matrix ── */}
-      <div class="flex items-center gap-4 mb-8">
-        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-kharon-purple/20 to-transparent"></div>
-        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/60">Operational Matrix</span>
-        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-kharon-purple/20 to-transparent"></div>
-      </div>
-
-      {/* ── Priority Health Metrics ── */}
-      <div class="mb-8 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-        <KharonCard variant={stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'danger' : 'primary'} padding="lg">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-8 h-full">
-            <div>
-              <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Operational Health</p>
-              <h2 class="mt-2 text-xl font-bold tracking-tight text-white">
-                {stats.criticalDefects > 0 || stats.unassignedJobs > 0 || stats.overdueSystems > 0 ? 'Action Required' : 'All Systems Nominal'}
-              </h2>
-              <p class="mt-2 text-[0.875rem] text-kharon-light/50 max-w-sm">
-                Monitor and resolve critical compliance and dispatch blockers to maintain operational SLA.
-              </p>
-            </div>
-
-            <div class="flex gap-6">
-              <div class="text-center">
-                <p class={`text-3xl font-black tracking-tighter ${stats.unassignedJobs > 0 ? 'text-kharon-red' : 'text-white/25'}`}>{stats.unassignedJobs}</p>
-                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/40">Unassigned</p>
-              </div>
-              <div class="w-px bg-kharon-purple/20"></div>
-              <div class="text-center">
-                <p class={`text-3xl font-black tracking-tighter ${stats.overdueSystems > 0 ? 'text-kharon-red' : 'text-white/25'}`}>{stats.overdueSystems}</p>
-                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/40">Overdue</p>
-              </div>
-              <div class="w-px bg-kharon-purple/20"></div>
-              <div class="text-center">
-                <p class={`text-3xl font-black tracking-tighter ${stats.openDefects > 0 ? 'text-kharon-red' : 'text-white/25'}`}>{stats.openDefects}</p>
-                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/40">Defects</p>
-              </div>
-            </div>
-          </div>
-        </KharonCard>
-
-        <div class="grid grid-cols-2 gap-4">
-           <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
-              <div>
-                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/50">Active Jobs</p>
-                <p class="mt-1 text-xl font-black text-white tracking-tight">{stats.activeJobs}</p>
-              </div>
-              <KharonButton href="/portal/admin/planning" variant="secondary" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-cyan">View Board →</KharonButton>
-           </KharonCard>
-
-           <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
-              <div>
-                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/50">Missing Docs</p>
-                <p class={`mt-1 text-xl font-black tracking-tight ${stats.missingDocuments > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.missingDocuments}</p>
-              </div>
-              <KharonButton href="/portal/admin/jobs" variant="secondary" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-cyan">Review →</KharonButton>
-           </KharonCard>
-
-           <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
-              <div>
-                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/50">Open Requests</p>
-                <p class={`mt-1 text-xl font-black tracking-tight ${stats.openRequests > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.openRequests}</p>
-              </div>
-              <KharonButton href="/portal/admin/dashboard#requests" variant="secondary" size="sm" className="mt-4 self-start px-0 font-bold text-kharon-cyan">Details →</KharonButton>
-           </KharonCard>
-
-           <KharonCard variant="default" padding="sm" className="flex flex-col justify-between">
-              <div>
-                <p class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/50">Blocked Certs</p>
-                <p class={`mt-1 text-xl font-black tracking-tight ${stats.blockedCertificates > 0 ? 'text-kharon-red' : 'text-white'}`}>{stats.blockedCertificates}</p>
-              </div>
-              <span class="mt-4 text-[0.625rem] font-bold text-kharon-light/30 uppercase tracking-widest self-start">{stats.validCertificates} Valid</span>
-           </KharonCard>
-        </div>
-      </div>
-
-
-      <div class="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3 2xl:gap-8">
-        <KharonCard title="Completed works" subtitle="Asset Lifecycle">
-          <KharonButton href="/portal/tech/history" variant="secondary" size="sm" className="px-0 font-bold">View all →</KharonButton>
-          <div class="mt-6 grid gap-4">
-            {completed.map((item) => (
-              <article class="rounded-xl border border-kharon-purple/15 border-l-4 border-l-kharon-blue bg-kharon-charcoal/60 p-5 transition-all hover:border-kharon-purple/30 hover:bg-kharon-charcoal/80 backdrop-blur-sm">
-                <p class="font-bold text-white tracking-tight">{item.owner_company_name}</p>
-                <p class="text-xs text-kharon-light/60 mt-1 font-medium">{item.system_type} / {item.coverage_area}</p>
-                <p class="mt-3 text-[0.625rem] text-kharon-light/35 uppercase font-bold tracking-widest">{item.completed_at || "PENDING TIMESTAMP"}</p>
-                {item.status === "Completed" && (
-                  <button class="mark-invoiced-btn mt-4 w-full rounded-lg border border-kharon-blue/30 bg-kharon-blue/10 px-3 py-2.5 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-cyan hover:bg-kharon-blue/20 hover:border-kharon-blue/50 transition-all" data-job-id={item.id}>
-                    Raise Sage Invoice
-                  </button>
-                )}
-                {item.status === "Invoiced" && (
-                  <span class="mt-4 block text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/30 border border-dashed border-kharon-purple/20 bg-kharon-purple/5 text-center py-2.5 rounded-lg">Invoiced</span>
-                )}
-              </article>
-            ))}
-          </div>
-        </KharonCard>
-
-        <KharonCard title="Active dispatches" subtitle="Operations">
-          <KharonButton href="/portal/admin/planning" variant="secondary" size="sm" className="px-0 font-bold">View board →</KharonButton>
-          <div class="mt-6 grid gap-4">
-            {active.map((item) => (
-              <article class="rounded-xl border border-kharon-purple/15 border-l-4 border-l-kharon-purple bg-kharon-charcoal/60 p-5 transition-all hover:border-kharon-purple/30 hover:bg-kharon-charcoal/80 backdrop-blur-sm">
-                <p class="font-bold text-white tracking-tight">{item.owner_company_name}</p>
-                <p class="text-xs text-kharon-light/60 mt-1 font-medium">{item.status} / {item.technician_name || "Unassigned"}</p>
-                <p class="mt-3 text-[0.625rem] text-kharon-light/35 uppercase font-bold tracking-widest">{item.scheduled_date}</p>
-              </article>
-            ))}
-          </div>
-        </KharonCard>
-
-        <KharonCard title="Lifecycle due dates" subtitle="Compliance">
-          <KharonButton href="/portal/admin/planning" variant="secondary" size="sm" className="px-0 font-bold">Manage board →</KharonButton>
-          <div class="mt-6 grid gap-4">
-            {due.map((item) => (
-              <article class={`rounded-xl border bg-kharon-charcoal/60 p-5 transition-all hover:bg-kharon-charcoal/80 backdrop-blur-sm ${dueDateCls(item.next_due_date)}`}>
-                <p class="font-bold text-white tracking-tight">{item.owner_company_name}</p>
-                <p class="text-xs text-kharon-light/60 mt-1 font-medium">{item.system_type} / {item.coverage_area}</p>
-                <p class="mt-3 text-[0.625rem] uppercase font-bold tracking-widest text-kharon-light/45">{dueDateLabel(item.next_due_date)}  —  {item.next_due_date}</p>
-              </article>
-            ))}
-          </div>
-        </KharonCard>
-      </div>
-
-      <section class="grid gap-8 lg:grid-cols-2 mt-8">
-        <KharonCard title="Client request queue" subtitle="Customer Support">
-          <div class="mt-6 grid gap-4">
-            {clientRequests.length === 0 && <p class="text-sm text-kharon-light/50 italic py-2">No new client requests require review.</p>}
-            {clientRequests.map((item) => (
-              <article class="request-card rounded-xl border border-kharon-purple/20 border-l-4 border-l-kharon-purple bg-kharon-charcoal/60 p-5 backdrop-blur-sm" data-request-id={item.id}>
-                <div class="flex flex-wrap justify-between gap-4">
-                  <div class="min-w-0 flex-1">
-                    <p class="font-bold text-white tracking-tight">{item.owner_company_name}</p>
-                    <p class="text-xs font-bold text-kharon-cyan mt-1 uppercase tracking-wide">{item.subject}</p>
-                    <p class="mt-2 text-[0.625rem] uppercase font-bold tracking-widest text-kharon-light/40">{item.request_type} / {item.coverage_area || "General site request"}</p>
-                    <p class="mt-4 text-[0.8125rem] text-kharon-light/75 leading-relaxed bg-kharon-black/40 border border-kharon-purple/15 p-3 rounded-lg">{item.message}</p>
-                    {item.linked_job_id && <p class="mt-3 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-cyan bg-kharon-blue/10 border border-kharon-blue/30 px-2 py-1 rounded w-fit">Scheduled Dispatch: {item.linked_job_id}</p>}
-                  </div>
-                  <span class="h-fit rounded-lg border border-kharon-purple/30 bg-kharon-purple/10 px-2.5 py-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-purple/80">{item.priority} / {item.status}</span>
-                </div>
-                <div class="mt-6 pt-5 border-t border-kharon-purple/15 grid gap-4">
-                  <form class="request-status-form flex flex-wrap gap-2" data-request-id={item.id}>
-          <CsrfInput />
-                    <input type="hidden" name="requestId" value={item.id} />
-                    <select class="portal-field sm:w-auto rounded-lg border border-kharon-purple/25 bg-kharon-black/50 text-white px-3 py-1.5 text-xs focus:outline-none focus:border-kharon-purple/50" name="status">
-                      {["New", "Reviewing", "Closed"].map((status) => <option value={status} selected={item.status === status}>{status}</option>)}
-                    </select>
-                    <KharonButton type="submit" size="sm">Update</KharonButton>
-                    <p class="request-result hidden text-sm font-semibold"></p>
-                  </form>
-                  {!item.linked_job_id && (
-                    <form class="request-schedule-form grid gap-4 border-t border-kharon-purple/15 pt-5" data-request-id={item.id}>
-          <CsrfInput />
-                      <input type="hidden" name="requestId" value={item.id} />
-                      <div class="grid gap-3 sm:grid-cols-2">
-                        <div class="grid gap-1.5">
-                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/50">System</label>
-                          <select class="portal-field rounded-lg border border-kharon-purple/25 bg-kharon-black/50 text-white px-3 py-1.5 text-xs focus:outline-none focus:border-kharon-purple/50" name="systemId" required>
-                            <option value="">Select system</option>
-                            {requestSystems.filter((system) => system.site_id === item.site_id).map((system) => (
-                              <option value={system.id} selected={system.id === item.system_id}>{system.system_type} / {system.coverage_area}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div class="grid gap-1.5">
-                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/50">Technician</label>
-                          <select class="portal-field rounded-lg border border-kharon-purple/25 bg-kharon-black/50 text-white px-3 py-1.5 text-xs focus:outline-none focus:border-kharon-purple/50" name="assignedTechnicianId">
-                            <option value="">Unassigned</option>
-                            {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
-                          </select>
-                        </div>
-                      </div>
-                      <div class="grid gap-3 sm:grid-cols-2">
-                        <div class="grid gap-1.5">
-                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/50">Scheduled Date</label>
-                          <input class="portal-field rounded-lg border border-kharon-purple/25 bg-kharon-black/50 text-white px-3 py-1.5 text-xs focus:outline-none focus:border-kharon-purple/50" name="scheduledDate" type="date" required />
-                        </div>
-                        <div class="grid gap-1.5">
-                          <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/50">Job Type</label>
-                          <input class="portal-field rounded-lg border border-kharon-purple/25 bg-kharon-black/50 text-white px-3 py-1.5 text-xs focus:outline-none focus:border-kharon-purple/50" name="jobType" value={item.request_type} />
-                        </div>
-                      </div>
-                      <div class="grid gap-1.5">
-                        <label class="text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/50">Site Notes</label>
-                        <input class="portal-field rounded-lg border border-kharon-purple/25 bg-kharon-black/50 text-white px-3 py-1.5 text-xs focus:outline-none focus:border-kharon-purple/50" name="siteNotes" value={`${item.subject}: ${item.message}`.slice(0, 900)} />
-                      </div>
-                      <KharonButton type="submit" variant="primary" className="mt-2">Schedule dispatch</KharonButton>
-                    </form>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-        </KharonCard>
-
-        <KharonCard title="Exception queue" subtitle="Risk Management">
-          <div class="mt-6 grid gap-6">
-            <div>
-              <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-red mb-4">Overdue systems</p>
-              <div class="grid gap-2">
-                {overdue.length === 0 && <p class="text-sm text-kharon-light/50 italic py-1">No overdue lifecycle items.</p>}
-                {overdue.map((item) => (
-                  <div class="rounded-lg border border-kharon-red/20 border-l-4 border-l-kharon-red bg-kharon-red/5 p-3.5 text-[0.75rem] flex items-center justify-between">
-                    <span class="font-bold text-white">{item.owner_company_name}</span>
-                    <span class="text-kharon-light/50 font-medium text-xs">{item.system_type} / {item.coverage_area}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple mb-4">Missing documentation</p>
-              <div class="grid gap-2">
-                {missingDocs.length === 0 && <p class="text-sm text-kharon-light/50 italic py-1">No completed jobs are missing documentation.</p>}
-                {missingDocs.map((item) => (
-                  <div class="rounded-lg border border-kharon-purple/20 border-l-4 border-l-kharon-purple bg-kharon-purple/5 p-3.5 text-[0.75rem] flex items-center justify-between">
-                    <span class="font-bold text-white">{item.owner_company_name}</span>
-                    <span class="text-kharon-light/40 font-mono text-[10px]">{item.id.slice(0, 8)}... / {item.completed_at || "completed"}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-blue mb-4">Finance follow-up</p>
-              <div class="grid gap-2">
-                {financeFollowup.length === 0 && <p class="text-sm text-kharon-light/50 italic py-1">No pending finance follow-up.</p>}
-                {financeFollowup.map((item) => (
-                  <div class="rounded-lg border border-kharon-blue/20 border-l-4 border-l-kharon-blue bg-kharon-blue/5 p-3.5 text-[0.75rem] flex items-center justify-between">
-                    <span class="font-bold text-white">{item.owner_company_name}</span>
-                    <span class="text-kharon-cyan font-bold">{item.record_count} open / {formatCurrency(item.amount || 0)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-red mb-4">Open defects</p>
-              <div class="grid gap-3">
-                {openDefects.length === 0 && <p class="text-sm text-kharon-light/50 italic py-1">No open defects require attention.</p>}
-                {openDefects.map((item) => (
-                  <a href={`/portal/admin/systems?q=${encodeURIComponent(item.system_id)}`} class="block border-l-4 p-4 rounded-xl transition-all hover:opacity-90" class:list={[
-                    item.severity === "Critical" ? "border border-kharon-red/20 border-l-kharon-red bg-kharon-red/5" : item.severity === "Major" ? "border border-kharon-amber/20 border-l-kharon-amber bg-kharon-amber/5" : "border border-kharon-purple/15 border-l-kharon-purple/60 bg-kharon-charcoal/50"
-                  ]}>
-                    <div class="flex items-center justify-between">
-                      <span class="font-bold text-white tracking-tight">{item.owner_company_name}</span>
-                      <span class={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase border tracking-widest ${
-                        item.severity === "Critical" ? "border-kharon-red/30 bg-kharon-red/10 text-kharon-red" :
-                        item.severity === "Major" ? "border-kharon-amber/30 bg-kharon-amber/10 text-kharon-amber" :
-                        "border-kharon-purple/20 bg-kharon-purple/5 text-white/60"
-                      }`}>{item.severity}</span>
-                    </div>
-                    <p class="text-kharon-light/50 text-xs mt-1.5 font-medium">{item.system_type} / {item.coverage_area}</p>
-                    {item.sans_clause_ref && <p class="mt-2 font-mono text-[10px] text-kharon-light/35 uppercase tracking-widest">SANS Clause: {item.sans_clause_ref}</p>}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-        </KharonCard>
+    {exceptions.length > 0 ? (
+      <section class="rounded-xl border border-kharon-red/20 bg-kharon-red/5 p-4 sm:p-5">
+        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-red mb-3">Exceptions Requiring Attention</p>
+        <ul class="space-y-2">
+          {exceptions.map(ex => (
+            <li>
+              <a href={ex.href} class={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm font-semibold transition-colors ${ex.severity === 'red' ? 'border-kharon-red/30 bg-kharon-red/10 text-red-200 hover:bg-kharon-red/15' : 'border-kharon-amber/30 bg-kharon-amber/10 text-kharon-amber hover:bg-kharon-amber/15'}`}>
+                <span class={`text-xl font-black tabular-nums ${ex.severity === 'red' ? 'text-kharon-red' : 'text-kharon-amber'}`}>{ex.count}</span>
+                <span class="flex-1">{ex.label}</span>
+                <svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
-    </div>
-  </section>
-  <script>
-    async function postJson(url: string, payload: Record<string, unknown>) {
-      const response = await window.kharonPortalFetch(url, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const body = await response.json() as { ok?: boolean; message?: string; status?: string; jobId?: string } | null;
-      if (!response.ok || !body?.ok) throw new Error(body?.message || "Request failed.");
-      return body;
-    }
+    ) : !loadError ? (
+      <section class="rounded-xl border border-kharon-green/20 bg-kharon-green/5 px-5 py-4">
+        <div class="flex items-center gap-3">
+          <svg class="h-5 w-5 shrink-0 text-kharon-green" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          <p class="text-sm font-bold text-kharon-green">All clear — no exceptions detected across the portfolio.</p>
+        </div>
+      </section>
+    ) : null}
 
-    for (const form of document.querySelectorAll<HTMLFormElement>(".request-status-form")) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const result = form.querySelector<HTMLElement>(".request-result");
-        const data = new FormData(form);
-        try {
-          const body = await postJson("/portal/api/admin/maintenance-requests", {
-            action: "updateStatus",
-            requestId: data.get("requestId"),
-            status: data.get("status")
-          });
-          if (result) {
-            result.textContent = `Status: ${body.status}`;
-            result.className = "request-result text-sm font-semibold text-kharon-blue";
-          }
-        } catch (error) {
-          if (result) {
-            result.textContent = (error as Error).message;
-            result.className = "request-result text-sm font-semibold text-red-700";
-          }
-        }
-      });
-    }
+    <section>
+      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Portfolio Health</p>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <a href="/portal/admin/dispatch" class="kharon-surface p-4 text-center hover:border-kharon-purple/40 transition-colors">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Active Jobs</p>
+          <p class="text-2xl font-black text-white">{stats.activeJobs}</p>
+        </a>
+        <a href="/portal/admin/dispatch" class={`kharon-surface p-4 text-center transition-colors ${stats.unassignedJobs > 0 ? 'border-kharon-red/40 hover:border-kharon-red/60' : 'hover:border-kharon-purple/40'}`}>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Unassigned</p>
+          <p class={`text-2xl font-black ${stats.unassignedJobs > 0 ? 'text-kharon-red' : 'text-white'}`}>{stats.unassignedJobs}</p>
+        </a>
+        <a href="/portal/admin/systems" class={`kharon-surface p-4 text-center transition-colors ${stats.overdueSystems > 0 ? 'border-kharon-amber/40 hover:border-kharon-amber/60' : 'hover:border-kharon-purple/40'}`}>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Overdue Systems</p>
+          <p class={`text-2xl font-black ${stats.overdueSystems > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.overdueSystems}</p>
+        </a>
+        <a href="/portal/admin/dispatch" class={`kharon-surface p-4 text-center transition-colors ${stats.openRequests > 0 ? 'border-kharon-amber/40 hover:border-kharon-amber/60' : 'hover:border-kharon-purple/40'}`}>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Client Requests</p>
+          <p class={`text-2xl font-black ${stats.openRequests > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.openRequests}</p>
+        </a>
+        <a href="/portal/admin/jobs" class={`kharon-surface p-4 text-center transition-colors ${stats.missingDocuments > 0 ? 'border-kharon-amber/40 hover:border-kharon-amber/60' : 'hover:border-kharon-purple/40'}`}>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Missing Docs</p>
+          <p class={`text-2xl font-black ${stats.missingDocuments > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.missingDocuments}</p>
+        </a>
+        <a href="/portal/admin/systems" class={`kharon-surface p-4 text-center transition-colors ${stats.openDefects > 0 ? 'border-kharon-amber/30 hover:border-kharon-amber/50' : 'hover:border-kharon-purple/40'}`}>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Open Defects</p>
+          <p class={`text-2xl font-black ${stats.openDefects > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.openDefects}</p>
+        </a>
+        <a href="/portal/admin/systems" class={`kharon-surface p-4 text-center transition-colors ${stats.criticalDefects > 0 ? 'border-kharon-red/40 hover:border-kharon-red/60' : 'hover:border-kharon-purple/40'}`}>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Critical Defects</p>
+          <p class={`text-2xl font-black ${stats.criticalDefects > 0 ? 'text-kharon-red' : 'text-white'}`}>{stats.criticalDefects}</p>
+        </a>
+        <a href="/portal/admin/compliance" class={`kharon-surface p-4 text-center transition-colors ${stats.blockedCertificates > 0 ? 'border-kharon-red/40 hover:border-kharon-red/60' : 'hover:border-kharon-purple/40'}`}>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Blocked Certs</p>
+          <p class={`text-2xl font-black ${stats.blockedCertificates > 0 ? 'text-kharon-red' : 'text-white'}`}>{stats.blockedCertificates}</p>
+        </a>
+        <a href="/portal/admin/compliance" class="kharon-surface p-4 text-center hover:border-kharon-green/40 transition-colors">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Valid Certs</p>
+          <p class="text-2xl font-black text-kharon-green">{stats.validCertificates}</p>
+        </a>
+      </div>
+    </section>
 
-    for (const form of document.querySelectorAll<HTMLFormElement>(".request-schedule-form")) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const card = form.closest<HTMLElement>(".request-card");
-        const result = card?.querySelector<HTMLElement>(".request-result");
-        const data = new FormData(form);
-        try {
-          const body = await postJson("/portal/api/admin/maintenance-requests", {
-            action: "scheduleDispatch",
-            requestId: data.get("requestId"),
-            systemId: data.get("systemId"),
-            assignedTechnicianId: data.get("assignedTechnicianId"),
-            scheduledDate: data.get("scheduledDate"),
-            jobType: data.get("jobType"),
-            siteNotes: data.get("siteNotes")
-          });
-          if (result) {
-            result.textContent = `Scheduled dispatch: ${body.jobId}`;
-            result.className = "request-result text-sm font-semibold text-kharon-blue";
-          }
-          form.remove();
-        } catch (error) {
-          if (result) {
-            result.textContent = (error as Error).message;
-            result.className = "request-result text-sm font-semibold text-red-700";
-          }
-        }
-      });
-    }
+    <section>
+      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Operations & Dispatch</p>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <DashboardFeatureCard title="Dispatch Board" description="Assign jobs to technicians and manage active dispatches." href="/portal/admin/dispatch" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />`} badge={stats.unassignedJobs > 0 ? stats.unassignedJobs : undefined} badgeVariant="danger" />
+        <DashboardFeatureCard title="Planning Calendar" description="View scheduled maintenance and plan upcoming fieldwork." href="/portal/admin/planning" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />`} />
+        <DashboardFeatureCard title="Jobs Registry" description="Browse all jobs, completion status and documentation." href="/portal/admin/jobs" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />`} badge={stats.missingDocuments > 0 ? stats.missingDocuments : undefined} badgeVariant="warning" />
+        <DashboardFeatureCard title="Client Requests" description="Maintenance requests from clients awaiting scheduling." href="/portal/admin/dispatch" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />`} badge={stats.openRequests > 0 ? stats.openRequests : undefined} badgeVariant="warning" />
+      </div>
+    </section>
 
-    for (const btn of document.querySelectorAll<HTMLButtonElement>(".mark-invoiced-btn")) {
-      btn.addEventListener("click", async () => {
-        if (!window.confirm("Confirm that a Sage invoice has been raised for this job.")) return;
-        const jobId = btn.dataset.jobId;
-        btn.disabled = true;
-        btn.textContent = "Updating…";
-        try {
-          await postJson("/portal/api/admin/jobs", { action: "markInvoiced", id: jobId });
-          const confirmed = document.createElement("span");
-          confirmed.className = "mt-4 block text-[0.625rem] font-bold uppercase tracking-widest text-kharon-light/30 border border-dashed border-kharon-purple/20 bg-kharon-purple/5 text-center py-2 rounded-lg";
-          confirmed.textContent = "Invoiced";
-          btn.replaceWith(confirmed);
-        } catch (error) {
-          btn.disabled = false;
-          btn.textContent = "Raise Sage Invoice";
-          alert((error as Error).message || "Could not update job status.");
-        }
-      });
-    }
-  </script>
+    <section>
+      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Assets & Accounts</p>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <DashboardFeatureCard title="Client Sites" description="Site register, address details and linked systems." href="/portal/admin/sites" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />`} />
+        <DashboardFeatureCard title="Protection Systems" description="All installed systems, compliance dates and defect log." href="/portal/admin/systems" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />`} badge={stats.overdueSystems > 0 ? stats.overdueSystems : undefined} badgeVariant="warning" />
+        <DashboardFeatureCard title="Users & Technicians" description="User accounts, roles and technician profiles." href="/portal/admin/users" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />`} />
+        <DashboardFeatureCard title="Multi-Client Access" description="Manage client portal accounts and site access mappings." href="/portal/admin/multi-client" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />`} />
+      </div>
+    </section>
+
+    <section>
+      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Ledger, Compliance & Data</p>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <DashboardFeatureCard title="Sage Register" description="Finance tasks, invoice management and VAT compliance." href="/portal/finance/dashboard" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`} />
+        <DashboardFeatureCard title="SANS Compliance" description="Certificate status, blocked certificates and SANS clause tracking." href="/portal/admin/compliance" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />`} badge={stats.blockedCertificates > 0 ? stats.blockedCertificates : undefined} badgeVariant="danger" />
+        <DashboardFeatureCard title="Security Audit Log" description="All portal activity, authentication events and access records." href="/portal/admin/audit" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`} />
+        <DashboardFeatureCard title="Data Export" description="Export jobs, systems and financial data for reporting." href="/portal/admin/exports" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />`} />
+        <DashboardFeatureCard title="Advanced Reports" description="Analytics, trend reports and portfolio-wide insights." href="/portal/admin/advanced-reporting" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />`} />
+        <DashboardFeatureCard title="Feedback Log" description="Client and technician feedback submitted through the portal." href="/portal/admin/feedback" iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />`} />
+      </div>
+    </section>
+
+  </div>
 </PortalLayout>
->
