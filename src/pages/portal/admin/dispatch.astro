@@ -13,15 +13,15 @@ function slaInfo(requiredByDate: string | null): { text: string; cls: string } {
   const ms = new Date(requiredByDate + "T00:00:00Z").getTime() - Date.now();
   const days = Math.ceil(ms / 86400000);
   if (days < 0) return { text: `${-days}d overdue`, cls: "text-kharon-red font-bold" };
-  if (days <= 3) return { text: `${days}d`, cls: "text-amber-700 font-semibold" };
-  return { text: `${days}d`, cls: "text-emerald-700" };
+  if (days <= 3) return { text: `${days}d`, cls: "text-kharon-amber font-semibold" };
+  return { text: `${days}d`, cls: "text-kharon-green font-medium" };
 }
 
 function priorityBadgeCls(p: string): string {
-  if (p === "Critical") return "bg-kharon-red text-white";
-  if (p === "High") return "border border-amber-400 bg-amber-50 text-amber-800";
-  if (p === "Low") return "border border-kharon-purple/20 bg-kharon-charcoal text-white/70";
-  return "bg-kharon-charcoal text-white/70"; // Normal
+  if (p === "Critical") return "bg-kharon-red/20 text-kharon-red border border-kharon-red/30";
+  if (p === "High") return "border border-kharon-amber/30 bg-kharon-amber/20 text-kharon-amber";
+  if (p === "Low") return "border border-kharon-purple/20 bg-kharon-charcoal text-white/50";
+  return "bg-kharon-purple/10 text-white/70 border border-kharon-purple/20"; // Normal
 }
 
 interface DispatchJob {
@@ -167,7 +167,6 @@ try {
   techs = (techsResult.results || []) as { id: string; name: string }[];
 } catch (error) {
   await auditError(getDatabase(), Astro.request, error, { entityType: "system", entityId: "dispatch_board" });
-
   loadError = "Dispatch data could not be loaded.";
 }
 
@@ -190,348 +189,304 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Dispatch Board | Kharon Portal" active="dispatch" user={user}>
-  <!-- Header -->
-  <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
-    <div class="mx-auto max-w-7xl">
-      <p class="text-xs font-bold uppercase text-kharon-purple">Operations</p>
-      <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Dispatch board</h1>
-      <p class="mt-4 max-w-3xl text-white/65">
-        Assign technicians, set priorities, track SLA deadlines and manage the active job queue.
-      </p>
+  {/* ── Page Header ── */}
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 rounded-xl border border-kharon-purple/10 mb-6 relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(124,93,194,0.09),transparent)]"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+          <svg class="h-[1.1rem] w-[1.1rem] text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+        </div>
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Operations Console</p>
+      </div>
+      <h1 class="text-2xl font-black sm:text-3xl tracking-tight text-white">Dispatch Command Board</h1>
+      <p class="mt-2 max-w-3xl text-sm text-kharon-light/60">Assign technicians, set priorities, track SLA deadlines and manage the active job queue.</p>
     </div>
   </section>
 
-  <section class="px-4 py-6 sm:px-6 sm:py-8">
-    <div class="mx-auto max-w-7xl grid gap-6">
-      {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
+  <section class="px-1 py-4 sm:px-4">
+    <div class="mx-auto max-w-7xl grid gap-8">
+      {loadError && <p class="rounded-lg border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
 
-      <!-- Stat cards -->
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article class={`border p-4 ${unassignedAlert ? "border-amber-300 bg-amber-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
-          <p class={`text-xs font-bold uppercase ${unassignedAlert ? "text-amber-700" : "text-white/70"}`}>Unassigned</p>
-          <p class="mt-2 text-2xl font-bold">{stats.unassigned}</p>
-          <p class="mt-1 text-xs text-white/70">jobs needing a technician</p>
+      {/* Stat cards */}
+      <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <article class={`rounded-xl border p-5 shadow-xl backdrop-blur-md transition-all ${unassignedAlert ? "border-kharon-amber/40 bg-kharon-amber/5" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
+          <p class={`text-[10px] font-black uppercase tracking-widest ${unassignedAlert ? "text-kharon-amber" : "text-kharon-purple"}`}>Unassigned</p>
+          <div class="flex items-baseline gap-2 mt-2">
+            <p class="text-3xl font-black text-white tracking-tight">{stats.unassigned}</p>
+            <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Queue</p>
+          </div>
         </article>
-        <article class="border border-kharon-purple/20 bg-kharon-charcoal p-4">
-          <p class="text-xs font-bold uppercase text-white/70">In progress</p>
-          <p class="mt-2 text-2xl font-bold">{stats.inProgress}</p>
-          <p class="mt-1 text-xs text-white/70">active dispatches</p>
+        <article class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/60 p-5 shadow-xl backdrop-blur-md">
+          <p class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">In progress</p>
+          <div class="flex items-baseline gap-2 mt-2">
+            <p class="text-3xl font-black text-kharon-cyan tracking-tight">{stats.inProgress}</p>
+            <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Live</p>
+          </div>
         </article>
-        <article class={`border p-4 ${emergencyAlert ? "border-kharon-red bg-red-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
-          <p class={`text-xs font-bold uppercase ${emergencyAlert ? "text-kharon-red" : "text-white/70"}`}>Emergency</p>
-          <p class="mt-2 text-2xl font-bold">{stats.emergency}</p>
-          <p class="mt-1 text-xs text-white/70">flagged jobs</p>
+        <article class={`rounded-xl border p-5 shadow-xl backdrop-blur-md transition-all ${emergencyAlert ? "border-kharon-red/40 bg-kharon-red/5" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
+          <p class={`text-[10px] font-black uppercase tracking-widest ${emergencyAlert ? "text-kharon-red" : "text-kharon-purple"}`}>Emergency</p>
+          <div class="flex items-baseline gap-2 mt-2">
+            <p class={`text-3xl font-black tracking-tight ${emergencyAlert ? 'text-kharon-red' : 'text-white'}`}>{stats.emergency}</p>
+            <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">Flagged</p>
+          </div>
         </article>
-        <article class={`border p-4 ${slaAlert ? "border-amber-300 bg-amber-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
-          <p class={`text-xs font-bold uppercase ${slaAlert ? "text-amber-700" : "text-white/70"}`}>SLA warning</p>
-          <p class="mt-2 text-2xl font-bold">{stats.slaWarning}</p>
-          <p class="mt-1 text-xs text-white/70">due within 3 days</p>
+        <article class={`rounded-xl border p-5 shadow-xl backdrop-blur-md transition-all ${slaAlert ? "border-kharon-amber/40 bg-kharon-amber/5" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
+          <p class={`text-[10px] font-black uppercase tracking-widest ${slaAlert ? "text-kharon-amber" : "text-kharon-purple"}`}>SLA Warning</p>
+          <div class="flex items-baseline gap-2 mt-2">
+            <p class="text-3xl font-black text-white tracking-tight">{stats.slaWarning}</p>
+            <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">&lt; 3 Days</p>
+          </div>
         </article>
       </div>
 
-      <!-- Filter bar -->
-      <div class="flex flex-wrap gap-3">
-        <input
-          id="dispatch-search"
-          type="search"
-          placeholder="Search client, system or area…"
-          class="flex-1 min-w-[200px] border border-kharon-purple/20 px-3 py-2 text-sm focus:border-kharon-purple focus:outline-none"
-        />
-        <select id="dispatch-priority" class="border border-kharon-purple/20 px-3 py-2 text-sm focus:border-kharon-purple focus:outline-none">
-          <option value="">All priorities</option>
-          <option value="Critical">Critical</option>
-          <option value="High">High</option>
-          <option value="Normal">Normal</option>
-          <option value="Low">Low</option>
-        </select>
-        <select id="dispatch-status" class="border border-kharon-purple/20 px-3 py-2 text-sm focus:border-kharon-purple focus:outline-none">
-          <option value="">All statuses</option>
-          <option value="Scheduled">Scheduled</option>
-          <option value="In Progress">In Progress</option>
-        </select>
-        <input
-          id="dispatch-date"
-          type="date"
-          title="Filter by scheduled date"
-          class="border border-kharon-purple/20 px-3 py-2 text-sm focus:border-kharon-purple focus:outline-none"
-        />
-        <button id="dispatch-today" type="button" class="border border-kharon-purple/20 px-3 py-2 text-xs font-semibold hover:bg-kharon-charcoal">Today</button>
-        <button id="dispatch-week"  type="button" class="border border-kharon-purple/20 px-3 py-2 text-xs font-semibold hover:bg-kharon-charcoal">Next 7 days</button>
-        <button id="dispatch-alldate" type="button" class="border border-kharon-purple/20 px-3 py-2 text-xs font-semibold hover:bg-kharon-charcoal">All dates</button>
+      {/* Filter bar */}
+      <div class="flex flex-wrap items-end gap-3 bg-kharon-charcoal/40 p-4 rounded-xl border border-kharon-purple/10">
+        <div class="grid gap-1 flex-1 min-w-[240px]">
+          <label class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Search Workspace</label>
+          <input
+            id="dispatch-search"
+            type="search"
+            placeholder="Search client, system or area…"
+            class="kharon-field"
+          />
+        </div>
+        <div class="grid gap-1">
+          <label class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Priority</label>
+          <select id="dispatch-priority" class="kharon-field min-w-[140px]">
+            <option value="">All Priorities</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Normal">Normal</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <div class="grid gap-1">
+          <label class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Status</label>
+          <select id="dispatch-status" class="kharon-field min-w-[140px]">
+            <option value="">All Statuses</option>
+            <option value="Scheduled">Scheduled</option>
+            <option value="In Progress">In Progress</option>
+          </select>
+        </div>
+        <div class="grid gap-1">
+          <label class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Filter Date</label>
+          <input
+            id="dispatch-date"
+            type="date"
+            class="kharon-field"
+          />
+        </div>
+        <div class="flex gap-2 h-[42px]">
+          <button id="dispatch-today" type="button" class="kharon-secondary-button py-2 px-3 text-[10px]">Today</button>
+          <button id="dispatch-week"  type="button" class="kharon-secondary-button py-2 px-3 text-[10px]">Week</button>
+          <button id="dispatch-alldate" type="button" class="kharon-secondary-button py-2 px-3 text-[10px]">All</button>
+        </div>
       </div>
 
-      <!-- Unassigned queue -->
-      <article class="border border-kharon-purple/20 bg-kharon-charcoal">
-        <header class="flex items-center justify-between border-b border-kharon-purple/20 px-4 py-3 sm:px-5">
-          <h2 class="text-lg font-bold">Unassigned queue</h2>
-          <span class={`rounded px-2 py-0.5 text-xs font-bold ${unassignedAlert ? "bg-amber-100 text-amber-800" : "bg-kharon-charcoal text-white/70"}`}>
-            {unassigned.length}
-          </span>
-        </header>
-        <div class="divide-y divide-kharon-border">
-          {unassigned.length === 0 && (
-            <p class="px-4 py-6 text-sm text-white/70">No unassigned jobs.</p>
-          )}
-          {unassigned.map((job) => (
-            <div
-              class="px-4 py-4 sm:px-5"
-              data-dispatch-card
-              data-search={job.searchText}
-              data-priority={job.priority}
-              data-status={job.status}
-              data-date={job.scheduled_date}
-            >
-              <div class="flex flex-wrap items-start gap-2">
-                <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.priorityCls}`}>{job.priority}</span>
-                {job.isEmergency && (
-                  <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Emergency</span>
+      <div class="grid gap-8 lg:grid-cols-[1fr_1.4fr]">
+        {/* Unassigned queue */}
+        <div class="space-y-6">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-sm font-black uppercase tracking-[0.2em] text-kharon-cyan">Unassigned Queue</h2>
+            <span class="rounded bg-kharon-purple/20 border border-kharon-purple/30 px-2 py-0.5 text-[10px] font-black text-kharon-cyan uppercase tracking-widest">
+              {unassigned.length} Pending
+            </span>
+          </div>
+          <div class="space-y-4">
+            {unassigned.length === 0 && (
+              <p class="px-4 py-8 text-center text-sm text-white/40 border border-dashed border-kharon-purple/20 rounded-xl">No unassigned jobs.</p>
+            )}
+            {unassigned.map((job) => (
+              <div
+                class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/80 p-5 shadow-lg backdrop-blur-md hover:border-kharon-purple/40 transition-all"
+                data-dispatch-card
+                data-search={job.searchText}
+                data-priority={job.priority}
+                data-status={job.status}
+                data-date={job.scheduled_date}
+              >
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                  <div class="flex flex-wrap gap-2">
+                    <span class={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${job.priorityCls}`}>{job.priority}</span>
+                    {job.isEmergency && (
+                      <span class="rounded-full bg-kharon-red px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-kharon-red/20">Emergency</span>
+                    )}
+                  </div>
+                  <span class="text-[10px] font-mono text-white/30 uppercase tracking-tighter">#{job.id.slice(0, 8)}</span>
+                </div>
+
+                <h3 class="text-lg font-black text-white tracking-tight leading-tight">{job.owner_company_name}</h3>
+                <p class="text-[11px] font-bold text-kharon-cyan uppercase tracking-wider mt-1">{job.system_type} | {job.coverage_area}</p>
+                
+                <div class="mt-4 grid gap-3 text-[11px] border-t border-kharon-purple/10 pt-4">
+                  <div class="flex justify-between border-b border-kharon-purple/5 pb-2">
+                    <span class="font-bold text-kharon-purple uppercase tracking-widest">Scheduled</span>
+                    <span class="font-bold text-white/90">{job.scheduled_date}</span>
+                  </div>
+                  <div class="flex justify-between border-b border-kharon-purple/5 pb-2">
+                    <span class="font-bold text-kharon-purple uppercase tracking-widest">Required By</span>
+                    <span class={job.sla.cls}>{job.required_by_date || 'N/A'} ({job.sla.text})</span>
+                  </div>
+                  <div class="flex justify-between border-b border-kharon-purple/5 pb-2">
+                    <span class="font-bold text-kharon-purple uppercase tracking-widest">Job Type</span>
+                    <span class="font-bold text-white/90">{job.job_type}</span>
+                  </div>
+                </div>
+
+                {job.site_contact_person && (
+                  <p class="mt-3 text-[10px] font-bold text-white/40 uppercase tracking-tighter">
+                    Contact: {job.site_contact_person}{job.site_contact_phone ? ` · ${job.site_contact_phone}` : ""}
+                  </p>
                 )}
-                <span class="font-semibold">{job.owner_company_name}</span>
-                <span class="text-sm text-white/70">{job.system_type} / {job.coverage_area}</span>
-                {job.physical_address && (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.physical_address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-xs font-semibold text-kharon-purple hover:underline"
-                  >↗ Navigate</a>
-                )}
-              </div>
-              <div class="mt-1 flex flex-wrap gap-4 text-xs text-white/70">
-                <span>Scheduled: <strong class="text-white">{job.scheduled_date}</strong></span>
-                <span>Type: {job.job_type}</span>
-                {job.required_by_date && (
-                  <span>Required by: <strong class={job.sla.cls}>{job.sla.text}</strong></span>
-                )}
-                {job.estimated_duration_minutes && (
-                  <span>Est: {job.estimated_duration_minutes} min</span>
-                )}
-              </div>
-              {job.site_contact_person && (
-                <p class="mt-1 text-xs text-white/70">
-                  Contact: {job.site_contact_person}{job.site_contact_phone ? ` · ${job.site_contact_phone}` : ""}
-                </p>
-              )}
-              <!-- Assign form -->
-              <form class="dispatch-form mt-3 flex flex-wrap gap-2" data-action="assign">
-          <CsrfInput />
-                <input type="hidden" name="jobId" value={job.id} />
-                <select
-                  name="technicianId"
-                  class="border border-kharon-purple/20 px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
-                >
-                  <option value="">— select technician —</option>
-                  {techs.map((t) => (
-                    <option value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-                <button
-                  type="submit"
-                  class="bg-kharon-purple px-4 py-1.5 text-xs font-bold text-white hover:opacity-90 disabled:opacity-50"
-                >Assign</button>
-                <span class="form-msg self-center text-xs text-white/70"></span>
-              </form>
-              <!-- Dispatch settings -->
-              <details class="mt-3">
-                <summary class="cursor-pointer text-xs font-semibold text-kharon-purple hover:underline">
-                  Edit dispatch settings
-                </summary>
-                <form class="dispatch-form mt-2 grid gap-2 sm:grid-cols-4 sm:items-end" data-action="setDispatch">
-          <CsrfInput />
+
+                {/* Assign form */}
+                <form class="dispatch-form mt-5 pt-5 border-t border-kharon-purple/10 flex flex-col gap-3" data-action="assign">
+                  <CsrfInput />
                   <input type="hidden" name="jobId" value={job.id} />
-                  <div>
-                    <label class="mb-1 block text-xs text-white/70">Priority</label>
+                  <div class="flex gap-2">
                     <select
-                      name="priority"
-                      class="w-full border border-kharon-purple/20 px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
+                      name="technicianId"
+                      class="kharon-field text-xs py-2 flex-1"
                     >
-                      {["Critical","High","Normal","Low"].map((p) => (
-                        <option value={p} selected={job.priority === p}>{p}</option>
+                      <option value="">— Assign Technician —</option>
+                      {techs.map((t) => (
+                        <option value={t.id}>{t.name}</option>
                       ))}
                     </select>
-                  </div>
-                  <div>
-                    <label class="mb-1 block text-xs text-white/70">Required by</label>
-                    <input
-                      type="date"
-                      name="requiredByDate"
-                      value={job.required_by_date || ""}
-                      class="w-full border border-kharon-purple/20 px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label class="mb-1 block text-xs text-white/70">Est. duration (min)</label>
-                    <input
-                      type="number"
-                      name="estimatedDurationMinutes"
-                      value={job.estimated_duration_minutes ?? ""}
-                      min="1"
-                      max="480"
-                      class="w-full border border-kharon-purple/20 px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
-                    />
-                  </div>
-                  <div class="flex flex-col gap-2">
-                    <label class="flex items-center gap-1.5 text-xs text-white/70">
-                      <input type="checkbox" name="isEmergency" checked={job.isEmergency} class="accent-kharon-red" />
-                      Emergency
-                    </label>
                     <button
                       type="submit"
-                      class="bg-kharon-black px-4 py-1.5 text-xs font-bold text-white hover:opacity-80 disabled:opacity-50"
-                    >Save</button>
-                    <span class="form-msg text-xs text-white/70"></span>
+                      class="kharon-command-button px-6 py-2 text-[10px] h-[38px]"
+                    >Dispatch</button>
                   </div>
+                  <span class="form-msg text-[10px] font-bold uppercase tracking-widest"></span>
                 </form>
-              </details>
-            </div>
-          ))}
-        </div>
-      </article>
-
-      <!-- Technician workload board -->
-      <article class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal shadow-sm overflow-hidden">
-        <header class="flex items-center justify-between border-b border-kharon-purple/20 bg-kharon-charcoal/30 px-5 py-4">
-          <h2 class="text-lg font-bold tracking-tight text-white">Technician workload</h2>
-          <span class="rounded-full border border-kharon-purple/20 bg-kharon-charcoal px-2.5 py-1 text-[0.625rem] font-bold uppercase tracking-widest text-white/70">
-            {dispatched.length} Dispatch{dispatched.length !== 1 ? "es" : ""}
-          </span>
-        </header>
-        <div>
-          {dispatched.length === 0 && (
-            <p class="px-4 py-6 text-sm text-white/70">No active dispatches.</p>
-          )}
-          {techGroups.map((group) => (
-            <div class="border-b border-kharon-purple/20 last:border-b-0">
-              <!-- Technician header row -->
-              <div class="flex flex-wrap items-center gap-3 bg-kharon-charcoal px-4 py-2.5 sm:px-5">
-                <span class="font-bold text-white">{group.techName}</span>
-                <span class="rounded border border-kharon-purple/20 bg-kharon-charcoal px-2 py-0.5 text-xs font-semibold text-white/70">
-                  {group.jobs.length} job{group.jobs.length !== 1 ? "s" : ""}
-                </span>
-                <span class="text-xs text-white/70">
-                  {group.jobs.filter(j => j.status === "In Progress").length} in progress
-                </span>
               </div>
-              <!-- Jobs for this technician -->
-              <div class="divide-y divide-kharon-border">
-                {group.jobs.map((job) => (
-                  <div
-                    class="px-4 py-4 sm:px-5"
-                    data-dispatch-card
-                    data-search={job.searchText}
-                    data-priority={job.priority}
-                    data-status={job.status}
-                    data-date={job.scheduled_date}
-                  >
-                    <div class="flex flex-wrap items-start gap-2">
-                      <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.priorityCls}`}>{job.priority}</span>
-                      {job.isEmergency && (
-                        <span class="rounded bg-kharon-red px-2 py-0.5 text-xs font-bold text-white">Emergency</span>
-                      )}
-                      <span class={`rounded px-2 py-0.5 text-xs font-bold ${job.status === "In Progress" ? "bg-kharon-blue text-white" : "bg-kharon-charcoal text-white/70"}`}>
-                        {job.status}
-                      </span>
-                      <span class="font-semibold">{job.owner_company_name}</span>
-                      <span class="text-sm text-white/70">{job.system_type} / {job.coverage_area}</span>
-                      {job.physical_address && (
+            ))}
+          </div>
+        </div>
+
+        {/* Technician workload board */}
+        <div class="space-y-6">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-sm font-black uppercase tracking-[0.2em] text-kharon-cyan">Technician Workload</h2>
+            <span class="rounded bg-kharon-purple/20 border border-kharon-purple/30 px-2 py-0.5 text-[10px] font-black text-kharon-cyan uppercase tracking-widest">
+              {dispatched.length} Dispatched
+            </span>
+          </div>
+          
+          <div class="grid gap-6">
+            {dispatched.length === 0 && (
+              <p class="px-4 py-12 text-center text-sm text-white/40 border border-dashed border-kharon-purple/20 rounded-xl">No active dispatches.</p>
+            )}
+            {techGroups.map((group) => (
+              <div class="rounded-xl border border-kharon-purple/20 bg-kharon-black/40 overflow-hidden shadow-xl">
+                {/* Technician header row */}
+                <div class="flex items-center justify-between bg-kharon-charcoal/80 px-5 py-3 border-b border-kharon-purple/20">
+                  <div class="flex items-center gap-3">
+                    <div class="h-1.5 w-1.5 rounded-full bg-kharon-green animate-pulse"></div>
+                    <span class="text-sm font-black uppercase tracking-widest text-white">{group.techName}</span>
+                  </div>
+                  <span class="rounded-full border border-kharon-purple/30 bg-kharon-purple/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-tighter text-kharon-cyan">
+                    {group.jobs.length} Active Jobs
+                  </span>
+                </div>
+                
+                {/* Jobs for this technician */}
+                <div class="divide-y divide-kharon-purple/10">
+                  {group.jobs.map((job) => (
+                    <div
+                      class="px-5 py-5 hover:bg-kharon-purple/5 transition-colors"
+                      data-dispatch-card
+                      data-search={job.searchText}
+                      data-priority={job.priority}
+                      data-status={job.status}
+                      data-date={job.scheduled_date}
+                    >
+                      <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+                        <div class="flex flex-wrap gap-2 items-center">
+                          <span class={`rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-widest ${job.priorityCls}`}>{job.priority}</span>
+                          <span class={`rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-widest ${job.status === "In Progress" ? "bg-kharon-cyan text-kharon-black shadow-lg shadow-kharon-cyan/10" : "bg-kharon-charcoal text-white/40 border border-white/10"}`}>
+                            {job.status}
+                          </span>
+                          <span class="font-bold text-white tracking-tight">{job.owner_company_name}</span>
+                        </div>
                         <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.physical_address)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="text-xs font-semibold text-kharon-purple hover:underline"
-                        >↗ Navigate</a>
-                      )}
+                          href={`/portal/tech/jobs/${job.id}`}
+                          class="text-[10px] font-black uppercase tracking-widest text-kharon-purple hover:text-kharon-cyan transition-colors"
+                        >Open Details &rarr;</a>
+                      </div>
+
+                      <p class="text-[10px] font-bold text-kharon-light/40 uppercase tracking-widest mb-3">
+                        {job.system_type} | {job.coverage_area}
+                      </p>
+
+                      <div class="grid grid-cols-2 gap-4 text-[10px] mb-4">
+                        <p class="text-white/60 font-medium">Scheduled: <strong class="text-white">{job.scheduled_date}</strong></p>
+                        <p class="text-white/60 font-medium">Required: <strong class={job.sla.cls}>{job.required_by_date || 'N/A'}</strong></p>
+                      </div>
+
+                      {/* Reassign form toggle */}
+                      <details class="group/edit">
+                        <summary class="cursor-pointer text-[9px] font-black uppercase tracking-widest text-kharon-purple hover:text-white transition-colors flex items-center gap-1.5">
+                          <svg class="h-3 w-3 transition-transform group-open/edit:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="m9 5 7 7-7 7"/></svg>
+                          Operational Controls
+                        </summary>
+                        
+                        <div class="mt-4 grid gap-5 p-4 rounded-lg bg-kharon-black/60 border border-kharon-purple/10">
+                          <form class="dispatch-form grid gap-2" data-action="assign">
+                            <CsrfInput />
+                            <label class="text-[8px] font-black uppercase tracking-widest text-kharon-purple">Reassign Command</label>
+                            <div class="flex gap-2">
+                              <input type="hidden" name="jobId" value={job.id} />
+                              <select name="technicianId" class="kharon-field text-[10px] py-1.5 flex-1">
+                                <option value="">— Unassign —</option>
+                                {techs.map((t) => (
+                                  <option value={t.id} selected={job.technician_id === t.id}>{t.name}</option>
+                                ))}
+                              </select>
+                              <button type="submit" class="kharon-secondary-button py-1.5 px-4 text-[10px] h-[34px]">Update</button>
+                            </div>
+                          </form>
+
+                          <form class="dispatch-form grid gap-3" data-action="setDispatch">
+                            <CsrfInput />
+                            <input type="hidden" name="jobId" value={job.id} />
+                            <div class="grid grid-cols-2 gap-3">
+                              <div class="grid gap-1">
+                                <label class="text-[8px] font-black uppercase tracking-widest text-kharon-purple">Priority</label>
+                                <select name="priority" class="kharon-field text-[10px] py-1.5">
+                                  {["Critical","High","Normal","Low"].map((p) => (
+                                    <option value={p} selected={job.priority === p}>{p}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div class="grid gap-1">
+                                <label class="text-[8px] font-black uppercase tracking-widest text-kharon-purple">Required By</label>
+                                <input type="date" name="requiredByDate" value={job.required_by_date || ""} class="kharon-field text-[10px] py-1.5" />
+                              </div>
+                            </div>
+                            <div class="flex items-center justify-between gap-4">
+                              <label class="flex items-center gap-2 text-[10px] font-bold text-white/60 cursor-pointer">
+                                <input type="checkbox" name="isEmergency" checked={job.isEmergency} class="accent-kharon-red rounded" />
+                                Emergency Dispatch
+                              </label>
+                              <button type="submit" class="kharon-command-button px-6 py-2 text-[10px] h-[34px]">Save Settings</button>
+                            </div>
+                            <span class="form-msg text-[9px] font-black uppercase tracking-widest"></span>
+                          </form>
+                        </div>
+                      </details>
                     </div>
-                    <div class="mt-1 flex flex-wrap gap-4 text-xs text-white/70">
-                      <span>Scheduled: <strong class="text-white">{job.scheduled_date}</strong></span>
-                      <span>Type: {job.job_type}</span>
-                      {job.required_by_date && (
-                        <span>Required by: <strong class={job.sla.cls}>{job.sla.text}</strong></span>
-                      )}
-                    </div>
-              <!-- Reassign form -->
-              <details class="mt-3">
-                <summary class="cursor-pointer text-xs font-semibold text-kharon-purple hover:underline">
-                  Reassign technician
-                </summary>
-                <form class="dispatch-form mt-2 flex flex-wrap gap-2" data-action="assign">
-          <CsrfInput />
-                  <input type="hidden" name="jobId" value={job.id} />
-                  <select
-                    name="technicianId"
-                    class="border border-kharon-purple/20 px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
-                  >
-                    <option value="">— unassign —</option>
-                    {techs.map((t) => (
-                      <option value={t.id} selected={job.technician_id === t.id}>{t.name}</option>
-                    ))}
-                  </select>
-                  <button
-                    type="submit"
-                    class="bg-kharon-purple px-4 py-1.5 text-xs font-bold text-white hover:opacity-90 disabled:opacity-50"
-                  >Update</button>
-                  <span class="form-msg self-center text-xs text-white/70"></span>
-                </form>
-              </details>
-              <!-- Dispatch settings -->
-              <details class="mt-2">
-                <summary class="cursor-pointer text-xs font-semibold text-kharon-purple hover:underline">
-                  Edit dispatch settings
-                </summary>
-                <form class="dispatch-form mt-2 grid gap-2 sm:grid-cols-4 sm:items-end" data-action="setDispatch">
-          <CsrfInput />
-                  <input type="hidden" name="jobId" value={job.id} />
-                  <div>
-                    <label class="mb-1 block text-xs text-white/70">Priority</label>
-                    <select
-                      name="priority"
-                      class="w-full border border-kharon-purple/20 px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
-                    >
-                      {["Critical","High","Normal","Low"].map((p) => (
-                        <option value={p} selected={job.priority === p}>{p}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label class="mb-1 block text-xs text-white/70">Required by</label>
-                    <input
-                      type="date"
-                      name="requiredByDate"
-                      value={job.required_by_date || ""}
-                      class="w-full border border-kharon-purple/20 px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label class="mb-1 block text-xs text-white/70">Est. duration (min)</label>
-                    <input
-                      type="number"
-                      name="estimatedDurationMinutes"
-                      value={job.estimated_duration_minutes || ""}
-                      min="1"
-                      max="480"
-                      class="w-full border border-kharon-purple/20 px-2 py-1.5 text-sm focus:border-kharon-purple focus:outline-none"
-                    />
-                  </div>
-                  <div class="flex flex-col gap-2">
-                    <label class="flex items-center gap-1.5 text-xs text-white/70">
-                      <input type="checkbox" name="isEmergency" checked={job.isEmergency} class="accent-kharon-red" />
-                      Emergency
-                    </label>
-                    <button
-                      type="submit"
-                      class="bg-kharon-black px-4 py-1.5 text-xs font-bold text-white hover:opacity-80 disabled:opacity-50"
-                    >Save</button>
-                    <span class="form-msg text-xs text-white/70"></span>
-                  </div>
-                </form>
-              </details>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </article>
+      </div>
 
     </div>
   </section>
@@ -613,7 +568,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         var btn = form.querySelector("button[type=submit]");
         var msg = form.querySelector(".form-msg");
         if (btn) btn.disabled = true;
-        if (msg) msg.textContent = "Saving…";
+        if (msg) msg.textContent = "Processing…";
 
         try {
           var res = await window.kharonPortalFetch("/portal/api/admin/dispatch", {
@@ -625,11 +580,17 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           if (result.ok) {
             location.reload();
           } else {
-            if (msg) msg.textContent = result.error || "Failed.";
+            if (msg) {
+              msg.textContent = result.error || "Failed.";
+              msg.className = "form-msg text-[9px] font-black uppercase tracking-widest text-kharon-red";
+            }
             if (btn) btn.disabled = false;
           }
         } catch (_) {
-          if (msg) msg.textContent = "Network error.";
+          if (msg) {
+            msg.textContent = "Network error.";
+            msg.className = "form-msg text-[9px] font-black uppercase tracking-widest text-kharon-red";
+          }
           if (btn) btn.disabled = false;
         }
       });

@@ -1,13 +1,14 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
+import SolutionHero from "../components/sections/SolutionHero.astro";
 import { pageMeta } from "../data/site.js";
 
 const capabilityProof = [
   {
     title: "SAQCC competency signals",
     text: "Registered with SAQCC Fire and SAQCC Gas, enabling authorized design, installation, commissioning and maintenance across fire alarm and suppression workstreams.",
-    icon: "/brand/icons/severity-planned.svg"
+    icon: "/brand/icons/severity-urgent.svg"
   },
   {
     title: "Registered fire-system work",
@@ -76,18 +77,14 @@ const serviceCategories = [
 
 <BaseLayout title={pageMeta.about.title} description={pageMeta.about.description}>
 
-  <!-- Hero -->
-  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
-    <div class="mx-auto max-w-4xl px-6 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">About Kharon</h1>
-      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
-        Established in 2016 with the vision to provide installation and maintenance of electronic safety and security systems to relevant industry standards.
-      </p>
-    </div>
-  </section>
+  <SolutionHero 
+    title="About Kharon" 
+    subtitle="Company Ethos" 
+    description="Established in 2016 with the vision to provide installation and maintenance of electronic safety and security systems to relevant industry standards."
+    icon="/brand/icons/service-engineering.svg"
+  />
 
-  <!-- Company overview -->
-  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+  <section class="section-padding bg-kharon-black">
     <div class="mx-auto max-w-4xl px-6">
       <SectionHeading
         title="Engineered Fire Protection"
@@ -95,9 +92,9 @@ const serviceCategories = [
         description="Specialized in commercial and industrial fire protection systems with engineered solutions."
         center={true}
       />
-      <div class="mt-10 space-y-5 text-kharon-light/80 text-base leading-relaxed">
+      <div class="mt-10 space-y-6 text-kharon-light/70 text-lg leading-relaxed">
         <p>
-          <strong class="text-white">Kharon Fire and Security Solutions</strong> was established in 2016 with the vision to provide installation and maintenance of electronic safety and security systems to relevant industry standards. We are located in Cape Town, South Africa and provide services to clients as far reaching as Botswana and Malawi.
+          <strong class="text-white">Kharon Fire and Security Solutions</strong> was established in 2016 with the vision to provide installation and maintenance of electronic safety and security systems to relevant industry standards. Based in Cape Town, South Africa, we provide mission-critical support to technical sites across Southern Africa.
         </p>
         <p>
           Kharon designs, builds and maintains electronic safety, surveillance and security systems to the client's requirements, based on the relevant industry regulation and installation standards. Our service department and small works division also provides 3rd party support for national and international service providers.
@@ -109,8 +106,7 @@ const serviceCategories = [
     </div>
   </section>
 
-  <!-- Mission / Aim / Dedication -->
-  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
         title="Our Mission"
@@ -118,16 +114,18 @@ const serviceCategories = [
         description="Create a synergy between human and automated safety and security systems."
         center={true}
       />
-      <div class="mt-12 grid gap-6 md:grid-cols-2">
-        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-charcoal p-7">
-          <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-purple mb-3">Our Aim</h3>
-          <p class="text-kharon-light/80 leading-relaxed">
+      <div class="mt-12 grid gap-8 md:grid-cols-2">
+        <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 sm:p-12 relative overflow-hidden group hover:border-kharon-purple/40 transition-all">
+          <div class="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-kharon-purple to-transparent opacity-50"></div>
+          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Our Aim</h3>
+          <p class="text-kharon-light/60 leading-relaxed text-lg font-medium">
             Provide an environmentally sustainable and safe approach to our business operations. Our teams are encouraged to participate in these activities wherever possible, ensuring our work leaves a positive environmental footprint.
           </p>
         </div>
-        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-charcoal p-7">
-          <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-purple mb-3">Our Dedication</h3>
-          <p class="text-kharon-light/80 leading-relaxed">
+        <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 sm:p-12 relative overflow-hidden group hover:border-kharon-cyan/40 transition-all">
+          <div class="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-kharon-cyan to-transparent opacity-50"></div>
+          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-kharon-cyan mb-4">Our Dedication</h3>
+          <p class="text-kharon-light/60 leading-relaxed text-lg font-medium">
             We are dedicated to our clients' satisfaction and our team's welfare. Profit is seen as a welcome by-product of sustainable practices and successful system implementation within the company.
           </p>
         </div>
@@ -135,8 +133,7 @@ const serviceCategories = [
     </div>
   </section>
 
-  <!-- Capability proof points -->
-  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
         title="Capability Proof Points"
@@ -144,26 +141,21 @@ const serviceCategories = [
         description="Demonstrated competencies and registered capabilities that establish our technical authority."
         center={true}
       />
-      <div class="mt-12 grid gap-6 md:grid-cols-3">
+      <div class="mt-12 grid gap-8 md:grid-cols-3">
         {capabilityProof.map((item) => (
-          <div class="rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface flex flex-col justify-between">
-            <div>
-              {item.icon && (
-                <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-4 overflow-hidden">
-                  <img src={item.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
-                </div>
-              )}
-              <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-purple mb-3">{item.title}</h3>
-              <p class="text-kharon-light/70 text-sm leading-relaxed">{item.text}</p>
+          <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50">
+            <div class="h-14 w-14 mb-6 rounded-xl bg-kharon-black/40 border border-kharon-purple/20 p-3 group-hover:bg-kharon-purple/10 transition-colors">
+              <img src={item.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
             </div>
+            <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">{item.title}</h3>
+            <p class="text-kharon-light/60 text-sm leading-relaxed">{item.text}</p>
           </div>
         ))}
       </div>
     </div>
   </section>
 
-  <!-- Services overview -->
-  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
         title="Service Disciplines"
@@ -171,14 +163,14 @@ const serviceCategories = [
         description="Full lifecycle capability across fire protection, suppression and security system disciplines."
         center={true}
       />
-      <div class="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {serviceCategories.map((cat) => (
-          <div class="rounded-lg border border-kharon-purple/20 bg-kharon-charcoal p-6">
-            <h3 class="text-sm font-bold uppercase tracking-widest text-kharon-purple mb-4">{cat.title}</h3>
-            <ul class="space-y-2">
+          <div class="rounded-xl border border-kharon-purple/10 bg-kharon-charcoal/40 p-8 hover:border-kharon-purple/30 transition-all">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple mb-6 border-b border-kharon-purple/10 pb-4">{cat.title}</h3>
+            <ul class="space-y-4">
               {cat.items.map((item) => (
-                <li class="flex gap-2 text-sm text-kharon-light/70 leading-snug">
-                  <span class="text-kharon-purple mt-0.5 flex-none">›</span>
+                <li class="flex gap-3 text-sm text-kharon-light/70 leading-relaxed font-medium">
+                  <span class="text-kharon-cyan font-black">›</span>
                   {item}
                 </li>
               ))}
@@ -189,27 +181,26 @@ const serviceCategories = [
     </div>
   </section>
 
-  <!-- Accreditation -->
-  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
-    <div class="mx-auto max-w-4xl px-6">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
+    <div class="mx-auto max-w-5xl px-6">
       <SectionHeading
         title="Compliance & Accreditation"
         subtitle="Operational Integrity"
         description="Our work is strictly governed by South African national standards and recognized industry bodies."
         center={true}
       />
-      <div class="mt-12 grid gap-6 md:grid-cols-3">
+      <div class="mt-12 grid gap-8 md:grid-cols-3">
         {[
           { code: "SAQCC", title: "SAQCC Fire & Gas", text: "All technicians registered and certified for authorized fire and gas suppression work across all disciplines." },
           { code: "SABS", title: "SANS Compliant", text: "Installations to SANS 10139, SANS 10400, SANS 14520, and SANS 322 national standards as applicable." },
           { code: "BEE", title: "B-BBEE Level 4", text: "Committed to South African economic empowerment. Level 4 Contributor, supporting enterprise procurement requirements." }
         ].map(item => (
-          <div class="rounded-lg border border-kharon-purple/30 bg-kharon-black p-6 flex flex-col items-center text-center">
-            <div class="h-14 w-14 mb-4 flex items-center justify-center rounded-full bg-kharon-purple/10 border border-kharon-purple/20">
-              <span class="text-kharon-purple font-bold text-sm">{item.code}</span>
+          <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 flex flex-col items-center text-center hover:border-kharon-purple/40 transition-all">
+            <div class="h-16 w-16 mb-6 flex items-center justify-center rounded-full bg-kharon-purple/10 border border-kharon-purple/20">
+              <span class="text-kharon-cyan font-black text-xs uppercase tracking-tighter">{item.code}</span>
             </div>
-            <h3 class="text-base font-semibold text-white mb-2">{item.title}</h3>
-            <p class="text-kharon-light/70 text-sm leading-relaxed">{item.text}</p>
+            <h3 class="text-base font-black text-white mb-2 uppercase tracking-widest">{item.title}</h3>
+            <p class="text-kharon-light/50 text-sm leading-relaxed font-medium">{item.text}</p>
           </div>
         ))}
       </div>

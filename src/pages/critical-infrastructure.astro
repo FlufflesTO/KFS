@@ -1,102 +1,74 @@
 ---
-/**
- * Project Sentinel - Critical Infrastructure Page
- * Purpose: Public page presenting critical infrastructure protection (data centres, control rooms) and technical blocks.
- * Dependencies: BaseLayout.astro, SectionHeading.astro, InfrastructureTechnicalBlocks.astro, site data
- * Structural Role: Main informational page for critical infrastructure protection services.
- */
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SectionHeading from "../components/sections/SectionHeading.astro";
+import SolutionHero from "../components/sections/SolutionHero.astro";
 import InfrastructureTechnicalBlocks from "../components/sections/InfrastructureTechnicalBlocks.astro";
+import SectionHeading from "../components/sections/SectionHeading.astro";
 import { pageMeta } from "../data/site.js";
 
 const infrastructureCategories = [
   {
     title: "Data Centres",
-    text: "Clean-agent suppression systems designed for server rooms and technical spaces where water-based systems would cause catastrophic damage.",
+    text: "Clean-agent suppression systems designed for technical spaces where residue or water would cause catastrophic damage.",
     icon: "/brand/icons/sector-server-rack.svg"
   },
   {
     title: "Control Rooms",
-    text: "Fire detection and suppression architecture for spaces coordinating wider site response with continuity-sensitive operations.",
+    text: "Detection and suppression architecture for spaces coordinating wider site response with continuity-sensitive operations.",
     icon: "/brand/icons/sector-control-room.svg"
   },
   {
     title: "Electrical Rooms",
-    text: "Rapid detection and asset protection with suppression methods that limit collateral damage to critical electrical infrastructure.",
+    text: "Rapid detection and asset protection that limits collateral damage to critical HV/LV electrical infrastructure.",
     icon: "/brand/icons/sector-switchgear.svg"
   },
   {
     title: "High-Consequence Sites",
-    text: "Risk-segmented zones with rugged detection choices and maintenance access planning for critical operational environments.",
-    icon: "/brand/icons/sector-power-grid.svg"
+    text: "Risk-segmented zones with rugged detection and maintenance planning for critical operational environments.",
+    icon: "/brand/icons/sector-factory.svg"
   }
 ];
 ---
 
 <BaseLayout title={pageMeta.criticalInfrastructure.title} description={pageMeta.criticalInfrastructure.description}>
-  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
-    <div class="mx-auto max-w-4xl px-6 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
-        Critical Infrastructure Protection
-      </h1>
-      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
-        Infrastructure protection for data centres, control rooms, electrical rooms and high-consequence operational sites.
-      </p>
-    </div>
-  </section>
+  <SolutionHero 
+    title="Critical Infrastructure" 
+    subtitle="Infrastructure Authority" 
+    description="Engineered fire protection for high-consequence environments where downtime is unacceptable and assets are mission-critical."
+    icon="/brand/icons/sector-server-rack.svg"
+  />
 
-  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
-    <div class="mx-auto max-w-4xl px-6">
-      <SectionHeading
-        title="Mission-Critical Systems"
-        subtitle="Infrastructure Authority"
-        description="Engineered solutions for environments where system failure has high consequences."
-        center={true}
-      />
-      
-      <div class="mt-12 prose prose-invert max-w-none">
-        <p class="text-kharon-light/80 text-lg leading-relaxed">
-          Critical infrastructure environments demand the highest levels of protection and reliability. Our solutions are engineered specifically for environments where system failure could have significant operational, financial, or safety consequences.
-        </p>
-        
-        <div class="mt-8 grid gap-6 md:grid-cols-2">
-          {infrastructureCategories.map((item) => (
-            <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface flex gap-4 items-start">
-              {item.icon && (
-                <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center overflow-hidden flex-none">
-                  <img src={item.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
-                </div>
-              )}
-              <div>
-                <h3 class="text-lg font-semibold text-white mb-2">{item.title}</h3>
-                <p class="text-kharon-light/70 text-sm leading-relaxed">
-                  {item.text}
-                </p>
+  <section class="section-padding bg-kharon-black">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="grid gap-8 md:grid-cols-2">
+        {infrastructureCategories.map((item) => (
+          <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50">
+            <div class="flex items-center gap-6 mb-6">
+              <div class="h-14 w-14 flex-none rounded-xl bg-kharon-black/40 border border-kharon-purple/20 p-3 group-hover:bg-kharon-purple/10 transition-colors">
+                <img src={item.icon} alt="" class="h-full w-full object-contain" />
               </div>
+              <h3 class="text-xl font-bold text-white tracking-tight leading-tight">{item.title}</h3>
             </div>
-          ))}
-        </div>
+            <p class="text-kharon-light/60 leading-relaxed">{item.text}</p>
+          </div>
+        ))}
       </div>
     </div>
   </section>
 
-  <!-- Technical uptime model, escalation path and risk-tier matrix component -->
   <InfrastructureTechnicalBlocks />
 
-  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">
       <SectionHeading
-        title="Continuity-Sensitive Protection"
-        subtitle="Reliability Framework"
-        description="Systems engineered to maintain operational continuity in high-consequence environments."
+        title="Zero-Tolerance for Failure"
+        subtitle="Operational Continuity"
+        description="Our infrastructure solutions are built for reliability, ensuring that protection systems never become the source of downtime."
         center={true}
       />
-      
-      <div class="mt-12 prose prose-invert max-w-none">
-        <p class="text-kharon-light/80 text-lg leading-relaxed">
-          In critical infrastructure environments, protection systems must not only prevent fires but also maintain operational continuity. Our solutions are designed to minimize disruption while maximizing protection in environments where downtime has severe consequences.
-        </p>
+      <div class="mt-10 flex justify-center gap-4">
+        <a href="/contact?intent=site-assessment" class="kharon-command-button px-10 py-5 text-sm">
+          Request Infrastructure Audit
+        </a>
       </div>
     </div>
   </section>
