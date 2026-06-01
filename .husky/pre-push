@@ -1,1 +1,3 @@
-npm run validate:site
+#!/bin/sh
+export PATH="/opt/node22/bin:$PATH"
+npm run check
