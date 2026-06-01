@@ -1,5 +1,7 @@
 # Kharon Portal - Master Roadmap
 
+> Current status note, 2026-06-01: use `docs/PROJECT_STATUS_2026-06-01.md` as the canonical current project status. This file remains a phase ledger; where older completed checkboxes imply production authority, the dated status document takes precedence.
+
 ## Phase 0: Release Freeze & Safety Reset (CURRENT - BLOCKED BY PRODUCTION SIGN-OFF)
 - [ ] Rotate all temporary role credentials
 - [ ] Require unique user accounts (not shared)

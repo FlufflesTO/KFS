@@ -40,9 +40,15 @@ $env:PUBLIC_CONTACT_EMAIL="admin@kharon.co.za"
 Run from PowerShell:
 
 ```powershell
-cd C:\Users\User\Desktop\Astro\kharon-website
+cd C:\Users\conno\Desktop\Astro\kfs
+$env:NODE_OPTIONS="--max-old-space-size=4096"
 npm install
-npm run build:staging
+npm run lint
+npm run check
+npm run build
+npm run audit:site
+npm run test
+npm audit
 npm audit --omit=dev
 npx wrangler --version
 npx wrangler pages deploy --help
@@ -226,6 +232,7 @@ Current migrations and their scope:
 | File | Scope |
 |------|-------|
 | `0001_kharon_portal.sql` | Initial portal schema |
+| `0002_add_technician_skills.sql` | Technician skills and assignment metadata |
 | `0002_portal_operations.sql` | Admin CRUD operations |
 | `0003_client_requests.sql` | Maintenance requests |
 | `0004_request_dispatch_link.sql` | Request-to-job linking |
@@ -242,10 +249,32 @@ Current migrations and their scope:
 | `0015_job_visits.sql` | Technician visit logging with GPS and arrival/departure |
 | `0016_defects.sql` | Defect register with severity, SANS clause, certificate blocking |
 | `0017_certificates.sql` | Certificate tracking with defect-based blocking |
+| `0018a_mfa_policy.sql` | MFA enforcement policy fields |
+| `0018b_finance_task_status_pipeline.sql` | Sage-first finance task status pipeline |
+| `0019_jobs_dispatch_fields.sql` | Dispatch scheduling fields |
+| `0020a_finance_vat_hardening.sql` | Finance VAT and amount hardening |
+| `0020b_job_visit_status.sql` | Job visit status tracking |
+| `0021_jobs_checklist_parts.sql` | Job checklist, parts and labour fields |
+| `0022_audit_constraints_health_hardening.sql` | Audit and schema health constraints |
+| `0023_soft_delete_fk_integrity.sql` | Soft-delete and foreign-key integrity improvements |
+| `0024a_phase11_telemetry.sql` | Telemetry event support |
+| `0024b_sage_oauth_tokens.sql` | Sage OAuth token storage |
+| `0025_finance_tasks.sql` | Finance task model |
+| `0026_sage_deep_integration.sql` | Sage integration fields |
+| `0027_clients_deleted_at.sql` | Client soft-delete support |
+| `0028_sites_deleted_at.sql` | Site soft-delete support |
+| `0029_rate_limits_table.sql` | Rate-limit storage table |
+| `0030_composite_indexes.sql` | Composite indexes for portal queries |
+| `0031_data_retention_policies.sql` | Data retention policy metadata |
+| `0032_offline_mutations.sql` | Offline mutation queue support |
+| `0033_users_deleted_at.sql` | User soft-delete support |
+| `0034_fix_sage_real_columns.sql` | Sage real column alignment |
 
 For a fresh database, apply `schema.sql` first (full schema including all migrations). For an existing database, identify the highest applied migration and apply only the subsequent files in order.
 
-Applied to staging D1 as of 2026-05-25: all migrations through `0017`.
+Local repository inventory as of 2026-06-01: all migrations through `0034_fix_sage_real_columns.sql`.
+
+Remote staging D1 verification requires Cloudflare authentication. The local 2026-06-01 deploy check could not query remote D1 because Wrangler was unauthenticated. The GitHub `main` workflow runs D1 preflight, applies remote migrations and deploys via `npx wrangler deploy` when `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets are valid.
 
 Generate a PBKDF2 password hash before inserting users:
 
