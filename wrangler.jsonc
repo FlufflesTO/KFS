@@ -3,6 +3,7 @@
   "name": "kharon-website",
   "compatibility_date": "2026-05-20",
   "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": "dist",
   "routes": [
     {
       "pattern": "tequit.co.za/*",
