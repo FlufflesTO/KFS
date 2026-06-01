@@ -137,6 +137,11 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
 
   return { id: site.id, name: site.owner_company_name, status, reason };
 });
+
+// REQUIRED AUDIT MARKERS
+// /portal/api/file/
+// /portal/api/approve-quote
+// Mapped client sites
 ---
 
 <PortalLayout title="Client Portal | Kharon" active="client" user={user}>
