@@ -106,6 +106,8 @@ switch ($Action) {
     $ErrorActionPreference = "Continue"
     npx wrangler pages project create $ProjectName --production-branch main --compatibility-date 2026-05-18 2>$null | Out-Null
     $ErrorActionPreference = $oldPreference
+    # Remove wrangler deploy config if created to prevent deployment redirection errors
+    Remove-Item -Path "$PSScriptRoot\..\.wrangler\deploy" -Recurse -Force -ErrorAction SilentlyContinue
     npx wrangler pages deploy dist --project-name $ProjectName --branch preview
     exit $LASTEXITCODE
   }
@@ -117,6 +119,8 @@ switch ($Action) {
     $ErrorActionPreference = "Continue"
     npx wrangler pages project create $ProjectName --production-branch main --compatibility-date 2026-05-18 2>$null | Out-Null
     $ErrorActionPreference = $oldPreference
+    # Remove wrangler deploy config if created to prevent deployment redirection errors
+    Remove-Item -Path "$PSScriptRoot\..\.wrangler\deploy" -Recurse -Force -ErrorAction SilentlyContinue
     npx wrangler pages deploy dist --project-name $ProjectName --branch main
     exit $LASTEXITCODE
   }
