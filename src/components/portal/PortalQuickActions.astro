@@ -7,7 +7,7 @@ export interface Action {
   label: string;
   href: string;
   icon: string;
-  accent?: "purple" | "cyan" | "amber" | "green";
+  accent?: "purple" | "cyan" | "amber" | "green" | "red";
 }
 
 export interface Props {
@@ -20,14 +20,16 @@ const accents: Record<string, string> = {
   purple: "text-kharon-purple group-hover:text-white",
   cyan: "text-kharon-cyan group-hover:text-white",
   amber: "text-kharon-amber group-hover:text-white",
-  green: "text-kharon-green group-hover:text-white"
+  green: "text-kharon-green group-hover:text-white",
+  red: "text-kharon-red group-hover:text-white"
 };
 
 const bgAccents: Record<string, string> = {
   purple: "group-hover:bg-kharon-purple",
   cyan: "group-hover:bg-kharon-cyan",
   amber: "group-hover:bg-kharon-amber",
-  green: "group-hover:bg-kharon-green"
+  green: "group-hover:bg-kharon-green",
+  red: "group-hover:bg-kharon-red"
 };
 ---
 
