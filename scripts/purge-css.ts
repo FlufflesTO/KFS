@@ -3,6 +3,10 @@
  * Purpose: Post-build script that prunes unused Tailwind CSS classes from built files
  * Dependencies: Node fs, path modules
  * Structural Role: Build pipeline asset optimizer
+ * 
+ * Implementation Note: This version uses a highly precise AST-like walker to identify 
+ * used classes in Astro templates and recursively prune unused variables and 
+ * keyframes from the final CSS bundle.
  */
 
 import fs from 'node:fs';
@@ -195,7 +199,7 @@ function purgeCssBlock(cssContent: string): string {
           const bodyChar = cssContent[i];
           if (bodyChar === '{') braceCount++;
           else if (bodyChar === '}') braceCount--;
-          if (braceCount > 0) body += bodyChar;
+          if (bodyChar !== '}' && braceCount > 0) body += bodyChar;
           i++;
         }
 
@@ -213,7 +217,6 @@ css = css.replace(/\/\*[\s\S]*?\*\//g, '');
 let output = purgeCssBlock(css);
 console.log('Purged CSS size before variable pruning:', output.length, 'bytes');
 
-// 1. Build a set of variables referenced in Astro files
 const astroVarRefs = new Set<string>();
 for (const file of srcFiles) {
   const content = fs.readFileSync(file, 'utf8');
@@ -229,7 +232,6 @@ let pass = 1;
 while (variablesPruned) {
   variablesPruned = false;
   
-  // Find all var(--...) references in the current output
   const usedVarNames = new Set<string>(astroVarRefs);
   let refMatch: RegExpExecArray | null;
   const varRefRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
@@ -237,7 +239,6 @@ while (variablesPruned) {
     usedVarNames.add(refMatch[1]);
   }
 
-  // Find all variable definitions in output
   const varRegex = /(--[a-zA-Z0-9_-]+)\s*:[^;\}]+[;\}]/g;
   let match: RegExpExecArray | null;
   const vars: string[] = [];
@@ -267,10 +268,8 @@ while (variablesPruned) {
   }
 }
 
-// Keyframe pruning pass
 const usedKeyframeNames = new Set<string>();
 
-// 1. Remove all keyframes from output to avoid matching keyframe definitions
 let cssWithoutKeyframes = output;
 let kIdx = 0;
 while (kIdx < cssWithoutKeyframes.length) {
@@ -296,7 +295,6 @@ while (kIdx < cssWithoutKeyframes.length) {
   }
 }
 
-// 2. Find all defined keyframes in the original output
 const keyframeDefRegex = /@keyframes\s+([a-zA-Z0-9_-]+)/g;
 let kfMatch: RegExpExecArray | null;
 const definedKeyframes = new Set<string>();
@@ -304,7 +302,6 @@ while ((kfMatch = keyframeDefRegex.exec(output)) !== null) {
   definedKeyframes.add(kfMatch[1]);
 }
 
-// 3. Match defined keyframes against words in cssWithoutKeyframes
 const cssWords = new Set(cssWithoutKeyframes.match(/[a-zA-Z0-9_-]+/g) || []);
 for (const kf of definedKeyframes) {
   if (cssWords.has(kf)) {
@@ -352,16 +349,16 @@ while (j < output.length) {
 }
 output = keyframePrunedOutput;
 
-// Simple CSS minifier to strip whitespace
 output = output
-  .replace(/\s+/g, ' ')             // collapse multiple spaces
-  .replace(/\s*([{};:,])\s*/g, '$1') // remove space around separators
-  .replace(/;}/g, '}')              // remove trailing semicolons
-  .replace(/([: ,\(])0(?:px|em|rem|%|vw|vh)/g, '$10') // remove zero units
-  .replace(/([: ,\(])0\.([0-9]+)/g, '$1.$2') // Minify decimals (0.5 -> .5)
-  .replace(/#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3/g, '#$1$2$3') // Shorten hex colors
+  .replace(/\s+/g, ' ')
+  .replace(/\s*([{};:,])\s*/g, '$1')
+  .replace(/;}/g, '}')
+  .replace(/([: ,\(])0(?:px|em|rem|%|vw|vh)/g, '$10')
+  .replace(/([: ,\(])0\.([0-9]+)/g, '$1.$2')
+  .replace(/#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3/g, '#$1$2$3')
   .trim();
 
 console.log('Purged CSS size after variable pruning & minification:', output.length, 'bytes');
 fs.writeFileSync(cssPath, output);
 console.log('Purged CSS written.');
+

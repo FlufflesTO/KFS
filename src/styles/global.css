@@ -104,12 +104,6 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Prevent content from hiding behind fixed header */
-main {
-  position: relative;
-  z-index: 1;
-}
-
 /* Portal shell: force the secure-console dark surface and light default text.
    Higher specificity than :where(body) so the Industrial Command Intelligence
    theme applies uniformly across every portal page, including those whose
