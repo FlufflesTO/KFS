@@ -1,11 +1,47 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SectorRiskGrid from "../components/sections/SectorRiskGrid.astro";
 import SolutionHero from "../components/sections/SolutionHero.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
-import { pageMeta, industries } from "../data/site.js";
+import { pageMeta } from "../data/site.js";
 
-const sectors = industries;
+const coreSectors = [
+  {
+    id: "data-centres",
+    title: "Data Centres & Technical Spaces",
+    risk: "Clean-agent suppression, early detection and uptime-sensitive response logic.",
+    priority: "Continuity",
+    icon: "/brand/icons/sector-server-rack.svg",
+    sans: ["SANS 10139", "SANS 14520", "SANS 10400-T"],
+    color: "purple"
+  },
+  {
+    id: "industrial",
+    title: "Industrial & Manufacturing Facilities",
+    risk: "Risk-segmented zones, rugged detection choices and maintenance access planning.",
+    priority: "Process risk",
+    icon: "/brand/icons/sector-factory.svg",
+    sans: ["SANS 10139", "SANS 1475", "SANS 10400-T"],
+    color: "cyan"
+  },
+  {
+    id: "warehousing",
+    title: "Logistics & Warehousing",
+    risk: "Large-volume detection coverage, evacuation signalling and inspection cadence.",
+    priority: "Coverage",
+    icon: "/brand/icons/sector-warehouse.svg",
+    sans: ["SANS 10139", "SANS 1475"],
+    color: "purple"
+  },
+  {
+    id: "utilities",
+    title: "Critical Utilities & Switchgear",
+    risk: "Rapid detection, asset protection and suppression methods that limit collateral damage.",
+    priority: "Asset protection",
+    icon: "/brand/icons/sector-power-grid.svg",
+    sans: ["SANS 10142", "SANS 14520", "SANS 10090"],
+    color: "cyan"
+  }
+];
 ---
 
 <BaseLayout title={pageMeta.industries.title} description={pageMeta.industries.description}>
@@ -16,7 +52,54 @@ const sectors = industries;
     icon="/brand/icons/sector-factory.svg"
   />
 
-  <SectorRiskGrid sectors={sectors} />
+  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+    <div class="mx-auto max-w-7xl px-6">
+      <SectionHeading
+        title="Infrastructure Risk Profiles"
+        subtitle="Sector Analysis"
+        description="Comprehensive risk analysis and engineered protection for our core operational environments."
+        center={true}
+      />
+
+      <div class="mt-12 space-y-12">
+        {coreSectors.map((sector) => (
+          <div id={sector.id} class="rounded-2xl border border-kharon-purple/20 bg-kharon-surface-elevated p-8 sm:p-12 backdrop-blur-sm relative overflow-hidden group hover:border-kharon-purple/40 transition-all">
+            <div class={`absolute top-0 right-0 h-32 w-32 rounded-bl-full pointer-events-none opacity-5 group-hover:opacity-10 transition-opacity ${sector.color === 'purple' ? 'bg-kharon-purple' : 'bg-kharon-cyan'}`}></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row gap-8 md:items-start">
+              <div class="h-20 w-20 flex-none rounded-2xl bg-kharon-black/40 border border-kharon-purple/20 p-4">
+                <img src={sector.icon} class="w-full h-full object-contain" alt={`${sector.title} icon`} />
+              </div>
+              
+              <div class="flex-1 space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-4 border-b border-kharon-purple/10 pb-4">
+                  <h3 class="text-2xl font-black text-white tracking-tight">{sector.title}</h3>
+                  <span class="text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-kharon-purple/10 text-kharon-purple border border-kharon-purple/20">
+                    Priority: {sector.priority}
+                  </span>
+                </div>
+                
+                <p class="text-kharon-light/70 text-lg leading-relaxed font-medium max-w-3xl">
+                  {sector.risk}
+                </p>
+                
+                <div class="pt-4">
+                  <p class="text-[10px] font-black uppercase tracking-widest text-kharon-purple mb-3">Regulatory Baseline</p>
+                  <div class="flex flex-wrap gap-2">
+                    {sector.sans.map((std: string) => (
+                      <span class="px-3 py-1.5 rounded-lg text-xs font-bold bg-kharon-black border border-kharon-purple/20 text-kharon-cyan">
+                        {std}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
   
   <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">

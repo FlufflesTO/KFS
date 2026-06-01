@@ -84,7 +84,7 @@ const serviceCategories = [
     icon="/brand/icons/service-engineering.svg"
   />
 
-  <section class="section-padding bg-kharon-black">
+  <section class="py-16 lg:py-24 bg-kharon-black">
     <div class="mx-auto max-w-4xl px-6">
       <SectionHeading
         title="Engineered Fire Protection"
@@ -106,20 +106,14 @@ const serviceCategories = [
     </div>
   </section>
 
-  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
+  <section class="pb-16 lg:pb-24 bg-kharon-black">
     <div class="mx-auto max-w-7xl px-6">
-      <SectionHeading
-        title="Our Mission"
-        subtitle="Operational Purpose"
-        description="Create a synergy between human and automated safety and security systems."
-        center={true}
-      />
-      <div class="mt-12 grid gap-8 md:grid-cols-2">
+      <div class="grid gap-8 md:grid-cols-2">
         <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 sm:p-12 relative overflow-hidden group hover:border-kharon-purple/40 transition-all">
           <div class="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-kharon-purple to-transparent opacity-50"></div>
-          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Our Aim</h3>
+          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Our Mission</h3>
           <p class="text-kharon-light/60 leading-relaxed text-lg font-medium">
-            Provide an environmentally sustainable and safe approach to our business operations. Our teams are encouraged to participate in these activities wherever possible, ensuring our work leaves a positive environmental footprint.
+            Create a synergy between human and automated safety and security systems. We provide an environmentally sustainable and safe approach to our business operations, ensuring our work leaves a positive footprint.
           </p>
         </div>
         <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 sm:p-12 relative overflow-hidden group hover:border-kharon-cyan/40 transition-all">
@@ -133,7 +127,7 @@ const serviceCategories = [
     </div>
   </section>
 
-  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
+  <section class="py-16 lg:py-24 bg-kharon-charcoal border-y border-kharon-purple/10">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
         title="Capability Proof Points"
@@ -143,8 +137,8 @@ const serviceCategories = [
       />
       <div class="mt-12 grid gap-8 md:grid-cols-3">
         {capabilityProof.map((item) => (
-          <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50">
-            <div class="h-14 w-14 mb-6 rounded-xl bg-kharon-black/40 border border-kharon-purple/20 p-3 group-hover:bg-kharon-purple/10 transition-colors">
+          <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-black/40 p-8 transition-all hover:border-kharon-purple/40 hover:bg-kharon-black/60 shadow-lg">
+            <div class="h-14 w-14 mb-6 rounded-xl bg-kharon-charcoal border border-kharon-purple/20 p-3 group-hover:bg-kharon-purple/10 transition-colors">
               <img src={item.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
             </div>
             <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">{item.title}</h3>
@@ -155,7 +149,7 @@ const serviceCategories = [
     </div>
   </section>
 
-  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
+  <section class="py-16 lg:py-24 bg-kharon-black">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
         title="Service Disciplines"
@@ -181,7 +175,7 @@ const serviceCategories = [
     </div>
   </section>
 
-  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
+  <section class="py-16 lg:py-24 bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-5xl px-6">
       <SectionHeading
         title="Compliance & Accreditation"

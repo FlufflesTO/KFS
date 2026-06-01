@@ -8,11 +8,11 @@ import { complianceSignals } from "../../data/site.js";
       Compliance Layer
     </p>
     {complianceSignals.map((item) => (
-      <span class="rounded-md border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase text-white/75">
+      <a href="/compliance" class="rounded-md border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase text-white/75 hover:bg-kharon-purple/20 hover:border-kharon-purple/40 hover:text-white transition-all cursor-pointer">
         {item}
-      </span>
+      </a>
     ))}
-    <a href="/compliance" class="ml-auto text-xs font-semibold text-white/50 hover:text-white">
+    <a href="/compliance" class="ml-auto text-xs font-semibold text-white/50 hover:text-white transition-colors">
       Standards reference →
     </a>
   </div>
