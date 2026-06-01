@@ -2,6 +2,12 @@
 
 Comprehensive fire protection and security solutions portal for South African commercial/industrial applications. Built with Astro, deployed on Cloudflare Pages with D1 database and R2 storage.
 
+## Current Project Status
+
+Latest verified status breakdown: [docs/PROJECT_STATUS_2026-06-01.md](docs/PROJECT_STATUS_2026-06-01.md).
+
+As of 2026-06-01, the repository passes lint, Astro check, full build, site audit, dependency audit and Playwright regression tests locally. Direct local Cloudflare deployment is blocked until Wrangler OAuth is completed; the GitHub `main` workflow remains the intended deploy path when repository Cloudflare secrets are valid.
+
 
 ## 🚀 Features
 

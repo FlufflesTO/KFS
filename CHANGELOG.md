@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-05-30
 
+### Project Status, Dependency Hardening And Deploy Gate - 2026-06-01
+
+#### [Added]
+- Added `docs/PROJECT_STATUS_2026-06-01.md` with the current status, progress, snags, outstanding items, to-have, to-hope and to-dream breakdown.
+
+#### [Changed]
+- Updated README and roadmap deployment documentation to point at the current local workspace path and latest status record.
+- Updated deployment migration inventory through `0034_fix_sage_real_columns.sql`.
+- Added an npm override for `yaml` 2.9.x to clear the nested dev dependency advisory in `@astrojs/check`.
+
+#### [Fixed]
+- Removed unused `codex` dependency and its vulnerable transitive packages.
+- Removed an unused import from `src/pages/contact.astro`.
+
 ### Project Sync & Git Maintenance - 2026-05-31
 
 #### [Changed]

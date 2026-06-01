@@ -81,6 +81,31 @@ Immediate refinements recommended:
 - Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
 - Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
 
+## Review Update - 2026-06-01 Project Status, Dependency Hardening And Deploy Gate
+
+Canonical status record: `docs/PROJECT_STATUS_2026-06-01.md`.
+
+Verified current state:
+
+- `npm run lint` passes.
+- `NODE_OPTIONS=--max-old-space-size=4096 npm run check` passes with no errors.
+- `NODE_OPTIONS=--max-old-space-size=4096 npm run build` passes.
+- `npm run audit:site` passes; CSS remains a review warning at 98,361 bytes against the 95,000-byte threshold.
+- `npm audit` and `npm audit --omit=dev` both report 0 vulnerabilities after removing the unused `codex` package and overriding nested `yaml` to the patched 2.9.x line.
+- `npm run test` passes with 17 passed and 1 skipped.
+- Wrangler is installed locally at 4.93.0, but local Cloudflare deployment is blocked until OAuth or token authentication is completed.
+
+Status decision:
+
+The project is staging-ready and locally verified. It is not yet production-authoritative for real client operations until Cloudflare deploy confirmation, remote D1 migration verification, credential rotation, role QA, MFA policy confirmation, responsive QA, backup/restore evidence, analytics/POPIA sign-off and Kharon domain cutover are complete.
+
+Current snags:
+
+- Local Wrangler is unauthenticated; `npm run cloudflare:whoami` reports that login is required and `npm run auth:cloudflare` timed out waiting for OAuth completion.
+- GitHub CLI is unavailable locally; use the connected GitHub tooling or normal `git` push/PR flow.
+- Remote D1 migration state cannot be verified from this local shell until Cloudflare auth is restored.
+- CSS is above the review target but below the audit failure threshold.
+
 ## Review Update - 2026-05-29 Comprehensive API & Frontend Overhaul
 
 Verified current state:
