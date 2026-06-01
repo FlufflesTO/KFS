@@ -186,15 +186,17 @@ if (jsBytes > 20_000) {
 
 const cssAssets = assets.filter((file) => file.endsWith(".css"));
 const cssBytes = cssAssets.reduce((total, file) => total + fs.statSync(path.join(assetsDir, file)).size, 0);
-// Budget revised 2026-05-31 from 95KB → 100KB to accommodate the technical-depth
-// content expansion (5 TechnicalBlocks sections, SANS reference matrix, service/sector
-// icon grids). 95KB review threshold retained as a warning to preserve downward pressure.
+// Budget revised 2026-06-01 from 100KB → 120KB. The previous 100KB limit was only
+// achievable with a structurally-corrupt purge-css.ts that split CSS on '}', destroying
+// Tailwind v4's nested @layer cascade. With correct output the @layer utilities alone
+// is ~92.5KB (all legitimately used utilities from 103 .astro files). A 115KB review
+// threshold is set to flag regressions while leaving headroom for the correct build.
+if (cssBytes > 120_000) {
+  fail(`CSS asset budget exceeded: ${cssBytes} bytes`);
+}
 if (cssBytes > 115_000) {
-    fail(`CSS asset budget exceeded: ${cssBytes} bytes`);
-  }
-  if (cssBytes > 100_000) {
-    warnings.push(`CSS asset budget warning: ${cssBytes} bytes is above the 100000-byte review threshold.`);
-  }
+  warnings.push(`CSS asset budget warning: ${cssBytes} bytes is above the 115000-byte review threshold.`);
+}
 
 
 const portalLayout = path.join(root, "src", "layouts", "portal", "PortalLayout.astro");

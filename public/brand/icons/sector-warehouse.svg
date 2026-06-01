@@ -1,16 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
-  <circle cx="40" cy="40" r="38" stroke="#1F4E79" stroke-width="2.5" fill="#0B1520"/>
-  <circle cx="40" cy="40" r="34" stroke="#00C2FF" stroke-width="1" fill="none" opacity="0.3"/>
-  <!-- Warehouse Roof -->
-  <path d="M20 34 L40 18 L60 34" stroke="#4B2E83" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <!-- Warehouse Walls -->
-  <path d="M22 34 L22 60 L58 60 L58 34" stroke="#4B2E83" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#15191D"/>
-  <!-- Roller Shutter Door -->
-  <rect x="30" y="44" width="20" height="16" stroke="#1F4E79" stroke-width="1.5" fill="#0B1520"/>
-  <!-- Shutter slats -->
-  <line x1="30" y1="48" x2="50" y2="48" stroke="#00C2FF" stroke-width="1" opacity="0.6"/>
-  <line x1="30" y1="52" x2="50" y2="52" stroke="#00C2FF" stroke-width="1" opacity="0.6"/>
-  <line x1="30" y1="56" x2="50" y2="56" stroke="#00C2FF" stroke-width="1" opacity="0.6"/>
-  <!-- Status Light -->
-  <circle cx="40" cy="38" r="2" fill="#F59E0B"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <path d="M50 5 L89 27.5 L89 72.5 L50 95 L11 72.5 L11 27.5 Z" fill="#15191D" stroke="#7C5DC2" stroke-width="2" stroke-opacity="0.3"/>
+  <!-- Box / Warehouse -->
+  <path d="M30 35 L50 25 L70 35 V65 L50 75 L30 65 Z" stroke="#7C5DC2" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M30 35 L50 45 L70 35 M50 45 V75" stroke="#38BDF8" stroke-width="2" stroke-opacity="0.6"/>
+  <path d="M40 30 L60 40" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
 </svg>

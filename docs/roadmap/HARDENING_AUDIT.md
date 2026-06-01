@@ -183,3 +183,32 @@ Scope: API layer type safety, context boundary hardening, and frontend theme/acc
 - **Accessibility:** `PortalLayout.astro` `<main>` element now correctly features `id="main-content"`, properly enabling skip-to-content links.
 - **JSON-LD SEO:** Injected fully populated `ProfessionalService` structured data into `index.astro` (address, geo-coordinates, hours) for local SEO.
 - **Print Stylesheets:** Validated `print.css` correctly strips out dark mode and 3D backgrounds for physical ink-saving prints.
+
+---
+
+## Audit Update - 2026-06-01 Project Status And Dependency Hardening
+
+Scope: dependency security, project status reconciliation and deploy gate verification.
+
+### Changes
+
+- Removed unused production dependency `codex`, which pulled vulnerable legacy `connect`, `highlight.js` and `marked` packages.
+- Added an npm override for `yaml` 2.9.x so the nested dev dependency used by `@astrojs/check` resolves to a patched version.
+- Removed an unused `KharonCard` import from `src/pages/contact.astro`.
+- Added `docs/PROJECT_STATUS_2026-06-01.md` as the canonical dated project status breakdown.
+
+### Verification
+
+- `npm audit` passes with 0 vulnerabilities.
+- `npm audit --omit=dev` passes with 0 vulnerabilities.
+- `npm run lint` passes.
+- `NODE_OPTIONS=--max-old-space-size=4096 npm run check` passes with no errors.
+- `NODE_OPTIONS=--max-old-space-size=4096 npm run build` passes.
+- `npm run audit:site` passes with a CSS review warning at 98,361 bytes.
+- `npm run test` passes with 17 passed and 1 skipped.
+
+### Deploy Gate
+
+- Wrangler is installed locally at 4.93.0.
+- Local Cloudflare deployment is blocked until OAuth or token authentication is restored; `npm run cloudflare:whoami` reports unauthenticated and `npm run auth:cloudflare` timed out waiting for OAuth completion.
+- The GitHub `main` workflow remains the automated deploy path when Cloudflare repository secrets are valid.

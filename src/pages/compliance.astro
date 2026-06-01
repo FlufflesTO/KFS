@@ -4,7 +4,6 @@ import SolutionHero from "../components/sections/SolutionHero.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import ProofGrid from "../components/sections/ProofGrid.astro";
 import SansReferenceMatrix from "../components/compliance/SansReferenceMatrix.astro";
-import ComplianceTechnicalBlocks from "../components/sections/ComplianceTechnicalBlocks.astro";
 import { pageMeta } from "../data/site.js";
 
 const complianceSignals = [
@@ -39,7 +38,7 @@ const proofItems = [
   <SolutionHero 
     title="Protection Compliance" 
     subtitle="Regulatory Discipline" 
-    description="Engineered maintenance and documentation frameworks ensuring absolute alignment with SANS 10139 and SANS 14520 standards."
+    description="Engineered maintenance and documentation frameworks ensuring absolute alignment with national standards."
     icon="/brand/icons/service-engineering.svg"
   />
 
@@ -82,72 +81,6 @@ const proofItems = [
       <SansReferenceMatrix />
     </div>
   </section>
-
-  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
-    <div class="mx-auto max-w-4xl px-6">
-      <SectionHeading
-        title="Regulatory Deep-Dives"
-        subtitle="Technical Specifications"
-        description="Mandated maintenance procedures under South African National Standards."
-        center={true}
-      />
-      
-      <div class="mt-12 space-y-12">
-        <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/60 p-8 sm:p-12 relative overflow-hidden">
-          <div class="absolute top-0 right-0 h-24 w-24 bg-kharon-red/5 rounded-bl-full pointer-events-none"></div>
-          <h3 class="text-2xl font-black text-white mb-6 flex items-center gap-4">
-            <span class="px-3 py-1 rounded-lg text-xs font-black uppercase bg-kharon-red/10 text-kharon-red border border-kharon-red/20">SANS 10139</span>
-            Fire Detection & Alarm
-          </h3>
-          <div class="grid gap-10 md:grid-cols-2">
-            <div class="space-y-4">
-              <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple">Mandated Cadence</h4>
-              <ul class="space-y-4 text-xs text-kharon-light/60">
-                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Daily</strong> Verify panel indicators and log active faults.</li>
-                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Weekly</strong> Trigger manual call point to test sounders.</li>
-                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Annual</strong> Comprehensive test of 100% of devices.</li>
-              </ul>
-            </div>
-            <div class="space-y-4">
-              <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple">Handover Proof</h4>
-              <ul class="space-y-4 text-xs text-kharon-light/60">
-                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Logbook</strong> Record of all tests and false alarms.</li>
-                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Design</strong> Declares coverage zones and categories.</li>
-                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Cert</strong> Proves system meets SANS design limits.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/60 p-8 sm:p-12 relative overflow-hidden">
-          <div class="absolute top-0 right-0 h-24 w-24 bg-kharon-cyan/5 rounded-bl-full pointer-events-none"></div>
-          <h3 class="text-2xl font-black text-white mb-6 flex items-center gap-4">
-            <span class="px-3 py-1 rounded-lg text-xs font-black uppercase bg-kharon-cyan/10 text-kharon-cyan border border-kharon-cyan/20">SANS 14520</span>
-            Gaseous Suppression
-          </h3>
-          <div class="grid gap-10 md:grid-cols-2">
-            <div class="space-y-4">
-              <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple">Integrity Focus</h4>
-              <ul class="space-y-4 text-xs text-kharon-light/60">
-                <li class="flex gap-3"><strong class="text-white flex-none w-20 uppercase">Agents</strong> Strict volume calculations for clean-agents.</li>
-                <li class="flex gap-3"><strong class="text-white flex-none w-20 uppercase">Door Fan</strong> Mandatory annual test for retention time.</li>
-                <li class="flex gap-3"><strong class="text-white flex-none w-20 uppercase">Retention</strong> Must hold concentration for 10 minutes.</li>
-              </ul>
-            </div>
-            <div class="space-y-4">
-              <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple">Service Intervals</h4>
-              <ul class="space-y-4 text-xs text-kharon-light/60">
-                <li class="flex gap-3"><strong class="text-white flex-none w-20 uppercase">6-Month</strong> Verify cylinder weights and pressure logs.</li>
-                <li class="flex gap-3"><strong class="text-white flex-none w-20 uppercase">10-Year</strong> Hydrostatic stretch testing of storage.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <ComplianceTechnicalBlocks />
 
   <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">

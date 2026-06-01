@@ -1,45 +1,118 @@
 ---
-/**
- * Project Sentinel - Industries Served Page
- * Purpose: Display the critical infrastructure sectors served by Kharon, their risk profiles, and relevant SANS standards.
- * Dependencies: BaseLayout.astro, SectorRiskGrid.astro, SectionHeading.astro, industries from site.ts
- * Structural Role: Main page for listing industries and sector-specific risk profiles.
- */
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SectorRiskGrid from "../components/sections/SectorRiskGrid.astro";
+import SolutionHero from "../components/sections/SolutionHero.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
-import { pageMeta, industries } from "../data/site.js";
+import { pageMeta } from "../data/site.js";
 
-const sectors = industries;
+const coreSectors = [
+  {
+    id: "data-centres",
+    title: "Data Centres & Technical Spaces",
+    risk: "Clean-agent suppression, early detection and uptime-sensitive response logic.",
+    priority: "Continuity",
+    icon: "/brand/icons/sector-server-rack.svg",
+    sans: ["SANS 10139", "SANS 14520", "SANS 10400-T"],
+    color: "purple"
+  },
+  {
+    id: "industrial",
+    title: "Industrial & Manufacturing Facilities",
+    risk: "Risk-segmented zones, rugged detection choices and maintenance access planning.",
+    priority: "Process risk",
+    icon: "/brand/icons/sector-factory.svg",
+    sans: ["SANS 10139", "SANS 1475", "SANS 10400-T"],
+    color: "cyan"
+  },
+  {
+    id: "warehousing",
+    title: "Logistics & Warehousing",
+    risk: "Large-volume detection coverage, evacuation signalling and inspection cadence.",
+    priority: "Coverage",
+    icon: "/brand/icons/sector-warehouse.svg",
+    sans: ["SANS 10139", "SANS 1475"],
+    color: "purple"
+  },
+  {
+    id: "utilities",
+    title: "Critical Utilities & Switchgear",
+    risk: "Rapid detection, asset protection and suppression methods that limit collateral damage.",
+    priority: "Asset protection",
+    icon: "/brand/icons/sector-power-grid.svg",
+    sans: ["SANS 10142", "SANS 14520", "SANS 10090"],
+    color: "cyan"
+  }
+];
 ---
 
 <BaseLayout title={pageMeta.industries.title} description={pageMeta.industries.description}>
-  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
-    <div class="mx-auto max-w-4xl px-6 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
-        Industries Served
-      </h1>
-      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
-        Fire detection, gas suppression and maintenance strategies for data centres, manufacturing sites, warehousing, utilities and industrial facilities.
-      </p>
-    </div>
-  </section>
+  <SolutionHero 
+    title="Industries Served" 
+    subtitle="Sector Expertise" 
+    description="Specialized fire and security strategies tailored to the unique risk profiles of commercial, industrial, and technical sectors."
+    icon="/brand/icons/sector-factory.svg"
+  />
 
-  <SectorRiskGrid sectors={sectors} />
-  
   <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
-    <div class="mx-auto max-w-4xl px-6 text-center">
+    <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
-        title="Sector-Specific Protection"
-        subtitle="Risk Analysis"
-        description="Engineered fire protection strategies tailored to the unique requirements of each industry sector."
+        title="Infrastructure Risk Profiles"
+        subtitle="Sector Analysis"
+        description="Comprehensive risk analysis and engineered protection for our core operational environments."
         center={true}
       />
-      
-      <div class="mt-12 prose prose-invert max-w-none">
-        <p class="text-kharon-light/80 text-lg leading-relaxed">
-          Each industry presents unique fire protection challenges that require specialized approaches. Our solutions are engineered to address the specific risks and operational requirements of each sector while maintaining the highest safety standards.
-        </p>
+
+      <div class="mt-12 space-y-12">
+        {coreSectors.map((sector) => (
+          <div id={sector.id} class="rounded-2xl border border-kharon-purple/20 bg-kharon-surface-elevated p-8 sm:p-12 backdrop-blur-sm relative overflow-hidden group hover:border-kharon-purple/40 transition-all">
+            <div class={`absolute top-0 right-0 h-32 w-32 rounded-bl-full pointer-events-none opacity-5 group-hover:opacity-10 transition-opacity ${sector.color === 'purple' ? 'bg-kharon-purple' : 'bg-kharon-cyan'}`}></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row gap-8 md:items-start">
+              <div class="h-20 w-20 flex-none rounded-2xl bg-kharon-black/40 border border-kharon-purple/20 p-4">
+                <img src={sector.icon} class="w-full h-full object-contain" alt={`${sector.title} icon`} />
+              </div>
+              
+              <div class="flex-1 space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-4 border-b border-kharon-purple/10 pb-4">
+                  <h3 class="text-2xl font-black text-white tracking-tight">{sector.title}</h3>
+                  <span class="text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-kharon-purple/10 text-kharon-purple border border-kharon-purple/20">
+                    Priority: {sector.priority}
+                  </span>
+                </div>
+                
+                <p class="text-kharon-light/70 text-lg leading-relaxed font-medium max-w-3xl">
+                  {sector.risk}
+                </p>
+                
+                <div class="pt-4">
+                  <p class="text-[10px] font-black uppercase tracking-widest text-kharon-purple mb-3">Regulatory Baseline</p>
+                  <div class="flex flex-wrap gap-2">
+                    {sector.sans.map((std: string) => (
+                      <span class="px-3 py-1.5 rounded-lg text-xs font-bold bg-kharon-black border border-kharon-purple/20 text-kharon-cyan">
+                        {std}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+  
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <SectionHeading
+        title="Sector-Specific Engineering"
+        subtitle="Risk Intelligence"
+        description="We understand the distinct regulatory and operational pressures of your industry, from SANS 10139 compliance to ISO 9001 quality discipline."
+        center={true}
+      />
+      <div class="mt-10 flex justify-center gap-4">
+        <a href="/contact?intent=site-assessment" class="kharon-command-button px-10 py-5 text-sm">
+          Discuss Your Sector Requirements
+        </a>
       </div>
     </div>
   </section>

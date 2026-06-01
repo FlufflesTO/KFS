@@ -41,8 +41,14 @@ Run from PowerShell:
 
 ```powershell
 cd C:\Users\User\Desktop\Astro\kfs
+$env:NODE_OPTIONS="--max-old-space-size=4096"
 npm install
-npm run build:staging
+npm run lint
+npm run check
+npm run build
+npm run audit:site
+npm run test
+npm audit
 npm audit --omit=dev
 npx wrangler --version
 npx wrangler pages deploy --help

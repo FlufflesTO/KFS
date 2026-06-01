@@ -176,6 +176,18 @@ export const solutionLinks: SolutionLink[] = [
     href: "/security-systems",
     summary: "CCTV and access control integrated with fire protection priorities.",
     icon: "/brand/icons/service-cctv.svg"
+  },
+  {
+    label: "Critical Infrastructure",
+    href: "/critical-infrastructure",
+    summary: "Protection systems for data centres, control rooms and switchgear.",
+    icon: "/brand/icons/sector-server-rack.svg"
+  },
+  {
+    label: "Compliance & Maintenance",
+    href: "/compliance-maintenance",
+    summary: "Lifecycle maintenance, inspection schedules and SANS documentation.",
+    icon: "/brand/icons/service-engineering.svg"
   }
 ];
 

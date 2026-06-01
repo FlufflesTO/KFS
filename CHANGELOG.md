@@ -1,4 +1,5 @@
 # Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -22,6 +23,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **OpenRouter Service**: Refactored payload format to use standard request structures.
 - **CSS Purging**: Minified output using esbuild transform and cleaned redundant CSS variable declarations.
 
+### Project Status, Dependency Hardening And Deploy Gate
+
+#### [Added]
+- Added `docs/PROJECT_STATUS_2026-06-01.md` with the current status, progress, snags, outstanding items, to-have, to-hope and to-dream breakdown.
+
+#### [Changed]
+- Updated README and roadmap deployment documentation to point at the current local workspace path and latest status record.
+- Updated deployment migration inventory through `0034_fix_sage_real_columns.sql`.
+- Added an npm override for `yaml` 2.9.x to clear the nested dev dependency advisory in `@astrojs/check`.
+
+#### [Fixed]
+- Removed unused `codex` dependency and its vulnerable transitive packages.
+- Removed an unused import from `src/pages/contact.astro`.
+
 ## [Unreleased] - 2026-05-30
 
 ### CSS Loading & Deployment Fix - 2026-05-31
@@ -34,11 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Raising the CSS asset budget in `audit-site.ts` to 110KB to accommodate required styles.
 
 ### Project Sync & Git Maintenance - 2026-05-31
-
-#### [Changed]
-- Updated `.gitignore` to exclude the `.codex/` directory containing local tool/environment configuration files from tracking.
-
-### Portal Credentials & Site Audit Update - 2026-05-31
 
 #### [Changed]
 - Updated the default/seeded user password hashes in [seed-users.sql](file:///C:/Users/User/Desktop/Astro/kfs/seed-users.sql) to use the new standard password `"Kharon123456"`.

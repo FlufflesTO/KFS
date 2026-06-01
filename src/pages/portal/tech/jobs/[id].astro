@@ -133,10 +133,10 @@ function priorityBadgeClass(priority: string): string {
             <!-- Job Status Card -->
             <div class="rounded-xl border border-kharon-purple/25 bg-kharon-charcoal/80 p-6 shadow-xl backdrop-blur-md relative overflow-hidden">
               <div class="flex flex-wrap items-center gap-3 mb-5">
-                <span class={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${priorityBadgeClass(job.priority || "Normal")}`}>{job.priority || "Normal"}</span>
-                <span class={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${job.status === 'In Progress' ? 'bg-kharon-cyan/20 text-kharon-cyan border border-kharon-cyan/30' : 'bg-kharon-blue/20 text-kharon-blue border border-kharon-blue/30'}`}>{job.status}</span>
+                <span class={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest ${priorityBadgeClass(job.priority || "Normal")}`}>{job.priority || "Normal"}</span>
+                <span class={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest ${job.status === 'In Progress' ? 'bg-kharon-cyan/20 text-kharon-cyan border border-kharon-cyan/30' : 'bg-kharon-blue/20 text-kharon-blue border border-kharon-blue/30'}`}>{job.status}</span>
                 {job.is_emergency === 1 && (
-                  <span class="rounded-full bg-kharon-red/20 text-kharon-red border border-kharon-red/30 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest flex items-center gap-1">
+                  <span class="rounded-full bg-kharon-red/20 text-kharon-red border border-kharon-red/30 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
                     <span class="h-1.5 w-1.5 rounded-full bg-kharon-red animate-pulse"></span>
                     Emergency
                   </span>
@@ -145,19 +145,19 @@ function priorityBadgeClass(priority: string): string {
               
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Job Type</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Job Type</p>
                   <p class="text-sm font-bold text-white">{job.job_type}</p>
                 </div>
                 <div>
-                  <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Scheduled Date</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Scheduled Date</p>
                   <p class="text-sm font-bold text-white">{job.scheduled_date}</p>
                 </div>
                 <div>
-                  <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Required By</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Required By</p>
                   <p class="text-sm font-bold text-white">{job.required_by_date || 'Not specified'}</p>
                 </div>
                 <div>
-                  <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Assigned Technician</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Assigned Technician</p>
                   <p class="text-sm font-bold text-white">{job.technician_first_name} {job.technician_last_name}</p>
                 </div>
               </div>
@@ -169,17 +169,17 @@ function priorityBadgeClass(priority: string): string {
               
               <div class="space-y-4">
                 <div>
-                  <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Client Entity</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Client Entity</p>
                   <p class="text-lg font-black text-white tracking-tight">{job.owner_company_name}</p>
                 </div>
                 
                 <div>
-                  <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Physical Address</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Physical Address</p>
                   <p class="text-sm text-white/95 leading-relaxed">{job.physical_address}</p>
                 </div>
                 
                 <div>
-                  <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Target Protection System</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Target Protection System</p>
                   <p class="text-sm font-bold text-kharon-cyan">{job.system_type} | {job.coverage_area}</p>
                 </div>
                 
@@ -205,7 +205,7 @@ function priorityBadgeClass(priority: string): string {
                       <div class="flex-1 bg-kharon-black/20 p-3 rounded-lg border border-kharon-purple/10">
                         <div class="flex justify-between items-center gap-2 flex-wrap mb-1">
                           <p class="text-xs font-bold text-white">{entry.action}</p>
-                          <p class="text-[9px] text-kharon-amber font-mono font-bold">{entry.created_at}</p>
+                          <p class="text-[10px] text-kharon-amber font-mono font-bold">{entry.created_at}</p>
                         </div>
                         <p class="text-xs text-white/70 leading-normal">{entry.description}</p>
                       </div>
@@ -223,15 +223,15 @@ function priorityBadgeClass(priority: string): string {
               
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">System Type</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">System Type</p>
                   <p class="text-sm font-bold text-white">{job.system_type}</p>
                 </div>
                 <div>
-                  <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Coverage Area</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Coverage Area</p>
                   <p class="text-sm font-bold text-white">{job.coverage_area}</p>
                 </div>
                 <div>
-                  <p class="text-[9px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Protocol Version</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Protocol Version</p>
                   <p class="text-sm font-bold text-white">{job.protocol_version || 'Not specified'}</p>
                 </div>
               </div>

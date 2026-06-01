@@ -1,41 +1,36 @@
 ---
-/**
- * Project Sentinel - Emergency Support Page
- * Purpose: Public emergency support pathways
- * Dependencies: BaseLayout.astro, SectionHeading.astro, site data
- * Structural Role: Public emergency support page
- */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
+import SolutionHero from "../components/sections/SolutionHero.astro";
 import EmergencyResponse from "../components/sections/EmergencyResponse.astro";
 import { pageMeta, site } from "../data/site.js";
 
 const emergencyRoutes = [
   {
     title: "Critical system fault",
-    text: "Use this route for live fire-panel faults, suppression impairments, isolated systems or a protection condition affecting operations.",
-    action: "Call / Escalate Fault",
+    text: "Live fire-panel faults, suppression impairments, isolated systems or a protection condition affecting operations.",
+    action: "Escalate Fault",
     href: "/contact?intent=emergency-support",
     tel: "tel:+27615458830",
     icon: "/brand/icons/severity-critical.svg"
   },
   {
     title: "Existing client records",
-    text: "Open the portal for service history, system records, maintenance requests and linked jobcard documentation.",
+    text: "Access service history, system records, maintenance requests and linked jobcard documentation.",
     action: "Access Records",
     href: site.portalLoginPath,
     icon: "/brand/icons/service-engineering.svg"
   },
   {
     title: "Urgent technical request",
-    text: "Route urgent assessment requests where a technician review, system diagnosis or maintenance intervention is required.",
-    action: "Request Urgent Support",
+    text: "Route urgent assessment requests where a technician review or system diagnosis is required.",
+    action: "Request Support",
     href: "/contact?intent=urgent-technical-request",
     icon: "/brand/icons/severity-urgent.svg"
   },
   {
     title: "Compliance intervention",
-    text: "Use this path for overdue inspections, missing documentation, insurer queries or audit-sensitive system concerns.",
+    text: "Overdue inspections, missing documentation, insurer queries or audit-sensitive system concerns.",
     action: "Start Compliance Route",
     href: "/contact?intent=compliance-intervention",
     icon: "/brand/icons/severity-planned.svg"
@@ -44,19 +39,15 @@ const emergencyRoutes = [
 ---
 
 <BaseLayout title={pageMeta.emergencySupport.title} description={pageMeta.emergencySupport.description}>
-  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
-    <div class="mx-auto max-w-4xl px-6 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
-        Emergency Support
-      </h1>
-      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
-        Operational response pathways for protection-system faults, compliance interventions and maintenance escalations.
-      </p>
-    </div>
-  </section>
+  <SolutionHero 
+    title="Emergency Support" 
+    subtitle="Operational Response" 
+    description="Strategic response pathways for protection-system faults, compliance interventions, and mission-critical escalations."
+    icon="/brand/icons/severity-critical.svg"
+  />
 
-  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
-    <div class="mx-auto max-w-4xl px-6">
+  <section class="section-padding bg-kharon-black">
+    <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
         title="Operational Response Pathways"
         subtitle="Emergency Protocols"
@@ -66,32 +57,35 @@ const emergencyRoutes = [
       
       <div class="mt-12 grid gap-8 md:grid-cols-2">
         {emergencyRoutes.map((route) => (
-          <div class="rounded-xl border border-kharon-purple/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
-            <div class="bg-kharon-surface-elevated rounded-xl p-6 flex flex-col justify-between h-full">
+          <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 sm:p-12 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50 flex flex-col justify-between overflow-hidden">
+            <div class={`absolute top-0 left-0 h-1 w-full bg-gradient-to-r ${route.tel ? 'from-kharon-red to-transparent' : 'from-kharon-purple to-transparent'} opacity-50`}></div>
+            
+            <div class="space-y-6">
+              <div class="h-16 w-16 rounded-xl bg-kharon-black/40 border border-kharon-purple/20 p-4 group-hover:bg-kharon-purple/10 transition-colors">
+                <img src={route.icon} alt="" class="h-full w-full object-contain" />
+              </div>
+              
               <div>
-                <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
-                  {route.icon ? (
-                    <img src={route.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
-                  ) : (
-                    <div class="w-6 h-6 bg-kharon-purple rounded"></div>
-                  )}
-                </div>
-                <h3 class="text-xl font-bold text-white mb-4">{route.title}</h3>
-                <p class="text-kharon-light/70 mb-6">
+                <h3 class="text-xl font-black text-white tracking-tight leading-tight mb-3 uppercase">{route.title}</h3>
+                <p class="text-kharon-light/60 leading-relaxed font-medium">
                   {route.text}
                 </p>
               </div>
-              <div class="flex flex-wrap gap-3 self-start">
-                {route.tel && (
-                  <a href={route.tel} class="inline-flex items-center justify-center rounded bg-kharon-red px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all">
-                    Call Now
-                  </a>
-                )}
-                <a href={route.href} class="inline-flex items-center justify-center rounded bg-gradient-to-r from-kharon-purple to-kharon-blue px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all">
-                  {route.action}
-                </a>
-              </div>
             </div>
+
+            <div class="mt-10 flex flex-wrap gap-4">
+              {route.tel && (
+                <a href={route.tel} class="kharon-danger-button px-8 py-3 text-xs font-black tracking-widest uppercase">
+                  Voice Link
+                </a>
+              )}
+              <a href={route.href} class="kharon-command-button px-8 py-3 text-xs font-black tracking-widest uppercase flex-1 text-center">
+                {route.action}
+              </a>
+            </div>
+
+            {/* Background decoration */}
+            <div class={`absolute -right-12 -bottom-12 h-32 w-32 rounded-full blur-[64px] opacity-10 ${route.tel ? 'bg-kharon-red' : 'bg-kharon-purple'}`}></div>
           </div>
         ))}
       </div>
@@ -100,19 +94,18 @@ const emergencyRoutes = [
 
   <EmergencyResponse />
 
-  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">
       <SectionHeading
-        title="Controlled Emergency Response"
-        subtitle="Incident Management"
-        description="Structured procedures that maintain operational control during emergency situations."
+        title="Controlled Incident Management"
+        subtitle="Reliability Discipline"
+        description="Our protocols are designed to maintain operational control during critical incidents, prioritizing safety while minimizing disruption."
         center={true}
       />
-      
-      <div class="mt-12 prose prose-invert max-w-none">
-        <p class="text-kharon-light/80 text-lg leading-relaxed">
-          Our emergency support protocols are designed to maintain operational control during critical incidents. We provide structured response procedures that prioritize safety while minimizing operational disruption and maintaining compliance requirements.
-        </p>
+      <div class="mt-10 flex justify-center gap-4">
+        <a href="/portal" class="kharon-command-button px-10 py-5 text-sm uppercase tracking-widest font-black">
+          Access Operations Portal
+        </a>
       </div>
     </div>
   </section>

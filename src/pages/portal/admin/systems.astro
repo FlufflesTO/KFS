@@ -1,7 +1,7 @@
 ---
 /**
  * Project Sentinel - Admin Systems
- * Purpose: Admin interface for fire & security systems
+ * Purpose: Admin interface for fire & security systems with elite command aesthetic.
  * Dependencies: PortalLayout, getDatabase, requireAdmin
  * Structural Role: Administrative UI for system lifecycle management
  */
@@ -83,197 +83,239 @@ try {
   loadError = "Systems data could not be loaded.";
 }
 
+// Pre-calculate alerts to avoid '<' in JSX template
+const systemsWithAlerts = systems.map(s => ({
+  ...s,
+  isOverdue: !!(s.next_due_date && s.next_due_date < today),
+  isDueSoon: !!(s.next_due_date && s.next_due_date >= today && s.next_due_date <= soonDate)
+}));
+
 const totalPages = Math.max(1, Math.ceil(systemsTotal / perPage));
 import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="System Management | Kharon Portal" active="systems" user={user}>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="sm:flex sm:items-center sm:justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight font-heading">System Management</h1>
-        <p class="mt-1 text-sm text-white/60">Manage protected systems and lifecycle service dates</p>
+  {/* ── Page Header ── */}
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 rounded-xl border border-kharon-purple/10 mb-6 relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_90%_50%,rgba(124,93,194,0.09),transparent)]"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+          <svg class="h-[1.1rem] w-[1.1rem] text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
+          </svg>
+        </div>
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Infrastructure Console</p>
+      </div>
+      <h1 class="text-2xl font-black sm:text-3xl tracking-tight text-white">Protection System Registry</h1>
+      <p class="mt-2 max-w-3xl text-sm text-kharon-light/60">Manage protected systems, technical specifications, and mission-critical lifecycle cadence.</p>
+    </div>
+  </section>
+
+  <div class="grid gap-8">
+    {loadError && (
+      <p class="rounded-lg border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>
+    )}
+
+    {/* ── Search & Filter ── */}
+    <div class="flex flex-wrap items-end justify-between gap-6 bg-kharon-charcoal/40 p-5 rounded-xl border border-kharon-purple/10">
+      <form class="flex flex-wrap items-end gap-3 flex-1" method="get">
+        <CsrfInput />
+        <div class="grid gap-1 flex-1 min-w-[200px]">
+          <label for="systems-q" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple px-1">Global Registry Search</label>
+          <input
+            id="systems-q"
+            name="q"
+            type="search"
+            class="kharon-field"
+            placeholder="Site, area, manufacturer…"
+            value={searchQuery}
+          />
+        </div>
+        <div class="grid gap-1 min-w-[160px]">
+          <label for="systems-type" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple px-1">System Topology</label>
+          <select id="systems-type" name="type" class="kharon-field">
+            <option value="">All Architectures</option>
+            <option value="Gas Suppression" selected={typeFilter === "Gas Suppression"}>Gas Suppression</option>
+            <option value="Fire Detection" selected={typeFilter === "Fire Detection"}>Fire Detection</option>
+          </select>
+        </div>
+        <button type="submit" class="kharon-command-button py-2 px-6 h-[42px] text-[10px]">Filter Matrix</button>
+        {(searchQuery || typeFilter) && (
+          <a href="/portal/admin/systems" class="kharon-secondary-button py-2 px-4 h-[42px] text-[10px] flex items-center justify-center">Reset</a>
+        )}
+      </form>
+      
+      <div class="flex items-center gap-6 px-4 py-2 border-l border-kharon-purple/10">
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Registered Systems</p>
+          <p class="text-2xl font-black text-white leading-none mt-1">{systemsTotal}</p>
+        </div>
       </div>
     </div>
 
-    {loadError && (
-      <p class="mx-auto mb-6 max-w-7xl border border-kharon-red bg-kharon-red/10 p-4 text-red-200 font-semibold">{loadError}</p>
-    )}
-
-    <article class="kharon-surface p-4 sm:p-5">
-      <div class="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-line-cyan-soft pb-4">
-        <h2 class="text-xl font-bold text-white font-heading">
-          Systems <span class="ml-2 text-sm font-normal text-white/60">({systemsTotal})</span>
-        </h2>
-        <form class="flex flex-wrap items-end gap-3" method="get">
-          <CsrfInput />
-          <div class="grid gap-1">
-            <label for="systems-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search</label>
-            <input
-              id="systems-q"
-              name="q"
-              type="search"
-              class="kharon-field min-w-[200px]"
-              placeholder="Search site or area…"
-              value={searchQuery}
-            />
-          </div>
-          <div class="grid gap-1">
-            <label for="systems-type" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Type</label>
-            <select id="systems-type" name="type" class="kharon-field">
-              <option value="">All types</option>
-              <option value="Gas Suppression" selected={typeFilter === "Gas Suppression"}>Gas Suppression</option>
-              <option value="Fire Detection" selected={typeFilter === "Fire Detection"}>Fire Detection</option>
-            </select>
-          </div>
-          <button type="submit" class="kharon-command-button text-xs py-2 px-4 h-[38px] self-end">Filter</button>
-          {(searchQuery || typeFilter) && (
-            <a href="/portal/admin/systems" class="kharon-secondary-button text-xs py-2 px-4 h-[38px] flex items-center justify-center">Clear</a>
-          )}
-        </form>
-      </div>
-
-      <div class="grid gap-4">
-        {systems.length === 0 && <p class="py-4 text-sm text-white/50 italic">No systems match your filter.</p>}
-        {systems.map((record) => (
+    {/* ── Systems Grid ── */}
+    <div class="grid gap-6">
+      {systemsWithAlerts.length === 0 && (
+        <div class="py-20 text-center border border-dashed border-kharon-purple/20 rounded-2xl">
+          <p class="text-white/40 font-bold uppercase tracking-widest">No matching architectures in registry</p>
+        </div>
+      )}
+      <div class="grid gap-6">
+        {systemsWithAlerts.map((record) => (
           <form
-            class="admin-form grid gap-4 bg-surface-charcoal/40 border border-line-cyan-soft/50 p-4 lg:grid-cols-7 rounded-md"
+            class={`admin-form group relative grid gap-6 bg-kharon-charcoal/60 border p-6 lg:grid-cols-7 rounded-xl hover:border-kharon-purple/40 transition-all backdrop-blur-md shadow-xl ${record.isOverdue ? 'border-kharon-red/40 bg-kharon-red/5' : 'border-kharon-purple/20'}`}
             data-endpoint="/portal/api/admin/systems"
           >
-          <CsrfInput />
+            <CsrfInput />
             <input type="hidden" name="action" value="update" />
             <input type="hidden" name="id" value={record.id} />
             
-            <div class="grid gap-1">
-              <label for={`site-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Site</label>
-              <select id={`site-${record.id}`} class="kharon-field" name="siteId">
+            <div class="lg:col-span-2 grid gap-1.5">
+              <label for={`site-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Mapped Entity</label>
+              <select id={`site-${record.id}`} class="kharon-field text-xs font-bold" name="siteId">
                 {sites.map((site) => (
                   <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>
                 ))}
               </select>
             </div>
 
-            <div class="grid gap-1">
-              <label for={`type-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">System Type</label>
-              <select id={`type-${record.id}`} class="kharon-field" name="systemType">
+            <div class="grid gap-1.5">
+              <label for={`type-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Architecture</label>
+              <select id={`type-${record.id}`} class="kharon-field text-xs" name="systemType">
                 {["Gas Suppression", "Fire Detection"].map((type) => (
                   <option value={type} selected={record.system_type === type}>{type}</option>
                 ))}
               </select>
             </div>
 
-            <div class="grid gap-1">
-              <label for={`area-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Coverage Area</label>
-              <input id={`area-${record.id}`} class="kharon-field" name="coverageArea" value={record.coverage_area} required />
+            <div class="grid gap-1.5">
+              <label for={`area-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Coverage Perimeter</label>
+              <input id={`area-${record.id}`} class="kharon-field text-xs" name="coverageArea" value={record.coverage_area} required />
             </div>
 
-            <div class="grid gap-1">
-              <label for={`mfr-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Manufacturer</label>
-              <input id={`mfr-${record.id}`} class="kharon-field" name="manufacturer" value={record.manufacturer || ""} />
+            <div class="grid gap-1.5">
+              <label for={`mfr-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">OEM Manufacturer</label>
+              <input id={`mfr-${record.id}`} class="kharon-field text-xs" name="manufacturer" value={record.manufacturer || ""} />
             </div>
 
-            <div class="grid gap-1">
-              <label for={`model-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Model Ref</label>
-              <input id={`model-${record.id}`} class="kharon-field" name="modelReference" value={record.model_reference || ""} />
+            <div class="grid gap-1.5">
+              <label for={`model-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Model Signature</label>
+              <input id={`model-${record.id}`} class="kharon-field text-xs" name="modelReference" value={record.model_reference || ""} />
             </div>
 
-            <div class="grid gap-1">
-              <label for={`due-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Next Due Date</label>
-              <input id={`due-${record.id}`} class="kharon-field" name="nextDueDate" type="date" value={record.next_due_date} />
+            <div class="grid gap-1.5 self-end">
+              <button class="kharon-command-button w-full py-2.5 text-[10px] h-[40px]">Commit Spec</button>
             </div>
 
-            <div class="grid gap-1">
-              <label for={`interval-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Interval (Mo.)</label>
-              <div class="flex gap-2">
-                <input id={`interval-${record.id}`} class="kharon-field" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} required />
-                <button class="kharon-command-button px-4 py-2 text-xs">Save</button>
+            <div class="lg:col-span-2 grid gap-1.5">
+              <label for={`due-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Next Mission-Critical Due Date</label>
+              <input id={`due-${record.id}`} class={`kharon-field text-xs font-bold ${record.isOverdue ? 'text-kharon-red' : record.isDueSoon ? 'text-kharon-amber' : 'text-kharon-cyan'}`} type="date" value={record.next_due_date} name="nextDueDate" />
+            </div>
+
+            <div class="grid gap-1.5">
+              <label for={`interval-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">SLA Interval (Mo.)</label>
+              <input id={`interval-${record.id}`} class="kharon-field text-xs" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} required />
+            </div>
+
+            <div class="lg:col-span-4 flex items-center justify-between gap-6 border-t border-kharon-purple/10 pt-4 mt-2">
+              <div class="flex gap-4">
+                <a href={`/portal/admin/jobs?q=${encodeURIComponent(record.owner_company_name + " " + record.coverage_area)}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple hover:text-kharon-cyan transition-colors">
+                  Deployment History &rarr;
+                </a>
+                <a href={`/portal/admin/compliance?q=${encodeURIComponent(record.id)}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple hover:text-kharon-cyan transition-colors">
+                  SANS Audit Log &rarr;
+                </a>
               </div>
+              <span class="text-[10px] font-mono text-white/20 uppercase tracking-tighter">REF: {record.id.slice(0, 8)}</span>
             </div>
-
-            {record.next_due_date && record.next_due_date < today && (
-              <p class="rounded border border-kharon-red bg-kharon-red/10 px-3 py-2 text-xs font-bold uppercase text-red-200 lg:col-span-7">
-                Warning: Service overdue — due {record.next_due_date}. Update after the next completed visit.
-              </p>
+            
+            {record.isOverdue && (
+              <div class="lg:col-span-7 mt-2 p-3 rounded bg-kharon-red/10 border border-kharon-red/30 flex items-center gap-3">
+                <span class="h-1.5 w-1.5 rounded-full bg-kharon-red animate-ping"></span>
+                <p class="text-[10px] font-black uppercase tracking-widest text-kharon-red">Critical Alert: Hardware maintenance is overdue since {record.next_due_date}.</p>
+              </div>
             )}
-            {record.next_due_date && record.next_due_date >= today && record.next_due_date <= soonDate && (
-              <p class="rounded border border-kharon-amber bg-kharon-amber/10 px-3 py-2 text-xs font-bold uppercase text-amber-200 lg:col-span-7">
-                Service due {record.next_due_date} — within 30 days.
-              </p>
-            )}
-            <a href={`/portal/admin/jobs?q=${encodeURIComponent(record.owner_company_name + " " + record.coverage_area)}`} class="text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-7">
-              &rarr; View Jobs for {record.coverage_area}
-            </a>
-            <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+            
+            <p class="admin-result hidden rounded border px-4 py-3 text-[10px] font-bold uppercase tracking-widest lg:col-span-7"></p>
           </form>
         ))}
       </div>
-    </article>
+    </div>
 
-    <nav class="mt-6 mb-8 flex items-center justify-between border-t border-line-cyan-soft pt-4">
-      {page > 1 ? (
-        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&type=${encodeURIComponent(typeFilter)}`} class="kharon-secondary-button py-2 text-xs">Previous</a>
-      ) : (
-        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Previous</span>
-      )}
-      <span class="text-sm text-white/60">Page {page} of {totalPages}</span>
-      {page < totalPages ? (
-        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&type=${encodeURIComponent(typeFilter)}`} class="kharon-secondary-button py-2 text-xs">Next</a>
-      ) : (
-        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Next</span>
-      )}
-    </nav>
+    {/* ── Pagination ── */}
+    {totalPages > 1 && (
+      <nav class="flex items-center justify-between border-t border-kharon-purple/10 pt-6">
+        {page > 1 ? (
+          <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&type=${encodeURIComponent(typeFilter)}`} class="kharon-secondary-button py-2.5 px-6 text-[10px]">Previous Batch</a>
+        ) : (
+          <span class="opacity-30 rounded border border-kharon-purple/20 px-6 py-2.5 text-[10px] font-black uppercase text-white">Previous</span>
+        )}
+        <span class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Sequence {page} of {totalPages}</span>
+        {page < totalPages ? (
+          <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&type=${encodeURIComponent(typeFilter)}`} class="kharon-secondary-button py-2.5 px-6 text-[10px]">Next Batch</a>
+        ) : (
+          <span class="opacity-30 rounded border border-kharon-purple/20 px-6 py-2.5 text-[10px] font-black uppercase text-white">Next</span>
+        )}
+      </nav>
+    )}
 
-    <article class="kharon-surface p-6 sm:p-8">
-      <h2 class="text-xl font-bold text-white font-heading">Create system</h2>
-      <form class="admin-form mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-endpoint="/portal/api/admin/systems">
-          <CsrfInput />
+    {/* ── System Creation ── */}
+    <article class="bg-kharon-charcoal/60 border border-kharon-purple/20 p-8 rounded-xl backdrop-blur-md shadow-2xl">
+      <div class="mb-8">
+        <p class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Registry Entry</p>
+        <h2 class="mt-1 text-xl font-black text-white uppercase tracking-widest">Initialize New Architecture</h2>
+      </div>
+
+      <form class="admin-form grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-endpoint="/portal/api/admin/systems">
+        <CsrfInput />
         <input type="hidden" name="action" value="create" />
         
-        <div class="grid gap-1">
-          <label for="create-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Mapped Site *</label>
-          <select id="create-siteId" class="kharon-field" name="siteId" required>
-            <option value="">Select site</option>
+        <div class="grid gap-1.5">
+          <label for="create-siteId" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Host Site Registry *</label>
+          <select id="create-siteId" class="kharon-field text-xs py-2" name="siteId" required>
+            <option value="">— Select Host Site —</option>
             {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
           </select>
         </div>
 
-        <div class="grid gap-1">
-          <label for="create-systemType" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">System Type *</label>
-          <select id="create-systemType" class="kharon-field" name="systemType" required>
-            <option value="Gas Suppression">Gas Suppression</option>
-            <option value="Fire Detection">Fire Detection</option>
+        <div class="grid gap-1.5">
+          <label for="create-systemType" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">System Topology *</label>
+          <select id="create-systemType" class="kharon-field text-xs py-2" name="systemType" required>
+            <option value="Gas Suppression">Gas Suppression Architecture</option>
+            <option value="Fire Detection">Fire Detection Architecture</option>
           </select>
         </div>
 
-        <div class="grid gap-1">
-          <label for="create-coverageArea" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Coverage Area *</label>
-          <input id="create-coverageArea" class="kharon-field" name="coverageArea" placeholder="Server Room 01" required />
+        <div class="grid gap-1.5">
+          <label for="create-coverageArea" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Operational Perimeter *</label>
+          <input id="create-coverageArea" class="kharon-field text-xs" name="coverageArea" placeholder="e.g. Server Room A / Level 04" required />
         </div>
 
-        <div class="grid gap-1">
-          <label for="create-manufacturer" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Manufacturer</label>
-          <input id="create-manufacturer" class="kharon-field" name="manufacturer" placeholder="e.g. Inergen" />
+        <div class="grid gap-1.5">
+          <label for="create-manufacturer" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">OEM Manufacturer</label>
+          <input id="create-manufacturer" class="kharon-field text-xs" name="manufacturer" placeholder="e.g. Technoswitch / Kentec" />
         </div>
 
-        <div class="grid gap-1">
-          <label for="create-modelReference" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Model/Reference</label>
-          <input id="create-modelReference" class="kharon-field" name="modelReference" placeholder="e.g. V-100" />
+        <div class="grid gap-1.5">
+          <label for="create-modelReference" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Reference / Version</label>
+          <input id="create-modelReference" class="kharon-field text-xs" name="modelReference" placeholder="e.g. V-1000-AD" />
         </div>
 
-        <div class="grid gap-1">
-          <label for="create-nextDueDate" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Next Service Due *</label>
-          <input id="create-nextDueDate" class="kharon-field" name="nextDueDate" type="date" value={today} required />
+        <div class="grid gap-1.5">
+          <label for="create-nextDueDate" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Initial Compliance Due *</label>
+          <input id="create-nextDueDate" class="kharon-field text-xs" name="nextDueDate" type="date" value={today} required />
         </div>
 
-        <div class="grid gap-1">
-          <label for="create-serviceIntervalMonths" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Service Interval (months) *</label>
-          <input id="create-serviceIntervalMonths" class="kharon-field" name="serviceIntervalMonths" type="number" min="1" max="36" value="6" required />
+        <div class="grid gap-1.5">
+          <label for="create-serviceIntervalMonths" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Regulatory Interval (Months) *</label>
+          <input id="create-serviceIntervalMonths" class="kharon-field text-xs" name="serviceIntervalMonths" type="number" min="1" max="36" value="6" required />
         </div>
 
-        <div class="md:col-span-2 lg:col-span-3 mt-2">
-          <button class="w-full kharon-command-button py-3">Create System Record</button>
+        <div class="md:col-span-2 lg:col-span-3 mt-4">
+          <button class="w-full kharon-command-button py-4 text-[11px]">Deploy Architecture to Registry</button>
         </div>
-        <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold md:col-span-2 lg:col-span-3"></p>
+        <p class="admin-result hidden rounded border px-4 py-3 text-[10px] font-bold uppercase tracking-widest md:col-span-2 lg:col-span-3"></p>
       </form>
     </article>
   </div>

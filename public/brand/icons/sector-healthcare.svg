@@ -1,12 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
-  <circle cx="40" cy="40" r="38" stroke="#1F4E79" stroke-width="2.5" fill="#0B1520"/>
-  <circle cx="40" cy="40" r="34" stroke="#00C2FF" stroke-width="1" fill="none" opacity="0.3"/>
-  <!-- Hospital Building -->
-  <rect x="26" y="22" width="28" height="40" rx="3" stroke="#4B2E83" stroke-width="2.5" fill="#15191D"/>
-  <!-- Medical Cross Symbol (Cyan + Glow) -->
-  <path d="M40 33 L40 51" stroke="#00C2FF" stroke-width="4.5" stroke-linecap="round"/>
-  <path d="M31 42 L49 42" stroke="#00C2FF" stroke-width="4.5" stroke-linecap="round"/>
-  <path d="M40 35 L40 49 M33 42 L47 42" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
-  <!-- Status LED -->
-  <circle cx="40" cy="27" r="1.5" fill="#F59E0B"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <path d="M50 5 L89 27.5 L89 72.5 L50 95 L11 72.5 L11 27.5 Z" fill="#15191D" stroke="#7C5DC2" stroke-width="2" stroke-opacity="0.3"/>
+  <!-- Shield with Cross / Healthcare -->
+  <path d="M50 30 L70 40 V60 Q50 80 30 60 V40 Z" stroke="#7C5DC2" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M50 40 V54 M43 47 H57" stroke="#38BDF8" stroke-width="4" stroke-linecap="round"/>
 </svg>

@@ -1,0 +1,363 @@
+---
+import { auditError } from "../../../lib/server/audit.js";
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings.js";
+import { clientSites, inClause } from "../../../lib/server/access.ts";
+import KharonCard from "../../../components/ui/KharonCard.astro";
+import KharonButton from "../../../components/ui/KharonButton.astro";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+
+interface ClientSystem {
+  id: string;
+  site_id: string;
+  system_type: string;
+  coverage_area: string;
+  last_service_date: string | null;
+  next_due_date: string;
+  owner_company_name: string;
+  latest_job_id: string | null;
+  documentation_path: string | null;
+  completed_at: string | null;
+}
+
+let systems: ClientSystem[] = [];
+let openDefects: Array<any> = [];
+let certificates: Array<any> = [];
+let requests: Array<any> = [];
+let sites: Array<any> = [];
+let loadError = "";
+const sectionErrors: string[] = [];
+const today    = new Date().toISOString().slice(0, 10);
+const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+try {
+  const db = getDatabase();
+  sites = await clientSites(db, user);
+  const siteIds = sites.map((s: any) => s.id);
+
+  if (siteIds.length === 0) {
+    loadError = "This client account is not mapped to a site.";
+  } else {
+    const sp = inClause(siteIds);
+
+    try {
+      systems = (await db.prepare(
+        `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area,
+                systems.last_service_date, systems.next_due_date,
+                sites.owner_company_name,
+                latest_jobs.id AS latest_job_id, latest_jobs.documentation_path,
+                latest_jobs.completed_at
+         FROM systems
+         INNER JOIN sites ON sites.id = systems.site_id
+         LEFT JOIN jobs AS latest_jobs ON latest_jobs.id = (
+           SELECT j.id FROM jobs j
+           WHERE j.deleted_at IS NULL AND j.system_id = systems.id
+             AND j.documentation_path IS NOT NULL
+           ORDER BY COALESCE(j.completed_at, j.updated_at, j.created_at) DESC
+           LIMIT 1
+         )
+         WHERE systems.deleted_at IS NULL AND systems.site_id IN (${sp})
+         ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC`
+      ).bind(...siteIds).all()).results as unknown as ClientSystem[] || [];
+    } catch (err) {
+      await auditError(getDatabase(), Astro.request, err, { entityType: "system", entityId: "client_systems" });
+      sectionErrors.push("System records could not be loaded.");
+    }
+
+    try {
+      openDefects = (await db.prepare(
+        `SELECT defects.id, defects.severity, defects.sans_clause_ref, defects.status,
+                defects.description, defects.remediation_notes,
+                systems.id AS system_id, systems.system_type, systems.coverage_area,
+                sites.owner_company_name
+         FROM defects
+         INNER JOIN systems ON systems.id = defects.system_id
+         INNER JOIN sites ON sites.id = systems.site_id
+         WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL
+           AND systems.site_id IN (${sp}) AND defects.status IN ('Open', 'In Progress')
+         ORDER BY CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 ELSE 3 END,
+                  defects.created_at DESC`
+      ).bind(...siteIds).all()).results || [];
+    } catch (err) {
+      await auditError(getDatabase(), Astro.request, err, { entityType: "defect", entityId: "client_defects" });
+      sectionErrors.push("Defect register could not be loaded.");
+    }
+
+    try {
+      certificates = (await db.prepare(
+        `SELECT certificates.id, certificates.certificate_type, certificates.status,
+                certificates.issued_date, certificates.expiry_date,
+                systems.id AS system_id, systems.system_type, systems.coverage_area,
+                sites.owner_company_name
+         FROM certificates
+         INNER JOIN systems ON systems.id = certificates.system_id
+         INNER JOIN sites ON sites.id = systems.site_id
+         WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL
+           AND systems.site_id IN (${sp})
+         ORDER BY COALESCE(certificates.expiry_date, certificates.issued_date) DESC`
+      ).bind(...siteIds).all()).results || [];
+    } catch (err) {
+      await auditError(getDatabase(), Astro.request, err, { entityType: "certificate", entityId: "client_certs" });
+      sectionErrors.push("Certificate register could not be loaded.");
+    }
+
+    try {
+      requests = (await db.prepare(
+        `SELECT maintenance_requests.id, maintenance_requests.site_id,
+                maintenance_requests.request_type, maintenance_requests.priority,
+                maintenance_requests.status, maintenance_requests.subject,
+                maintenance_requests.created_at, maintenance_requests.linked_job_id,
+                systems.coverage_area, sites.owner_company_name
+         FROM maintenance_requests
+         INNER JOIN sites ON sites.id = maintenance_requests.site_id
+         LEFT JOIN systems ON systems.id = maintenance_requests.system_id
+           AND systems.deleted_at IS NULL
+         WHERE maintenance_requests.site_id IN (${sp})
+         ORDER BY maintenance_requests.created_at DESC
+         LIMIT 20`
+      ).bind(...siteIds).all()).results || [];
+    } catch (err) {
+      await auditError(getDatabase(), Astro.request, err, { entityType: "request", entityId: "client_requests" });
+      sectionErrors.push("Service request history could not be loaded.");
+    }
+  }
+} catch (err) {
+  await auditError(getDatabase(), Astro.request, err, { entityType: "system", entityId: "client_systems_page" });
+  loadError = "System records could not be loaded.";
+}
+
+const overdueCount   = systems.filter(s => s.next_due_date && s.next_due_date < today).length;
+const dueSoonCount   = systems.filter(s => s.next_due_date && s.next_due_date >= today && s.next_due_date <= soonDate).length;
+
+const systemsWithStatus = systems.map(s => ({
+  ...s,
+  isOverdue: !!(s.next_due_date && s.next_due_date < today),
+  isDueSoon: !!(s.next_due_date && s.next_due_date >= today && s.next_due_date <= soonDate),
+}));
+---
+
+<PortalLayout title="System Register | Kharon Portal" active="client-systems" user={user}>
+  {/* ── Page Header ── */}
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 rounded-xl border border-kharon-purple/10 mb-6 relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(75,46,131,0.08),transparent)]"></div>
+    <div class="relative z-10 flex items-start justify-between gap-4 flex-wrap">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+            <svg class="h-[1.1rem] w-[1.1rem] text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">System Register</p>
+        </div>
+        <h1 class="text-2xl font-black sm:text-3xl tracking-tight">
+          Protected Systems &amp; Records
+          {systems.length > 0 && <span class="ml-3 text-lg font-bold text-white/40">({systems.length})</span>}
+        </h1>
+        <p class="mt-2 max-w-3xl text-sm text-white/60">All systems under Kharon management, with maintenance cadence, jobcard records and open defects.</p>
+      </div>
+      <KharonButton href="/portal/client/dashboard" variant="secondary" size="sm" className="text-[10px] tracking-widest uppercase font-bold shrink-0">← Dashboard</KharonButton>
+    </div>
+  </section>
+
+  <section class="px-1 py-2 sm:px-4">
+    <div class="mx-auto max-w-7xl">
+      {loadError && <p class="rounded-lg border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red mb-6">{loadError}</p>}
+      {!loadError && sectionErrors.length > 0 && (
+        <div class="grid gap-2 mb-6">
+          {sectionErrors.map(msg => <p class="border border-amber-500/30 bg-amber-950/20 p-4 text-kharon-amber rounded-lg text-xs font-bold">{msg}</p>)}
+        </div>
+      )}
+
+      {/* Status summary strip */}
+      {systems.length > 0 && (
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+          <div class={`rounded-xl border p-4 ${overdueCount > 0 ? "border-kharon-red/30 bg-kharon-charcoal/80" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-white/60">Overdue</span>
+            <p class={`text-2xl font-black mt-1 ${overdueCount > 0 ? "text-kharon-red" : "text-white"}`}>{overdueCount}</p>
+          </div>
+          <div class={`rounded-xl border p-4 ${dueSoonCount > 0 ? "border-kharon-amber/30 bg-kharon-charcoal/80" : "border-kharon-purple/20 bg-kharon-charcoal/60"}`}>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-white/60">Due ≤ 30 days</span>
+            <p class={`text-2xl font-black mt-1 ${dueSoonCount > 0 ? "text-kharon-amber" : "text-white"}`}>{dueSoonCount}</p>
+          </div>
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/60 p-4">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-white/60">Open Defects</span>
+            <p class={`text-2xl font-black mt-1 ${openDefects.some(d => d.severity === "Critical") ? "text-kharon-red" : openDefects.length > 0 ? "text-kharon-amber" : "text-white"}`}>{openDefects.length}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Systems grid */}
+      <KharonCard title="Systems &amp; Cadence Records" subtitle="Asset Lifecycle">
+        <div class="mb-4">
+          <KharonButton href="/compliance" variant="secondary" size="sm" className="text-[10px] tracking-widest uppercase font-bold">Standards reference →</KharonButton>
+        </div>
+        {systems.length === 0 && !loadError && (
+          <p class="text-xs text-white/50 italic py-4">No systems are registered for your account.</p>
+        )}
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {systemsWithStatus.map(system => (
+            <article class={`rounded-xl border p-5 flex flex-col justify-between bg-kharon-charcoal/60 hover:border-kharon-purple/40 transition-all duration-300 ${system.isOverdue ? "border-kharon-red/20 shadow-lg shadow-kharon-red/5" : "border-kharon-purple/20"}`}>
+              <div>
+                <div class="flex items-start justify-between gap-2">
+                  <span class="rounded bg-kharon-purple/20 px-2 py-0.5 text-[9px] font-bold uppercase text-kharon-cyan border border-kharon-purple/30">{system.system_type}</span>
+                  <span class={`rounded px-3 py-0.5 text-[9px] font-bold uppercase border ${
+                    system.isOverdue
+                      ? "border-kharon-red/30 bg-kharon-red/10 text-kharon-red"
+                      : system.isDueSoon
+                      ? "border-kharon-amber/30 bg-kharon-amber/10 text-kharon-amber"
+                      : "border-kharon-purple/20 bg-kharon-purple/5 text-white/60"
+                  }`}>
+                    {system.isOverdue ? "Overdue: " : "Due "}{system.next_due_date || "Not scheduled"}
+                  </span>
+                </div>
+                <h3 class="mt-4 font-bold text-white leading-snug">{system.coverage_area}</h3>
+                <p class="text-xs text-white/50 mt-1">{system.owner_company_name}</p>
+                <dl class="mt-4 grid grid-cols-2 gap-3 text-xs border-t border-kharon-purple/10 pt-3 text-white/70">
+                  <div>
+                    <dt class="font-bold text-kharon-purple uppercase text-[9px] tracking-widest">Last Service</dt>
+                    <dd class="mt-1 font-semibold text-white/90">{system.last_service_date || "None"}</dd>
+                  </div>
+                  <div>
+                    <dt class="font-bold text-kharon-purple uppercase text-[9px] tracking-widest">System ID</dt>
+                    <dd class="mt-1 font-mono font-bold text-white/60 truncate">{system.id.slice(0, 8)}…</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="mt-5 pt-3 border-t border-kharon-purple/10">
+                {system.documentation_path ? (
+                  <a href={`/portal/api/file/${system.documentation_path}`} class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-kharon-purple to-kharon-blue text-white font-bold text-xs uppercase tracking-widest rounded-md text-center hover:shadow-lg hover:shadow-kharon-purple/30 transition-all min-h-[44px]">
+                    Download Jobcard PDF
+                  </a>
+                ) : (
+                  <span class="text-xs text-white/40 italic block text-center py-2">No completed jobcard file</span>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      </KharonCard>
+
+      {/* Open Defects */}
+      <div class="mt-8">
+        <KharonCard title="Open Defects Register" subtitle="Risk management">
+          <details class="text-xs text-kharon-purple relative float-right z-20">
+            <summary class="cursor-pointer font-bold uppercase tracking-widest text-[10px] hover:text-kharon-cyan transition-colors">Status guide</summary>
+            <div class="absolute right-0 mt-2 z-30 w-64 rounded-xl border border-kharon-purple/20 bg-kharon-charcoal p-4 shadow-2xl text-xs text-white/70">
+              <ul class="grid gap-2">
+                <li><strong class="text-white">Open</strong> — defect recorded; remediation pending.</li>
+                <li><strong class="text-white">In Progress</strong> — active remediation underway.</li>
+              </ul>
+            </div>
+          </details>
+          <div class="mt-4 space-y-4">
+            {openDefects.length === 0 && <p class="text-xs text-white/50 italic py-2">No open defects are recorded for your systems.</p>}
+            {openDefects.map(item => (
+              <article class="flex flex-col gap-4 p-5 rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/60">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="font-bold text-white text-sm">{item.owner_company_name}</span>
+                    <span class={`rounded px-3 py-0.5 text-[9px] font-bold uppercase border ${
+                      item.severity === "Critical" ? "border-kharon-red/30 bg-kharon-red/10 text-kharon-red" :
+                      item.severity === "Major" ? "border-kharon-amber/30 bg-kharon-amber/10 text-kharon-amber" :
+                      "border-kharon-purple/20 bg-kharon-purple/5 text-white/60"
+                    }`}>{item.severity}</span>
+                  </div>
+                  <p class="text-xs text-kharon-cyan uppercase tracking-wider font-bold mt-2">{item.system_type} / {item.coverage_area}</p>
+                  {item.sans_clause_ref && <p class="mt-1 font-mono text-[9px] text-white/40 font-bold uppercase tracking-wider">SANS Clause: {item.sans_clause_ref}</p>}
+                  <p class="mt-3 text-xs text-white/80 bg-kharon-black/40 border border-kharon-purple/10 p-3 rounded-lg leading-relaxed">{item.description}</p>
+                  {item.remediation_notes && (
+                    <div class="mt-3">
+                      <p class="text-[9px] font-bold uppercase text-kharon-cyan tracking-wider">Remediation Notes</p>
+                      <p class="text-xs text-white/80 bg-kharon-purple/5 border border-kharon-purple/20 p-3 rounded-lg mt-1 leading-relaxed">{item.remediation_notes}</p>
+                    </div>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </KharonCard>
+      </div>
+
+      {/* Certificates */}
+      <div class="mt-8">
+        <KharonCard title="Certificate Register" subtitle="Compliance">
+          <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {certificates.length === 0 && <p class="text-xs text-white/50 italic py-2 col-span-full">No certificates are registered for your systems.</p>}
+            {certificates.map(cert => (
+              <article class="flex flex-col gap-3 p-4 rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/60">
+                <div class="flex items-center justify-between gap-2">
+                  <p class="font-bold text-white text-sm">{cert.certificate_type}</p>
+                  <span class={`rounded px-2 py-0.5 text-[9px] font-black uppercase ${
+                    cert.status === "Valid" ? "bg-kharon-green/20 text-kharon-green border border-kharon-green/30" :
+                    cert.status === "Blocked" ? "bg-kharon-amber/20 text-kharon-amber border border-kharon-amber/30" :
+                    cert.status === "Expired" ? "bg-kharon-red/20 text-kharon-red border border-kharon-red/30" :
+                    "bg-white/5 text-white/50 border border-white/10"
+                  }`}>{cert.status}</span>
+                </div>
+                <p class="text-[10px] text-kharon-cyan uppercase font-bold tracking-wider">{cert.system_type} / {cert.coverage_area}</p>
+                <p class="text-xs text-white/50">{cert.owner_company_name}</p>
+                <div class="grid grid-cols-2 gap-2 text-xs border-t border-kharon-purple/10 pt-2.5">
+                  <div>
+                    <span class="text-[9px] font-bold uppercase text-kharon-purple block">Issued</span>
+                    <span class="font-medium text-white">{cert.issued_date}</span>
+                  </div>
+                  <div>
+                    <span class="text-[9px] font-bold uppercase text-kharon-purple block">Expires</span>
+                    <span class="font-medium text-white">{cert.expiry_date || "N/A"}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </KharonCard>
+      </div>
+
+      {/* Service Requests */}
+      <div class="mt-8 mb-8">
+        <KharonCard title="Service Request History" subtitle="Customer Support">
+          <div class="flex justify-end mb-4">
+            <KharonButton href="/portal/client/maintenance-request" variant="secondary" size="sm" className="text-[10px] tracking-widest uppercase font-bold">New request →</KharonButton>
+          </div>
+          <div class="space-y-4">
+            {requests.length === 0 && <p class="text-xs text-white/50 italic py-2">No service requests found.</p>}
+            {requests.map(req => (
+              <article class={`p-4 rounded-xl border ${
+                req.priority === "Critical" ? "border-kharon-red/20 bg-kharon-red/5" :
+                req.priority === "Urgent" ? "border-kharon-amber/20 bg-kharon-amber/5" :
+                "border-kharon-purple/20 bg-kharon-purple/5"
+              }`}>
+                <div class="flex justify-between items-start gap-2 mb-2">
+                  <div class="min-w-0">
+                    <p class="font-bold text-white text-sm truncate">{req.owner_company_name}</p>
+                    <p class="text-xs font-bold text-kharon-cyan mt-0.5">{req.request_type}</p>
+                  </div>
+                  <span class={`rounded px-2 py-0.5 text-[9px] font-black uppercase shrink-0 ${
+                    req.priority === "Critical" ? "bg-kharon-red/20 text-kharon-red border border-kharon-red/30" :
+                    req.priority === "Urgent" ? "bg-kharon-amber/20 text-kharon-amber border border-kharon-amber/35" :
+                    "bg-white/5 text-white/50 border border-white/10"
+                  }`}>{req.priority}</span>
+                </div>
+                <p class="text-xs text-white/50 truncate">{req.coverage_area || "General site request"}</p>
+                <div class="mt-3 text-xs border-t border-kharon-purple/10 pt-2.5 grid grid-cols-2 gap-2">
+                  <div>
+                    <span class="text-[9px] font-bold uppercase text-kharon-purple block">Subject</span>
+                    <span class="text-white/70 truncate block">{req.subject}</span>
+                  </div>
+                  <div>
+                    <span class="text-[9px] font-bold uppercase text-kharon-purple block">Status</span>
+                    <span class="text-white/70">{req.status}</span>
+                  </div>
+                </div>
+                <p class="mt-1 text-[10px] text-white/30 font-mono">{req.created_at?.slice(0, 10)}</p>
+              </article>
+            ))}
+          </div>
+        </KharonCard>
+      </div>
+    </div>
+  </section>
+</PortalLayout>

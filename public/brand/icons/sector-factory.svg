@@ -1,17 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
-  <circle cx="40" cy="40" r="38" stroke="#1F4E79" stroke-width="2.5" fill="#0B1520"/>
-  <circle cx="40" cy="40" r="34" stroke="#00C2FF" stroke-width="1" fill="none" opacity="0.3"/>
-  <!-- Factory building outline -->
-  <path d="M22 60 L22 45 L32 37 L32 45 L42 37 L42 45 L58 45 L58 60 Z" stroke="#4B2E83" stroke-width="2.5" fill="#15191D" stroke-linejoin="round"/>
-  <!-- Smokestacks -->
-  <line x1="48" y1="45" x2="48" y2="26" stroke="#4B2E83" stroke-width="2.5"/>
-  <line x1="53" y1="45" x2="53" y2="30" stroke="#4B2E83" stroke-width="2.5"/>
-  <!-- Smoke plumes -->
-  <path d="M48 22 Q47 18 49 15" stroke="#00C2FF" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-  <path d="M53 26 Q52 22 54 19" stroke="#00C2FF" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
-  <!-- Gear representing process machinery -->
-  <circle cx="32" cy="52" r="5" fill="#0B1520" stroke="#00C2FF" stroke-width="1.5"/>
-  <circle cx="32" cy="52" r="7.5" stroke="#00C2FF" stroke-width="1.5" stroke-dasharray="2 3"/>
-  <!-- Alert Indicator -->
-  <circle cx="44" cy="52" r="2.5" fill="#F59E0B"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <path d="M50 5 L89 27.5 L89 72.5 L50 95 L11 72.5 L11 27.5 Z" fill="#15191D" stroke="#7C5DC2" stroke-width="2" stroke-opacity="0.3"/>
+  <!-- Factory / Manufacturing -->
+  <path d="M25 70 V40 L40 50 V40 L55 50 V40 L75 30 V70 Z" stroke="#7C5DC2" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="35" y="55" width="6" height="10" stroke="#38BDF8" stroke-width="2"/>
+  <rect x="45" y="55" width="6" height="10" stroke="#38BDF8" stroke-width="2"/>
+  <rect x="55" y="55" width="6" height="10" stroke="#38BDF8" stroke-width="2"/>
 </svg>

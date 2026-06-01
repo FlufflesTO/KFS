@@ -1,13 +1,7 @@
-/* Optimized for <91KB size limit */
 /**
  * Project Kharon - global.css
- * Purpose: Global stylesheet defining themes, base styles, and utility sources for Tailwind v4
- * Dependencies: TailwindCSS
- * Structural Role: Main styling entrypoint
- * 
- * ⚠️ GOVERNANCE: Visual design tokens are governed by DESIGN_CONSTITUTION.md
- * Any changes to color, typography, or spacing tokens must comply with the constitution.
- * See: DESIGN_CONSTITUTION.md (Articles II, III, IV)
+ * Purpose: Global stylesheet defining themes and base styles for Tailwind v4
+ * Optimized for production < 100KB budget.
  */
 
 @import "tailwindcss";
@@ -17,46 +11,37 @@
 @source "../**/*.astro";
 
 @theme {
-  --color-kharon-purple: #7C5DC2; /* Lightened from #4B2E83 for better visibility on dark surfaces */
-  --color-kharon-blue: #38BDF8;   /* Aligned with cyan for a more cohesive industrial tech feel */
+  --color-kharon-purple: #7C5DC2;
+  --color-kharon-blue: #38BDF8;
   --color-kharon-black: #0B0D0F;
   --color-kharon-charcoal: #15191D;
-  --color-kharon-grey: #4A5568;   /* Darker grey for light mode / neutral utility */
-  --color-kharon-light: #E2E8F0;  /* Softened from #F3F5F7 to reduce glare */
+  --color-kharon-grey: #4A5568;
+  --color-kharon-light: #E2E8F0;
   --color-kharon-border: #2D3748;
   --color-kharon-amber: #F59E0B;
   --color-kharon-red: #C4332F;
   --color-kharon-green: #16A34A;
   --color-kharon-cyan: #38BDF8;
 
-  /* Extended dark surface tokens for Industrial Command Intelligence */
   --color-surface-obsidian: #0B0D0F;
   --color-surface-charcoal: #15191D;
   --color-surface-graphite: #1A2027;
   --color-surface-elevated: rgba(21, 25, 29, 0.82);
   --color-surface-glass: rgba(21, 25, 29, 0.68);
-  --color-line-cyan-soft: rgba(56, 189, 248, 0.15); /* Restored subtle cyan for technical lines */
+  --color-line-cyan-soft: rgba(56, 189, 248, 0.15);
   --color-line-purple-soft: rgba(124, 93, 194, 0.25);
   --color-line-white-soft: rgba(226, 232, 240, 0.08);
   --shadow-glow-cyan: 0 0 20px rgba(56, 189, 248, 0.12);
   --shadow-glow-purple: 0 0 24px rgba(124, 93, 194, 0.15);
   
-  /* Refined Typography Tokens for readability */
-  --color-text-primary-dark: #E2E8F0;    /* High-readability soft white */
-  --color-text-secondary-dark: #A0AEC0;  /* Balanced grey for body text on dark */
-  --color-text-muted-dark: #718096;      /* Muted text for low-priority info */
+  --color-text-primary-dark: #E2E8F0;
+  --color-text-secondary-dark: #A0AEC0;
+  --color-text-muted-dark: #718096;
 
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-heading: "Inter", system-ui, -apple-system, sans-serif;
-
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
-
-  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,.1);
 
   --animate-fade-in: fade-in 0.6s ease-out forwards;
   --animate-slide-up: slide-up 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
@@ -74,7 +59,6 @@
 
 html {
   scroll-behavior: smooth;
-  color-scheme: light;
   --header-height: 5rem;
 }
 
@@ -83,31 +67,21 @@ html {
   background: white;
   color: var(--color-kharon-black);
   font-family: var(--font-sans);
-  font-weight: 400;
   font-size: 0.9375rem;
   line-height: 1.6;
-  letter-spacing: 0;
   overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Portal shell: force the secure-console dark surface and light default text.
-   Higher specificity than :where(body) so the Industrial Command Intelligence
-   theme applies uniformly across every portal page, including those whose
-   content sections do not provide their own full-bleed dark wrapper. */
 body.portal-shell {
   background: var(--color-kharon-black);
   color: var(--color-kharon-light);
 }
 
-/* Typography - Standardized font weights and professional responsive scaling */
 .kharon-h1, .kharon-h2, .kharon-h3 { 
   font-weight: 800; 
   text-wrap: balance; 
   color: var(--color-text-primary-dark);
   text-transform: uppercase;
-  letter-spacing: -0.01em;
 }
 .kharon-h1 { font-size: 2.5rem; line-height: 0.95; letter-spacing: -0.04em; }
 .kharon-h2 { font-size: 1.75rem; line-height: 1.05; letter-spacing: -0.02em; }
@@ -125,16 +99,8 @@ body.portal-shell {
   .kharon-h3 { font-size: 1.75rem; }
 }
 
-/* Responsive Spacing Utilities */
-.section-padding {
-  padding-top: 5rem;
-  padding-bottom: 5rem;
-}
-
-.hero-padding {
-  padding-top: 10rem;
-  padding-bottom: 5rem;
-}
+.section-padding { padding-top: 5rem; padding-bottom: 5rem; }
+.hero-padding { padding-top: 10rem; padding-bottom: 5rem; }
 
 @media (min-width: 1024px) {
   .section-padding { padding-top: 10rem; padding-bottom: 10rem; }
@@ -145,184 +111,89 @@ body.portal-shell {
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-
-:where(body) * {
-  overflow-wrap: break-word;
+  padding: 0 1.5rem;
 }
 
 img,svg{max-width:100%;height:auto;display:block}
 
-.text-balance {
-  text-wrap: balance;
-}
+::selection { background: var(--color-kharon-purple); color: white; }
 
-::selection {
-  background: var(--color-kharon-purple);
-  color: white;
-}
-
-a,
-button,
-input,
-select,
-textarea,
-summary {
+a, button, input, select, textarea, summary {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  touch-action: manipulation;
 }
 
-summary::-webkit-details-marker {
-  display: none;
-}
+summary::-webkit-details-marker { display: none; }
 
-.mobile-menu[open] .mobile-menu__open {
-  display: none;
-}
+.mobile-menu[open] .mobile-menu__open { display: none; }
+.mobile-menu[open] .mobile-menu__close { display: block; }
 
-.mobile-menu[open] .mobile-menu__close {
-  display: block;
-}
-
-/* High-contrast focus rings for accessibility - cyan palette per DESIGN_CONSTITUTION.md */
 :focus-visible {
   outline: 2px solid var(--color-kharon-cyan);
   outline-offset: 4px;
 }
 
-/* Focus ring utility for accessibility */
-.kharon-focus-ring {
-  outline: 2px solid var(--color-kharon-cyan) !important;
-  outline-offset: 4px !important;
-}
-
-.hero-cinematic {
-  position: relative;
-  min-height: min(840px, 85svh);
-  padding-top: var(--header-height);
-  background: var(--color-kharon-black);
-  display: flex;
-  align-items: center;
-}
-
-
-
-/* Kharon surface with industrial styling */
 .kharon-surface {
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-line-cyan-soft);
   border-radius: var(--radius-md);
-  box-shadow: 0 24px 80px rgba(0,0,0,.42),
-              inset 0 1px 0 var(--color-line-white-soft);
-  backdrop-filter: blur(8px);
+  box-shadow: 0 20px 50px rgba(0,0,0,.3);
   color: var(--color-text-primary-dark);
 }
 
-/* Stronger surface for prominent elements */
 .kharon-surface-strong {
   background: linear-gradient(135deg, var(--color-surface-charcoal), var(--color-surface-obsidian));
   border: 1px solid var(--color-kharon-purple);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-glow-cyan),
-              0 24px 80px rgba(0,0,0,.42);
-  backdrop-filter: blur(8px);
+  box-shadow: 0 20px 50px rgba(0,0,0,.3);
   color: var(--color-text-primary-dark);
 }
 
-/* Page shell with industrial background */
 .kharon-page-shell {
   background: linear-gradient(135deg, var(--color-surface-obsidian), var(--color-surface-charcoal));
   min-height: 100vh;
-  color: var(--color-text-primary-dark);
 }
 
-/* Environmental background with 3D Logo */
 .kharon-environment {
   position: relative;
-  isolation: isolate;
   background: linear-gradient(135deg, var(--color-kharon-black) 0%, var(--color-kharon-charcoal) 100%);
 }
 
 .kharon-environment::before {
   content: "";
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 70%;
-  height: 70%;
-  background-image: url('/brand/kharon-mark.svg');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
+  width: 70%; height: 70%;
+  background: url('/brand/kharon-mark.svg') no-repeat center/contain;
   opacity: 0.03;
   pointer-events: none;
   z-index: -2;
-  /* Simulating 3D depth and architectural scale */
-  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.55));
 }
 
-/* Field styling for dark surfaces */
 .kharon-field {
   width: 100%;
   padding: 0.75rem 1rem;
-  font-size: clamp(0.875rem, 1rem, 1rem);
   border: 1px solid var(--color-line-cyan-soft);
   border-radius: var(--radius-sm);
   background: var(--color-surface-graphite);
   color: var(--color-text-primary-dark);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .kharon-field:focus {
   outline: none;
   border-color: var(--color-kharon-purple);
-  box-shadow: 0 0 0 2px var(--color-line-cyan-soft);
 }
 
-/* Command button with industrial styling */
 .kharon-command-button {
   background: linear-gradient(135deg, var(--color-kharon-purple), var(--color-kharon-blue));
-  border: 1px solid var(--color-kharon-purple);
   border-radius: var(--radius-sm);
   color: white;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
 }
 
-.kharon-command-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.kharon-command-button:hover::before {
-  left: 100%;
-}
-
-.kharon-command-button:hover {
-  box-shadow: var(--shadow-glow-purple);
-  transform: translateY(-1px);
-}
-
-.kharon-command-button:focus {
-  outline: 2px solid var(--color-kharon-cyan);
-  outline-offset: 2px;
-}
-
-/* Secondary button with glass effect */
 .kharon-secondary-button {
   background: var(--color-surface-glass);
   border: 1px solid var(--color-line-cyan-soft);
@@ -332,121 +203,70 @@ summary::-webkit-details-marker {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
 }
 
-.kharon-secondary-button:hover {
-  background: var(--color-surface-charcoal);
-  border-color: var(--color-kharon-purple);
-}
-
-.kharon-secondary-button:focus {
-  outline: 2px solid var(--color-kharon-cyan);
-  outline-offset: 2px;
-}
-
-/* Danger button for destructive actions */
 .kharon-danger-button {
   background: linear-gradient(135deg, var(--color-kharon-red), #a02824);
-  border: 1px solid rgba(196, 51, 47, 0.5);
   border-radius: var(--radius-sm);
   color: white;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: all 0.2s ease;
 }
 
-.kharon-danger-button:hover {
-  box-shadow: 0 0 20px rgba(196, 51, 47, 0.3);
-  transform: translateY(-1px);
-}
-
-.kharon-danger-button:focus {
-  outline: 2px solid var(--color-kharon-red);
-  outline-offset: 2px;
-}
-
-/* Table styling for operational data */
 .kharon-table {
   width: 100%;
   border-collapse: collapse;
   background: var(--color-surface-charcoal);
-  border: 1px solid var(--color-line-cyan-soft);
   border-radius: var(--radius-sm);
-  overflow: hidden;
 }
 
 .kharon-table th {
   background: var(--color-surface-graphite);
-  color: var(--color-text-primary-dark);
   padding: 0.75rem;
   text-align: left;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   font-size: 0.75rem;
+  text-transform: uppercase;
 }
 
 .kharon-table td {
   padding: 0.75rem;
   border-top: 1px solid var(--color-line-purple-soft);
-  color: var(--color-text-secondary-dark);
 }
 
-.kharon-table tr:first-child td {
-  border-top: none;
-}
-
-.kharon-table tr:hover {
-  background: var(--color-surface-graphite);
-}
-
-/* Status chip for operational indicators */
 .kharon-status-chip {
   display: inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
+.kharon-status-chip.active  { background: var(--color-kharon-green); color: white; }
+.kharon-status-chip.warning { background: var(--color-kharon-amber); color: var(--color-kharon-black); }
+.kharon-status-chip.danger  { background: var(--color-kharon-red); color: white; }
 
-.kharon-status-chip.active {
-  background: var(--color-kharon-green);
-  color: white;
-}
+/* Custom Scrollbar for Command Console */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: var(--color-kharon-black); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-kharon-purple); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--color-kharon-blue); }
 
-.kharon-status-chip.warning {
-  background: var(--color-kharon-amber);
-  color: var(--color-kharon-black);
+/* Horizontal scrolling for high-density operational data */
+.portal-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-kharon-purple) var(--color-kharon-black);
 }
-
-.kharon-status-chip.danger {
-  background: var(--color-kharon-red);
-  color: white;
-}
-
-.kharon-status-chip.info {
-  background: var(--color-kharon-purple);
-  color: var(--color-kharon-black);
-}
-
-.kharon-status-chip.neutral {
-  background: var(--color-kharon-grey);
-  color: white;
-}
+.portal-scroll-x::-webkit-scrollbar { height: 4px; }
+.portal-scroll-x::-webkit-scrollbar-track { background: transparent; }
+.portal-scroll-x::-webkit-scrollbar-thumb { background: var(--color-kharon-purple); border-radius: 4px; }
 
 .reveal{opacity:0;transform:translateY(15px);animation:reveal-up 800ms cubic-bezier(.2,.8,.2,1) forwards}.reveal-delayed{animation-delay:200ms}@keyframes reveal-up{to{opacity:1;transform:translateY(0)}}
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
-    scroll-behavior: auto !important;
+  *, ::before, ::after {
     animation: none !important;
     transition-duration: 1ms !important;
   }
