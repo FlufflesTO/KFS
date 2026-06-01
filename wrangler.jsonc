@@ -4,20 +4,6 @@
   "compatibility_date": "2026-05-20",
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": "dist",
-  "routes": [
-    {
-      "pattern": "tequit.co.za/*",
-      "zone_name": "tequit.co.za"
-    },
-    {
-      "pattern": "www.tequit.co.za/*",
-      "zone_name": "tequit.co.za"
-    },
-    {
-      "pattern": "portal.tequit.co.za/*",
-      "zone_name": "tequit.co.za"
-    }
-  ],
   "d1_databases": [
     {
       "binding": "DB",
@@ -35,10 +21,5 @@
   "vars": {
     "SESSION_COOKIE_NAME": "kharon_session_token",
     "STANDARD_SERVICE_FEE": "1850.00"
-  },
-  "triggers": {
-    "crons": [
-      "0 * * * *"
-    ]
   }
 }
