@@ -246,6 +246,23 @@ summary::-webkit-details-marker { display: none; }
 .kharon-status-chip.warning { background: var(--color-kharon-amber); color: var(--color-kharon-black); }
 .kharon-status-chip.danger  { background: var(--color-kharon-red); color: white; }
 
+/* Custom Scrollbar for Command Console */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: var(--color-kharon-black); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-kharon-purple); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--color-kharon-blue); }
+
+/* Horizontal scrolling for high-density operational data */
+.portal-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-kharon-purple) var(--color-kharon-black);
+}
+.portal-scroll-x::-webkit-scrollbar { height: 4px; }
+.portal-scroll-x::-webkit-scrollbar-track { background: transparent; }
+.portal-scroll-x::-webkit-scrollbar-thumb { background: var(--color-kharon-purple); border-radius: 4px; }
+
 .reveal{opacity:0;transform:translateY(15px);animation:reveal-up 800ms cubic-bezier(.2,.8,.2,1) forwards}.reveal-delayed{animation-delay:200ms}@keyframes reveal-up{to{opacity:1;transform:translateY(0)}}
 
 @media (prefers-reduced-motion: reduce) {

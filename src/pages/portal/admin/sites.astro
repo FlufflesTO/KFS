@@ -156,22 +156,22 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <input type="hidden" name="id" value={record.id} />
             
             <div class="lg:col-span-2 grid gap-1.5">
-              <label for={`comp-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Registered Entity</label>
+              <label for={`comp-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Registered Entity</label>
               <input id={`comp-${record.id}`} class="kharon-field text-sm font-bold" name="ownerCompanyName" value={record.owner_company_name} required />
             </div>
             
             <div class="grid gap-1.5">
-              <label for={`contact-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Lead Contact</label>
+              <label for={`contact-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Lead Contact</label>
               <input id={`contact-${record.id}`} class="kharon-field text-xs" name="siteContactPerson" value={record.site_contact_person ?? ""} required />
             </div>
             
             <div class="grid gap-1.5">
-              <label for={`email-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Contact Email</label>
+              <label for={`email-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Contact Email</label>
               <input id={`email-${record.id}`} class="kharon-field text-xs" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
             </div>
             
             <div class="grid gap-1.5">
-              <label for={`phone-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Phone Infrastructure</label>
+              <label for={`phone-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Phone Infrastructure</label>
               <input id={`phone-${record.id}`} class="kharon-field text-xs" name="siteContactPhone" value={record.site_contact_phone || ""} />
             </div>
 
@@ -180,12 +180,12 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </div>
             
             <div class="lg:col-span-4 grid gap-1.5">
-              <label for={`address-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Physical Site Address</label>
+              <label for={`address-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Physical Site Address</label>
               <textarea id={`address-${record.id}`} class="min-h-[80px] kharon-field text-xs leading-relaxed" name="physicalAddress" required>{record.physical_address}</textarea>
             </div>
 
             <div class="lg:col-span-2 grid gap-1.5">
-              <label for={`billing-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Finance Emails (Comma separated)</label>
+              <label for={`billing-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Finance Emails (Comma separated)</label>
               <input id={`billing-${record.id}`} class="kharon-field text-xs" name="billingEmails" value={record.billing_emails} required />
               <div class="mt-4 flex items-center justify-between gap-4 border-t border-kharon-purple/10 pt-4">
                 <a href={`/portal/admin/systems?q=${encodeURIComponent(record.owner_company_name)}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple hover:text-kharon-cyan transition-colors">
@@ -227,34 +227,34 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           <input type="hidden" name="action" value="create" />
           
           <div class="grid gap-1.5">
-            <label for="create-company" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Entity Name *</label>
+            <label for="create-company" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Entity Name *</label>
             <input id="create-company" class="kharon-field" name="ownerCompanyName" placeholder="e.g. Acme Industrial" required />
           </div>
 
           <div class="grid gap-1.5">
-            <label for="create-address" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Physical Location *</label>
+            <label for="create-address" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Physical Location *</label>
             <textarea id="create-address" class="min-h-[80px] kharon-field text-xs" name="physicalAddress" placeholder="Street address, suburb, code" required></textarea>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="grid gap-1.5">
-              <label for="create-contact" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Lead Liaison *</label>
+              <label for="create-contact" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Lead Liaison *</label>
               <input id="create-contact" class="kharon-field text-xs" name="siteContactPerson" placeholder="Full name" required />
             </div>
 
             <div class="grid gap-1.5">
-              <label for="create-phone" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Contact Phone</label>
+              <label for="create-phone" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Contact Phone</label>
               <input id="create-phone" class="kharon-field text-xs" name="siteContactPhone" placeholder="+27..." />
             </div>
           </div>
 
           <div class="grid gap-1.5">
-            <label for="create-email" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Liaison Email</label>
+            <label for="create-email" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Liaison Email</label>
             <input id="create-email" class="kharon-field text-xs" name="siteContactEmail" type="email" placeholder="contact@company.com" />
           </div>
 
           <div class="grid gap-1.5">
-            <label for="create-billing" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Sage Billing Targets *</label>
+            <label for="create-billing" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Sage Billing Targets *</label>
             <input id="create-billing" class="kharon-field text-xs" name="billingEmails" placeholder="accounts@company.com" required />
           </div>
 
@@ -275,7 +275,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           
           <div class="grid grid-cols-2 gap-4">
             <div class="grid gap-1.5">
-              <label for="grant-user" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Target Client Account *</label>
+              <label for="grant-user" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Target Client Account *</label>
               <select id="grant-user" class="kharon-field text-xs py-2" name="userId" required>
                 <option value="">— Select Account —</option>
                 {clientUsers.map((client) => (
@@ -285,7 +285,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </div>
             
             <div class="grid gap-1.5">
-              <label for="grant-site" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Authorize Site Access *</label>
+              <label for="grant-site" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Authorize Site Access *</label>
               <select id="grant-site" class="kharon-field text-xs py-2" name="siteId" required>
                 <option value="">— Select Site —</option>
                 {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}

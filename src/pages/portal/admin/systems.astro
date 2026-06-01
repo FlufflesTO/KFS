@@ -172,7 +172,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <input type="hidden" name="id" value={record.id} />
             
             <div class="lg:col-span-2 grid gap-1.5">
-              <label for={`site-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Mapped Entity</label>
+              <label for={`site-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Mapped Entity</label>
               <select id={`site-${record.id}`} class="kharon-field text-xs font-bold" name="siteId">
                 {sites.map((site) => (
                   <option value={site.id} selected={record.site_id === site.id}>{site.owner_company_name}</option>
@@ -181,7 +181,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="grid gap-1.5">
-              <label for={`type-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Architecture</label>
+              <label for={`type-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Architecture</label>
               <select id={`type-${record.id}`} class="kharon-field text-xs" name="systemType">
                 {["Gas Suppression", "Fire Detection"].map((type) => (
                   <option value={type} selected={record.system_type === type}>{type}</option>
@@ -190,17 +190,17 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="grid gap-1.5">
-              <label for={`area-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Coverage Perimeter</label>
+              <label for={`area-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Coverage Perimeter</label>
               <input id={`area-${record.id}`} class="kharon-field text-xs" name="coverageArea" value={record.coverage_area} required />
             </div>
 
             <div class="grid gap-1.5">
-              <label for={`mfr-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">OEM Manufacturer</label>
+              <label for={`mfr-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">OEM Manufacturer</label>
               <input id={`mfr-${record.id}`} class="kharon-field text-xs" name="manufacturer" value={record.manufacturer || ""} />
             </div>
 
             <div class="grid gap-1.5">
-              <label for={`model-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Model Signature</label>
+              <label for={`model-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Model Signature</label>
               <input id={`model-${record.id}`} class="kharon-field text-xs" name="modelReference" value={record.model_reference || ""} />
             </div>
 
@@ -209,12 +209,12 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="lg:col-span-2 grid gap-1.5">
-              <label for={`due-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Next Mission-Critical Due Date</label>
+              <label for={`due-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Next Mission-Critical Due Date</label>
               <input id={`due-${record.id}`} class={`kharon-field text-xs font-bold ${record.isOverdue ? 'text-kharon-red' : record.isDueSoon ? 'text-kharon-amber' : 'text-kharon-cyan'}`} type="date" value={record.next_due_date} name="nextDueDate" />
             </div>
 
             <div class="grid gap-1.5">
-              <label for={`interval-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">SLA Interval (Mo.)</label>
+              <label for={`interval-${record.id}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">SLA Interval (Mo.)</label>
               <input id={`interval-${record.id}`} class="kharon-field text-xs" name="serviceIntervalMonths" type="number" min="1" max="36" value={record.service_interval_months ?? 6} required />
             </div>
 
@@ -272,7 +272,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         <input type="hidden" name="action" value="create" />
         
         <div class="grid gap-1.5">
-          <label for="create-siteId" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Host Site Registry *</label>
+          <label for="create-siteId" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Host Site Registry *</label>
           <select id="create-siteId" class="kharon-field text-xs py-2" name="siteId" required>
             <option value="">— Select Host Site —</option>
             {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
@@ -280,7 +280,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         </div>
 
         <div class="grid gap-1.5">
-          <label for="create-systemType" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">System Topology *</label>
+          <label for="create-systemType" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">System Topology *</label>
           <select id="create-systemType" class="kharon-field text-xs py-2" name="systemType" required>
             <option value="Gas Suppression">Gas Suppression Architecture</option>
             <option value="Fire Detection">Fire Detection Architecture</option>
@@ -288,27 +288,27 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         </div>
 
         <div class="grid gap-1.5">
-          <label for="create-coverageArea" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Operational Perimeter *</label>
+          <label for="create-coverageArea" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Operational Perimeter *</label>
           <input id="create-coverageArea" class="kharon-field text-xs" name="coverageArea" placeholder="e.g. Server Room A / Level 04" required />
         </div>
 
         <div class="grid gap-1.5">
-          <label for="create-manufacturer" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">OEM Manufacturer</label>
+          <label for="create-manufacturer" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">OEM Manufacturer</label>
           <input id="create-manufacturer" class="kharon-field text-xs" name="manufacturer" placeholder="e.g. Technoswitch / Kentec" />
         </div>
 
         <div class="grid gap-1.5">
-          <label for="create-modelReference" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Reference / Version</label>
+          <label for="create-modelReference" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Reference / Version</label>
           <input id="create-modelReference" class="kharon-field text-xs" name="modelReference" placeholder="e.g. V-1000-AD" />
         </div>
 
         <div class="grid gap-1.5">
-          <label for="create-nextDueDate" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Initial Compliance Due *</label>
+          <label for="create-nextDueDate" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Initial Compliance Due *</label>
           <input id="create-nextDueDate" class="kharon-field text-xs" name="nextDueDate" type="date" value={today} required />
         </div>
 
         <div class="grid gap-1.5">
-          <label for="create-serviceIntervalMonths" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Regulatory Interval (Months) *</label>
+          <label for="create-serviceIntervalMonths" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Regulatory Interval (Months) *</label>
           <input id="create-serviceIntervalMonths" class="kharon-field text-xs" name="serviceIntervalMonths" type="number" min="1" max="36" value="6" required />
         </div>
 

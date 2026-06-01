@@ -251,7 +251,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <DashboardFeatureCard
               title="Field Operations"
               description="Enquiries, request queue and site operational tasks."
-              href="/portal/admin/operations"
+              href="/portal/admin/dashboard"
               iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />`}
               badge={stats.openRequests > 0 ? stats.openRequests : undefined}
               badgeVariant={stats.openRequests > 0 ? "warning" : "default"}
@@ -610,14 +610,14 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
                   ]}>
                     <div class="flex items-center justify-between">
                       <span class="font-bold text-white tracking-tight">{item.owner_company_name}</span>
-                      <span class={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase border tracking-widest ${
+                      <span class={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase border tracking-widest ${
                         item.severity === "Critical" ? "border-kharon-red/30 bg-kharon-red/10 text-kharon-red" :
                         item.severity === "Major" ? "border-kharon-amber/30 bg-kharon-amber/10 text-kharon-amber" :
                         "border-kharon-purple/20 bg-kharon-purple/5 text-white/60"
                       }`}>{item.severity}</span>
                     </div>
                     <p class="text-kharon-light/50 text-xs mt-1.5 font-medium">{item.system_type} / {item.coverage_area}</p>
-                    {item.sans_clause_ref && <p class="mt-2 font-mono text-[9px] text-kharon-light/35 uppercase tracking-widest">SANS Clause: {item.sans_clause_ref}</p>}
+                    {item.sans_clause_ref && <p class="mt-2 font-mono text-[10px] text-kharon-light/35 uppercase tracking-widest">SANS Clause: {item.sans_clause_ref}</p>}
                   </a>
                 ))}
               </div>
@@ -714,3 +714,4 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
     }
   </script>
 </PortalLayout>
+>

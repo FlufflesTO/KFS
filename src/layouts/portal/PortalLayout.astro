@@ -25,7 +25,6 @@ const roleLinks: Record<string, Array<{ label: string; href: string; key: string
     { label: "Admin Matrix", href: "/portal/admin/dashboard", key: "admin" },
     { label: "Planning", href: "/portal/admin/planning", key: "planning" },
     { label: "Dispatch", href: "/portal/admin/dispatch", key: "dispatch" },
-    { label: "Operations", href: "/portal/admin/operations", key: "operations" },
     { label: "Jobs", href: "/portal/admin/jobs", key: "jobs" },
     { label: "Sites", href: "/portal/admin/sites", key: "sites" },
     { label: "Systems", href: "/portal/admin/systems", key: "systems" },
@@ -117,7 +116,6 @@ if (user?.role === "admin") {
       { label: "Admin Matrix", href: "/portal/admin/dashboard", key: "admin" },
       { label: "Planning Calendar", href: "/portal/admin/planning", key: "planning" },
       { label: "Dispatch Board", href: "/portal/admin/dispatch", key: "dispatch" },
-      { label: "Field Operations", href: "/portal/admin/operations", key: "operations" },
       { label: "Jobs Registry", href: "/portal/admin/jobs", key: "jobs" }
     ]
   });
@@ -288,7 +286,7 @@ categories.push({
       <nav class="space-y-6 flex-1" aria-label="Portal mobile navigation">
         {categories.map((category) => (
           <div>
-            <h3 class="text-[9px] font-black uppercase tracking-[0.2em] text-kharon-purple px-3 mb-2">{category.title}</h3>
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-3 mb-2">{category.title}</h3>
             <div class="space-y-1">
               {category.links.map((link) => (
                 <a
@@ -329,7 +327,7 @@ categories.push({
           </div>
           <div class="hidden sm:block">
             <span class="block whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-white">Kharon Command</span>
-            <span class="block whitespace-nowrap text-[9px] font-bold uppercase text-kharon-purple tracking-widest">Secure Operations Console</span>
+            <span class="block whitespace-nowrap text-[10px] font-bold uppercase text-kharon-purple tracking-widest">Secure Operations Console</span>
           </div>
         </a>
       </div>
@@ -355,8 +353,8 @@ categories.push({
 
   <div class="flex flex-col lg:flex-row max-w-7xl mx-auto">
     <!-- Left Navigation Rail - Desktop -->
-    <aside class="hidden lg:block w-64 min-h-[calc(100vh-5rem)] border-r border-kharon-purple/10 bg-kharon-black/40 p-4">
-      <nav class="space-y-8 sticky top-24" aria-label="Portal navigation">
+    <aside class="hidden lg:block w-64 h-[calc(100vh-5rem)] sticky top-[5rem] overflow-y-auto border-r border-kharon-purple/10 bg-kharon-black/40 p-4 custom-scrollbar">
+      <nav class="space-y-8" aria-label="Portal navigation">
         {categories.map((category) => (
           <div class="space-y-2">
             <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-3">{category.title}</h3>
