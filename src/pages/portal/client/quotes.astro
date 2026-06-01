@@ -263,8 +263,12 @@ try {
     }
   </script>
   <script is:inline>
+    const _inFlight = new WeakSet();
     for (const button of document.querySelectorAll("[data-quote-id]")) {
       button.addEventListener("click", async () => {
+        const row = button.closest("tr");
+        if (_inFlight.has(row || button)) return;
+
         const quoteId = button.getAttribute("data-quote-id");
         const action = button.getAttribute("data-action") || "approved";
         const isDecline = action === "rejected";
@@ -273,7 +277,7 @@ try {
           : `Approve Quote ${quoteId}? This will trigger the Sage invoicing workflow.`;
         if (!window.confirm(confirmMsg)) return;
 
-        const row = button.closest("tr");
+        _inFlight.add(row || button);
         const allButtons = row ? row.querySelectorAll("[data-quote-id]") : [button];
         for (const b of allButtons) b.setAttribute("disabled", "true");
         button.textContent = isDecline ? "Declining..." : "Approving...";
@@ -286,6 +290,7 @@ try {
           });
           const result = await response.json();
           if (!response.ok || !result.ok) {
+            _inFlight.delete(row || button);
             for (const b of allButtons) b.removeAttribute("disabled");
             button.textContent = result.message || (isDecline ? "Decline failed" : "Approval failed");
             button.className = "rounded border border-kharon-red bg-kharon-red/10 px-3 py-1.5 text-xs font-semibold text-red-200";
@@ -303,6 +308,7 @@ try {
             }
           }
         } catch {
+          _inFlight.delete(row || button);
           for (const b of allButtons) b.removeAttribute("disabled");
           button.textContent = "Network Error";
           button.className = "rounded border border-kharon-red bg-kharon-red/10 px-3 py-1.5 text-xs font-semibold text-red-200";
