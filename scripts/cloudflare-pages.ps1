@@ -7,9 +7,9 @@ $ErrorActionPreference = "Stop"
 
 Set-Location -LiteralPath (Resolve-Path "$PSScriptRoot\..")
 
-$ProjectName = "kharon-website"
+$ProjectName = "kfs"
 $PortalDomain = "portal.tequit.co.za"
-$AccountId = if ($env:CLOUDFLARE_ACCOUNT_ID) { $env:CLOUDFLARE_ACCOUNT_ID } else { "1b6ad8d0efcc066f4689065f5f24f5f9" }
+$AccountId = if ($env:CLOUDFLARE_ACCOUNT_ID) { $env:CLOUDFLARE_ACCOUNT_ID } else { "75012acd08c1e7bdccb82f3ea3fabdb8" }
 
 if ($env:CLOUDFLARE_API_TOKEN) {
   Remove-Item Env:CLOUDFLARE_API_TOKEN -ErrorAction SilentlyContinue
@@ -101,14 +101,16 @@ switch ($Action) {
   "preview" {
     powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" staging
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    # Deploy to Cloudflare Pages using the Pages-specific command
+    # Try to create project if it doesn't exist
+    npx wrangler pages project create $ProjectName --production-branch main --compatibility-date 2026-05-18 | Out-Null
     npx wrangler pages deploy dist --project-name $ProjectName --branch preview
     exit $LASTEXITCODE
   }
   "production" {
     powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" staging
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    # Deploy to Cloudflare Pages using the Pages-specific command
+    # Try to create project if it doesn't exist
+    npx wrangler pages project create $ProjectName --production-branch main --compatibility-date 2026-05-18 | Out-Null
     npx wrangler pages deploy dist --project-name $ProjectName --branch main
     exit $LASTEXITCODE
   }
