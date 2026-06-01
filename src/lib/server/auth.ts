@@ -96,15 +96,28 @@ async function hmacKey(secret: string): Promise<CryptoKey> {
   );
 }
 
-function resolveBindings(): any {
+interface AuthEnv {
+  SESSION_SECRET?: string;
+  AUTH_SECRET?: string;
+  MFA_SECRET?: string;
+  ENCRYPTION_SECRET?: string;
+  DB?: D1Database;
+  STORAGE?: unknown;
+  [key: string]: unknown;
+}
+
+function resolveBindings(): AuthEnv {
   try {
-    if (env && ((env as any).SESSION_SECRET || (env as any).DB || (env as any).STORAGE)) {
-      return env;
+    const runtimeEnv = env as AuthEnv | undefined;
+    if (runtimeEnv && (runtimeEnv.SESSION_SECRET || runtimeEnv.DB || runtimeEnv.STORAGE)) {
+      return runtimeEnv;
     }
   } catch (e) {
     // Ignore if module is not available
   }
-  return (globalThis as any).__env__ || globalThis;
+  const globalEnv = (globalThis as Record<string, unknown>).__env__ as AuthEnv | undefined;
+  if (globalEnv) return globalEnv;
+  return globalThis as unknown as AuthEnv;
 }
 
 /**

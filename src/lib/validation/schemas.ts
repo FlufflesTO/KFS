@@ -57,7 +57,7 @@ export const JobCardSchema = z.object({
   systemId: z.string().regex(/^[A-Za-z0-9_-]{3,80}$/),
   techComments: z.string().min(3).max(3000),
   signatureBase64: z.string().min(100), // Expecting a reasonable data URI length
-  signatureStrokes: z.array(z.any()).optional().default([]),
+  signatureStrokes: z.array(z.array(z.object({ x: z.number(), y: z.number() }))).optional().default([]),
   faultCategory: z.string().max(120).default("Routine service"),
   partsUsed: z.string().max(500).default("None recorded"),
   followUpActions: z.string().max(1000).default("No follow-up actions recorded"),

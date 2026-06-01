@@ -1,13 +1,14 @@
 ---
 /**
- * Client Portal Landing Hub
- * Summary-level overview with navigation to detail pages.
- * No inline data lists — counts and heatmap only.
+ * Project Sentinel - Client Portal Landing Hub
+ * Purpose: Summary-level overview with navigation, counts, and compliance heatmap for tenants
+ * Dependencies: PortalLayout, getDatabase, clientSites, inClause, ClientSite
+ * Structural Role: Portal dashboard entry point for clients
  */
 import { auditError } from "../../../lib/server/audit.js";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
-import { clientSites, inClause } from "../../../lib/server/access.ts";
+import { clientSites, inClause, type ClientSite } from "../../../lib/server/access.ts";
 import { formatCurrency } from "../../../lib/utils/financial-utils.ts";
 import KharonButton from "../../../components/ui/KharonButton.astro";
 import DashboardFeatureCard from "../../../components/portal/DashboardFeatureCard.astro";
@@ -32,7 +33,7 @@ interface QuoteSummary {
   pending_amount: number;
 }
 
-let sites: Array<any> = [];
+let sites: ClientSite[] = [];
 let siteAggregates: SiteAggregate[] = [];
 let pendingQuoteCount = 0;
 let pendingQuoteAmount = 0;
@@ -45,7 +46,7 @@ const soonDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)
 try {
   const db = getDatabase();
   sites = await clientSites(db, user);
-  const siteIds = sites.map((s: any) => s.id);
+  const siteIds = sites.map((s) => s.id);
 
   if (siteIds.length === 0) {
     loadError = "This client account is not mapped to a site.";
@@ -92,7 +93,7 @@ try {
       const qs = (quoteResult.results[0] ?? {}) as Partial<QuoteSummary>;
       pendingQuoteCount  = Number(qs.pending_count  ?? 0);
       pendingQuoteAmount = Number(qs.pending_amount ?? 0);
-      openRequestCount   = Number((requestResult.results[0] as any)?.cnt ?? 0);
+      openRequestCount   = Number((requestResult.results[0] as Record<string, unknown> | undefined)?.cnt ?? 0);
     } catch (err) {
       await auditError(getDatabase(), Astro.request, err, { entityType: "system", entityId: "client_dashboard" });
       loadError = "Dashboard summary could not be loaded.";

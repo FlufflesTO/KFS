@@ -24,6 +24,29 @@ interface FinanceTask {
   updatedAt: string;
 }
 
+interface FinanceTaskRow {
+  id: string;
+  siteId: string;
+  jobId: string | null;
+  taskType: FinanceTask['taskType'];
+  amount: number;
+  vatAmount: number | null;
+  reference: string | null;
+  sageDocumentRef: string | null;
+  sageDocumentId: string | null;
+  status: FinanceTask['status'];
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface FinanceSummaryRow {
+  pending_tasks: number | string | null;
+  total_pending_value: number | string | null;
+  overdue_invoices: number | string | null;
+  unpaid_amount: number | string | null;
+}
+
 export class FinanceService {
   private db: D1Database;
 
@@ -115,23 +138,23 @@ export class FinanceService {
       FROM finance_tasks 
       WHERE site_id = ? 
       ORDER BY created_at DESC
-    `).bind(siteId).all();
+    `).bind(siteId).all<FinanceTaskRow>();
     
-    return tasks.results.map((row: any) => ({
+    return tasks.results.map((row) => ({
       id: row.id,
       siteId: row.siteId,
-      jobId: row.jobId,
+      jobId: row.jobId ?? undefined,
       taskType: row.taskType,
       amount: row.amount,
-      vatAmount: row.vatAmount,
-      reference: row.reference,
-      sageDocumentRef: row.sageDocumentRef,
-      sageDocumentId: row.sageDocumentId,
+      vatAmount: row.vatAmount ?? undefined,
+      reference: row.reference ?? undefined,
+      sageDocumentRef: row.sageDocumentRef ?? undefined,
+      sageDocumentId: row.sageDocumentId ?? undefined,
       status: row.status,
-      notes: row.notes,
+      notes: row.notes ?? undefined,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt
-    })) as FinanceTask[];
+    }));
   }
 
   /**
@@ -146,23 +169,23 @@ export class FinanceService {
       FROM finance_tasks 
       WHERE job_id = ? 
       ORDER BY created_at DESC
-    `).bind(jobId).all();
+    `).bind(jobId).all<FinanceTaskRow>();
     
-    return tasks.results.map((row: any) => ({
+    return tasks.results.map((row) => ({
       id: row.id,
       siteId: row.siteId,
-      jobId: row.jobId,
+      jobId: row.jobId ?? undefined,
       taskType: row.taskType,
       amount: row.amount,
-      vatAmount: row.vatAmount,
-      reference: row.reference,
-      sageDocumentRef: row.sageDocumentRef,
-      sageDocumentId: row.sageDocumentId,
+      vatAmount: row.vatAmount ?? undefined,
+      reference: row.reference ?? undefined,
+      sageDocumentRef: row.sageDocumentRef ?? undefined,
+      sageDocumentId: row.sageDocumentId ?? undefined,
       status: row.status,
-      notes: row.notes,
+      notes: row.notes ?? undefined,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt
-    })) as FinanceTask[];
+    }));
   }
 
   /**
@@ -177,23 +200,23 @@ export class FinanceService {
       FROM finance_tasks 
       WHERE status = 'Pending'
       ORDER BY created_at ASC
-    `).all();
+    `).all<FinanceTaskRow>();
     
-    return tasks.results.map((row: any) => ({
+    return tasks.results.map((row) => ({
       id: row.id,
       siteId: row.siteId,
-      jobId: row.jobId,
+      jobId: row.jobId ?? undefined,
       taskType: row.taskType,
       amount: row.amount,
-      vatAmount: row.vatAmount,
-      reference: row.reference,
-      sageDocumentRef: row.sageDocumentRef,
-      sageDocumentId: row.sageDocumentId,
+      vatAmount: row.vatAmount ?? undefined,
+      reference: row.reference ?? undefined,
+      sageDocumentRef: row.sageDocumentRef ?? undefined,
+      sageDocumentId: row.sageDocumentId ?? undefined,
       status: row.status,
-      notes: row.notes,
+      notes: row.notes ?? undefined,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt
-    })) as FinanceTask[];
+    }));
   }
 
   /**
@@ -301,7 +324,7 @@ export class FinanceService {
              updated_at as updatedAt
       FROM finance_tasks 
       WHERE id = ?
-    `).bind(taskId).first();
+    `).bind(taskId).first<FinanceTaskRow>();
     
     if (!task) {
       throw new Error(`Finance task with id ${taskId} not found`);
@@ -310,18 +333,18 @@ export class FinanceService {
     return {
       id: task.id,
       siteId: task.siteId,
-      jobId: task.jobId,
+      jobId: task.jobId ?? undefined,
       taskType: task.taskType,
       amount: task.amount,
-      vatAmount: task.vatAmount,
-      reference: task.reference,
-      sageDocumentRef: task.sageDocumentRef,
-      sageDocumentId: task.sageDocumentId,
+      vatAmount: task.vatAmount ?? undefined,
+      reference: task.reference ?? undefined,
+      sageDocumentRef: task.sageDocumentRef ?? undefined,
+      sageDocumentId: task.sageDocumentId ?? undefined,
       status: task.status,
-      notes: task.notes,
+      notes: task.notes ?? undefined,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt
-    } as FinanceTask;
+    };
   }
 
   /**
@@ -340,7 +363,7 @@ export class FinanceService {
         COUNT(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN 1 END) as overdue_invoices,
         SUM(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN amount ELSE 0 END) as unpaid_amount
       FROM finance_tasks
-    `).first();
+    `).first<FinanceSummaryRow>();
     
     if (!result) {
       return {
@@ -352,10 +375,10 @@ export class FinanceService {
     }
     
     return {
-      pendingTasks: parseInt(result.pending_tasks as string || '0') || 0,
-      totalPendingValue: parseInt(result.total_pending_value as string || '0') || 0,
-      overdueInvoices: parseInt(result.overdue_invoices as string || '0') || 0,
-      unpaidAmount: parseInt(result.unpaid_amount as string || '0') || 0
+      pendingTasks: Number(result.pending_tasks || 0),
+      totalPendingValue: Number(result.total_pending_value || 0),
+      overdueInvoices: Number(result.overdue_invoices || 0),
+      unpaidAmount: Number(result.unpaid_amount || 0)
     };
   }
 

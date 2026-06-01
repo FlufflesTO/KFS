@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-06-01
 
+### Codebase Hardening & Visual Test Fixes
+
+#### [Changed]
+- **E2E Visual Tests**: Refactored the expected heading for the `/contact` route in `tests/visual.spec.ts` from `Request Site Assessment` to `Intake Command` to match the actual page heading.
+- **Type Hardening**: Replaced all usages of the prohibited `any` type in `src/lib/server/bindings.ts`, `src/lib/server/auth.ts`, and `src/lib/server/services/finance-service.ts` with strongly typed `Env` interfaces, generic SQLite row binders, and typed record structures.
+- **Documentation**: Injected standardized JSDoc/TSDoc metadata headers into all remaining public pages and portal dashboards (`solutions.astro`, `compliance.astro`, `critical-infrastructure.astro`, `emergency-support.astro`, `industries.astro`, `contact.astro`, `login.astro`, `client/dashboard.astro`, `admin/dashboard.astro`, `finance/dashboard.astro`).
+
 ### User Profile & Staff HR Portal
 
 #### [Added]

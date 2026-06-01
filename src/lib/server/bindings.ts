@@ -31,8 +31,7 @@ export interface Env {
   ENVIRONMENT?: string;
   [key: string]: unknown;
 }
-
-function resolveBindings(): any {
+function resolveBindings(): Env {
   try {
     // Use cloudflare:workers module (the correct way for Pages/Workers)
     const runtimeEnv = env as Env | undefined;
@@ -45,13 +44,15 @@ function resolveBindings(): any {
   
   // Fallback patterns for development or alternative runtimes
   if (typeof globalThis !== "undefined") {
-    const gh = globalThis as any;
-    if (gh.__astro_locals__?.db) return gh.__astro_locals__;
-    if (gh.DB || gh.STORAGE) return gh;
-    if (gh.env?.DB || gh.env?.STORAGE) return gh.env;
+    const gh = globalThis as Record<string, unknown>;
+    const astroLocals = gh.__astro_locals__ as Record<string, unknown> | undefined;
+    if (astroLocals?.db) return astroLocals as unknown as Env;
+    if (gh.DB || gh.STORAGE) return gh as unknown as Env;
+    const envObj = gh.env as Record<string, unknown> | undefined;
+    if (envObj?.DB || envObj?.STORAGE) return envObj as unknown as Env;
   }
   
-  return {};
+  return {} as Env;
 }
 
 export function getBindings(): WorkerBindings {

@@ -1,14 +1,16 @@
 ---
+/**
+ * Project Sentinel - Solutions Index
+ * Purpose: Top-level routing page for all Kharon service offerings
+ * Dependencies: BaseLayout, SolutionHero, SectionHeading, ServiceIcons, pageMeta, solutionLinks
+ * Structural Role: Solutions navigation hub
+ */
+
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SolutionHero from "../components/sections/SolutionHero.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import ServiceIcons from "../components/sections/ServiceIcons.astro";
 import { pageMeta, solutionLinks } from "../data/site.js";
-
-/**
- * Project Sentinel - Solutions Index
- * Purpose: Top-level routing page for all Kharon service offerings.
- */
 ---
 
 <BaseLayout title={pageMeta.services.title} description={pageMeta.services.description}>
