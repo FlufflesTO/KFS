@@ -1,11 +1,6 @@
 ---
-/**
- * Project Sentinel - Compliance Page
- * Purpose: Compliance guidance hub and reference page
- * Dependencies: BaseLayout.astro, SectionHeading.astro, ProofGrid.astro, site data, SansReferenceMatrix.astro, ComplianceTechnicalBlocks.astro
- * Structural Role: Public compliance information page
- */
 import BaseLayout from "../layouts/BaseLayout.astro";
+import SolutionHero from "../components/sections/SolutionHero.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import ProofGrid from "../components/sections/ProofGrid.astro";
 import SansReferenceMatrix from "../components/compliance/SansReferenceMatrix.astro";
@@ -41,20 +36,16 @@ const proofItems = [
 ---
 
 <BaseLayout title={pageMeta.complianceHub.title} description={pageMeta.complianceHub.description}>
-  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
-    <div class="mx-auto max-w-4xl px-6 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
-        Protection System Compliance
-      </h1>
-      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
-        Practical guidance on SANS 10139 and SANS 14520 maintenance requirements, service report structure, maintenance cadence and defect classification for commercial fire detection and gas suppression systems.
-      </p>
-    </div>
-  </section>
+  <SolutionHero 
+    title="Protection Compliance" 
+    subtitle="Regulatory Discipline" 
+    description="Engineered maintenance and documentation frameworks ensuring absolute alignment with SANS 10139 and SANS 14520 standards."
+    icon="/brand/icons/service-engineering.svg"
+  />
 
   <ProofGrid items={proofItems} title="Compliance Framework" subtitle="Regulatory Alignment" />
   
-  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+  <section class="section-padding bg-kharon-black">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
         title="Forensic Compliance Approach"
@@ -65,14 +56,14 @@ const proofItems = [
       
       <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {complianceSignals.map((signal) => (
-          <div class="rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/40 p-6 backdrop-blur-sm group hover:border-kharon-purple/40 transition-all">
             <div class="flex items-center">
-              <div class="mr-3 w-8 h-8 rounded-md bg-kharon-purple/10 flex items-center justify-center">
-                <svg class="w-4 h-4 text-kharon-purple" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              <div class="mr-3 h-10 w-10 rounded-lg bg-kharon-purple/10 flex items-center justify-center border border-kharon-purple/20 group-hover:bg-kharon-purple/20 transition-colors">
+                <svg class="w-5 h-5 text-kharon-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <span class="text-white font-medium">{signal}</span>
+              <span class="text-white font-bold text-sm uppercase tracking-wider">{signal}</span>
             </div>
           </div>
         ))}
@@ -80,82 +71,74 @@ const proofItems = [
     </div>
   </section>
 
-  <!-- Sans Reference Matrix Section -->
-  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal border-t border-white/5">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
         title="Regulatory Standards Reference"
         subtitle="SANS Compliance Matrix"
-        description="Comprehensive mapping of South African National Standards governing fire safety, physical security, and supporting electrical/community infrastructure."
+        description="Comprehensive mapping of South African National Standards governing fire safety and technical infrastructure."
         center={true}
       />
       <SansReferenceMatrix />
     </div>
   </section>
 
-  <!-- SANS Deep-Dive Section -->
-  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black border-t border-white/5">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6">
       <SectionHeading
-        title="SANS Regulatory Deep-Dives"
+        title="Regulatory Deep-Dives"
         subtitle="Technical Specifications"
-        description="Detailed compliance frameworks and mandated maintenance procedures under South African National Standards."
+        description="Mandated maintenance procedures under South African National Standards."
         center={true}
       />
       
       <div class="mt-12 space-y-12">
-        <!-- SANS 10139 Deep-Dive -->
-        <div class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-8">
-          <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <span class="px-3 py-0.5 rounded text-xs font-black uppercase bg-red-500/10 text-kharon-red border border-red-500/20">SANS 10139</span>
-            Fire Detection & Alarm Systems
+        <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/60 p-8 sm:p-12 relative overflow-hidden">
+          <div class="absolute top-0 right-0 h-24 w-24 bg-kharon-red/5 rounded-bl-full pointer-events-none"></div>
+          <h3 class="text-2xl font-black text-white mb-6 flex items-center gap-4">
+            <span class="px-3 py-1 rounded-lg text-xs font-black uppercase bg-kharon-red/10 text-kharon-red border border-kharon-red/20">SANS 10139</span>
+            Fire Detection & Alarm
           </h3>
-          <p class="text-kharon-light/80 leading-relaxed mb-6 text-sm">
-            SANS 10139 provides code of practice recommendations for the design, installation, commissioning, and maintenance of fire detection and alarm systems in and around buildings. It establishes the baseline for protecting life and property.
-          </p>
-          <div class="grid gap-6 md:grid-cols-2">
-            <div>
-              <h4 class="text-xs font-bold uppercase tracking-wider text-kharon-purple mb-2">Mandated Maintenance Cadence</h4>
-              <ul class="space-y-2 text-xs text-kharon-light/70">
-                <li><strong class="text-white">Daily:</strong> Verify control panel indicators and record active faults.</li>
-                <li><strong class="text-white">Weekly:</strong> Trigger manual call point on rotation to test sounders.</li>
-                <li><strong class="text-white">Quarterly:</strong> Functional test of battery backup, panel logs, and 25% of detectors.</li>
-                <li><strong class="text-white">Annual:</strong> Comprehensive test of 100% of devices, sounders, and interface relays.</li>
+          <div class="grid gap-10 md:grid-cols-2">
+            <div class="space-y-4">
+              <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple">Mandated Cadence</h4>
+              <ul class="space-y-4 text-xs text-kharon-light/60">
+                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Daily</strong> Verify panel indicators and log active faults.</li>
+                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Weekly</strong> Trigger manual call point to test sounders.</li>
+                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Annual</strong> Comprehensive test of 100% of devices.</li>
               </ul>
             </div>
-            <div>
-              <h4 class="text-xs font-bold uppercase tracking-wider text-kharon-purple mb-2">Required Handover Documentation</h4>
-              <ul class="space-y-2 text-xs text-kharon-light/70">
-                <li><strong class="text-white">System Logbook:</strong> Live record of all tests, false alarms, and maintenance.</li>
-                <li><strong class="text-white">Design Certificate:</strong> Declares coverage zones and system categories.</li>
-                <li><strong class="text-white">Commissioning Certificate:</strong> Proves system meets design and SANS limits.</li>
+            <div class="space-y-4">
+              <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple">Handover Proof</h4>
+              <ul class="space-y-4 text-xs text-kharon-light/60">
+                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Logbook</strong> Record of all tests and false alarms.</li>
+                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Design</strong> Declares coverage zones and categories.</li>
+                <li class="flex gap-3"><strong class="text-white flex-none w-16 uppercase">Cert</strong> Proves system meets SANS design limits.</li>
               </ul>
             </div>
           </div>
         </div>
 
-        <!-- SANS 14520 Deep-Dive -->
-        <div class="rounded-xl border border-kharon-purple/20 bg-kharon-surface-elevated p-8">
-          <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <span class="px-3 py-0.5 rounded text-xs font-black uppercase bg-red-500/10 text-kharon-red border border-red-500/20">SANS 14520</span>
-            Gaseous Fire-Extinguishing Systems
+        <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/60 p-8 sm:p-12 relative overflow-hidden">
+          <div class="absolute top-0 right-0 h-24 w-24 bg-kharon-cyan/5 rounded-bl-full pointer-events-none"></div>
+          <h3 class="text-2xl font-black text-white mb-6 flex items-center gap-4">
+            <span class="px-3 py-1 rounded-lg text-xs font-black uppercase bg-kharon-cyan/10 text-kharon-cyan border border-kharon-cyan/20">SANS 14520</span>
+            Gaseous Suppression
           </h3>
-          <p class="text-kharon-light/80 leading-relaxed mb-6 text-sm">
-            SANS 14520 governs clean-agent gas suppression systems, specifying physical properties, system design, calculations, room integrity, and safety requirements.
-          </p>
-          <div class="grid gap-6 md:grid-cols-2">
-            <div>
-              <h4 class="text-xs font-bold uppercase tracking-wider text-kharon-purple mb-2">Agent Calculations & Room Integrity</h4>
-              <ul class="space-y-2 text-xs text-kharon-light/70">
-                <li><strong class="text-white">Concentration Limits:</strong> Strict calculations of agent quantity based on room volume and temperature.</li>
-                <li><strong class="text-white">Room Integrity Testing (Door Fan):</strong> Mandatory annual test verifying the protected room can hold gas concentration for at least 10 minutes (retention time).</li>
+          <div class="grid gap-10 md:grid-cols-2">
+            <div class="space-y-4">
+              <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple">Integrity Focus</h4>
+              <ul class="space-y-4 text-xs text-kharon-light/60">
+                <li class="flex gap-3"><strong class="text-white flex-none w-20 uppercase">Agents</strong> Strict volume calculations for clean-agents.</li>
+                <li class="flex gap-3"><strong class="text-white flex-none w-20 uppercase">Door Fan</strong> Mandatory annual test for retention time.</li>
+                <li class="flex gap-3"><strong class="text-white flex-none w-20 uppercase">Retention</strong> Must hold concentration for 10 minutes.</li>
               </ul>
             </div>
-            <div>
-              <h4 class="text-xs font-bold uppercase tracking-wider text-kharon-purple mb-2">Service & Inspection Intervals</h4>
-              <ul class="space-y-2 text-xs text-kharon-light/70">
-                <li><strong class="text-white">6-Monthly:</strong> Verify cylinder weights and pressures. If agent loss exceeds 5%, refill or replacement is required.</li>
-                <li><strong class="text-white">10-Year:</strong> Hydrostatic stretch testing of gas storage cylinders.</li>
+            <div class="space-y-4">
+              <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple">Service Intervals</h4>
+              <ul class="space-y-4 text-xs text-kharon-light/60">
+                <li class="flex gap-3"><strong class="text-white flex-none w-20 uppercase">6-Month</strong> Verify cylinder weights and pressure logs.</li>
+                <li class="flex gap-3"><strong class="text-white flex-none w-20 uppercase">10-Year</strong> Hydrostatic stretch testing of storage.</li>
               </ul>
             </div>
           </div>
@@ -164,10 +147,9 @@ const proofItems = [
     </div>
   </section>
 
-  <!-- Technical tables and diagrams component -->
   <ComplianceTechnicalBlocks />
 
-  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">
       <SectionHeading
         title="Evidence-Led Maintenance"
@@ -175,11 +157,10 @@ const proofItems = [
         description="Every maintenance action creates verifiable evidence for compliance and operational review."
         center={true}
       />
-      
-      <div class="mt-12 prose prose-invert max-w-none">
-        <p class="text-kharon-light/80 text-lg leading-relaxed">
-          Our compliance approach is forensic in nature, with every maintenance activity creating verifiable evidence that can be presented for regulatory inspection. We maintain comprehensive records of all system states, maintenance activities, and compliance checks.
-        </p>
+      <div class="mt-10 flex justify-center gap-4">
+        <a href="/portal" class="kharon-command-button px-10 py-5 text-sm">
+          Access Compliance Vault
+        </a>
       </div>
     </div>
   </section>

@@ -1,106 +1,74 @@
 ---
-/**
- * Project Sentinel - Fire Detection Page
- * Purpose: Public page presenting fire detection systems, addressable panels, cause-and-effect matrix, and zoning.
- * Dependencies: BaseLayout.astro, SectionHeading.astro, DetectionTechnicalBlocks.astro, site data
- * Structural Role: Main informational page for fire detection services.
- */
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SectionHeading from "../components/sections/SectionHeading.astro";
+import SolutionHero from "../components/sections/SolutionHero.astro";
 import DetectionTechnicalBlocks from "../components/sections/DetectionTechnicalBlocks.astro";
+import SectionHeading from "../components/sections/SectionHeading.astro";
 import { pageMeta } from "../data/site.js";
 
 const detectionCapabilities = [
   {
     title: "Addressable detection",
-    text: "Addressable detection systems with individual device addressing for precise fault location and maintainable layouts across commercial and industrial sites.",
+    text: "Addressable detection systems with individual device addressing for precise fault location and maintainable layouts.",
     icon: "/brand/icons/service-fire-detection.svg"
   },
   {
     title: "Specialist detection",
-    text: "Aspiration detection, flame detection, and linear detection for environments requiring enhanced sensitivity or coverage beyond conventional point detection.",
+    text: "Aspiration detection, flame detection, and linear detection for environments requiring enhanced sensitivity.",
     icon: "/brand/icons/service-fire-detection.svg"
   },
   {
     title: "Cause-and-effect logic",
-    text: "Programmed response logic defining specific detection events leading to specific response actions — aligned to occupancy, operations and suppression requirements.",
+    text: "Programmed response logic defining specific detection events leading to specific response actions.",
     icon: "/brand/icons/service-engineering.svg"
   },
   {
     title: "Control panel integration",
-    text: "Centralized monitoring and control with event logging, fault diagnostics and remote access capability to SANS 10139 standards.",
+    text: "Centralized monitoring and control with event logging, fault diagnostics and remote access capability.",
     icon: "/brand/icons/service-fire-detection.svg"
-  },
-  {
-    title: "Zone management",
-    text: "Configurable detection zones aligned to operational areas, evacuation paths and response requirements with documented zone schedules.",
-    icon: "/brand/icons/sector-control-room.svg"
-  },
-  {
-    title: "Evacuation & PA systems",
-    text: "Evacuation system design, installation and testing — including PA and system-based evacuation in compliance with SANS 10400 and SANS 322.",
-    icon: "/brand/icons/severity-urgent.svg"
   }
 ];
 ---
 
 <BaseLayout title={pageMeta.fireDetection.title} description={pageMeta.fireDetection.description}>
-  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
-    <div class="mx-auto max-w-4xl px-6 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
-        Fire Detection Systems
-      </h1>
-      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
-        Addressable detection, control panels, response zones and fault diagnostics for commercial and industrial sites.
-      </p>
-    </div>
-  </section>
+  <SolutionHero 
+    title="Fire Detection Systems" 
+    subtitle="Precision Engineering" 
+    description="Advanced addressable detection and control systems designed for early identification and rapid response in high-value environments."
+    icon="/brand/icons/service-fire-detection.svg"
+  />
 
-  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+  <section class="section-padding bg-kharon-black">
     <div class="mx-auto max-w-7xl px-6">
-      <SectionHeading
-        title="Addressable Detection Engineering"
-        subtitle="Cause-and-Effect Logic"
-        description="Precision-engineered detection systems with maintainable layouts and comprehensive diagnostics."
-        center={true}
-      />
-      
-      <div class="mt-12 grid gap-8 md:grid-cols-2">
+      <div class="grid gap-8 md:grid-cols-2">
         {detectionCapabilities.map((capability) => (
-          <div class="rounded-xl border border-kharon-purple/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
-            <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
-              <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
-                {capability.icon ? (
-                  <img src={capability.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
-                ) : (
-                  <div class="w-6 h-6 bg-kharon-purple rounded"></div>
-                )}
+          <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50">
+            <div class="flex items-center gap-6 mb-6">
+              <div class="h-14 w-14 flex-none rounded-xl bg-kharon-black/40 border border-kharon-purple/20 p-3 group-hover:bg-kharon-purple/10 transition-colors">
+                <img src={capability.icon} alt="" class="h-full w-full object-contain" />
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">{capability.title}</h3>
-              <p class="text-kharon-light/70">{capability.text}</p>
+              <h3 class="text-xl font-bold text-white tracking-tight leading-tight">{capability.title}</h3>
             </div>
+            <p class="text-kharon-light/60 leading-relaxed">{capability.text}</p>
           </div>
         ))}
       </div>
     </div>
   </section>
 
-  <!-- Technical tables and flowchart matrix component -->
   <DetectionTechnicalBlocks />
 
-  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">
       <SectionHeading
-        title="Precision Detection Architecture"
-        subtitle="Engineering Focus"
-        description="Systems engineered for reliable performance and maintainable operation in commercial and industrial environments."
+        title="Reliability by Design"
+        subtitle="The Kharon Standard"
+        description="Our systems are engineered to exceed SANS 10139 standards, providing documented peace of mind for facility managers and site owners."
         center={true}
       />
-      
-      <div class="mt-12 prose prose-invert max-w-none">
-        <p class="text-kharon-light/80 text-lg leading-relaxed">
-          Our fire detection systems are built around addressable detection technology that provides precise device identification and maintainable layouts. Each system incorporates cause-and-effect logic that defines specific detection events leading to specific response actions, ensuring reliable and predictable system performance.
-        </p>
+      <div class="mt-10 flex justify-center gap-4">
+        <a href="/contact?intent=site-assessment" class="kharon-command-button px-10 py-5 text-sm">
+          Consult an Engineer
+        </a>
       </div>
     </div>
   </section>

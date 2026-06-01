@@ -5,7 +5,7 @@
  * Dependencies: data/site.js
  * Structural Role: Global header in frontend pages
  */
-import { mainLinks, site, solutionLinks } from "../../data/site.js";
+import { site, solutionLinks, sectorLinks, resourceLinks } from "../../data/site.js";
 
 const { currentPath = "/" } = Astro.props;
 
@@ -17,11 +17,7 @@ function normalizePath(pathname: string): string {
 }
 
 const activePath = normalizePath(currentPath);
-const isLinkActive = (href: string): boolean => href.includes("#") ? false : normalizePath(href) === activePath;
-const isSolutionsActive = solutionLinks.some((item) => isLinkActive(item.href));
-
-const solutionHrefs = new Set(solutionLinks.map((l) => l.href));
-const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
+const isLinkActive = (href: string): boolean => normalizePath(href) === activePath;
 ---
 
 <header class="fixed inset-x-0 top-0 z-50 border-b border-kharon-purple/20 bg-kharon-black/85 backdrop-blur-md shadow-lg shadow-kharon-black/30">
@@ -32,9 +28,8 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
     Skip to content
   </a>
 
-  <div class="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between gap-3 sm:gap-4 px-3 sm:px-4 lg:px-8">
-    <a href="/" class="group flex shrink-0 items-center gap-2.5 sm:gap-3 text-white" aria-label="Kharon Fire and Security Solutions — home">
-      <!-- Standalone mark — blue ring + purple core -->
+  <div class="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between gap-4 px-4 lg:px-8">
+    <a href="/" class="group flex shrink-0 items-center gap-3 text-white" aria-label="Kharon Fire and Security Solutions — home">
       <div class="relative flex-none">
         <div class="absolute inset-0 bg-kharon-purple/20 blur-lg group-hover:bg-kharon-purple/35 transition-colors duration-500 rounded-full"></div>
         <img
@@ -46,146 +41,140 @@ const mobilePrimaryLinks = mainLinks.filter((l) => !solutionHrefs.has(l.href));
           class="relative z-10 block transition-transform duration-300 group-hover:scale-110 h-9 w-9 object-contain"
         />
       </div>
-      <!-- Wordmark -->
       <div>
-        <span class="block whitespace-nowrap text-sm sm:text-base font-black uppercase tracking-[0.18em] text-white leading-none">Kharon</span>
-        <span class="block whitespace-nowrap text-[0.5rem] sm:text-[0.6rem] font-bold uppercase tracking-[0.3em] text-kharon-purple/80 group-hover:text-kharon-purple transition-colors leading-none mt-0.5">Fire &amp; Security</span>
+        <span class="block whitespace-nowrap text-base font-black uppercase tracking-[0.18em] text-white leading-none">Kharon</span>
+        <span class="block whitespace-nowrap text-[0.6rem] font-bold uppercase tracking-[0.3em] text-kharon-purple group-hover:text-kharon-cyan transition-colors leading-none mt-1">Fire &amp; Security</span>
       </div>
     </a>
 
-    <nav class="hidden items-center gap-5 xl:gap-8 lg:flex" aria-label="Primary navigation">
-      <a href="/" class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-purple" : "text-white/70 hover:text-white"}`} aria-current={isLinkActive("/") ? "page" : undefined}>
+    <nav class="hidden items-center gap-8 lg:flex" aria-label="Primary navigation">
+      <a href="/" class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-purple" : "text-white/70 hover:text-white"}`}>
         Home
       </a>
 
+      <!-- Solutions Dropdown -->
       <details class="group relative">
-        <summary
-          class={`flex cursor-pointer list-none items-center gap-1.5 whitespace-nowrap text-[0.75rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest marker:hidden transition-colors ${isSolutionsActive ? "text-kharon-purple" : "text-white/70 hover:text-white"}`}
-        >
+        <summary class="flex cursor-pointer list-none items-center gap-1.5 whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors marker:hidden">
           Solutions
           <svg aria-hidden="true" viewBox="0 0 24 24" class="h-3 w-3 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="4">
             <path d="m6 9 6 6 6-6"></path>
           </svg>
         </summary>
-
-        <nav
-          aria-label="Solutions"
-          class="absolute left-1/2 -translate-x-1/2 top-11 w-72 rounded-lg border border-kharon-purple/20 bg-kharon-charcoal/90 p-1.5 shadow-xl backdrop-blur-xl shadow-kharon-black/40"
-        >
-          <div class="grid gap-0.5">
-            {
-              solutionLinks.map((link) => {
-                const active = isLinkActive(link.href);
-                return (
-                  <a
-                    href={link.href}
-                    aria-current={active ? "page" : undefined}
-                    class={`flex items-center justify-between rounded-md px-4 py-2.5 text-[0.75rem] font-bold uppercase tracking-wider transition-all ${active ? "bg-kharon-purple text-white shadow-sm" : "text-white/60 hover:bg-kharon-purple/10 hover:text-white"}`}
-                  >
-                    {link.label}
-                    {active && <div class="h-1 w-1 rounded-full bg-kharon-purple"></div>}
-                  </a>
-                );
-              })
-            }
+        <div class="absolute left-1/2 -translate-x-1/2 top-11 w-80 rounded-lg border border-kharon-purple/30 bg-kharon-charcoal/95 p-3 shadow-2xl backdrop-blur-xl">
+          <div class="grid gap-1">
+            {solutionLinks.map((link) => (
+              <a href={link.href} class="group/item flex flex-col rounded-md p-3 transition-colors hover:bg-kharon-purple/10">
+                <span class="text-sm font-bold uppercase tracking-wider text-white group-hover/item:text-kharon-cyan">{link.label}</span>
+                <span class="mt-1 text-xs text-kharon-light/50">{link.summary}</span>
+              </a>
+            ))}
           </div>
-        </nav>
+        </div>
       </details>
 
-      {
-        mainLinks.slice(1).map((link) => {
-          const active = isLinkActive(link.href);
-          return (
-            <a href={link.href} class={`whitespace-nowrap text-[0.75rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${active ? "text-kharon-purple" : "text-white/70 hover:text-white"}`} aria-current={active ? "page" : undefined}>
-              {link.label}
-            </a>
-          );
-        })
-      }
+      <!-- Sectors Dropdown -->
+      <details class="group relative">
+        <summary class="flex cursor-pointer list-none items-center gap-1.5 whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors marker:hidden">
+          Sectors
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="h-3 w-3 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="4">
+            <path d="m6 9 6 6 6-6"></path>
+          </svg>
+        </summary>
+        <div class="absolute left-1/2 -translate-x-1/2 top-11 w-64 rounded-lg border border-kharon-purple/30 bg-kharon-charcoal/95 p-3 shadow-2xl backdrop-blur-xl">
+          <div class="grid gap-1">
+            {sectorLinks.map((link) => (
+              <a href={link.href} class="rounded-md px-3 py-2.5 text-[0.75rem] font-bold uppercase tracking-widest text-white/60 hover:bg-kharon-purple/10 hover:text-white transition-all">
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </details>
+
+      <!-- Resources Dropdown -->
+      <details class="group relative">
+        <summary class="flex cursor-pointer list-none items-center gap-1.5 whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors marker:hidden">
+          Resources
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="h-3 w-3 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="4">
+            <path d="m6 9 6 6 6-6"></path>
+          </svg>
+        </summary>
+        <div class="absolute left-1/2 -translate-x-1/2 top-11 w-64 rounded-lg border border-kharon-purple/30 bg-kharon-charcoal/95 p-3 shadow-2xl backdrop-blur-xl">
+          <div class="grid gap-1">
+            {resourceLinks.map((link) => (
+              <a href={link.href} class="rounded-md px-3 py-2.5 text-[0.75rem] font-bold uppercase tracking-widest text-white/60 hover:bg-kharon-purple/10 hover:text-white transition-all">
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </details>
     </nav>
 
-    <div class="hidden items-center gap-3 lg:flex xl:gap-5">
+    <div class="flex items-center gap-4">
       <a
         href={site.portalLoginPath}
-        aria-label="Open the secure Kharon portal."
-        title={site.portalStatus}
-        class="group flex items-center gap-2 rounded-md border border-kharon-purple/30 px-4 py-2 text-[0.75rem] font-bold uppercase tracking-widest text-white/80 transition-all hover:border-kharon-purple hover:text-white bg-kharon-charcoal/50 hover:bg-kharon-charcoal/70 backdrop-blur-sm shadow-sm"
+        class="hidden sm:flex items-center gap-2 rounded-md border border-kharon-purple/40 px-4 py-2 text-[0.75rem] font-bold uppercase tracking-widest text-white/90 hover:border-kharon-cyan hover:text-white transition-all bg-kharon-charcoal/50"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-kharon-purple transition-colors"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-        Secure Portal
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-kharon-purple"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        Portal
+      </a>
+      <a href="/contact?intent=site-assessment" class="rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue px-6 py-2.5 text-[0.75rem] font-bold uppercase tracking-widest text-white shadow-lg shadow-kharon-purple/20 hover:scale-[1.02] active:scale-95 transition-all">
+        Inquiry
       </a>
 
-      <a href="/contact?intent=site-assessment" class="rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue px-5 py-2.5 text-[0.75rem] font-bold uppercase tracking-widest text-white transition-all hover:shadow-lg hover:shadow-kharon-purple/30 active:scale-[0.98] shadow-sm relative overflow-hidden">
-        <span class="relative z-10">Inquiry</span>
-        <div class="absolute inset-0 bg-gradient-to-r from-kharon-purple/20 to-kharon-blue/20 opacity-0 hover:opacity-100 transition-opacity"></div>
-      </a>
-    </div>
-
-    <details class="mobile-menu lg:hidden">
-      <summary
-        class="inline-flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-lg border border-kharon-purple/20 text-white hover:bg-kharon-charcoal/50 active:scale-95 transition-all backdrop-blur-sm"
-        aria-label="Toggle menu"
-      >
-        <svg aria-hidden="true" viewBox="0 0 24 24" class="h-5 w-5 mobile-menu__open" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-        <svg aria-hidden="true" viewBox="0 0 24 24" class="hidden h-5 w-5 mobile-menu__close" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M6 6l12 12M18 6L6 18"></path>
-        </svg>
-      </summary>
-
-      <div class="fixed inset-x-0 top-[var(--header-height)] z-[90] max-h-[calc(100vh-var(--header-height))] overflow-y-auto border-t border-kharon-purple/10 bg-kharon-black/95 px-6 py-10 shadow-2xl backdrop-blur-xl animate-reveal-down bg-gradient-to-b from-kharon-black to-kharon-charcoal">
-        <nav class="flex flex-col gap-2" aria-label="Mobile navigation">
-          {
-            [...mobilePrimaryLinks.slice(0, 1), ...solutionLinks, ...mobilePrimaryLinks.slice(1)].map((link) => {
-              const active = isLinkActive(link.href);
-              return (
-                <a
-                  href={link.href}
-                  aria-current={active ? "page" : undefined}
-                  class={`flex items-center justify-between border-b border-kharon-purple/10 py-5 text-sm font-bold uppercase tracking-[0.15em] transition-colors min-h-[44px] ${active ? "text-kharon-purple" : "text-white/80"}`}
-                >
-                  {link.label}
-                  {active && <div class="h-2 w-2 rounded-full bg-kharon-purple"></div>}
-                </a>
-              );
-            })
-          }
-
-          <div class="mt-8 sm:mt-10 grid gap-3 sm:gap-4">
-            <a href="/contact?intent=site-assessment" class="rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue py-4 sm:py-5 text-center text-sm font-bold uppercase tracking-widest text-white shadow-lg active:scale-[0.98] transition-all relative overflow-hidden">
-              <span class="relative z-10">Request Site Assessment</span>
-              <div class="absolute inset-0 bg-gradient-to-r from-kharon-purple/20 to-kharon-blue/20 opacity-0 hover:opacity-100 transition-opacity"></div>
-            </a>
-
-            <a href={site.portalLoginPath} class="rounded-md border border-kharon-purple/20 py-4 sm:py-5 text-center text-sm font-bold uppercase tracking-widest text-white/80 backdrop-blur-sm active:scale-[0.98] transition-all bg-kharon-charcoal/50 hover:bg-kharon-charcoal/70 hover:border-kharon-purple/40">
-              Secure Portal Access
-            </a>
+      <!-- Mobile Menu Toggle -->
+      <details class="mobile-menu lg:hidden">
+        <summary class="inline-flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-lg border border-kharon-purple/30 text-white marker:hidden">
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="h-6 w-6 mobile-menu__open" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="hidden h-6 w-6 mobile-menu__close" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M6 6l12 12M18 6L6 18"></path>
+          </svg>
+        </summary>
+        <div class="fixed inset-x-0 top-[var(--header-height)] z-[90] max-h-[calc(100vh-var(--header-height))] overflow-y-auto bg-kharon-black/98 p-6 shadow-2xl backdrop-blur-xl">
+          <div class="flex flex-col gap-8 py-4">
+            <div class="grid gap-4">
+              <p class="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Solutions</p>
+              {solutionLinks.map(link => (
+                <a href={link.href} class="text-sm font-bold uppercase tracking-widest text-white/80">{link.label}</a>
+              ))}
+            </div>
+            <div class="grid gap-4">
+              <p class="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Sectors</p>
+              {sectorLinks.map(link => (
+                <a href={link.href} class="text-sm font-bold uppercase tracking-widest text-white/80">{link.label}</a>
+              ))}
+            </div>
+            <div class="grid gap-4">
+              <p class="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Resources</p>
+              {resourceLinks.map(link => (
+                <a href={link.href} class="text-sm font-bold uppercase tracking-widest text-white/80">{link.label}</a>
+              ))}
+            </div>
+            <a href={site.portalLoginPath} class="mt-4 rounded-md border border-kharon-purple/30 py-4 text-center text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan bg-kharon-charcoal/30">Secure Portal</a>
           </div>
-        </nav>
-      </div>
-    </details>
+        </div>
+      </details>
+    </div>
   </div>
 </header>
 
 <script>
-  const solutionsDropdown = document.querySelector("details.group");
-  if (solutionsDropdown instanceof HTMLDetailsElement) {
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && solutionsDropdown.open) {
-        solutionsDropdown.removeAttribute("open");
-        const summaryElement = solutionsDropdown.querySelector("summary");
-        if (summaryElement instanceof HTMLElement) {
-          summaryElement.focus();
-        }
-      }
+  const dropdowns = document.querySelectorAll("details.group");
+  
+  document.addEventListener("click", (e) => {
+    dropdowns.forEach(d => {
+      if (!d.contains(e.target as Node)) d.removeAttribute("open");
     });
-    document.addEventListener("click", (event: MouseEvent) => {
-      if (!(event.target instanceof Node) || !solutionsDropdown.contains(event.target)) {
-        solutionsDropdown.removeAttribute("open");
-      }
-    });
-  }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      dropdowns.forEach(d => d.removeAttribute("open"));
+    }
+  });
 
   const mobileMenu = document.querySelector("details.mobile-menu");
   if (mobileMenu instanceof HTMLDetailsElement) {
