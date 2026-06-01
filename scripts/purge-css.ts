@@ -50,38 +50,106 @@ function walk(dir: string): string[] {
 }
 
 const allFiles = walk(srcDir).map(p => p.replace(/\\/g, '/'));
-const components = allFiles.filter(f => f.includes('/src/components/') && f.endsWith('.astro'));
-
-const componentUsage: Record<string, string[]> = {};
+// Mirror Tailwind's @source directive: only scan .astro files
+const astroFiles = allFiles.filter(f => f.endsWith('.astro'));
 
 function extractClasses(content: string): string[] {
   const classes: string[] = [];
-  const classMatches = content.match(/class(?:Name)?=["']([^"']+)["']/g);
-  if (classMatches) {
-    classMatches.forEach(m => {
-      const parts = m.match(/["']([^"']+)["']/);
-      if (parts && parts[1]) {
-        parts[1].split(/\s+/).forEach(c => {
-          if (c && !c.includes('{') && !c.includes('?')) {
-            classes.push(c);
-          }
-        });
-      }
+  // class="..." and class='...' (static attributes)
+  const attrRe = /class(?:Name)?=["']([^"']+)["']/g;
+  let m;
+  while ((m = attrRe.exec(content)) !== null) {
+    m[1].split(/\s+/).forEach(c => {
+      if (c && !/[{?$]/.test(c)) classes.push(c);
+    });
+  }
+  // class={`...`} template literal expressions
+  const tmplRe = /class(?:Name)?=\{`([^`{}]+)`\}/g;
+  while ((m = tmplRe.exec(content)) !== null) {
+    m[1].split(/\s+/).forEach(c => {
+      if (c && !/[{?$]/.test(c)) classes.push(c);
     });
   }
   return [...new Set(classes)];
 }
 
-components.forEach(comp => {
-  const content = fs.readFileSync(comp, 'utf8');
-  componentUsage[comp] = extractClasses(content);
+const usedClasses = new Set<string>();
+astroFiles.forEach(f => {
+  const content = fs.readFileSync(f, 'utf8');
+  extractClasses(content).forEach(c => usedClasses.add(c));
 });
 
-const usedClasses = new Set<string>();
-Object.values(componentUsage).flat().forEach(c => usedClasses.add(c));
-
-// Add some safety globals
+// Always keep element/global selectors
 ['html', 'body', 'root', 'portal-shell', 'main', 'selection'].forEach(c => usedClasses.add(c));
+
+/**
+ * Brace-depth-aware CSS rule pruner (recursive).
+ *
+ * For each rule in `css`:
+ *   - Simple single-class selector (.foo) → drop if class not in `used`
+ *   - At-rule with a block (@layer, @media, @supports) → recurse into body
+ *   - @keyframes → always keep intact (no recursion, content is not selectors)
+ *   - Everything else → keep as-is
+ */
+function pruneClasses(css: string, used: Set<string>): string {
+  let result = '';
+  let i = 0;
+  const len = css.length;
+
+  while (i < len) {
+    const prelStart = i;
+
+    // Scan to next '{' or '}' (handles stray closing braces)
+    let j = i;
+    while (j < len && css[j] !== '{' && css[j] !== '}') j++;
+
+    if (j >= len) {
+      result += css.slice(i);
+      break;
+    }
+
+    if (css[j] === '}') {
+      result += css.slice(i, j + 1);
+      i = j + 1;
+      continue;
+    }
+
+    const prelude = css.slice(prelStart, j).trim();
+
+    // Collect the balanced { ... } body (inner content, not including braces)
+    let depth = 1;
+    let k = j + 1;
+    while (k < len && depth > 0) {
+      if (css[k] === '{') depth++;
+      else if (css[k] === '}') depth--;
+      k++;
+    }
+
+    const innerBody = css.slice(j + 1, k - 1);
+
+    const isSimpleClass = /^\.[a-zA-Z][\w-]*$/.test(prelude);
+    const isKeyframes = /^@keyframes\b/.test(prelude);
+    const isAtBlock = /^@/.test(prelude);
+
+    if (isSimpleClass) {
+      if (used.has(prelude.slice(1))) {
+        result += prelude + '{' + innerBody + '}';
+      }
+    } else if (isKeyframes) {
+      // Keep keyframes verbatim — their body contains percentage rules, not selectors
+      result += prelude + '{' + innerBody + '}';
+    } else if (isAtBlock) {
+      // Recurse into @layer / @media / @supports bodies
+      result += prelude + '{' + pruneClasses(innerBody, used) + '}';
+    } else {
+      result += prelude + '{' + innerBody + '}';
+    }
+
+    i = k;
+  }
+
+  return result;
+}
 
 let output = css;
 
@@ -112,7 +180,10 @@ output = output.replace(varRegex, (m) => {
   return usedVars.has(varName) ? m : '';
 });
 
-// 3. Prune empty @media queries (safe regex, doesn't break nesting)
+// 3. Prune unused simple class rules (brace-depth-aware, recurses into @layer/@media)
+output = pruneClasses(output, usedClasses);
+
+// 4. Prune empty @media queries (safe regex, doesn't break nesting)
 output = output.replace(/@media[^{]+\{\s*\}/g, '');
 
 // Use esbuild for advanced CSS minification
