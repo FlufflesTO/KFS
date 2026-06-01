@@ -50,7 +50,7 @@ function walk(dir: string): string[] {
 }
 
 const allFiles = walk(srcDir).map(p => p.replace(/\\/g, '/'));
-const components = allFiles.filter(f => f.includes('/src/components/') && f.endsWith('.astro'));
+const astroFiles = allFiles.filter(f => (f.includes('/src/components/') || f.includes('/src/layouts/') || f.includes('/src/pages/')) && f.endsWith('.astro'));
 
 const componentUsage: Record<string, string[]> = {};
 
@@ -72,16 +72,16 @@ function extractClasses(content: string): string[] {
   return [...new Set(classes)];
 }
 
-components.forEach(comp => {
-  const content = fs.readFileSync(comp, 'utf8');
-  componentUsage[comp] = extractClasses(content);
+astroFiles.forEach(file => {
+  const content = fs.readFileSync(file, 'utf8');
+  componentUsage[file] = extractClasses(content);
 });
 
 const usedClasses = new Set<string>();
 Object.values(componentUsage).flat().forEach(c => usedClasses.add(c));
 
 // Add some safety globals
-['html', 'body', 'root', 'portal-shell', 'main', 'selection'].forEach(c => usedClasses.add(c));
+['html', 'body', 'root', 'portal-shell', 'main', 'selection', 'kharon-environment', 'kharon-page-shell', 'kharon-logo-watermark'].forEach(c => usedClasses.add(c));
 
 let output = css;
 
@@ -99,13 +99,6 @@ let match;
 while ((match = varUsageRegex.exec(output)) !== null) {
   usedVars.add(match[1]);
 }
-
-// Add brand vars to used set just in case
-allVars.forEach(v => {
-  if (v.includes('--color-kharon') || v.includes('--color-surface')) {
-    usedVars.add(v.split(':')[0].trim());
-  }
-});
 
 output = output.replace(varRegex, (m) => {
   const varName = m.split(':')[0].trim();

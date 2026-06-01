@@ -1,7 +1,7 @@
 ---
 /**
  * Project Sentinel - Admin Sites
- * Purpose: Admin interface for client site management
+ * Purpose: Admin interface for client site management with elite command aesthetic.
  * Dependencies: PortalLayout, getDatabase, requireAdmin
  * Structural Role: Administrative UI for facility tracking
  */
@@ -85,212 +85,244 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Site Management | Kharon Portal" active="sites" user={user}>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="sm:flex sm:items-center sm:justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight font-heading">Site Management</h1>
-        <p class="mt-1 text-sm text-white/60">Manage client locations and access mappings</p>
+  {/* ── Page Header ── */}
+  <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 rounded-xl border border-kharon-purple/10 mb-6 relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_10%_50%,rgba(124,93,194,0.09),transparent)]"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+          <svg class="h-[1.1rem] w-[1.1rem] text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Asset Console</p>
       </div>
+      <h1 class="text-2xl font-black sm:text-3xl tracking-tight text-white">Client Site Management</h1>
+      <p class="mt-2 max-w-3xl text-sm text-kharon-light/60">Manage client locations, contact infrastructure, and secure access mappings across the portfolio.</p>
     </div>
+  </section>
 
+  <div class="grid gap-8">
     {loadError && (
-      <p class="mx-auto mb-6 max-w-7xl border border-kharon-red bg-kharon-red/10 p-4 text-red-200 font-semibold">{loadError}</p>
+      <p class="rounded-lg border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>
     )}
 
-    <article class="kharon-surface p-4 sm:p-5">
-      <div class="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-line-cyan-soft pb-4">
-        <h2 class="text-xl font-bold text-white font-heading">
-          Sites <span class="ml-2 text-sm font-normal text-white/60">({sitesTotal})</span>
-        </h2>
-        <form class="flex flex-wrap items-end gap-3" method="get">
+    {/* ── Search & Metrics ── */}
+    <div class="flex flex-wrap items-end justify-between gap-6 bg-kharon-charcoal/40 p-5 rounded-xl border border-kharon-purple/10">
+      <div class="flex flex-wrap items-end gap-4 flex-1">
+        <form class="flex flex-wrap items-end gap-3 flex-1 min-w-[300px]" method="get">
           <CsrfInput />
-          <div class="grid gap-1">
-            <label for="sites-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search Company</label>
+          <div class="grid gap-1 flex-1">
+            <label for="sites-q" class="text-[10px] font-black uppercase tracking-widest text-kharon-purple px-1">Search Registry</label>
             <input
               id="sites-q"
               name="q"
               type="search"
-              class="kharon-field min-w-[200px]"
-              placeholder="Search company…"
+              class="kharon-field"
+              placeholder="Company, contact, or email…"
               value={searchQuery}
             />
           </div>
-          <button type="submit" class="kharon-command-button text-xs py-2 px-4 h-[38px] self-end">Search</button>
+          <button type="submit" class="kharon-command-button py-2 px-6 h-[42px] text-[10px]">Execute Search</button>
           {searchQuery && (
-            <a href="/portal/admin/sites" class="kharon-secondary-button text-xs py-2 px-4 h-[38px] flex items-center justify-center">Clear</a>
+            <a href="/portal/admin/sites" class="kharon-secondary-button py-2 px-4 h-[42px] text-[10px] flex items-center justify-center">Reset</a>
           )}
         </form>
       </div>
+      
+      <div class="flex items-center gap-6 px-4 py-2 border-l border-kharon-purple/10">
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Total Sites</p>
+          <p class="text-2xl font-black text-white leading-none mt-1">{sitesTotal}</p>
+        </div>
+      </div>
+    </div>
 
-      <div class="grid gap-4">
-        {sites.length === 0 && <p class="py-4 text-sm text-white/50 italic">No sites match your search.</p>}
+    {/* ── Sites Grid ── */}
+    <div class="grid gap-6">
+      {sites.length === 0 && (
+        <div class="py-20 text-center border border-dashed border-kharon-purple/20 rounded-2xl">
+          <p class="text-white/40 font-bold uppercase tracking-widest">No site records found</p>
+        </div>
+      )}
+      <div class="grid gap-6">
         {sites.map((record) => (
           <form
-            class="admin-form grid gap-4 bg-surface-charcoal/40 border border-line-cyan-soft/50 p-4 lg:grid-cols-6 rounded-md"
+            class="admin-form group relative grid gap-6 bg-kharon-charcoal/60 border border-kharon-purple/20 p-6 lg:grid-cols-6 rounded-xl hover:border-kharon-purple/40 transition-all backdrop-blur-md shadow-xl"
             data-endpoint="/portal/api/admin/sites"
           >
-          <CsrfInput />
+            <CsrfInput />
             <input type="hidden" name="action" value="update" />
             <input type="hidden" name="id" value={record.id} />
             
-            <div class="grid gap-1">
-              <label for={`comp-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Company Name</label>
-              <input id={`comp-${record.id}`} class="kharon-field" name="ownerCompanyName" value={record.owner_company_name} required />
+            <div class="lg:col-span-2 grid gap-1.5">
+              <label for={`comp-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Registered Entity</label>
+              <input id={`comp-${record.id}`} class="kharon-field text-sm font-bold" name="ownerCompanyName" value={record.owner_company_name} required />
             </div>
             
-            <div class="grid gap-1">
-              <label for={`contact-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Contact Person</label>
-              <input id={`contact-${record.id}`} class="kharon-field" name="siteContactPerson" value={record.site_contact_person ?? ""} required />
+            <div class="grid gap-1.5">
+              <label for={`contact-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Lead Contact</label>
+              <input id={`contact-${record.id}`} class="kharon-field text-xs" name="siteContactPerson" value={record.site_contact_person ?? ""} required />
             </div>
             
-            <div class="grid gap-1">
-              <label for={`email-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Contact Email</label>
-              <input id={`email-${record.id}`} class="kharon-field" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
+            <div class="grid gap-1.5">
+              <label for={`email-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Contact Email</label>
+              <input id={`email-${record.id}`} class="kharon-field text-xs" name="siteContactEmail" type="email" value={record.site_contact_email || ""} />
             </div>
             
-            <div class="grid gap-1">
-              <label for={`phone-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Contact Phone</label>
-              <input id={`phone-${record.id}`} class="kharon-field" name="siteContactPhone" value={record.site_contact_phone || ""} />
+            <div class="grid gap-1.5">
+              <label for={`phone-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Phone Infrastructure</label>
+              <input id={`phone-${record.id}`} class="kharon-field text-xs" name="siteContactPhone" value={record.site_contact_phone || ""} />
+            </div>
+
+            <div class="grid gap-1.5 self-end">
+              <button class="kharon-command-button w-full py-2.5 text-[10px] h-[40px]">Update Site</button>
             </div>
             
-            <div class="grid gap-1">
-              <label for={`billing-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Billing Email(s)</label>
-              <input id={`billing-${record.id}`} class="kharon-field" name="billingEmails" value={record.billing_emails} required />
+            <div class="lg:col-span-4 grid gap-1.5">
+              <label for={`address-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Physical Site Address</label>
+              <textarea id={`address-${record.id}`} class="min-h-[80px] kharon-field text-xs leading-relaxed" name="physicalAddress" required>{record.physical_address}</textarea>
+            </div>
+
+            <div class="lg:col-span-2 grid gap-1.5">
+              <label for={`billing-${record.id}`} class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Finance Emails (Comma separated)</label>
+              <input id={`billing-${record.id}`} class="kharon-field text-xs" name="billingEmails" value={record.billing_emails} required />
+              <div class="mt-4 flex items-center justify-between gap-4 border-t border-kharon-purple/10 pt-4">
+                <a href={`/portal/admin/systems?q=${encodeURIComponent(record.owner_company_name)}`} class="text-[10px] font-black uppercase tracking-widest text-kharon-purple hover:text-kharon-cyan transition-colors">
+                  System Registry &rarr;
+                </a>
+                <span class="text-[10px] font-mono text-white/20 uppercase tracking-tighter">ID: {record.id.slice(0, 8)}</span>
+              </div>
             </div>
             
-            <div class="grid gap-1 self-end">
-              <button class="kharon-command-button w-full py-2 text-xs">Save</button>
-            </div>
-            
-            <div class="grid gap-1 lg:col-span-6">
-              <label for={`address-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Physical Address</label>
-              <textarea id={`address-${record.id}`} class="min-h-20 kharon-field" name="physicalAddress" required>{record.physical_address}</textarea>
-            </div>
-            
-            <a href={`/portal/admin/systems?q=${encodeURIComponent(record.owner_company_name)}`} class="text-left text-xs font-semibold text-kharon-purple hover:underline lg:col-span-6">
-              &rarr; View Systems for {record.owner_company_name}
-            </a>
-            <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
+            <p class="admin-result hidden rounded border px-4 py-3 text-xs font-bold uppercase tracking-widest lg:col-span-6"></p>
           </form>
         ))}
       </div>
-    </article>
+    </div>
 
-    <nav class="mt-6 mb-8 flex items-center justify-between border-t border-line-cyan-soft pt-4">
-      {page > 1 ? (
-        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}`} class="kharon-secondary-button py-2 text-xs">Previous</a>
-      ) : (
-        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Previous</span>
-      )}
-      <span class="text-sm text-white/60">Page {page} of {totalPages}</span>
-      {page < totalPages ? (
-        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}`} class="kharon-secondary-button py-2 text-xs">Next</a>
-      ) : (
-        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Next</span>
-      )}
-    </nav>
+    {/* ── Pagination ── */}
+    {totalPages > 1 && (
+      <nav class="flex items-center justify-between border-t border-kharon-purple/10 pt-6">
+        {page > 1 ? (
+          <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}`} class="kharon-secondary-button py-2.5 px-6 text-[10px]">Previous Payload</a>
+        ) : (
+          <span class="opacity-30 rounded border border-kharon-purple/20 px-6 py-2.5 text-[10px] font-black uppercase text-white">Previous</span>
+        )}
+        <span class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Segment {page} of {totalPages}</span>
+        {page < totalPages ? (
+          <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}`} class="kharon-secondary-button py-2.5 px-6 text-[10px]">Next Payload</a>
+        ) : (
+          <span class="opacity-30 rounded border border-kharon-purple/20 px-6 py-2.5 text-[10px] font-black uppercase text-white">Next</span>
+        )}
+      </nav>
+    )}
 
-    <div class="grid gap-6 xl:grid-cols-2">
-      <article class="kharon-surface p-5">
-        <h2 class="text-xl font-bold text-white font-heading">Create site</h2>
-        <form class="admin-form mt-5 grid gap-4" data-endpoint="/portal/api/admin/sites">
+    {/* ── Operational Grid (Create & Mapping) ── */}
+    <div class="grid gap-8 xl:grid-cols-2">
+      <article class="bg-kharon-charcoal/60 border border-kharon-purple/20 p-6 rounded-xl backdrop-blur-md shadow-2xl">
+        <h2 class="text-lg font-black text-white uppercase tracking-widest mb-6">Initialize New Site</h2>
+        <form class="admin-form grid gap-5" data-endpoint="/portal/api/admin/sites">
           <CsrfInput />
           <input type="hidden" name="action" value="create" />
           
-          <div class="grid gap-1">
-            <label for="create-company" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Company Name *</label>
-            <input id="create-company" class="kharon-field" name="ownerCompanyName" placeholder="Owner company" required />
+          <div class="grid gap-1.5">
+            <label for="create-company" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Entity Name *</label>
+            <input id="create-company" class="kharon-field" name="ownerCompanyName" placeholder="e.g. Acme Industrial" required />
           </div>
 
-          <div class="grid gap-1">
-            <label for="create-address" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Physical Address *</label>
-            <textarea id="create-address" class="min-h-20 kharon-field" name="physicalAddress" placeholder="Physical address" required></textarea>
+          <div class="grid gap-1.5">
+            <label for="create-address" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Physical Location *</label>
+            <textarea id="create-address" class="min-h-[80px] kharon-field text-xs" name="physicalAddress" placeholder="Street address, suburb, code" required></textarea>
           </div>
 
-          <div class="grid gap-1">
-            <label for="create-contact" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Contact Person *</label>
-            <input id="create-contact" class="kharon-field" name="siteContactPerson" placeholder="Site contact person" required />
+          <div class="grid grid-cols-2 gap-4">
+            <div class="grid gap-1.5">
+              <label for="create-contact" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Lead Liaison *</label>
+              <input id="create-contact" class="kharon-field text-xs" name="siteContactPerson" placeholder="Full name" required />
+            </div>
+
+            <div class="grid gap-1.5">
+              <label for="create-phone" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Contact Phone</label>
+              <input id="create-phone" class="kharon-field text-xs" name="siteContactPhone" placeholder="+27..." />
+            </div>
           </div>
 
-          <div class="grid gap-1">
-            <label for="create-email" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Contact Email</label>
-            <input id="create-email" class="kharon-field" name="siteContactEmail" type="email" placeholder="site.contact@example.com" />
+          <div class="grid gap-1.5">
+            <label for="create-email" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Liaison Email</label>
+            <input id="create-email" class="kharon-field text-xs" name="siteContactEmail" type="email" placeholder="contact@company.com" />
           </div>
 
-          <div class="grid gap-1">
-            <label for="create-phone" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Contact Phone</label>
-            <input id="create-phone" class="kharon-field" name="siteContactPhone" placeholder="Site phone" />
+          <div class="grid gap-1.5">
+            <label for="create-billing" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Sage Billing Targets *</label>
+            <input id="create-billing" class="kharon-field text-xs" name="billingEmails" placeholder="accounts@company.com" required />
           </div>
 
-          <div class="grid gap-1">
-            <label for="create-billing" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Billing Email(s) *</label>
-            <input id="create-billing" class="kharon-field" name="billingEmails" placeholder="billing@example.com" required />
-          </div>
-
-          <button class="kharon-command-button w-full py-3 mt-2">Create Site Record</button>
-          <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold"></p>
+          <button class="kharon-command-button w-full py-4 mt-2 text-[10px]">Create Site Registry Record</button>
+          <p class="admin-result hidden mt-4 rounded border px-4 py-3 text-[10px] font-bold uppercase tracking-widest"></p>
         </form>
       </article>
 
-      <article class="kharon-surface p-5">
-        <div class="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Client account access</p>
-            <h2 class="mt-2 text-xl font-bold text-white font-heading">Multi-site record mapping</h2>
-          </div>
+      <article class="bg-kharon-charcoal/60 border border-kharon-purple/20 p-6 rounded-xl backdrop-blur-md shadow-2xl">
+        <div class="mb-6">
+          <p class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Security Protocol</p>
+          <h2 class="mt-1 text-lg font-black text-white uppercase tracking-widest">Multi-Site Authorization</h2>
         </div>
 
-        <form class="client-site-access-form mt-5 grid gap-4 lg:grid-cols-3" data-endpoint="/portal/api/admin/client-site-access">
+        <form class="client-site-access-form grid gap-5" data-endpoint="/portal/api/admin/client-site-access">
           <CsrfInput />
           <input type="hidden" name="action" value="grant" />
           
-          <div class="grid gap-1">
-            <label for="grant-user" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Client User *</label>
-            <select id="grant-user" class="kharon-field" name="userId" required>
-              <option value="">Select client user</option>
-              {clientUsers.map((client) => (
-                <option value={client.id}>{client.name} ({client.email})</option>
-              ))}
-            </select>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="grid gap-1.5">
+              <label for="grant-user" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Target Client Account *</label>
+              <select id="grant-user" class="kharon-field text-xs py-2" name="userId" required>
+                <option value="">— Select Account —</option>
+                {clientUsers.map((client) => (
+                  <option value={client.id}>{client.name} ({client.email})</option>
+                ))}
+              </select>
+            </div>
+            
+            <div class="grid gap-1.5">
+              <label for="grant-site" class="text-[9px] font-black uppercase tracking-widest text-kharon-purple">Authorize Site Access *</label>
+              <select id="grant-site" class="kharon-field text-xs py-2" name="siteId" required>
+                <option value="">— Select Site —</option>
+                {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
+              </select>
+            </div>
           </div>
           
-          <div class="grid gap-1">
-            <label for="grant-site" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Site *</label>
-            <select id="grant-site" class="kharon-field" name="siteId" required>
-              <option value="">Select site</option>
-              {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
-            </select>
-          </div>
-          
-          <div class="grid gap-1 justify-end self-end">
-            <button class="kharon-command-button py-2.5 px-6 h-[40px] text-xs">Grant Access</button>
-          </div>
-          <p class="client-site-access-result hidden rounded border px-4 py-3 text-sm font-semibold lg:col-span-3"></p>
+          <button class="kharon-command-button py-3 text-[10px]">Authorize Mapped Access</button>
+          <p class="client-site-access-result hidden rounded border px-4 py-3 text-[10px] font-bold uppercase tracking-widest"></p>
         </form>
 
-        <div class="mt-5 grid gap-3">
+        <div class="mt-8 space-y-3">
+          <p class="text-[10px] font-black uppercase tracking-widest text-white/30 mb-4 px-1">Active Mapping Registry</p>
           {clientSiteAccess.length === 0 && (
-            <p class="text-white/50 italic">No additional client site access mappings have been granted.</p>
+            <p class="text-white/20 text-xs italic p-4 border border-dashed border-kharon-purple/10 rounded-lg text-center">No authorized multi-site mappings found.</p>
           )}
-          {clientSiteAccess.map((mapping) => (
-            <form
-              class="client-site-access-form flex flex-wrap items-center justify-between gap-3 bg-surface-charcoal/40 border border-line-cyan-soft/50 p-4 rounded"
-              data-endpoint="/portal/api/admin/client-site-access"
-              data-user-name={mapping.user_name}
-              data-site-name={mapping.owner_company_name}
-            >
-          <CsrfInput />
-              <div>
-                <p class="font-semibold text-white">{mapping.user_name} / {mapping.owner_company_name}</p>
-                <p class="text-xs text-white/60">{mapping.user_email} / granted {mapping.granted_at}</p>
-              </div>
-              <input type="hidden" name="action" value="revoke" />
-              <input type="hidden" name="userId" value={mapping.user_id} />
-              <input type="hidden" name="siteId" value={mapping.site_id} />
-              <button class="kharon-danger-button py-1.5 px-3 text-xs">Revoke</button>
-              <p class="client-site-access-result hidden w-full rounded border px-4 py-3 text-sm font-semibold"></p>
-            </form>
-          ))}
+          <div class="grid gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {clientSiteAccess.map((mapping) => (
+              <form
+                class="client-site-access-form flex items-center justify-between gap-4 bg-kharon-black/40 border border-kharon-purple/10 p-4 rounded-lg hover:border-kharon-purple/30 transition-colors"
+                data-endpoint="/portal/api/admin/client-site-access"
+                data-user-name={mapping.user_name}
+                data-site-name={mapping.owner_company_name}
+              >
+                <CsrfInput />
+                <div class="min-w-0">
+                  <p class="font-bold text-white text-xs truncate">{mapping.user_name}</p>
+                  <p class="text-[10px] font-bold text-kharon-cyan uppercase tracking-tighter truncate mt-0.5">{mapping.owner_company_name}</p>
+                </div>
+                <input type="hidden" name="action" value="revoke" />
+                <input type="hidden" name="userId" value={mapping.user_id} />
+                <input type="hidden" name="siteId" value={mapping.site_id} />
+                <button class="kharon-danger-button py-1.5 px-3 text-[8px] h-fit">Revoke</button>
+                <p class="client-site-access-result hidden w-full rounded border px-4 py-3 text-[10px] font-bold uppercase"></p>
+              </form>
+            ))}
+          </div>
         </div>
       </article>
     </div>
@@ -308,20 +340,24 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         if (actionInput?.value === "revoke") {
           const userName = form.getAttribute("data-user-name") || "this user";
           const siteName = form.getAttribute("data-site-name") || "this site";
-          if (!window.confirm(`Are you sure you want to revoke access to site: "${siteName}" for client user: "${userName}"?`)) {
+          if (!window.confirm(`REVOKE ACCESS COMMAND: Are you sure you want to terminate site access for "${userName}" at "${siteName}"?`)) {
             return;
           }
         }
 
         const result = form.querySelector<HTMLElement>(".client-site-access-result");
-        if (result) result.classList.add("hidden");
+        if (result) {
+          result.classList.add("hidden");
+          result.textContent = "Processing...";
+        }
+        
         const { response, body } = await portalPost(form.dataset.endpoint ?? "", extractFormPayload(form));
         if (!response.ok || !body.ok) {
-          setResult(result, body.message ?? "Client site access update failed.", "error");
+          setResult(result, body.message ?? "Operational command failed.", "error");
           return;
         }
-        setResult(result, body.action === "grant" ? "Client site access granted." : "Client site access revoked.", "success");
-        setTimeout(() => window.location.reload(), 700);
+        setResult(result, body.action === "grant" ? "ACCESS AUTHORIZED." : "ACCESS REVOKED.", "success");
+        setTimeout(() => window.location.reload(), 800);
       });
     }
   </script>
