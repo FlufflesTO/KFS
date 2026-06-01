@@ -8,6 +8,7 @@
 // @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
 import { env } from "cloudflare:workers";
 
+import QRCode from "qrcode";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const base32Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -16,6 +17,22 @@ const issuer = "Kharon Portal";
 interface MfaOptions {
   period?: number;
   window?: number;
+}
+
+export async function generateMfaQrCode(uri: string): Promise<string> {
+  try {
+    return await QRCode.toDataURL(uri, {
+      margin: 2,
+      width: 280,
+      color: {
+        dark: "#0b0d0f",
+        light: "#ffffff"
+      }
+    });
+  } catch (err) {
+    console.error("QR Code generation failed:", err);
+    throw new Error("Failed to generate MFA QR code");
+  }
 }
 
 function base64UrlEncode(bytes: Uint8Array): string {

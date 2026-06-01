@@ -1,18 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
-  <circle cx="40" cy="40" r="38" stroke="#1F4E79" stroke-width="2.5" fill="#0B1520"/>
-  <circle cx="40" cy="40" r="34" stroke="#00C2FF" stroke-width="1" fill="none" opacity="0.3"/>
-  <!-- Two gas cylinders -->
-  <rect x="24" y="22" width="12" height="30" rx="4" fill="#4B2E83"/>
-  <rect x="44" y="22" width="12" height="30" rx="4" fill="#1F4E79"/>
-  <!-- Cylinder tops / valve heads -->
-  <rect x="22" y="18" width="16" height="6" rx="2" fill="#00C2FF" opacity="0.8"/>
-  <rect x="42" y="18" width="16" height="6" rx="2" fill="#00C2FF" opacity="0.6"/>
-  <!-- Valve stems -->
-  <rect x="28" y="14" width="4" height="6" rx="1" fill="#00C2FF"/>
-  <rect x="48" y="14" width="4" height="6" rx="1" fill="#00C2FF" opacity="0.8"/>
-  <!-- Pressure dials -->
-  <circle cx="30" cy="38" r="4" fill="#0B1520" stroke="#00C2FF" stroke-width="1" opacity="0.6"/>
-  <circle cx="50" cy="38" r="4" fill="#0B1520" stroke="#00C2FF" stroke-width="1" opacity="0.5"/>
-  <!-- Base -->
-  <rect x="20" y="52" width="40" height="4" rx="2" fill="#1F4E79" opacity="0.7"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Muted geometric background (Technical Duotone Base) -->
+  <path d="M50 5 L89 27.5 L89 72.5 L50 95 L11 72.5 L11 27.5 Z" fill="#15191D" stroke="#7C5DC2" stroke-width="2" stroke-opacity="0.3"/>
+  
+  <!-- Sharp high-contrast foreground -->
+  <rect x="35" y="30" width="12" height="35" rx="2" stroke="#7C5DC2" stroke-width="3"/>
+  <rect x="53" y="30" width="12" height="35" rx="2" stroke="#38BDF8" stroke-width="3"/>
+  
+  <path d="M38 25 L44 25 M56 25 L62 25" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M41 20 L41 25 M59 20 L59 25" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Technical detail lines -->
+  <path d="M20 70 L80 70" stroke="#E2E8F0" stroke-width="1" stroke-opacity="0.2"/>
 </svg>

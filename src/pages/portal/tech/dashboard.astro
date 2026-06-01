@@ -9,7 +9,7 @@ import { auditError } from "../../../lib/server/audit";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
 import OfflineBanner from "../../../components/portal/OfflineBanner.astro";
-import DashboardFeatureCard from "../../../components/portal/DashboardFeatureCard.astro";
+import PortalQuickActions from "../../../components/portal/PortalQuickActions.astro";
 
 export const prerender = false;
 
@@ -17,6 +17,13 @@ const user = Astro.locals.user;
 let jobs: Array<any> = [];
 let loadError = "";
 const today = new Date().toISOString().slice(0, 10);
+
+const techActions = [
+  { label: "Job History", href: "/portal/tech/history", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`, accent: "purple" as const },
+  { label: "Password Reset", href: "/portal/account/password", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`, accent: "cyan" as const },
+  { label: "Emergency", href: "/emergency-support", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />`, accent: "amber" as const },
+  { label: "Open Map", href: "https://maps.google.com", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />`, accent: "green" as const }
+];
 
 try {
   const db = getDatabase();
@@ -80,9 +87,9 @@ function priorityBadgeClass(priority: string): string {
         </div>
         <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Technician Console</p>
       </div>
-      <h1 class="text-2xl font-black sm:text-3xl tracking-tight">Active Dispatches</h1>
-      <p class="mt-2 max-w-2xl text-sm text-white/70">
-        Review assigned fieldwork, log arrival times, capture forensic evidence, and submit completed jobcards seamlessly.
+      <h1 class="text-2xl font-black sm:text-3xl tracking-tight text-white">Field Operations Command</h1>
+      <p class="mt-2 max-w-2xl text-sm text-kharon-light/60">
+        Review assigned fieldwork, log arrival times, capture forensic evidence, and submit completed jobcards.
       </p>
     </div>
   </section>
@@ -90,40 +97,8 @@ function priorityBadgeClass(priority: string): string {
   {/* ── Feature Navigation Hub ── */}
   <section class="px-1 pb-2 pt-0 sm:px-4 sm:pb-4">
     <div class="mx-auto max-w-7xl">
-      <div class="mb-6">
-        <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3 px-1">Quick Access</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          <DashboardFeatureCard
-            title="Active Dispatches"
-            description="View and action your current assigned field jobs."
-            href="/portal/tech/dashboard"
-            active={true}
-            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />`}
-            badge={jobs.length > 0 ? jobs.length : undefined}
-            badgeVariant="default"
-          />
-          <DashboardFeatureCard
-            title="Job History"
-            description="Review completed dispatches, jobcard records and documentation."
-            href="/portal/tech/history"
-            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`}
-          />
-          <DashboardFeatureCard
-            title="Password Reset"
-            description="Update your portal login password."
-            href="/portal/account/password"
-            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`}
-          />
-          <DashboardFeatureCard
-            title="Today's Summary"
-            description={`${todayCount} dispatches today · ${inProgressCount} in progress`}
-            href="/portal/tech/dashboard#action-required"
-            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />`}
-            badge={todayCount > 0 ? todayCount : undefined}
-            badgeVariant={todayCount > 0 ? "warning" : "default"}
-          />
-        </div>
-      </div>
+      <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-4 px-1">Field Command Matrix</h2>
+      <PortalQuickActions actions={techActions} />
     </div>
   </section>
 
@@ -257,7 +232,7 @@ function priorityBadgeClass(priority: string): string {
                 {job.physical_address && (
                   <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(job.physical_address))}`} target="_blank" rel="noopener noreferrer" class="flex-1 px-4 py-3 border border-kharon-purple/30 text-kharon-cyan font-bold text-xs uppercase tracking-widest rounded-md text-center hover:bg-kharon-purple/10 transition-colors min-h-[44px] flex items-center justify-center gap-1.5">
                     <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                     </svg>
                     Navigate to Site
                   </a>
@@ -272,7 +247,7 @@ function priorityBadgeClass(priority: string): string {
         <div class="mt-8 flex items-center gap-3 mb-4">
           <div class="flex items-center justify-center rounded-lg bg-kharon-purple/10 p-2 ring-1 ring-kharon-purple/25">
             <svg class="h-4.5 w-4.5 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
           <h2 class="text-xs font-black uppercase tracking-[0.15em] text-white/70">Upcoming Fieldwork</h2>

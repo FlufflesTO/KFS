@@ -1,0 +1,48 @@
+---
+/**
+ * Project Sentinel - Portal Quick Actions
+ * Purpose: Provides a standardized, high-density shortcut grid for operational portal dashboards.
+ */
+export interface Action {
+  label: string;
+  href: string;
+  icon: string;
+  accent?: "purple" | "cyan" | "amber" | "green" | "red";
+}
+
+export interface Props {
+  actions: Action[];
+}
+
+const { actions } = Astro.props;
+
+const accents: Record<string, string> = {
+  purple: "text-kharon-purple group-hover:text-white",
+  cyan: "text-kharon-cyan group-hover:text-white",
+  amber: "text-kharon-amber group-hover:text-white",
+  green: "text-kharon-green group-hover:text-white",
+  red: "text-kharon-red group-hover:text-white"
+};
+
+const bgAccents: Record<string, string> = {
+  purple: "group-hover:bg-kharon-purple",
+  cyan: "group-hover:bg-kharon-cyan",
+  amber: "group-hover:bg-kharon-amber",
+  green: "group-hover:bg-kharon-green",
+  red: "group-hover:bg-kharon-red"
+};
+---
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+  {actions.map((action) => (
+    <a href={action.href} class="group relative flex items-center gap-4 rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/40 p-4 transition-all hover:border-kharon-purple/50 hover:bg-kharon-charcoal/80 hover:shadow-xl hover:shadow-kharon-purple/5">
+      <div class={`flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-kharon-black/40 ring-1 ring-kharon-purple/20 transition-all ${bgAccents[action.accent || 'purple']}`}>
+        <svg class={`h-6 w-6 ${accents[action.accent || 'purple']}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={action.icon}></svg>
+      </div>
+      <div>
+        <p class="text-xs font-black uppercase tracking-widest text-white leading-tight">{action.label}</p>
+        <p class="mt-0.5 text-[9px] font-bold text-kharon-light/40 uppercase tracking-tighter">Command Shortcut</p>
+      </div>
+    </a>
+  ))}
+</div>

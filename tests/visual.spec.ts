@@ -9,7 +9,7 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
     // 2. Verify that the main landing page content is visible
     const mainHeading = page.locator('h1.kharon-h1');
     await expect(mainHeading).toBeVisible();
-    await expect(mainHeading).toContainText(/Life-safety|fire detection/i);
+    await expect(mainHeading).toContainText(/Precision Engineering|Critical Assets/i);
 
     // 3. Programmatically inspect the computed styling of the logo watermark pseudo-element
     const watermarkStyles = await page.evaluate(() => {

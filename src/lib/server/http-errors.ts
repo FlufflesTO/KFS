@@ -297,7 +297,7 @@ export function unknownErrorResponse(error: unknown): Response {
 
 // ─── Error Handler Middleware Wrapper ─────────────────────────────────────
 
-export interface ErrorHandlerOptions<T> {
+export interface ErrorHandlerOptions {
   /** Entity type for audit logging (e.g., "job", "user", "invoice") */
   entityType: string;
   /** Entity ID for audit logging */
@@ -332,7 +332,7 @@ export async function withErrorHandling<T>(
   db: D1Database,
   request: Request,
   handler: () => Promise<T>,
-  options: ErrorHandlerOptions<T>
+  options: ErrorHandlerOptions
 ): Promise<T | Response> {
   try {
     return await handler();

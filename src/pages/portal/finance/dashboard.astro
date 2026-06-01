@@ -8,6 +8,7 @@ import FinanceExceptionPanel from "../../../components/portal/finance/FinanceExc
 import FinanceSagePanel from "../../../components/portal/finance/FinanceSagePanel.astro";
 import FinanceLedgerTable from "../../../components/portal/finance/FinanceLedgerTable.astro";
 import DashboardFeatureCard from "../../../components/portal/DashboardFeatureCard.astro";
+import PortalQuickActions from "../../../components/portal/PortalQuickActions.astro";
 
 export const prerender = false;
 
@@ -21,6 +22,13 @@ const financeError = requireFinance(user);
 if (financeError) {
   return financeError;
 }
+
+const financeActions = [
+  { label: "New Task", href: "/portal/finance/dashboard#create", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />`, accent: "cyan" as const },
+  { label: "Sage Token", href: "/portal/finance/dashboard#sage", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />`, accent: "green" as const },
+  { label: "Audit Log", href: "/portal/admin/audit", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />`, accent: "purple" as const },
+  { label: "Password", href: "/portal/account/password", icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`, accent: "amber" as const }
+];
 
 // Fetch finance data
 const db = getDatabase();
@@ -129,7 +137,7 @@ try {
 
   {/* ── Page Header ── */}
   <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 rounded-xl border border-kharon-purple/10 mb-6 relative overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(75,46,131,0.09),transparent)]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(124,93,194,0.09),transparent)]"></div>
     <div class="relative z-10">
       <div class="flex items-center gap-3 mb-4">
         <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
@@ -139,16 +147,19 @@ try {
         </div>
         <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Finance Console</p>
       </div>
-      <h1 class="text-2xl font-black sm:text-3xl tracking-tight">Sage Control Register</h1>
-      <p class="mt-2 max-w-3xl text-sm text-white/60">Manage invoices, payments, and Sage integration with VAT compliance tracking.</p>
+      <h1 class="text-2xl font-black sm:text-3xl tracking-tight text-white">Sage Control Register</h1>
+      <p class="mt-2 max-w-3xl text-sm text-kharon-light/60">Manage invoices, payments, and Sage integration with VAT compliance tracking.</p>
     </div>
   </section>
 
   {/* ── Feature Navigation Hub ── */}
   <section class="px-1 pb-2 pt-0 sm:px-4 sm:pb-4">
     <div class="mx-auto max-w-7xl">
+      <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-4 px-1">Finance Command Matrix</h2>
+      <PortalQuickActions actions={financeActions} />
+      
       <div class="mb-6">
-        <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3 px-1">Quick Access</h2>
+        <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3 px-1">Operational Viewports</h2>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <DashboardFeatureCard
             title="Sage Register"
@@ -176,10 +187,10 @@ try {
             badgeVariant={sageConnection.expired ? "danger" : (!sageConnection.connected ? "warning" : "success")}
           />
           <DashboardFeatureCard
-            title="Password Reset"
-            description="Update your portal login password."
-            href="/portal/account/password"
-            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`}
+            title="Operations Matrix"
+            description="View all administrative and field operations."
+            href="/portal/admin/dashboard"
+            iconPath={`<path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />`}
           />
         </div>
       </div>

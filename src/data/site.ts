@@ -162,57 +162,46 @@ export const solutionLinks: SolutionLink[] = [
   {
     label: "Gas Suppression",
     href: "/gas-suppression",
-    summary:
-      "Clean-agent and engineered suppression systems for server rooms, electrical rooms and sensitive operational assets.",
-    icon: "/brand/icons/service-fire-suppression.svg",
-    sans: ["SANS 14520"]
+    summary: "Clean-agent and engineered suppression systems for technical assets.",
+    icon: "/brand/icons/service-fire-suppression.svg"
   },
   {
     label: "Fire Detection",
     href: "/fire-detection",
-    summary:
-      "Addressable detection, control panels, response zones and fault diagnostics for commercial and industrial sites.",
-    icon: "/brand/icons/service-fire-detection.svg",
-    sans: ["SANS 10139", "SANS 1475"]
-  },
-  {
-    label: "Compliance & Maintenance",
-    href: "/compliance-maintenance",
-    summary:
-      "Inspection, servicing, reporting and lifecycle maintenance for accountable fire-system ownership.",
-    icon: "/brand/icons/service-engineering.svg",
-    sans: ["SANS 10139", "SANS 14520", "SANS 369"]
-  },
-  {
-    label: "Critical Infrastructure",
-    href: "/critical-infrastructure",
-    summary:
-      "Infrastructure protection for data centres, control rooms, electrical rooms and high-consequence operational sites.",
-    icon: "/brand/icons/service-access-control.svg",
-    sans: ["SANS 10400-T", "SANS 10142"]
+    summary: "Addressable detection and response systems for commercial sites.",
+    icon: "/brand/icons/service-fire-detection.svg"
   },
   {
     label: "Integrated Security",
     href: "/security-systems",
-    summary:
-      "CCTV, access control and monitoring integrated as supporting infrastructure around fire protection priorities.",
-    icon: "/brand/icons/service-cctv.svg",
-    sans: ["SANS 10222", "SANS 10198"]
+    summary: "CCTV and access control integrated with fire protection priorities.",
+    icon: "/brand/icons/service-cctv.svg"
   }
+];
+
+export const sectorLinks: NavLink[] = [
+  { label: "Data Centres", href: "/industries#data-centres" },
+  { label: "Industrial Facilities", href: "/industries#industrial" },
+  { label: "Warehousing", href: "/industries#warehousing" },
+  { label: "Critical Utilities", href: "/industries#utilities" }
+];
+
+export const resourceLinks: NavLink[] = [
+  { label: "Compliance Hub", href: "/compliance" },
+  { label: "Emergency Support", href: "/emergency-support" },
+  { label: "About Kharon", href: "/about" },
+  { label: "Request Assessment", href: "/contact?intent=site-assessment" }
 ];
 
 export const mainLinks: NavLink[] = [
   { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
+  { label: "Solutions", href: "/solutions" },
   { label: "Sectors", href: "/industries" },
-  { label: "Compliance", href: "/compliance-maintenance" },
-  { label: "Emergency", href: "/emergency-support" },
-  { label: "Assessment Intake", href: "/contact?intent=site-assessment" }
+  { label: "Resources", href: "/resources" }
 ];
 
 export const sitemapPages: string[] = [
   "",
-  "services",
   "gas-suppression",
   "fire-detection",
   "compliance-maintenance",

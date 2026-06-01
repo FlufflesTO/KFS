@@ -1,22 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
-  <circle cx="40" cy="40" r="38" stroke="#1F4E79" stroke-width="2.5" fill="#0B1520"/>
-  <circle cx="40" cy="40" r="34" stroke="#00C2FF" stroke-width="1" fill="none" opacity="0.3"/>
-  <!-- Smoke detector body - dome shape -->
-  <ellipse cx="40" cy="43" rx="18" ry="6" fill="#15191D" stroke="#4B2E83" stroke-width="1.5"/>
-  <path d="M22 43 Q22 28 40 26 Q58 28 58 43" fill="#1A2027" stroke="#4B2E83" stroke-width="1.5"/>
-  <!-- Center indicator -->
-  <circle cx="40" cy="38" r="5" fill="#0B1520" stroke="#00C2FF" stroke-width="1.5"/>
-  <circle cx="40" cy="38" r="2" fill="#F59E0B"/>
-  <!-- Detection slots around dome -->
-  <path d="M26 43 L26 46" stroke="#00C2FF" stroke-width="1" opacity="0.5"/>
-  <path d="M31 44.5 L31 47.5" stroke="#00C2FF" stroke-width="1" opacity="0.5"/>
-  <path d="M40 45 L40 48" stroke="#00C2FF" stroke-width="1" opacity="0.5"/>
-  <path d="M49 44.5 L49 47.5" stroke="#00C2FF" stroke-width="1" opacity="0.5"/>
-  <path d="M54 43 L54 46" stroke="#00C2FF" stroke-width="1" opacity="0.5"/>
-  <!-- Smoke wisps -->
-  <path d="M34 22 Q33 18 35 15 Q37 12 36 9" stroke="#00C2FF" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
-  <path d="M40 20 Q39 16 41 13 Q43 10 42 7" stroke="#00C2FF" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
-  <path d="M46 22 Q45 18 47 15 Q49 12 48 9" stroke="#00C2FF" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
-  <!-- Mounting plate -->
-  <rect x="32" y="49" width="16" height="4" rx="2" fill="#0B1520" stroke="#4B2E83" stroke-width="1"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <path d="M50 5 L89 27.5 L89 72.5 L50 95 L11 72.5 L11 27.5 Z" fill="#15191D" stroke="#7C5DC2" stroke-width="2" stroke-opacity="0.3"/>
+  
+  <!-- Smoke detector profile -->
+  <path d="M30 55 Q30 35 50 35 Q70 35 70 55" stroke="#7C5DC2" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="50" cy="50" r="6" stroke="#38BDF8" stroke-width="3"/>
+  
+  <!-- Signal waves -->
+  <path d="M40 25 Q50 15 60 25" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" stroke-opacity="0.6"/>
+  <path d="M35 15 Q50 0 65 15" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-opacity="0.3"/>
 </svg>

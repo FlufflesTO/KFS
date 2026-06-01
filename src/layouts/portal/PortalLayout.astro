@@ -261,22 +261,22 @@ categories.push({
       };
     </script>
   </head>
-  <body data-variant={variant} class="portal-shell bg-gradient-to-br from-kharon-black to-kharon-charcoal min-h-screen text-kharon-light selection:bg-kharon-purple/30 selection:text-kharon-purple">
+  <body data-variant={variant} class="portal-shell bg-kharon-black min-h-screen text-kharon-light selection:bg-kharon-purple/30 selection:text-kharon-purple overflow-x-hidden">
   <!-- Skip link for accessibility -->
   <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:bg-kharon-charcoal focus:px-4 focus:py-2 focus:border focus:border-kharon-purple focus:rounded focus:text-white focus:shadow-lg">
     Skip to main content
   </a>
-  <div id="offline-conflict-banner" class="hidden border-b border-amber-400/40 bg-amber-950/80 px-4 py-3 text-sm font-semibold text-amber-100" role="status" aria-live="polite">
+  <div id="offline-conflict-banner" class="hidden border-b border-kharon-amber/40 bg-kharon-amber/10 px-4 py-3 text-sm font-semibold text-kharon-amber" role="status" aria-live="polite">
     Offline change conflict detected. Review the latest server data before resubmitting this work.
   </div>
 
   <!-- Mobile Sliding Drawer Navigation -->
   <div id="mobile-nav-drawer" class="fixed inset-0 z-[150] lg:hidden pointer-events-none" role="dialog" aria-modal="true" aria-label="Navigation drawer">
     <!-- Overlay backdrop -->
-    <div id="mobile-drawer-backdrop" class="absolute inset-0 bg-[#0B0D0F]/80 backdrop-blur-sm opacity-0 transition-opacity duration-300 ease-out pointer-events-none"></div>
+    <div id="mobile-drawer-backdrop" class="absolute inset-0 bg-kharon-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-300 ease-out pointer-events-none"></div>
     
     <!-- Drawer panel -->
-    <div id="mobile-drawer-panel" class="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-gradient-to-b from-kharon-black to-kharon-charcoal border-r border-kharon-purple/20 shadow-2xl p-6 overflow-y-auto transform -translate-x-full transition-transform duration-300 ease-out pointer-events-auto flex flex-col">
+    <div id="mobile-drawer-panel" class="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-kharon-charcoal border-r border-kharon-purple/20 shadow-2xl p-6 overflow-y-auto transform -translate-x-full transition-transform duration-300 ease-out pointer-events-auto flex flex-col">
       <div class="flex items-center justify-between mb-8 pb-4 border-b border-kharon-purple/10">
         <div class="flex items-center gap-3">
           <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="28" height="28" class="h-7 w-7" />
@@ -288,15 +288,15 @@ categories.push({
       <nav class="space-y-6 flex-1" aria-label="Portal mobile navigation">
         {categories.map((category) => (
           <div>
-            <h3 class="text-[9px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 px-3 mb-2">{category.title}</h3>
+            <h3 class="text-[9px] font-black uppercase tracking-[0.2em] text-kharon-purple px-3 mb-2">{category.title}</h3>
             <div class="space-y-1">
               {category.links.map((link) => (
                 <a
                   href={link.href}
                   aria-current={active === link.key ? "page" : undefined}
-                  class={`flex items-center gap-3 w-full rounded-md px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/35 shadow-inner border border-kharon-purple/50 border-l-4 border-l-kharon-cyan" : "text-white/75 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
+                  class={`flex items-center gap-3 w-full rounded-md px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/20 border border-kharon-purple/40 border-l-4 border-l-kharon-cyan" : "text-white/70 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
                 >
-                  <svg class="h-4.5 w-4.5 shrink-0 text-kharon-cyan/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={getIconPath(link.key)}></svg>
+                  <svg class="h-4.5 w-4.5 shrink-0 text-kharon-cyan/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" set:html={getIconPath(link.key)}></svg>
                   <span>{link.label}</span>
                 </a>
               ))}
@@ -307,21 +307,17 @@ categories.push({
 
       <div class="mt-6 pt-4 border-t border-kharon-purple/10 flex items-center gap-3">
         <div class="h-1.5 w-1.5 rounded-full bg-kharon-green animate-pulse"></div>
-        <span class="text-[10px] uppercase font-bold tracking-wider text-white/50">{user?.role} Mode</span>
+        <span class="text-[10px] uppercase font-bold tracking-wider text-kharon-light/40">{user?.role} Active</span>
       </div>
     </div>
   </div>
   
   <!-- Top Navigation Command Center -->
-  <header class="sticky top-0 z-50 w-full border-b border-kharon-purple/10 bg-kharon-black/85 backdrop-blur-md text-white shadow-lg shadow-kharon-black/20">
-    <!-- Ambient top glow -->
-    <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-kharon-purple/30 to-transparent"></div>
-    
-    <div class="mx-auto flex min-h-[5rem] max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 relative">
+  <header class="sticky top-0 z-50 w-full border-b border-kharon-purple/10 bg-kharon-black/90 backdrop-blur-md text-white shadow-lg">
+    <div class="mx-auto flex min-h-[5rem] max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
       <div class="flex items-center gap-3">
-        <!-- Hamburger Toggle Button -->
-        <button id="mobile-drawer-toggle" class="lg:hidden flex items-center justify-center p-2 rounded-md text-white/80 hover:text-white hover:bg-kharon-purple/20 focus:outline-none focus:ring-2 focus:ring-kharon-cyan h-10 w-10 relative z-50" aria-label="Toggle navigation menu">
-          <svg class="h-6 w-6 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <button id="mobile-drawer-toggle" class="lg:hidden flex items-center justify-center p-2 rounded-md text-white/80 hover:text-white hover:bg-kharon-purple/20 focus:outline-none focus:ring-2 focus:ring-kharon-cyan h-10 w-10" aria-label="Toggle navigation menu">
+          <svg class="h-6 w-6 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
@@ -329,28 +325,27 @@ categories.push({
         <a href="/portal" class="group flex shrink-0 items-center gap-3 transition-transform duration-300 hover:scale-[1.02]" aria-label="Kharon Operations Portal">
           <div class="relative flex-none">
             <div class="absolute inset-0 bg-kharon-purple/20 blur-lg group-hover:bg-kharon-purple/35 transition-colors duration-500 rounded-full"></div>
-            <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" style="height:32px;width:32px;object-fit:contain;" class="relative z-10 block transition-transform duration-300 group-hover:scale-110" />
+            <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" class="relative z-10 h-8 w-8 object-contain" />
           </div>
-          <span>
-            <span class="block whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-white group-hover:text-white transition-colors duration-300">Kharon Operations</span>
-            <span class="block whitespace-nowrap text-[10px] uppercase text-kharon-purple/70 tracking-wider">Secure Command Console</span>
-          </span>
+          <div class="hidden sm:block">
+            <span class="block whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-white">Kharon Command</span>
+            <span class="block whitespace-nowrap text-[9px] font-bold uppercase text-kharon-purple tracking-widest">Secure Operations Console</span>
+          </div>
         </a>
       </div>
 
-      <div class="ml-auto flex items-center gap-3 sm:gap-4 text-right text-xs">
-        <div class="min-w-0 leading-tight hidden xl:block">
-          <p class="font-semibold text-white/90 truncate">{user?.name}</p>
-          <div class="mt-0.5 flex items-center justify-end gap-1">
-            <span class="h-1.5 w-1.5 rounded-full bg-kharon-purple"></span>
-            <p class="uppercase text-kharon-purple/80 font-semibold tracking-wide text-xs">{user?.role}</p>
-          </div>
+      <div class="flex items-center gap-3 sm:gap-6">
+        <div class="hidden md:flex flex-col items-end leading-tight border-r border-kharon-purple/20 pr-6">
+          <p class="text-xs font-bold text-white/90">{user?.name}</p>
+          <p class="mt-0.5 text-[10px] uppercase text-kharon-purple font-black tracking-widest">{user?.role}</p>
         </div>
-        <button id="open-feedback" class="hidden md:flex items-center gap-2 rounded-md border border-kharon-purple/20 bg-kharon-charcoal/50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white/70 hover:text-white hover:border-kharon-purple/40 transition-all min-h-[40px] backdrop-blur-sm">
+        
+        <button id="open-feedback" class="hidden sm:flex items-center gap-2 rounded border border-kharon-purple/30 bg-kharon-charcoal/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white hover:border-kharon-cyan transition-all">
           Feedback
         </button>
+        
         <form id="portal-logout-form">
-          <button class="flex items-center justify-center rounded-md border border-kharon-red/30 bg-kharon-charcoal/50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-kharon-red/70 transition-all hover:border-kharon-red/50 hover:bg-kharon-red/10 hover:text-kharon-red min-h-[40px] backdrop-blur-sm" type="submit">
+          <button class="flex items-center justify-center rounded border border-kharon-red/40 bg-kharon-red/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-kharon-red hover:bg-kharon-red/10 hover:text-white transition-all" type="submit">
             Logout
           </button>
         </form>
@@ -360,19 +355,19 @@ categories.push({
 
   <div class="flex flex-col lg:flex-row max-w-7xl mx-auto">
     <!-- Left Navigation Rail - Desktop -->
-    <aside class="hidden lg:block w-64 min-h-[calc(100vh-5rem)] border-r border-kharon-purple/10 bg-kharon-black/60 backdrop-blur-sm p-4">
-      <nav class="space-y-6" aria-label="Portal navigation">
+    <aside class="hidden lg:block w-64 min-h-[calc(100vh-5rem)] border-r border-kharon-purple/10 bg-kharon-black/40 p-4">
+      <nav class="space-y-8 sticky top-24" aria-label="Portal navigation">
         {categories.map((category) => (
-          <div>
-            <h3 class="text-[9px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 px-3 mb-2">{category.title}</h3>
+          <div class="space-y-2">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-3">{category.title}</h3>
             <div class="space-y-1">
               {category.links.map((link) => (
                 <a
                   href={link.href}
                   aria-current={active === link.key ? "page" : undefined}
-                  class={`flex items-center gap-3 w-full rounded-md px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/30 shadow-sm border border-kharon-purple/50 border-l-4 border-l-kharon-cyan" : "text-white/70 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
+                  class={`flex items-center gap-3 w-full rounded px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/20 border border-kharon-purple/40 border-l-4 border-l-kharon-cyan shadow-lg shadow-kharon-purple/5" : "text-kharon-light/60 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
                 >
-                  <svg class="h-4.5 w-4.5 shrink-0 text-kharon-cyan/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={getIconPath(link.key)}></svg>
+                  <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" set:html={getIconPath(link.key)}></svg>
                   <span>{link.label}</span>
                 </a>
               ))}
@@ -383,8 +378,8 @@ categories.push({
     </aside>
 
     <!-- Main Content Area -->
-    <main id="main-content" class="flex-1 min-h-[calc(100vh-5rem)] relative">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main id="main-content" class="flex-1 min-h-[calc(100vh-5rem)]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 lg:py-12">
         <slot />
       </div>
     </main>

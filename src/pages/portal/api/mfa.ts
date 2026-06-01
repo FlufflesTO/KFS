@@ -3,7 +3,7 @@ import { auditError } from "../../../lib/server/audit";
 import { getDatabase } from "../../../lib/server/bindings";
 import { auditEvent } from "../../../lib/server/audit";
 import { createSessionToken, sessionCookie, revokeSessionToken, sessionCookieName } from "../../../lib/server/auth";
-import { decryptMfaSecret, encryptMfaSecret, generateTotpSecret, mfaProvisioningUri, verifyTotpCode } from "../../../lib/server/mfa";
+import { decryptMfaSecret, encryptMfaSecret, generateTotpSecret, mfaProvisioningUri, verifyTotpCode, generateMfaQrCode } from "../../../lib/server/mfa";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http";
 
 export const prerender = false;
@@ -63,6 +63,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (record.mfa_enabled) return badRequest("MFA is already enabled for this account.");
 
       const secret = generateTotpSecret();
+      const provisioningUri = mfaProvisioningUri(record as any, secret);
+      const qrCode = await generateMfaQrCode(provisioningUri);
+
       await auditEvent(db, request, {
         eventType: "auth.mfa_setup_start",
         entityType: "user",
@@ -73,7 +76,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return json({
         ok: true,
         secret,
-        provisioningUri: mfaProvisioningUri(record as any, secret)
+        provisioningUri,
+        qrCode
       });
     }
 

@@ -1,96 +1,71 @@
 ---
-/**
- * Project Sentinel - Security Systems Page
- * Purpose: Public page presenting integrated security systems (CCTV, access control) and technical blocks.
- * Dependencies: BaseLayout.astro, SectionHeading.astro, SecurityTechnicalBlocks.astro, site data
- * Structural Role: Main informational page for security systems services.
- */
 import BaseLayout from "../layouts/BaseLayout.astro";
+import SolutionHero from "../components/sections/SolutionHero.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
-import SecurityTechnicalBlocks from "../components/sections/SecurityTechnicalBlocks.astro";
 import { pageMeta } from "../data/site.js";
 
 const securityCapabilities = [
   {
-    title: "Access control systems",
-    text: "Integrated access control solutions with configurable permissions, audit trails and emergency override capabilities.",
-    icon: "/brand/icons/service-access-control.svg"
-  },
-  {
-    title: "Perimeter security",
-    text: "Comprehensive perimeter protection with detection, deterrence and verification systems for critical site boundaries.",
-    icon: "/brand/icons/sector-warehouse.svg"
-  },
-  {
-    title: "CCTV surveillance",
-    text: "High-definition surveillance systems with remote monitoring, event recording and intelligent analytics.",
+    title: "Video Surveillance",
+    text: "High-definition IP surveillance with AI analytics, perimeter protection, and low-light capability for absolute site visibility.",
     icon: "/brand/icons/service-cctv.svg"
   },
   {
-    title: "Integration with fire systems",
-    text: "Coordinated response between security and fire protection systems for comprehensive site protection.",
+    title: "Access Control",
+    text: "Biometric and contactless access management integrated with fire alarm overrides for life-safety priority.",
+    icon: "/brand/icons/service-access-control.svg"
+  },
+  {
+    title: "System Integration",
+    text: "Unified management platforms combining video, access, and fire events into a single operational interface.",
     icon: "/brand/icons/service-engineering.svg"
+  },
+  {
+    title: "Perimeter Protection",
+    text: "Engineered detection layers for site boundaries, preventing unauthorized entry before internal breach occurs.",
+    icon: "/brand/icons/service-cctv.svg"
   }
 ];
 ---
 
-<BaseLayout title={pageMeta.security.title} description={pageMeta.security.description}>
-  <section class="hero-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal kharon-environment kharon-logo-watermark">
-    <div class="mx-auto max-w-4xl px-6 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 kharon-h1">
-        Security Systems
-      </h1>
-      <p class="text-xl text-kharon-light/80 max-w-2xl mx-auto leading-relaxed">
-        Integrated security solutions for commercial and industrial environments with focus on access control, surveillance and intrusion detection.
-      </p>
-    </div>
-  </section>
+<BaseLayout title={pageMeta.securitySystems.title} description={pageMeta.securitySystems.description}>
+  <SolutionHero 
+    title="Integrated Security" 
+    subtitle="Enterprise Intelligence" 
+    description="Engineered security infrastructure providing intelligent surveillance, biometric access, and seamless site protection layers."
+    icon="/brand/icons/service-cctv.svg"
+  />
 
-  <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+  <section class="section-padding bg-kharon-black">
     <div class="mx-auto max-w-7xl px-6">
-      <SectionHeading
-        title="Integrated Security Solutions"
-        subtitle="Comprehensive Protection"
-        description="Engineered security systems that integrate with fire protection for holistic site protection."
-        center={true}
-      />
-      
-      <div class="mt-12 grid gap-8 md:grid-cols-2">
+      <div class="grid gap-8 md:grid-cols-2">
         {securityCapabilities.map((capability) => (
-          <div class="rounded-xl border border-kharon-purple/15 bg-gradient-to-br from-kharon-surface-elevated to-kharon-charcoal p-0.5 kharon-surface-strong">
-            <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
-              <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
-                {capability.icon ? (
-                  <img src={capability.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
-                ) : (
-                  <div class="w-6 h-6 bg-kharon-purple rounded"></div>
-                )}
+          <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50">
+            <div class="flex items-center gap-6 mb-6">
+              <div class="h-14 w-14 flex-none rounded-xl bg-kharon-black/40 border border-kharon-purple/20 p-3 group-hover:bg-kharon-purple/10 transition-colors">
+                <img src={capability.icon} alt="" class="h-full w-full object-contain" />
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">{capability.title}</h3>
-              <p class="text-kharon-light/70">{capability.text}</p>
+              <h3 class="text-xl font-bold text-white tracking-tight leading-tight">{capability.title}</h3>
             </div>
+            <p class="text-kharon-light/60 leading-relaxed">{capability.text}</p>
           </div>
         ))}
       </div>
     </div>
   </section>
 
-  <!-- Access Control Tiers, CCTV retention and Integration diagram component -->
-  <SecurityTechnicalBlocks />
-
-  <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">
       <SectionHeading
-        title="Holistic Security Framework"
-        subtitle="Integrated Systems"
-        description="Security and fire protection systems designed to work together for comprehensive site protection."
+        title="Security with Life-Safety Discipline"
+        subtitle="The Kharon Advantage"
+        description="We understand that security must never compromise fire safety. Our systems are designed to work in harmony with emergency pathways."
         center={true}
       />
-      
-      <div class="mt-12 prose prose-invert max-w-none">
-        <p class="text-kharon-light/80 text-lg leading-relaxed">
-          Our security systems are designed to integrate seamlessly with fire protection systems, providing comprehensive site protection that addresses both security threats and fire hazards. This integrated approach ensures coordinated response and optimal protection outcomes.
-        </p>
+      <div class="mt-10 flex justify-center gap-4">
+        <a href="/contact?intent=site-assessment" class="kharon-command-button px-10 py-5 text-sm">
+          Secure Your Site
+        </a>
       </div>
     </div>
   </section>
