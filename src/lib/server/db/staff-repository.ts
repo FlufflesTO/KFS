@@ -1,184 +1,250 @@
-import type { D1Database } from "@cloudflare/workers-types";
-import type {
-  DbStaffDocument,
-  DbStaffLeaveBalance,
-  DbStaffLeaveRequest,
-  DbUserProfile,
-  StaffDocumentCategory,
-  StaffLeaveType
-} from "@sentinel/types";
 
-export interface ProfileInput {
-  preferredName: string | null;
+/**
+ * Staff HR Repository
+ * Abstraction layer for staff_members and staff_files tables.
+ * Enforces soft-delete pattern (deleted_at IS NULL) on all reads.
+ */
+
+export interface DbStaffMember {
+  id: string;
+  full_name: string;
+  role_title: string;
+  email: string | null;
   phone: string | null;
-  jobTitle: string | null;
-  emergencyContactName: string | null;
-  emergencyContactPhone: string | null;
-  notificationEmail: string | null;
-  portalDensity: "compact" | "comfortable";
+  start_date: string | null;
+  employment_type: string;
+  status: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  file_count?: number;
 }
 
-export interface LeaveRequestInput {
-  userId: string;
-  leaveType: StaffLeaveType;
-  startDate: string;
-  endDate: string;
-  daysRequested: number;
-  reason: string | null;
-  supportingDocumentId?: string | null;
+export interface DbStaffFile {
+  id: string;
+  staff_member_id: string;
+  file_name: string;
+  file_type: string;
+  r2_key: string;
+  uploaded_by: string;
+  uploaded_at: string;
+  deleted_at: string | null;
 }
 
-export interface StaffDocumentInput {
-  userId: string;
-  category: StaffDocumentCategory;
-  fileName: string;
-  storagePath: string;
-  contentType: string;
-  sizeBytes: number;
-  uploadedByUserId: string;
+export interface CreateStaffMemberData {
+  full_name: string;
+  role_title: string;
+  email?: string | null;
+  phone?: string | null;
+  start_date?: string | null;
+  employment_type: string;
+  status: string;
+  notes?: string | null;
 }
 
-export class StaffRepository {
-  constructor(private db: D1Database) {}
+export interface UpdateStaffMemberData {
+  full_name?: string;
+  role_title?: string;
+  email?: string | null;
+  phone?: string | null;
+  start_date?: string | null;
+  employment_type?: string;
+  status?: string;
+  notes?: string | null;
+}
 
-  async findProfile(userId: string): Promise<DbUserProfile | null> {
-    const row = await this.db
-      .prepare(`SELECT * FROM user_profiles WHERE user_id = ?1 LIMIT 1`)
-      .bind(userId)
-      .first<DbUserProfile>();
-    return row || null;
-  }
+export interface CreateStaffFileData {
+  staff_member_id: string;
+  file_name: string;
+  file_type: string;
+  r2_key: string;
+  uploaded_by: string;
+}
 
-  async upsertProfile(userId: string, input: ProfileInput): Promise<void> {
-    await this.db
-      .prepare(
-        `INSERT INTO user_profiles
-           (user_id, preferred_name, phone, job_title, emergency_contact_name, emergency_contact_phone, notification_email, portal_density)
-         VALUES
-           (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
-         ON CONFLICT(user_id) DO UPDATE SET
-           preferred_name = excluded.preferred_name,
-           phone = excluded.phone,
-           job_title = excluded.job_title,
-           emergency_contact_name = excluded.emergency_contact_name,
-           emergency_contact_phone = excluded.emergency_contact_phone,
-           notification_email = excluded.notification_email,
-           portal_density = excluded.portal_density`
-      )
-      .bind(
-        userId,
-        input.preferredName,
-        input.phone,
-        input.jobTitle,
-        input.emergencyContactName,
-        input.emergencyContactPhone,
-        input.notificationEmail,
-        input.portalDensity
-      )
-      .run();
-  }
+export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]> {
+  const results = await db
+    .prepare(
+      `SELECT sm.id, sm.full_name, sm.role_title, sm.email, sm.phone,
+              sm.start_date, sm.employment_type, sm.status, sm.notes,
+              sm.created_at, sm.updated_at, sm.deleted_at,
+              COUNT(sf.id) AS file_count
+       FROM staff_members sm
+       LEFT JOIN staff_files sf
+         ON sf.staff_member_id = sm.id AND sf.deleted_at IS NULL
+       WHERE sm.deleted_at IS NULL
+       GROUP BY sm.id
+       ORDER BY sm.full_name ASC`
+    )
+    .all<DbStaffMember>();
+  return results.results ?? [];
+}
 
-  async ensureLeaveBalance(userId: string): Promise<DbStaffLeaveBalance> {
-    await this.db
-      .prepare(`INSERT OR IGNORE INTO staff_leave_balances (user_id) VALUES (?1)`)
-      .bind(userId)
-      .run();
+export async function getStaffMember(
+  db: D1Database,
+  id: string
+): Promise<(DbStaffMember & { files: DbStaffFile[] }) | null> {
+  const member = await db
+    .prepare(
+      `SELECT id, full_name, role_title, email, phone, start_date,
+              employment_type, status, notes, created_at, updated_at, deleted_at
+       FROM staff_members
+       WHERE id = ?1 AND deleted_at IS NULL
+       LIMIT 1`
+    )
+    .bind(id)
+    .first<DbStaffMember>();
 
-    const row = await this.db
-      .prepare(`SELECT * FROM staff_leave_balances WHERE user_id = ?1 LIMIT 1`)
-      .bind(userId)
-      .first<DbStaffLeaveBalance>();
+  if (!member) return null;
 
-    if (!row) throw new Error("Leave balance could not be initialized.");
-    return row;
-  }
+  const filesResult = await db
+    .prepare(
+      `SELECT id, staff_member_id, file_name, file_type, r2_key,
+              uploaded_by, uploaded_at, deleted_at
+       FROM staff_files
+       WHERE staff_member_id = ?1 AND deleted_at IS NULL
+       ORDER BY uploaded_at DESC`
+    )
+    .bind(id)
+    .all<DbStaffFile>();
 
-  async recentLeaveRequests(userId: string, limit: number = 12): Promise<DbStaffLeaveRequest[]> {
-    const result = await this.db
-      .prepare(
-        `SELECT *
-         FROM staff_leave_requests
-         WHERE user_id = ?1 AND deleted_at IS NULL
-         ORDER BY created_at DESC
-         LIMIT ?2`
-      )
-      .bind(userId, limit)
-      .all<DbStaffLeaveRequest>();
-    return result.results || [];
-  }
+  return { ...member, files: filesResult.results ?? [] };
+}
 
-  async createLeaveRequest(input: LeaveRequestInput): Promise<string> {
-    const id = crypto.randomUUID();
-    await this.db
-      .prepare(
-        `INSERT INTO staff_leave_requests
-           (id, user_id, leave_type, start_date, end_date, days_requested, reason, supporting_document_id)
-         VALUES
-           (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`
-      )
-      .bind(
-        id,
-        input.userId,
-        input.leaveType,
-        input.startDate,
-        input.endDate,
-        input.daysRequested,
-        input.reason,
-        input.supportingDocumentId || null
-      )
-      .run();
-    return id;
-  }
+export async function createStaffMember(
+  db: D1Database,
+  data: CreateStaffMemberData
+): Promise<string> {
+  const id = crypto.randomUUID();
+  await db
+    .prepare(
+      `INSERT INTO staff_members
+         (id, full_name, role_title, email, phone, start_date, employment_type, status, notes)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)`
+    )
+    .bind(
+      id,
+      data.full_name,
+      data.role_title,
+      data.email ?? null,
+      data.phone ?? null,
+      data.start_date ?? null,
+      data.employment_type,
+      data.status,
+      data.notes ?? null
+    )
+    .run();
+  return id;
+}
 
-  async recentDocuments(userId: string, limit: number = 20): Promise<DbStaffDocument[]> {
-    const result = await this.db
-      .prepare(
-        `SELECT *
-         FROM staff_documents
-         WHERE user_id = ?1 AND deleted_at IS NULL
-         ORDER BY uploaded_at DESC
-         LIMIT ?2`
-      )
-      .bind(userId, limit)
-      .all<DbStaffDocument>();
-    return result.results || [];
-  }
+export async function updateStaffMember(
+  db: D1Database,
+  id: string,
+  data: UpdateStaffMemberData
+): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE staff_members
+       SET full_name      = COALESCE(?1, full_name),
+           role_title     = COALESCE(?2, role_title),
+           email          = ?3,
+           phone          = ?4,
+           start_date     = ?5,
+           employment_type= COALESCE(?6, employment_type),
+           status         = COALESCE(?7, status),
+           notes          = ?8,
+           updated_at     = datetime('now')
+       WHERE id = ?9 AND deleted_at IS NULL`
+    )
+    .bind(
+      data.full_name ?? null,
+      data.role_title ?? null,
+      data.email ?? null,
+      data.phone ?? null,
+      data.start_date ?? null,
+      data.employment_type ?? null,
+      data.status ?? null,
+      data.notes ?? null,
+      id
+    )
+    .run();
+}
 
-  async findDocumentForUser(documentId: string, userId: string, isAdmin: boolean): Promise<DbStaffDocument | null> {
-    const row = await this.db
-      .prepare(
-        `SELECT *
-         FROM staff_documents
-         WHERE id = ?1
-           AND deleted_at IS NULL
-           AND (?3 = 1 OR user_id = ?2)
-         LIMIT 1`
-      )
-      .bind(documentId, userId, isAdmin ? 1 : 0)
-      .first<DbStaffDocument>();
-    return row || null;
-  }
+export async function softDeleteStaffMember(db: D1Database, id: string): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE staff_members
+       SET deleted_at = datetime('now'), updated_at = datetime('now')
+       WHERE id = ?1 AND deleted_at IS NULL`
+    )
+    .bind(id)
+    .run();
+}
 
-  async createDocument(input: StaffDocumentInput): Promise<string> {
-    const id = crypto.randomUUID();
-    await this.db
-      .prepare(
-        `INSERT INTO staff_documents
-           (id, user_id, category, file_name, storage_path, content_type, size_bytes, uploaded_by_user_id)
-         VALUES
-           (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`
-      )
-      .bind(
-        id,
-        input.userId,
-        input.category,
-        input.fileName,
-        input.storagePath,
-        input.contentType,
-        input.sizeBytes,
-        input.uploadedByUserId
-      )
-      .run();
-    return id;
-  }
+export async function listStaffFiles(
+  db: D1Database,
+  memberId: string
+): Promise<DbStaffFile[]> {
+  const results = await db
+    .prepare(
+      `SELECT id, staff_member_id, file_name, file_type, r2_key,
+              uploaded_by, uploaded_at, deleted_at
+       FROM staff_files
+       WHERE staff_member_id = ?1 AND deleted_at IS NULL
+       ORDER BY uploaded_at DESC`
+    )
+    .bind(memberId)
+    .all<DbStaffFile>();
+  return results.results ?? [];
+}
+
+export async function getStaffFile(
+  db: D1Database,
+  id: string
+): Promise<DbStaffFile | null> {
+  const file = await db
+    .prepare(
+      `SELECT id, staff_member_id, file_name, file_type, r2_key,
+              uploaded_by, uploaded_at, deleted_at
+       FROM staff_files
+       WHERE id = ?1 AND deleted_at IS NULL
+       LIMIT 1`
+    )
+    .bind(id)
+    .first<DbStaffFile>();
+  return file ?? null;
+}
+
+export async function createStaffFile(
+  db: D1Database,
+  data: CreateStaffFileData
+): Promise<string> {
+  const id = crypto.randomUUID();
+  await db
+    .prepare(
+      `INSERT INTO staff_files
+         (id, staff_member_id, file_name, file_type, r2_key, uploaded_by)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6)`
+    )
+    .bind(
+      id,
+      data.staff_member_id,
+      data.file_name,
+      data.file_type,
+      data.r2_key,
+      data.uploaded_by
+    )
+    .run();
+  return id;
+}
+
+export async function softDeleteStaffFile(db: D1Database, id: string): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE staff_files
+       SET deleted_at = datetime('now')
+       WHERE id = ?1 AND deleted_at IS NULL`
+    )
+    .bind(id)
+    .run();
 }
