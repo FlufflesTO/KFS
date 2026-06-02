@@ -80,13 +80,36 @@ const serviceCategories = [
     ]
   }
 ];
+
+const standardsWorkedTo = [
+  {
+    code: "SANS 10139",
+    title: "Fire Detection Systems",
+    text: "Design, installation, commissioning and maintenance of fire detection systems."
+  },
+  {
+    code: "SANS 14520",
+    title: "Gas Suppression Systems",
+    text: "Selection, design, installation and maintenance of gaseous fire suppression systems."
+  },
+  {
+    code: "SANS 10222",
+    title: "CCTV Surveillance",
+    text: "Planning, design, installation and maintenance of CCTV surveillance systems."
+  },
+  {
+    code: "SANS 10400-T",
+    title: "Fire Protection (Buildings)",
+    text: "Fire protection requirements for buildings including detection and suppression."
+  }
+];
 ---
 
 <BaseLayout title={pageMeta.about.title} description={pageMeta.about.description}>
 
-  <SolutionHero 
-    title="About Kharon" 
-    subtitle="Company Ethos" 
+  <SolutionHero
+    title="About Kharon"
+    subtitle="Company Ethos"
     description="Established in 2016 with the vision to provide installation and maintenance of electronic safety and security systems to relevant industry standards."
     icon="/brand/icons/service-engineering.svg"
   />
@@ -101,14 +124,22 @@ const serviceCategories = [
       />
       <div class="mt-10 space-y-6 text-kharon-light/70 text-lg leading-relaxed">
         <p>
-          <strong class="text-white">Kharon Fire and Security Solutions</strong> was established in 2016 with the vision to provide installation and maintenance of electronic safety and security systems to relevant industry standards. Based in Cape Town, South Africa, we provide mission-critical support to technical sites across Southern Africa.
+          <strong class="text-white">Kharon Fire and Security Solutions</strong> was established in 2016 to deliver engineered fire protection and security systems to South African national standards. Based in Cape Town, we provide mission-critical support to commercial and industrial sites across Southern Africa.
         </p>
-        <p>
-          Kharon designs, builds and maintains electronic safety, surveillance and security systems to the client's requirements, based on the relevant industry regulation and installation standards. Our service department and small works division also provides 3rd party support for national and international service providers.
-        </p>
-        <p>
-          Our compliance and maintenance services ensure that your fire protection systems remain accountable, with inspection schedules, service records, and documentation outputs that serve as operational evidence.
-        </p>
+        <ul class="space-y-3 pt-2">
+          {[
+            "Design, installation, commissioning and maintenance of fire detection and suppression systems",
+            "SAQCC-registered technicians for authorized fire and gas suppression work",
+            "3rd-party support for national and international service providers",
+            "Structured compliance frameworks with inspection-ready documentation",
+            "Lifecycle maintenance with service records and documentation outputs"
+          ].map((item) => (
+            <li class="flex gap-3">
+              <span class="text-kharon-cyan font-black flex-none">›</span>
+              {item}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   </section>
@@ -150,6 +181,26 @@ const serviceCategories = [
             </div>
             <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">{item.title}</h3>
             <p class="text-kharon-light/60 text-sm leading-relaxed">{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="py-16 lg:py-24 bg-kharon-black border-b border-kharon-purple/10">
+    <div class="mx-auto max-w-7xl px-6">
+      <SectionHeading
+        title="Standards We Work To"
+        subtitle="Regulatory Baseline"
+        description="Every installation and maintenance engagement is governed by the relevant South African National Standard."
+        center={true}
+      />
+      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {standardsWorkedTo.map((std) => (
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/40 p-6 hover:border-kharon-purple/40 transition-all">
+            <p class="text-base font-black text-kharon-cyan tracking-tight mb-1">{std.code}</p>
+            <h3 class="text-xs font-black text-white uppercase tracking-widest mb-3">{std.title}</h3>
+            <p class="text-xs text-kharon-light/60 leading-relaxed">{std.text}</p>
           </div>
         ))}
       </div>

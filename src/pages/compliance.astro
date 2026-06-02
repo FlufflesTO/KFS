@@ -9,48 +9,155 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SolutionHero from "../components/sections/SolutionHero.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
-import ProofGrid from "../components/sections/ProofGrid.astro";
-import SansReferenceMatrix from "../components/compliance/SansReferenceMatrix.astro";
+import ComplianceTechnicalBlocks from "../components/sections/ComplianceTechnicalBlocks.astro";
 import { pageMeta } from "../data/site.js";
 
 const complianceSignals = [
   "SANS 10139 alignment",
-  "SANS 14520 alignment", 
+  "SANS 14520 alignment",
   "SAQCC proof signals",
   "Inspection-ready documentation",
   "Commercial & industrial only"
 ];
 
-const proofItems = [
+const sansStandards = [
   {
-    title: "SANS 10139 Alignment",
-    text: "Fire detection systems designed and maintained according to South African National Standards for fire detection."
+    code: "SANS 10139",
+    title: "Fire Detection Systems",
+    scope: "Design, installation, commissioning and maintenance of fire detection systems.",
+    bullets: [
+      "Quarterly functional tests required",
+      "Annual full test with panel verification",
+      "Commissioning certificate and maintenance logbook required"
+    ],
+    area: "Fire Detection"
   },
   {
-    title: "SANS 14520 Alignment", 
-    text: "Gas suppression systems engineered and serviced in compliance with South African National Standards for gaseous fire suppression."
+    code: "SANS 14520",
+    title: "Gas Suppression Systems",
+    scope: "Selection, design, installation and maintenance of gaseous fire suppression systems.",
+    bullets: [
+      "Room integrity tests (door fan test) required",
+      "Agent quantity calculations and cylinder weighing on schedule",
+      "6-monthly inspection, annual discharge readiness check"
+    ],
+    area: "Gas Suppression"
   },
   {
-    title: "SAQCC Proof Signals",
-    text: "Certified competence through the South African Qualifications and Certification Committee for Fire and Gas systems."
+    code: "SANS 10400-T",
+    title: "Fire Protection (Buildings)",
+    scope: "Requirements for fire protection installations in buildings, including detection and suppression.",
+    bullets: [
+      "Prescribes detector spacing and placement rules",
+      "Requires system compliance certification before occupation",
+      "Governs interface between detection and building fire systems"
+    ],
+    area: "Fire Detection"
   },
   {
-    title: "Inspection-Ready Documentation",
-    text: "All systems maintained with comprehensive documentation ready for regulatory inspection."
+    code: "SANS 10142-1",
+    title: "Electrical Wiring (Low Voltage)",
+    scope: "Wiring requirements relevant to power supplies for fire protection equipment.",
+    bullets: [
+      "Dedicated protected circuits for fire panel power",
+      "Battery standby calculations and testing",
+      "Cable routing separation from general electrical"
+    ],
+    area: "Supporting Standard"
+  },
+  {
+    code: "SANS 1475-1",
+    title: "Point Detectors",
+    scope: "Performance requirements for manually operated call points and point detectors.",
+    bullets: [
+      "Type testing and approval requirements",
+      "Installation height and positioning rules",
+      "Sensitivity verification on commissioning"
+    ],
+    area: "Fire Detection"
+  },
+  {
+    code: "SANS 10222",
+    title: "CCTV Surveillance Systems",
+    scope: "Planning, design, installation and maintenance of CCTV surveillance systems.",
+    bullets: [
+      "Camera placement and coverage calculations",
+      "Recording retention and data storage requirements",
+      "Maintenance and testing intervals"
+    ],
+    area: "Integrated Security"
+  },
+  {
+    code: "SANS 10198",
+    title: "Access Control Systems",
+    scope: "Installation and operation of access control systems in buildings.",
+    bullets: [
+      "Integration requirements with fire systems (fail-safe on alarm)",
+      "Audit log requirements",
+      "Commissioning and handover documentation"
+    ],
+    area: "Integrated Security"
+  },
+  {
+    code: "SANS 369",
+    title: "Emergency Lighting",
+    scope: "Emergency escape lighting and exit signs in buildings.",
+    bullets: [
+      "1-hour emergency lighting duration minimum",
+      "Monthly functional test, annual 1-hour duration test",
+      "Maintained and non-maintained fitting categories"
+    ],
+    area: "Supporting Standard"
+  }
+];
+
+const timelineItems = [
+  { label: "Monthly", tasks: "Visual inspection, panel status check", color: "bg-kharon-cyan", text: "text-kharon-cyan" },
+  { label: "Quarterly", tasks: "Functional test of detectors, battery check", color: "bg-kharon-blue", text: "text-kharon-blue" },
+  { label: "Annually", tasks: "Full system test, documentation review, agent cylinder weighing", color: "bg-kharon-purple", text: "text-kharon-purple" },
+  { label: "5-Year", tasks: "Full system audit, room integrity re-test for gas systems", color: "bg-kharon-amber", text: "text-kharon-amber" }
+];
+
+const defectSeverities = [
+  {
+    severity: "Critical",
+    description: "System impaired, detection or suppression offline",
+    response: "4-hour on-site response",
+    rowClass: "border-kharon-red/30",
+    badge: "bg-kharon-red/10 border-kharon-red/40 text-kharon-red"
+  },
+  {
+    severity: "Major",
+    description: "Significant fault affecting coverage or monitoring",
+    response: "24-hour response",
+    rowClass: "border-kharon-amber/30",
+    badge: "bg-kharon-amber/10 border-kharon-amber/40 text-kharon-amber"
+  },
+  {
+    severity: "Minor",
+    description: "Isolated fault, system operational but degraded",
+    response: "Scheduled visit within 14 days",
+    rowClass: "border-kharon-purple/20",
+    badge: "bg-kharon-purple/10 border-kharon-purple/30 text-kharon-purple"
+  },
+  {
+    severity: "Advisory",
+    description: "Documentation gap or non-urgent improvement",
+    response: "Next planned maintenance visit",
+    rowClass: "border-white/10",
+    badge: "bg-white/5 border-white/10 text-white/50"
   }
 ];
 ---
 
 <BaseLayout title={pageMeta.complianceHub.title} description={pageMeta.complianceHub.description}>
-  <SolutionHero 
-    title="Protection Compliance" 
-    subtitle="Regulatory Discipline" 
+  <SolutionHero
+    title="Protection Compliance"
+    subtitle="Regulatory Discipline"
     description="Engineered maintenance and documentation frameworks ensuring absolute alignment with national standards."
     icon="/brand/icons/service-engineering.svg"
   />
 
-  <ProofGrid items={proofItems} title="Compliance Framework" subtitle="Regulatory Alignment" />
-  
   <section class="section-padding bg-kharon-black">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
@@ -59,7 +166,7 @@ const proofItems = [
         description="Systems maintained with the rigor required for regulatory compliance and operational accountability."
         center={true}
       />
-      
+
       <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {complianceSignals.map((signal) => (
           <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/40 p-6 backdrop-blur-sm group hover:border-kharon-purple/40 transition-all">
@@ -77,15 +184,105 @@ const proofItems = [
     </div>
   </section>
 
+  <ComplianceTechnicalBlocks />
+
   <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
-        title="Regulatory Standards Reference"
-        subtitle="SANS Compliance Matrix"
-        description="Comprehensive mapping of South African National Standards governing fire safety and technical infrastructure."
+        title="SANS Standards Deep-Dive"
+        subtitle="Regulatory Reference"
+        description="South African National Standards governing fire safety, suppression and integrated security systems."
         center={true}
       />
-      <SansReferenceMatrix />
+
+      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {sansStandards.map((std) => (
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/40 p-6 flex flex-col hover:border-kharon-purple/40 transition-all">
+            <div class="flex items-start justify-between gap-2 mb-4">
+              <span class="inline-block px-2.5 py-1 rounded text-xs font-black uppercase tracking-wide bg-kharon-purple/10 border border-kharon-purple/20 text-kharon-cyan">
+                {std.code}
+              </span>
+              <span class="inline-block px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wide bg-kharon-black border border-white/10 text-white/40 text-right leading-tight">
+                {std.area}
+              </span>
+            </div>
+            <h3 class="text-sm font-black text-white uppercase tracking-wide mb-2">{std.title}</h3>
+            <p class="text-xs text-kharon-light/60 leading-relaxed mb-4">{std.scope}</p>
+            <ul class="space-y-2 mt-auto">
+              {std.bullets.map((b) => (
+                <li class="flex gap-2 text-xs text-kharon-light/70 leading-relaxed">
+                  <span class="text-kharon-cyan font-black flex-none">›</span>
+                  {b}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-padding bg-kharon-charcoal border-t border-kharon-purple/10">
+    <div class="mx-auto max-w-7xl px-6">
+      <SectionHeading
+        title="Maintenance Schedule Timeline"
+        subtitle="Service Cadence"
+        description="Required inspection and service intervals across all protection system types."
+        center={true}
+      />
+
+      <div class="mt-12 relative">
+        <div class="hidden md:block absolute top-5 left-0 right-0 h-0.5 bg-kharon-purple/20 mx-16"></div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {timelineItems.map((item) => (
+            <div class="flex flex-col items-center text-center">
+              <div class={`relative z-10 h-10 w-10 rounded-full ${item.color} flex items-center justify-center mb-4 ring-4 ring-kharon-charcoal`}>
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p class={`text-xs font-black uppercase tracking-widest mb-2 ${item.text}`}>{item.label}</p>
+              <p class="text-xs text-kharon-light/60 leading-relaxed">{item.tasks}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
+    <div class="mx-auto max-w-5xl px-6">
+      <SectionHeading
+        title="Defect Severity Classification"
+        subtitle="Response Framework"
+        description="Every defect is classified by severity to determine the required response timeframe and escalation path."
+        center={true}
+      />
+
+      <div class="mt-10 overflow-x-auto">
+        <table class="w-full min-w-[480px] border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-kharon-purple/20">
+              <th class="py-3 pr-4 text-left text-xs font-black uppercase tracking-widest text-kharon-purple">Severity</th>
+              <th class="py-3 px-4 text-left text-xs font-black uppercase tracking-widest text-kharon-purple">Description</th>
+              <th class="py-3 pl-4 text-left text-xs font-black uppercase tracking-widest text-kharon-purple">Response Target</th>
+            </tr>
+          </thead>
+          <tbody>
+            {defectSeverities.map((row) => (
+              <tr class={`border-b ${row.rowClass}`}>
+                <td class="py-4 pr-4">
+                  <span class={`inline-block px-2.5 py-1 rounded text-xs font-black uppercase tracking-wide border ${row.badge}`}>
+                    {row.severity}
+                  </span>
+                </td>
+                <td class="py-4 px-4 text-kharon-light/70 font-medium">{row.description}</td>
+                <td class="py-4 pl-4 text-white font-bold">{row.response}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 

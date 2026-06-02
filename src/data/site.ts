@@ -163,31 +163,36 @@ export const solutionLinks: SolutionLink[] = [
     label: "Gas Suppression",
     href: "/gas-suppression",
     summary: "Clean-agent and engineered suppression systems for technical assets.",
-    icon: "/brand/icons/service-fire-suppression.svg"
+    icon: "/brand/icons/service-fire-suppression.svg",
+    sans: ["SANS 14520", "SANS 10400-T"]
   },
   {
     label: "Fire Detection",
     href: "/fire-detection",
     summary: "Addressable detection and response systems for commercial sites.",
-    icon: "/brand/icons/service-fire-detection.svg"
+    icon: "/brand/icons/service-fire-detection.svg",
+    sans: ["SANS 10139", "SANS 1475-1"]
   },
   {
     label: "Integrated Security",
     href: "/security-systems",
     summary: "CCTV and access control integrated with fire protection priorities.",
-    icon: "/brand/icons/service-cctv.svg"
+    icon: "/brand/icons/service-cctv.svg",
+    sans: ["SANS 10222", "SANS 10198"]
   },
   {
     label: "Critical Infrastructure",
     href: "/critical-infrastructure",
     summary: "Protection systems for data centres, control rooms and switchgear.",
-    icon: "/brand/icons/sector-server-rack.svg"
+    icon: "/brand/icons/sector-server-rack.svg",
+    sans: ["SANS 10139", "SANS 14520"]
   },
   {
     label: "Compliance & Maintenance",
     href: "/compliance-maintenance",
     summary: "Lifecycle maintenance, inspection schedules and SANS documentation.",
-    icon: "/brand/icons/service-engineering.svg"
+    icon: "/brand/icons/service-engineering.svg",
+    sans: ["SANS 10139", "SANS 14520"]
   }
 ];
 
