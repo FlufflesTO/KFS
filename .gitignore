@@ -155,3 +155,6 @@ portal_test.html
 .cleanup_backup_*
 0.26.0
 .claude/worktrees/
+
+# Astro generated types and IDE settings
+.astro/
