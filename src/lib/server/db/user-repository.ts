@@ -22,7 +22,7 @@ export class UserRepository {
 
   async findById(id: string): Promise<DbUser | null> {
     const user = await this.db
-      .prepare(`SELECT * FROM users WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`)
+      .prepare(`SELECT id, name, email, role, site_id, is_active, force_password_change, mfa_required, mfa_enabled, last_login_at FROM users WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`)
       .bind(id)
       .first<DbUser>();
     return user || null;

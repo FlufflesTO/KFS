@@ -137,7 +137,7 @@ export class DefectRepository {
   }
 
   async create(defect: CreateDefectInput): Promise<DbDefect> {
-    const id = defect.id || `def-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+    const id = defect.id || `def-${crypto.randomUUID()}`;
 
     await this.db
       .prepare(`

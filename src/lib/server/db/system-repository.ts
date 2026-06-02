@@ -40,7 +40,7 @@ export class SystemRepository {
   }
 
   async create(system: Omit<DbSystem, 'created_at' | 'updated_at' | 'deleted_at'>): Promise<DbSystem> {
-    const id = system.id || `sys-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+    const id = system.id || `sys-${crypto.randomUUID()}`;
 
     await this.db
       .prepare(`
