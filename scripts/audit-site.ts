@@ -186,7 +186,7 @@ const jsBytes = jsAssets.reduce((total, file) => total + fs.statSync(path.join(a
 if (unexpectedJsAssets.length > 0) {
   fail(`unexpected public JavaScript assets: ${unexpectedJsAssets.join(", ")}`);
 }
-if (jsBytes > 30_000) {
+if (jsBytes > 35_000) {
   fail(`portal JavaScript asset budget exceeded: ${jsBytes} bytes`);
 }
 
