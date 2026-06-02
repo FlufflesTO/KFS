@@ -57,7 +57,7 @@ import { getDatabase, getStorage, getBindings } from "@server/bindings";
 
 ### Middleware chain (`src/middleware.ts`)
 
-Five sequential handlers applied to every `/portal` request:
+Six sequential handlers applied to every `/portal` request:
 
 1. **setup** — generates CSP nonce (`context.locals.nonce`) and A/B UI variant
 2. **auth** — verifies session cookie, checks revocation, loads live user from D1
@@ -70,14 +70,51 @@ Role → dashboard mappings: `admin → /portal/admin/dashboard`, `tech → /por
 
 ### Type system
 
-All D1 entity types live in `packages/types/src/domain.ts` — `DbUser`, `DbSite`, `DbSystem`, `DbJob`, `DbDefect`, `DbCertificate`, `DbFinancialRecord`, `DbLinkableJob`, and others. Import from there, never define inline types for database rows.
+- **DB entity types** live in `packages/types/src/domain.ts` — `DbUser`, `DbSite`, `DbSystem`, `DbJob`, `DbDefect`, `DbCertificate`, `DbFinancialRecord`, `DbLinkableJob`, and others. Import from there, never define inline types for database rows.
+- **Zod validation schemas** live in `packages/types/src/base.ts` — `JobSchema`, `JobCreateSchema`, `JobUpdateSchema`, etc. Use these at API boundaries.
 
 ### Repository layer (`src/lib/server/db/`)
 
 All database access goes through:
-- `user-repository.ts`, `job-repository.ts`, `system-repository.ts`, `defect-repository.ts`, `finance-repository.ts`
+- `user-repository.ts`, `job-repository.ts`, `system-repository.ts`, `defect-repository.ts`, `finance-repository.ts`, `staff-repository.ts`
 
-Direct `db.prepare()` calls are prohibited outside repositories. Every read must filter `deleted_at IS NULL` — the soft-delete pattern applies to all tables (`users` additionally uses `is_active`).
+There is a secondary `src/lib/server/repositories/` directory containing newer `job-repository.ts` and `site-repository.ts` — these follow the same conventions. Direct `db.prepare()` calls are prohibited outside repositories. Every read must filter `deleted_at IS NULL` — the soft-delete pattern applies to all tables (`users` additionally uses `is_active`).
+
+### Services layer (`src/lib/server/services/`)
+
+Higher-level business logic that orchestrates repository calls:
+- `finance-service.ts` — finance task lifecycle (quote → invoice → payment), Sage-first model
+- `job-service.ts` — job dispatch and status transitions
+- `compliance-service.ts`, `dashboard-service.ts`, `report-service.ts`, `audit-service.ts`
+- `sage-client.ts` — Sage OAuth2 client for accounting sync
+
+### Access control and input validation (`src/lib/server/access.ts`)
+
+All API endpoints use these helpers at the top of handlers:
+
+```ts
+import { requireAdmin, requireFinance, clientSiteIds, cleanText, cleanId, cleanEmail, cleanInt } from "@server/access";
+
+const guard = requireAdmin(user);      // returns Response | null
+if (guard) return guard;               // 403 if not admin
+```
+
+Input sanitisers (`cleanText`, `cleanId`, `cleanEmail`, `cleanDate`, `cleanChoice`, `cleanBoolean`, `cleanInt`) are the boundary validators — use them on all user-supplied values before writing to D1.
+
+### Error handling (`src/lib/server/http-errors.ts`)
+
+Use `withErrorHandling()` to wrap API handlers:
+
+```ts
+import { withErrorHandling, badRequest, forbidden } from "@server/http-errors";
+
+return withErrorHandling(db, request, async () => {
+  // handler body — throw AppError subclasses for structured responses
+  if (!valid) throw badRequest("Invalid field", { field: "name" });
+}, { entityType: "job", entityId: id, user });
+```
+
+Never leak internal error details — `AppError.toJSON()` sanitises stack traces, file paths, and connection strings before returning to the client.
 
 ### Client-side portal pattern (`src/lib/client/portalApi.ts`)
 
@@ -101,6 +138,13 @@ The service worker at `src/sw.ts` uses network-first for API routes, cache-first
 ### Financial data
 
 All monetary values are stored as **INTEGER cents** — never `REAL`. VAT is always 15%, calculated as `Math.round((amountCents * 15) / 100)`. Floating-point arithmetic on money is prohibited.
+
+The portal follows a **Sage-first model**: official invoices and payments live in Sage Accounting; the portal tracks operational finance tasks (`FinanceTask`) that mirror the Sage document lifecycle (`Quote Required → Quote Issued in Sage → Invoice Required → Invoice Issued in Sage → Payment Recorded in Sage`). Never duplicate accounting records in D1.
+
+### Scheduling algorithms (`src/lib/algorithms/`)
+
+- `capacity-balancing.ts` — technician workload balancing
+- `sla-algorithm.ts` — SLA scoring and prioritisation for job dispatch
 
 ---
 

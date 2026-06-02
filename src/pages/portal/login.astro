@@ -8,12 +8,22 @@
 
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import KharonCard from "../../components/ui/KharonCard.astro";
-import { isLoggedIn } from "../../lib/server/middleware/auth";
-
-if (await isLoggedIn(Astro.request)) {
-  return Astro.redirect("/portal");
-}
+import { getDatabase } from "../../lib/server/bindings.js";
+import { expiredSessionCookie, isTokenRevoked, sessionCookieName, verifySessionToken } from "../../lib/server/auth.js";
 import CsrfInput from "../../components/ui/CsrfInput.astro";
+
+const sessionToken = Astro.cookies.get(sessionCookieName)?.value;
+if (sessionToken) {
+  try {
+    const sessionUser = await verifySessionToken(sessionToken);
+    if (sessionUser && !(await isTokenRevoked(getDatabase(), sessionToken))) {
+      return Astro.redirect("/portal");
+    }
+  } catch {
+    // Malformed cookies should not make the login page unavailable.
+  }
+  Astro.response.headers.append("Set-Cookie", expiredSessionCookie());
+}
 ---
 
 <BaseLayout title="Login - Kharon Operations Portal" description="Secure login to the Kharon operations portal">

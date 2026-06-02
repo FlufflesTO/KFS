@@ -116,4 +116,43 @@ test.describe('Phase 3: E2E Verification & Hardening', () => {
 
     expect(cspErrors).toEqual([]);
   });
+
+  test('Dispatch contract: admin dispatch uses request body job IDs and explicit actions', async () => {
+    const dispatchApi = fs.readFileSync('src/pages/portal/api/admin/dispatch.ts', 'utf8');
+    const dispatchPage = fs.readFileSync('src/pages/portal/admin/dispatch.astro', 'utf8');
+
+    expect(dispatchApi).not.toContain('params.jobId');
+    expect(dispatchApi).toContain('body.jobId');
+    expect(dispatchApi).toContain('"assign"');
+    expect(dispatchApi).toContain('"unassign"');
+    expect(dispatchApi).toContain('"setDispatch"');
+    expect(dispatchApi).toContain('admin.dispatch.${action}');
+    expect(dispatchApi).toContain('Selected technician is not an active technician account.');
+
+    expect(dispatchPage).toContain('name="jobId"');
+    expect(dispatchPage).toContain('data-action="assign"');
+    expect(dispatchPage).toContain('data-action="unassign"');
+    expect(dispatchPage).toContain('data-action="setDispatch"');
+    expect(dispatchPage).toContain('name="requiredByDate"');
+    expect(dispatchPage).toContain('name="isEmergency"');
+  });
+
+  test('Login route expires malformed session cookies instead of throwing', async ({ context, page }) => {
+    await context.addCookies([{
+      name: 'kharon_session_token',
+      value: 'malformed.%',
+      domain: 'localhost',
+      path: '/portal',
+      httpOnly: true,
+      sameSite: 'Strict'
+    }]);
+
+    const response = await page.goto('/portal/login');
+
+    expect(response?.status()).toBe(200);
+    await expect(page.locator('#portal-login-form')).toBeVisible();
+    const sessionCookie = (await context.cookies('http://localhost:4321/portal/login'))
+      .find(cookie => cookie.name === 'kharon_session_token');
+    expect(sessionCookie).toBeUndefined();
+  });
 });

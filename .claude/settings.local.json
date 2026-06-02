@@ -9,5 +9,6 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Get-Content \"C:\\\\Users\\\\conno\\\\Desktop\\\\Astro\\\\kfs\\\\dist\\\\_astro\\\\global.Kf4-NnOg.css\" -TotalCount 100)"
     ]
-  }
+  },
+  "outputStyle": "Proactive"
 }

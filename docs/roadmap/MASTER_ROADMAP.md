@@ -81,6 +81,35 @@ Immediate refinements recommended:
 - Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
 - Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
 
+## Review Update - 2026-06-02 Stabilization And Reality Roadmap
+
+Canonical status record: `docs/PROJECT_STATUS_2026-06-02.md`.
+
+Verified current state:
+
+- Local checkout `C:\Users\User\Desktop\Astro\kfs` was fast-forwarded to `origin/main` at `4c29607` before stabilization edits.
+- Dispatch API now reads `jobId` from the request body, not route params.
+- Dispatch API supports explicit `assign`, `unassign` and `setDispatch` actions.
+- Dispatch assignment validates active technician accounts and preserves priority, emergency and required-by metadata unless the action explicitly supplies updates.
+- Dispatch actions audit exactly one event per successful action with action-specific metadata.
+- Admin dispatch UI exposes assign, reassign, unassign, priority, emergency flag and required-by date controls.
+- `/portal/login` stale-session detection now uses the active signed `kharon_session_token` flow from `src/lib/server/auth.ts`, including token verification and revocation checks.
+- `npm run lint`, `npm run check`, `npm run build`, `npm run audit:site`, `npm audit`, `npm audit --omit=dev` and `npm run test` were run with the local memory setting where required.
+- Cloudflare local auth is available. Remote D1 migration listing shows pending `0035_staff_hr.sql`.
+- The generated Astro Worker config in `dist/server/wrangler.json` dry-runs successfully with Wrangler; no production deploy or remote D1 mutation was performed.
+
+Status decision:
+
+The project remains staging-ready and locally verified, with the dispatch and login-session defects corrected. It is still not production-authoritative for real operations until credential rotation, role QA, HR policy gates, remote D1 migration application, analytics/POPIA sign-off, backup/restore evidence after the latest migration and Kharon domain cutover approval are complete.
+
+Reality corrections:
+
+- Staff/HR is an implemented foundation only. Staff profile, leave request and staff vault routes exist, but approval workflows, balance adjustment controls, staff admin review queues and production HR policy gates remain future work.
+- Analytics is technically implemented through public-only Plausible loading, but business/POPIA sign-off, provider configuration and production-domain analytics setup remain open.
+- GitHub Actions is the active CI/CD path. CircleCI has not been added and should remain out of scope unless explicitly requested later.
+- Tequit remains staging/test until explicit Kharon cutover approval.
+- The root split Wrangler configs document bindings and routes, but the current deployable Worker dry-run path is the generated build config under `dist/server`.
+
 ## Review Update - 2026-06-01 Project Status, Dependency Hardening And Deploy Gate
 
 Canonical status record: `docs/PROJECT_STATUS_2026-06-01.md`.
