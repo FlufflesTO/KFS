@@ -7,47 +7,47 @@
 import { heroProofItems } from "../../data/site.js";
 ---
 
-<section class="relative min-h-[85svh] flex flex-col items-center justify-center overflow-hidden bg-kharon-black py-20 pt-32 sm:pt-40">
+<section class="relative min-h-[75svh] flex flex-col items-center justify-center overflow-hidden bg-kharon-black py-12 pt-24 sm:pt-32">
   <!-- Dynamic atmospheric background -->
   <div class="absolute inset-0 z-0">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(124,93,194,0.15),transparent_70%)]"></div>
-    <div class="absolute inset-0 bg-[url('/brand/kharon-mark.svg')] bg-[length:50%_auto] bg-center bg-no-repeat opacity-[0.03] filter blur-[1px]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(124,93,194,0.12),transparent_70%)]"></div>
+    <div class="absolute inset-0 bg-[url('/brand/kharon-mark.svg')] bg-[length:40%_auto] bg-center bg-no-repeat opacity-[0.02] filter blur-[1px]"></div>
   </div>
 
   <div class="container relative z-10 mx-auto max-w-5xl px-6 text-center">
-    <div class="space-y-10">
-      <div class="inline-flex items-center gap-3 px-4 py-1.5 rounded-full border border-kharon-purple/30 bg-kharon-purple/5 backdrop-blur-md">
+    <div class="space-y-8">
+      <div class="inline-flex items-center gap-2.5 px-3 py-1 rounded-full border border-kharon-purple/30 bg-kharon-purple/5 backdrop-blur-md">
         <span class="relative flex h-2 w-2">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-kharon-cyan opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-kharon-cyan"></span>
         </span>
-        <span class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-kharon-light/80">Mission Critical Protection</span>
+        <span class="text-[0.6rem] font-black uppercase tracking-[0.25em] text-kharon-light/80">Mission Critical Protection</span>
       </div>
 
-      <h1 class="kharon-h1 text-white leading-[1.05] tracking-tight mx-auto max-w-4xl">
-        Precision Engineering for <span class="text-transparent bg-clip-text bg-gradient-to-r from-kharon-purple to-kharon-cyan">Critical Assets.</span>
+      <h1 class="kharon-h1 text-white leading-[0.9] tracking-tighter mx-auto max-w-4xl uppercase">
+        Precision Engineering for <br class="hidden sm:block"/><span class="text-transparent bg-clip-text bg-gradient-to-r from-kharon-purple to-kharon-cyan">Critical Assets.</span>
       </h1>
 
-      <p class="text-lg md:text-xl text-kharon-light/70 max-w-3xl mx-auto leading-relaxed">
+      <p class="text-base md:text-lg text-kharon-light/60 max-w-2xl mx-auto leading-relaxed font-medium">
         Kharon delivers engineered fire detection, clean-agent gas suppression, and integrated security solutions for environments where failure is not an option.
       </p>
 
-      <div class="flex flex-wrap justify-center gap-4 pt-6">
-        <a href="#pathways" class="kharon-command-button px-10 py-5 text-sm">
+      <div class="flex flex-wrap justify-center gap-3 pt-4">
+        <a href="/solutions" class="kharon-command-button px-8 py-4 text-xs font-black tracking-widest">
           Explore Solutions
         </a>
-        <a href="/contact?intent=site-assessment" class="kharon-secondary-button px-10 py-5 text-sm">
+        <a href="/contact?intent=site-assessment" class="kharon-secondary-button px-8 py-4 text-xs font-black tracking-widest">
           Request Site Audit
         </a>
       </div>
 
-      <div class="flex flex-wrap justify-center gap-x-8 gap-y-4 pt-16 border-t border-kharon-purple/10">
+      <div class="flex flex-wrap justify-center gap-x-6 gap-y-3 pt-12 border-t border-kharon-purple/10">
         {heroProofItems.slice(0, 4).map(item => (
-          <div class="flex items-center gap-2">
-            <svg class="h-4 w-4 text-kharon-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+          <div class="flex items-center gap-1.5">
+            <svg class="h-3.5 w-3.5 text-kharon-purple/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
-            <span class="text-xs font-bold uppercase tracking-widest text-kharon-light/60">{item}</span>
+            <span class="text-[0.55rem] font-black uppercase tracking-[0.15em] text-white/40">{item}</span>
           </div>
         ))}
       </div>
