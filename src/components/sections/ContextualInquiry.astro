@@ -36,7 +36,7 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
     <form id={formId} class="grid gap-5 rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-6 kharon-surface">
       <label class="sr-only" for={`${formId}-website`}>Website</label>
-      <input id={`${formId}-website`} style="display: none !important; position: absolute !important; left: -9999px !important;" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <input id={`${formId}-website`} class="honeypot" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
       <input type="hidden" name="request_type" value={requestType} />
 
       {[...baseFields, ...fields].map((field) => (

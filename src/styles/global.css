@@ -184,6 +184,12 @@ summary::-webkit-details-marker { display: none; }
   border-color: var(--color-kharon-purple);
 }
 
+.honeypot {
+  display: none !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
 .kharon-command-button {
   background: linear-gradient(135deg, var(--color-kharon-purple), var(--color-kharon-blue));
   border-radius: var(--radius-sm);
