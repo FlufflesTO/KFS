@@ -1,8 +1,8 @@
 # Implementation Plan: Mobile App for Field Technicians
 
-## Phase 1: Robust Local Storage & Caching
+## Phase 1: Robust Local Storage & Caching [checkpoint: 6dcafb0]
 - [x] Task: Set up and configure robust local storage (IndexedDB wrapper) for caching jobs and checklists. [checkpoint: 87b8674]
-- [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md) [checkpoint: 6dcafb0]
 
 ## Phase 2: Offline Mutation Sync Queue
 - [ ] Task: Implement background sync queue architecture for buffering POST/PUT/DELETE requests while offline.
