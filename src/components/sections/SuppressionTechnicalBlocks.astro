@@ -1,134 +1,224 @@
 ---
 /**
- * Project Sentinel - SuppressionTechnicalBlocks
- * Purpose: Framework section display for suppression capabilities
- * Dependencies: SectionHeading.astro, KharonCard.astro
- * Structural Role: Reusable sections UI component
+ * Project Sentinel - Suppression Technical Blocks
+ * Purpose: Renders agent comparison, discharge sequencing, integrity testing and hardware lifecycle.
+ * Dependencies: Astro section layout, SVG.
+ * Structural Role: Presentation component for gas suppression page.
  */
-import SectionHeading from "./SectionHeading.astro";
-import KharonCard from "../ui/KharonCard.astro";
+const agents = [
+  { name: "FM-200 (HFC-227ea)", mechanism: "Chemical/Physical", storage: "Liquefied Gas", safety: "Safe for Occupied", environment: "GWP 3220" },
+  { name: "Novec 1230", mechanism: "Physical (Heat removal)", storage: "Fluid", safety: "Highest Safety Margin", environment: "GWP 1 (Sustainable)" },
+  { name: "Inergen / IG-541", mechanism: "Oxygen Dilution", storage: "High Pressure Gas", safety: "Safe for Occupied", environment: "Natural (Zero GWP)" },
+];
 
-const { 
-  suppression = [],
-  detection = [],
-  compliance = [],
-  security = []
-} = Astro.props;
+const maintenanceItems = [
+  {
+    step: "Monthly",
+    title: "Visual Inspection",
+    text: "Confirm pressure gauges are in the green zone, discharge nozzles are unobstructed, and manual release points are accessible.",
+  },
+  {
+    step: "6-Monthly",
+    title: "Cylinder Weighing",
+    text: "Mandatory verification of agent quantity via liquid level ultrasonic testing or mechanical weighing to SANS 14520 standards.",
+  },
+  {
+    step: "Annual",
+    title: "Full Control Logic Test",
+    text: "Simulated activation of all release paths, fan-shutdown integration, and interface with fire alarm systems without actual discharge.",
+  },
+  {
+    step: "10-Year",
+    title: "Hydrostatic Testing",
+    text: "Cylinders must undergo pressure testing and valve refurbishment to ensure structural integrity and compliance with pressure vessel regulations.",
+  },
+];
+
+const integritySteps = [
+  {
+    title: "Enclosure Sealing",
+    text: "Identification and sealing of cable penetrations, door gaps, and HVAC dampers to ensure the protected room can hold the gas concentration.",
+  },
+  {
+    title: "Door Fan Testing",
+    text: "A calibrated fan is used to pressurize the room, measuring leakage rates to calculate the 'Hold Time' (typically 10 minutes minimum).",
+  },
+  {
+    title: "Nozzle Coverage",
+    text: "Verification that discharge nozzles are placed to ensure rapid, uniform distribution throughout the volume, including under-floor voids.",
+  },
+];
 ---
 
-<section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
+<section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
   <div class="mx-auto max-w-7xl px-6">
-    <SectionHeading
-      title="Technical Capability Framework"
-      subtitle="Engineered Systems"
-      description="Comprehensive technical framework for fire protection and security systems."
-      center={true}
-    />
 
-    <div class="mt-16 space-y-20">
-      <!-- Gas Suppression Systems -->
-      <div>
-        <h2 class="text-2xl font-bold text-kharon-purple mb-8 flex items-center">
-          <span class="mr-3 w-10 h-10 rounded-md bg-kharon-purple/20 flex items-center justify-center">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
-            </svg>
-          </span>
-          Gas Suppression Systems
-        </h2>
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {suppression.map((item: string) => (
-            <KharonCard variant="command" className="kharon-surface">
-              <div class="flex items-center">
-                <div class="mr-3 w-8 h-8 rounded-md bg-kharon-purple/10 flex items-center justify-center">
-                  <svg class="w-4 h-4 text-kharon-purple" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                  </svg>
-                </div>
-                <span class="text-white font-medium">{item}</span>
-              </div>
-            </KharonCard>
-          ))}
-        </div>
-      </div>
+    <!-- ─── Block 1: Clean Agent Comparison ─── -->
+    <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Agent Selection — SANS 14520</span>
+    <h2 class="text-3xl font-bold leading-tight text-white mt-2">Clean agent characteristics.</h2>
+    <p class="mt-4 max-w-3xl text-lg leading-8 text-white/70">
+      Selection depends on room volume, environmental targets, and safety requirements. All agents used by Kharon are non-conductive and leave no residue.
+    </p>
 
-      <!-- Fire Detection Systems -->
-      <div>
-        <h2 class="text-2xl font-bold text-kharon-purple mb-8 flex items-center">
-          <span class="mr-3 w-10 h-10 rounded-md bg-kharon-blue/20 flex items-center justify-center">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 13.047 14.01c-.04.27-.31.458-.582.458-.272 0-.542-.188-.582-.458L10.854 7.2 12.033 2.744A1 1 0 0113 2h5a1 1 0 110 2h-1.146l-.5 2h3.146a1 1 0 110 2h-2.5l-.5 2h2.5a1 1 0 110 2H15v1a1 1 0 11-2 0v-1h-1v1a1 1 0 11-2 0v-1H9v1a1 1 0 01-2 0v-1H6a1 1 0 010-2h.146l.5-2H4a1 1 0 110-2h2.5l.5-2H4a1 1 0 110-2h2.146l.5-2H12z" clip-rule="evenodd" />
-            </svg>
-          </span>
-          Fire Detection Systems
-        </h2>
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {detection.map((item: string) => (
-            <KharonCard variant="command" className="kharon-surface">
-              <div class="flex items-center">
-                <div class="mr-3 w-8 h-8 rounded-md bg-kharon-purple/10 flex items-center justify-center">
-                  <svg class="w-4 h-4 text-kharon-purple" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                  </svg>
-                </div>
-                <span class="text-white font-medium">{item}</span>
-              </div>
-            </KharonCard>
+    <div class="mt-10 overflow-x-auto portal-scroll-x scrollbar-hide">
+      <table class="w-full min-w-[640px] border-collapse text-sm">
+        <thead>
+          <tr>
+            <th class="border border-kharon-purple/20 bg-kharon-purple px-4 py-3 text-left font-bold text-white">Agent Type</th>
+            <th class="border border-kharon-purple/20 bg-kharon-blue px-4 py-3 text-left font-bold text-white">Mechanism</th>
+            <th class="border border-kharon-purple/20 bg-kharon-blue px-4 py-3 text-left font-bold text-white">Safety Profile</th>
+            <th class="border border-kharon-purple/20 bg-kharon-blue px-4 py-3 text-left font-bold text-white">Environmental</th>
+          </tr>
+        </thead>
+        <tbody>
+          {agents.map((agent, rowIdx) => (
+            <tr class={rowIdx % 2 === 0 ? "bg-kharon-charcoal" : "bg-kharon-charcoal/50"}>
+              <td class="border border-kharon-purple/20 px-4 py-4 font-bold text-white">{agent.name}</td>
+              <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-light/80">{agent.mechanism}</td>
+              <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-light/80 font-medium text-kharon-cyan">{agent.safety}</td>
+              <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-light/60 text-xs uppercase tracking-wider">{agent.environment}</td>
+            </tr>
           ))}
-        </div>
-      </div>
+        </tbody>
+      </table>
+    </div>
 
-      <!-- Compliance & Maintenance -->
-      <div>
-        <h2 class="text-2xl font-bold text-kharon-purple mb-8 flex items-center">
-          <span class="mr-3 w-10 h-10 rounded-md bg-kharon-green/20 flex items-center justify-center">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 0a1 1 0 100 2h.01a1 1 0 100-2H9zm2 0a1 1 0 100 2h.01a1 1 0 100-2H11z" clip-rule="evenodd" />
-            </svg>
-          </span>
-          Compliance & Maintenance
-        </h2>
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {compliance.map((item: string) => (
-            <KharonCard variant="command" className="kharon-surface">
-              <div class="flex items-center">
-                <div class="mr-3 w-8 h-8 rounded-md bg-kharon-purple/10 flex items-center justify-center">
-                  <svg class="w-4 h-4 text-kharon-purple" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                  </svg>
-                </div>
-                <span class="text-white font-medium">{item}</span>
-              </div>
-            </KharonCard>
-          ))}
-        </div>
-      </div>
+    <!-- ─── Block 2: Discharge Sequencing Flowchart ─── -->
+    <div class="mt-20">
+      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Discharge Orchestration</span>
+      <h2 class="text-3xl font-bold leading-tight text-white mt-2">Precision release sequencing.</h2>
+      <p class="mt-4 max-w-3xl text-lg leading-8 text-white/70">
+        Engineered systems follow a strict 'Double-Knock' logic to prevent accidental discharge while ensuring rapid response to confirmed fire events.
+      </p>
 
-      <!-- Integrated Security -->
-      <div>
-        <h2 class="text-2xl font-bold text-kharon-purple mb-8 flex items-center">
-          <span class="mr-3 w-10 h-10 rounded-md bg-kharon-amber/20 flex items-center justify-center">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-            </svg>
-          </span>
-          Integrated Security
-        </h2>
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {security.map((item: string) => (
-            <KharonCard variant="command" className="kharon-surface">
-              <div class="flex items-center">
-                <div class="mr-3 w-8 h-8 rounded-md bg-kharon-purple/10 flex items-center justify-center">
-                  <svg class="w-4 h-4 text-kharon-purple" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                  </svg>
-                </div>
-                <span class="text-white font-medium">{item}</span>
-              </div>
-            </KharonCard>
-          ))}
+      <div class="mt-10 w-full max-w-4xl mx-auto overflow-x-auto">
+        <div class="min-w-[500px] px-2">
+        <svg viewBox="0 0 900 240" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto overflow-visible" role="img" aria-label="Suppression discharge sequence flowchart">
+          <defs>
+            <marker id="seqArrow" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#4B2E83" />
+            </marker>
+          </defs>
+
+          <!-- Sequence Nodes -->
+          <g transform="translate(20, 60)">
+            <rect width="180" height="80" rx="8" fill="#15191D" stroke="#4B2E83" stroke-width="2" />
+            <text x="90" y="35" text-anchor="middle" fill="#4B2E83" font-size="10" font-weight="800">STAGE 1</text>
+            <text x="90" y="55" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">First Zone Alarm</text>
+            <text x="90" y="70" text-anchor="middle" fill="#FFFFFF" opacity="0.5" font-size="10">Alert & HVAC Interlock</text>
+          </g>
+
+          <line x1="200" y1="100" x2="245" y2="100" stroke="#4B2E83" stroke-width="2" marker-end="url(#seqArrow)" />
+
+          <g transform="translate(255, 60)">
+            <rect width="180" height="80" rx="8" fill="#15191D" stroke="#4B2E83" stroke-width="2" />
+            <text x="90" y="35" text-anchor="middle" fill="#4B2E83" font-size="10" font-weight="800">STAGE 2</text>
+            <text x="90" y="55" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">Second Zone Alarm</text>
+            <text x="90" y="70" text-anchor="middle" fill="#FFFFFF" opacity="0.5" font-size="10">Start Release Timer</text>
+          </g>
+
+          <line x1="435" y1="100" x2="480" y2="100" stroke="#4B2E83" stroke-width="2" marker-end="url(#seqArrow)" />
+
+          <g transform="translate(490, 60)">
+            <rect width="180" height="80" rx="8" fill="#1F4E79" />
+            <text x="90" y="35" text-anchor="middle" fill="#00C2FF" font-size="10" font-weight="800">COUNTDOWN</text>
+            <text x="90" y="55" text-anchor="middle" fill="#FFFFFF" font-size="14" font-weight="800">30 - 60 SECONDS</text>
+            <text x="90" y="70" text-anchor="middle" fill="#FFFFFF" opacity="0.7" font-size="10">Evacuation Delay</text>
+          </g>
+
+          <line x1="670" y1="100" x2="715" y2="100" stroke="#4B2E83" stroke-width="2" marker-end="url(#seqArrow)" />
+
+          <g transform="translate(725, 60)">
+            <rect width="150" height="80" rx="8" fill="#4B2E83" />
+            <text x="75" y="35" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="800">ACTION</text>
+            <text x="75" y="55" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="700">GAS RELEASE</text>
+            <text x="75" y="70" text-anchor="middle" fill="#FFFFFF" opacity="0.7" font-size="10">Full Concentration</text>
+          </g>
+        </svg>
         </div>
       </div>
     </div>
+
+    <!-- ─── Block 3: Maintenance Lifecycle ─── -->
+    <div class="mt-24">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-1 w-8 bg-kharon-purple"></div>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Lifecycle Compliance</p>
+      </div>
+      <h2 class="kharon-h2 text-white">Mandatory service intervals.</h2>
+      <p class="mt-4 max-w-3xl text-lg leading-relaxed text-white/70">
+        Gas suppression reliability is tied to the physical integrity of the agent and hardware. SANS 14520 mandates specific verification steps to ensure readiness.
+      </p>
+
+      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {maintenanceItems.map((item) => (
+          <div class="rounded-xl border border-kharon-purple/20 p-6 bg-kharon-charcoal transition-all hover:border-kharon-purple/40">
+            <span class="inline-block px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-kharon-purple/10 text-kharon-purple mb-4 border border-kharon-purple/20">
+              {item.step}
+            </span>
+            <h3 class="text-base font-bold tracking-tight text-white mb-2">{item.title}</h3>
+            <p class="text-xs leading-relaxed text-white/50">{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- ─── Block 4: Room Integrity ─── -->
+    <div class="mt-20 reveal">
+      <div class="grid gap-12 lg:grid-cols-2 items-center">
+        <div>
+          <span class="text-sm font-bold uppercase tracking-wider text-kharon-cyan">Verification Layer</span>
+          <h2 class="text-3xl font-bold leading-tight text-white mt-2">Room integrity testing.</h2>
+          <p class="mt-6 text-lg text-white/70 leading-relaxed">
+            The world's best suppression system will fail if the room cannot contain the gas. We perform 'Door Fan Integrity Testing' to prove your space meets the required hold-time for insurance and life safety.
+          </p>
+          
+          <div class="mt-8 space-y-6">
+            {integritySteps.map(step => (
+              <div class="flex gap-4">
+                <div class="mt-1 flex-none h-5 w-5 rounded-full border border-kharon-cyan/50 flex items-center justify-center">
+                  <div class="h-2 w-2 rounded-full bg-kharon-cyan shadow-[0_0_8px_rgba(0,194,255,0.6)]"></div>
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-sm uppercase tracking-wide">{step.title}</h4>
+                  <p class="text-sm text-white/50 mt-1">{step.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/50 p-8 relative overflow-hidden group">
+          <div class="absolute -right-20 -top-20 h-64 w-64 bg-kharon-purple/10 rounded-full blur-3xl group-hover:bg-kharon-purple/20 transition-colors"></div>
+          <div class="relative z-10">
+            <h3 class="text-xl font-bold text-white mb-4">Why Integrity Fails</h3>
+            <ul class="space-y-4 text-sm text-white/60">
+              <li class="flex gap-3">
+                <span class="text-kharon-red font-bold">×</span>
+                Unsealed cable penetrations added post-commissioning.
+              </li>
+              <li class="flex gap-3">
+                <span class="text-kharon-red font-bold">×</span>
+                HVAC dampers failing to close on Stage 1 fire alarm.
+              </li>
+              <li class="flex gap-3">
+                <span class="text-kharon-red font-bold">×</span>
+                Perforated floor tiles allowing gas to leak into sub-floor.
+              </li>
+              <li class="flex gap-3">
+                <span class="text-kharon-red font-bold">×</span>
+                Door seals degraded or removed during maintenance.
+              </li>
+            </ul>
+            <div class="mt-8 pt-6 border-t border-kharon-purple/10">
+              <p class="text-xs font-medium text-kharon-cyan italic">
+                SANS 14520 requires an annual integrity check or when significant room modifications occur.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>

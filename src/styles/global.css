@@ -99,12 +99,12 @@ body.portal-shell {
   .kharon-h3 { font-size: 1.75rem; }
 }
 
-.section-padding { padding-top: 5rem; padding-bottom: 5rem; }
-.hero-padding { padding-top: 10rem; padding-bottom: 5rem; }
+.section-padding { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+.hero-padding { padding-top: 8rem; padding-bottom: 4rem; }
 
 @media (min-width: 1024px) {
-  .section-padding { padding-top: 10rem; padding-bottom: 10rem; }
-  .hero-padding { padding-top: 15rem; padding-bottom: 10rem; }
+  .section-padding { padding-top: 6rem; padding-bottom: 6rem; }
+  .hero-padding { padding-top: 12rem; padding-bottom: 6rem; }
 }
 
 .container-tight {

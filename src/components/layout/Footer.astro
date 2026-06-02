@@ -30,28 +30,33 @@ import { site, solutionLinks } from "../../data/site.js";
 
       <!-- Services -->
       <div>
-        <h3 class="text-[0.65rem] font-bold uppercase tracking-widest text-kharon-purple mb-3">Solutions</h3>
-        <ul class="space-y-2">
+        <h3 class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Solutions</h3>
+        <ul class="space-y-1.5">
           {solutionLinks.map((link) => (
-            <li><a href={link.href} class="text-xs text-white/60 hover:text-kharon-purple transition-colors">{link.label}</a></li>
+            <li><a href={link.href} class="text-[0.7rem] font-medium text-white/50 hover:text-kharon-cyan transition-colors">{link.label}</a></li>
           ))}
+          <li class="pt-1.5 mt-1.5 border-t border-kharon-purple/10">
+            <a href="/solutions" class="text-[0.65rem] font-black uppercase tracking-widest text-kharon-cyan hover:text-white transition-colors">
+              All Solutions
+            </a>
+          </li>
         </ul>
       </div>
 
       <!-- Contact -->
       <div>
-        <h3 class="text-[0.65rem] font-bold uppercase tracking-widest text-kharon-purple mb-3">Contact</h3>
-        <ul class="space-y-2 text-xs text-white/60">
-          <li><a href={`tel:${site.phone}`} class="hover:text-kharon-purple transition-colors font-semibold text-white/80">{site.phone}</a></li>
-          <li><a href={`mailto:${site.email}`} class="hover:text-kharon-purple transition-colors">{site.email}</a></li>
-          <li class="leading-relaxed pt-1 text-white/40">{site.address}</li>
+        <h3 class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Contact</h3>
+        <ul class="space-y-1.5">
+          <li><a href={`tel:${site.phone}`} class="text-[0.7rem] font-bold text-white/70 hover:text-kharon-cyan transition-colors">{site.phone}</a></li>
+          <li><a href={`mailto:${site.email}`} class="text-[0.7rem] font-medium text-white/50 hover:text-kharon-cyan transition-colors">{site.email}</a></li>
+          <li class="text-[0.65rem] leading-relaxed text-white/30 pt-1">{site.address}</li>
         </ul>
       </div>
 
       <!-- Corporate -->
       <div>
-        <h3 class="text-[0.65rem] font-bold uppercase tracking-widest text-kharon-purple mb-3">Corporate</h3>
-        <ul class="space-y-1.5 text-[0.65rem] text-white/50 uppercase tracking-wider font-bold">
+        <h3 class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Corporate</h3>
+        <ul class="space-y-1.5 text-[0.6rem] text-white/40 uppercase tracking-widest font-bold">
           <li>Reg. {site.registration}</li>
           <li>B-BBEE Level 4 Contributor</li>
           <li>SAQCC FIRE-2024-0847</li>
