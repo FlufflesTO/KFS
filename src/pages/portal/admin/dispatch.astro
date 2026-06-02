@@ -43,7 +43,7 @@ let techs: { id: string; name: string }[] = [];
 let stats = { unassigned: 0, inProgress: 0, emergency: 0, slaWarning: 0 };
 let loadError = "";
 
-const today = new Date().toISOString().slice(0, 10);
+
 
 try {
   const db = getDatabase();

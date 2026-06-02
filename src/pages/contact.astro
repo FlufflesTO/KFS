@@ -34,8 +34,9 @@ import { site } from "../data/site.js";
           <form method="post" action="/api/contact" class="mt-10 space-y-8">
             <div class="grid md:grid-cols-2 gap-6">
               <div class="grid gap-2">
-                <label class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Full Name</label>
+                <label for="intake-name" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Full Name</label>
                 <input 
+                  id="intake-name"
                   type="text" 
                   name="name"
                   required
@@ -45,8 +46,9 @@ import { site } from "../data/site.js";
               </div>
               
               <div class="grid gap-2">
-                <label class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Email Infrastructure</label>
+                <label for="intake-email" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Email Infrastructure</label>
                 <input 
+                  id="intake-email"
                   type="email" 
                   name="email"
                   required
@@ -58,8 +60,9 @@ import { site } from "../data/site.js";
             
             <div class="grid md:grid-cols-2 gap-6">
               <div class="grid gap-2">
-                <label class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Phone Link</label>
+                <label for="intake-phone" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Phone Link</label>
                 <input 
+                  id="intake-phone"
                   type="tel" 
                   name="phone"
                   placeholder="+27 (0) 00 000 0000"
@@ -68,8 +71,9 @@ import { site } from "../data/site.js";
               </div>
               
               <div class="grid gap-2">
-                <label class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Registered Company</label>
+                <label for="intake-company" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Registered Company</label>
                 <input 
+                  id="intake-company"
                   type="text" 
                   name="company"
                   placeholder="Entity name"
@@ -79,8 +83,9 @@ import { site } from "../data/site.js";
             </div>
             
             <div class="grid gap-2">
-              <label class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Engagement Intent</label>
+              <label for="intake-intent" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Engagement Intent</label>
               <select 
+                id="intake-intent"
                 name="requestType"
                 required
                 class="kharon-field py-3"
@@ -96,8 +101,9 @@ import { site } from "../data/site.js";
             </div>
             
             <div class="grid gap-2">
-              <label class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Operational Requirements</label>
+              <label for="intake-message" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Operational Requirements</label>
               <textarea 
+                id="intake-message"
                 name="message"
                 rows={6}
                 required

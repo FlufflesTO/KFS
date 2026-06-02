@@ -36,7 +36,7 @@ export class JobService {
          ORDER BY jobs.scheduled_date ASC
          LIMIT 100`
       : `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-                jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
+                jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency, jobs.assigned_technician_id,
                 systems.system_type, systems.coverage_area,
                 sites.owner_company_name, sites.physical_address
          FROM jobs
@@ -57,7 +57,7 @@ export class JobService {
   async getUpcomingSchedule(userId: string, role: string, today: string): Promise<TechJob[]> {
     const query = role === "admin"
       ? `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-                jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
+                jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency, jobs.assigned_technician_id,
                 systems.system_type, systems.coverage_area,
                 sites.owner_company_name, sites.physical_address
          FROM jobs
@@ -69,7 +69,7 @@ export class JobService {
          ORDER BY jobs.scheduled_date ASC
          LIMIT 100`
       : `SELECT jobs.id, jobs.system_id, jobs.scheduled_date, jobs.status, jobs.site_notes,
-                jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
+                jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency, jobs.assigned_technician_id,
                 systems.system_type, systems.coverage_area,
                 sites.owner_company_name, sites.physical_address
          FROM jobs
