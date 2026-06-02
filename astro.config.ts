@@ -12,7 +12,8 @@ export default defineConfig({
   },
   output: "server",
   adapter: cloudflare({
-    persistState: true
+    persistState: true,
+    configPath: "wrangler.portal.jsonc",
   }),
   integrations: [sitemap()],
   prefetch: true,

@@ -221,6 +221,12 @@ async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, session
 
 // 1. Core setup and AB testing
 const setupMiddleware: MiddlewareHandler = async (context, next) => {
+  const host = context.request.headers.get("host") ?? "";
+  const pathname = context.url.pathname;
+  if (host === "portal.tequit.co.za" && (pathname === "/" || pathname === "")) {
+    return context.redirect("/portal/login", 302);
+  }
+
   const nonce = createCspNonce();
   context.locals.nonce = nonce;
 

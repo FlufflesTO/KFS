@@ -155,6 +155,13 @@ The staging domain is `tequit.co.za` — this is intentional and not an error. `
 
 D1 database: `kharon-portal` (binding `DB`). R2 bucket: `kharon-portal-storage` (binding `STORAGE`). Cron trigger fires hourly (`0 * * * *`) for data retention enforcement.
 
+### Wrangler configs (split deployment)
+
+- `wrangler.portal.jsonc` — portal worker (`kfs-portal`), routes `portal.tequit.co.za/*`, holds D1 + R2 bindings
+- `wrangler.website.jsonc` — website worker (`kfs-website`), routes `tequit.co.za/*` and `www.tequit.co.za/*`, no bindings
+
+`astro.config.ts` passes `configPath: "wrangler.portal.jsonc"` to the cloudflare adapter so the generated `dist/server/wrangler.json` includes the D1/R2 bindings required by the audit script. Do not remove this. Full architecture documented in `docs/roadmap/DEPLOYMENT_ARCHITECTURE.md`.
+
 ---
 
 ## Design system
