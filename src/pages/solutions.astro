@@ -64,9 +64,7 @@ const solutionBullets: Record<string, string[]> = {
     </div>
   </section>
 
-  <section class="section-padding bg-kharon-black">
-    <div class="mx-auto max-w-7xl px-6">
-      <div class="grid gap-12 lg:grid-cols-3">
+<div class="mt-10 grid gap-12 lg:grid-cols-3">
         {solutionLinks.map((solution) => {
           const bullets = solutionBullets[solution.label] ?? [];
           return (
