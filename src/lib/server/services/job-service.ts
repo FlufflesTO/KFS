@@ -15,6 +15,7 @@ export interface TechJob {
   coverage_area: string;
   owner_company_name: string;
   physical_address: string | null;
+  assigned_technician_id: string | null;
 }
 
 export class JobService {

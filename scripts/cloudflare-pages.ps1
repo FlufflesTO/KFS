@@ -7,7 +7,8 @@ $ErrorActionPreference = "Stop"
 
 Set-Location -LiteralPath (Resolve-Path "$PSScriptRoot\..")
 
-$ProjectName = "kfs"
+$ProjectName = "kfs-portal"
+$WebsiteProjectName = "kfs-website"
 $PortalDomain = "portal.tequit.co.za"
 $AccountId = if ($env:CLOUDFLARE_ACCOUNT_ID) { $env:CLOUDFLARE_ACCOUNT_ID } else { "75012acd08c1e7bdccb82f3ea3fabdb8" }
 
@@ -114,14 +115,11 @@ switch ($Action) {
   "production" {
     powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" staging
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    # Try to create project if it doesn't exist
-    $oldPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    npx wrangler pages project create $ProjectName --production-branch main --compatibility-date 2026-05-18 2>$null | Out-Null
-    $ErrorActionPreference = $oldPreference
     # Remove wrangler deploy config if created to prevent deployment redirection errors
     Remove-Item -Path "$PSScriptRoot\..\.wrangler\deploy" -Recurse -Force -ErrorAction SilentlyContinue
-    npx wrangler pages deploy dist --project-name $ProjectName --branch main
+    npx wrangler deploy --config wrangler.website.jsonc
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    npx wrangler deploy --config wrangler.portal.jsonc
     exit $LASTEXITCODE
   }
 }

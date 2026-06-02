@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kfs-portal",
+  "compatibility_date": "2026-05-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "portal.tequit.co.za/*",
+      "zone_name": "tequit.co.za"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kharon-portal",
+      "database_id": "327db922-1c44-438d-8328-af7ba33e9ae0",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "STORAGE",
+      "bucket_name": "kharon-portal-storage"
+    }
+  ],
+  "vars": {
+    "SESSION_COOKIE_NAME": "kharon_session_token",
+    "STANDARD_SERVICE_FEE": "1850.00"
+  },
+  "triggers": {
+    "crons": ["0 * * * *"]
+  }
+}
