@@ -31,6 +31,8 @@ npm run deploy:cloudflare # Deploy both (website then portal)
 
 Both projects share the same Astro build output. Run `npm run build` before deploying either project.
 
+The `@astrojs/cloudflare` adapter is configured with `configPath: "wrangler.portal.jsonc"` in `astro.config.ts` so the generated `dist/server/wrangler.json` includes the D1 and R2 bindings. Without this, the audit step fails with "Generated wrangler config missing binding DB/STORAGE".
+
 ## D1 Migrations
 
 Migrations are scoped to the portal config:
