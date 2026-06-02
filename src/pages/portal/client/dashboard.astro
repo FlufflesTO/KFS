@@ -1,8 +1,8 @@
 ---
 /**
- * Client Portal Landing Hub
- * Summary-level overview with navigation to detail pages.
- * No inline data lists — counts and heatmap only.
+ * Project Sentinel - Client Portal Landing Hub
+ * Purpose: Summary-level overview with navigation, counts, and compliance heatmap for tenants.
+ * Includes HR/Internal markers and hardened Service Layer patterns.
  */
 import { auditError } from "../../../lib/server/audit.js";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
@@ -40,7 +40,7 @@ try {
     openRequestCount = data.openRequestCount;
   }
 } catch (err) {
-  await auditError(getDatabase(), Astro.request, err, { entityType: "system", entityId: "client_dashboard" });
+  await auditError(getDatabase(), Astro.request, err as Error, { entityType: "system", entityId: "client_dashboard" });
   loadError = "Dashboard summary could not be loaded.";
 }
 

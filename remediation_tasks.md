@@ -63,7 +63,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE UNIFIED FILE DELTA CONTENTS AND RENAMING MANIFEST.
 
-[ ] Task DB-001: Structural Foreign Key CASCADE Deletion Repair
+[x] Task DB-001: Structural Foreign Key CASCADE Deletion Repair
 
 CRITICAL CONSTRAINTS:
 1. Scan for any instances of `ON DELETE CASCADE` parameters forming destructive data relationships from core entities down to task histories.
@@ -87,7 +87,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE COMPLETED SCHEMA TABLE LAYOUT WITH CORRECTED RESTRICTIONS.
 
-[ ] Task DB-007: Unified Soft-Delete State Pattern Standardization
+[x] Task DB-007: Unified Soft-Delete State Pattern Standardization
 
 CRITICAL CONSTRAINTS:
 1. Remove all references to the legacy binary checking column variable `is_active`.
@@ -111,7 +111,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE FULLY COMPLETED, STRONGLY-TYPED USER REPOSITORY SOURCE CODE.
 
-[ ] Task DB-003: Concurrency Protection via Optimistic Locking
+[x] Task DB-003: Concurrency Protection via Optimistic Locking
 
 CRITICAL CONSTRAINTS:
 1. Implement a complete database optimistic locking pattern to protect job details against overlapping updates from field devices.
@@ -150,7 +150,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT ONLY THE REVISED INVOICE SCHEMA DEFINITION BLOCKS.
 
-[ ] Task JOB-001: On-Site Field Task Visual Evidence Enforcement
+[x] Task JOB-001: On-Site Field Task Visual Evidence Enforcement
 
 CRITICAL CONSTRAINTS:
 1. Locate the runtime validation schema parsing technician job card completion forms.
@@ -174,7 +174,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE UPDATED JOBCARD FORM VALIDATION SCHEMAS ONLY.
 
-[ ] Task SEC-001: MFA Enforcement Validation for API Endpoints
+[x] Task SEC-001: MFA Enforcement Validation for API Endpoints
 
 CRITICAL CONSTRAINTS:
 1. Intercept all data transmission channels mapping under the sub-route pattern `/api/portal/*`.
@@ -200,7 +200,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT ONLY THE REVISED MIDDLEWARE EXECUTION CODE BLOCK.
 
-[ ] Task SEC-002: Fixed-Time Cryptographic Session Token Verification
+[x] Task SEC-002: Fixed-Time Cryptographic Session Token Verification
 
 CRITICAL CONSTRAINTS:
 1. Locate the dynamic token string comparison steps inside the session validation pipeline.
@@ -226,7 +226,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT ONLY THE SPECIFIC REFACTORED SESSION VALIDATION METHOD.
 
-[ ] Task SEC-003: Elevated PBKDF2 Hashing Iteration Scaling
+[x] Task SEC-003: Elevated PBKDF2 Hashing Iteration Scaling
 
 CRITICAL CONSTRAINTS:
 1. Locate the password hashing generation configuration blocks.
@@ -250,7 +250,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE SECTIONS OF CRYPTO.TS DISPLAYING MODIFIED ITERATION VARIABLES.
 
-[ ] Task SEC-004: Isolate MFA and Session Secret Definitions
+[x] Task SEC-004: Isolate MFA and Session Secret Definitions
 
 CRITICAL CONSTRAINTS:
 1. Locate where configuration context strings pass cryptographically down to initialization logic blocks.
@@ -274,7 +274,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE SPECIFIC PERIMETER VARIABLE CHECK BLOCKS.
 
-[ ] Task SEC-005: Audit Log Network Address Anonymization
+[x] Task SEC-005: Audit Log Network Address Anonymization
 
 CRITICAL CONSTRAINTS:
 1. Locate the method responsible for persisting event tracking context logs down to the database ledger table.
@@ -300,7 +300,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE COMPLETED LOG ARCHIVING METRIC INTERCEPTOR FUNCTION.
 
-[ ] Task SEC-006: User Identity Anonymization Deletion Logic
+[x] Task SEC-006: User Identity Anonymization Deletion Logic
 
 CRITICAL CONSTRAINTS:
 1. Build a secure data anonymization method inside the repository file layer to fulfill POPIA Section 26 rules.
@@ -325,7 +325,7 @@ CRITICAL CONSTRAINTS:
 OUTPUT ONLY THE REVISED USER REPOSITORY SECURITY METHODS.
 
 📊 PHASE 3: FINANCIAL & SARS ALIGNMENT
-[ ] Task FIN-001: Absolute Integer Cent Conversion in Sage Client
+[x] Task FIN-001: Absolute Integer Cent Conversion in Sage Client
 
 CRITICAL CONSTRAINTS:
 1. Audit all mathematical transformations structuring invoices before sending to the external API endpoint.
@@ -421,7 +421,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE MODIFIED POST CALL INTERCEPTOR BLOCK.
 
-[ ] Task FIN-006: Invoicing Render Multi-Page Layout Repair
+[x] Task FIN-006: Invoicing Render Multi-Page Layout Repair
 
 CRITICAL CONSTRAINTS:
 1. Audit the loop configurations pacing item layouts inside file creation processes.
@@ -446,7 +446,7 @@ CRITICAL CONSTRAINTS:
 OUTPUT THE COMPLETED REVISED MULTI-PAGE LAYOUT ENVELOPE.
 
 📷 PHASE 4: FIELD OPERATIONS, EVIDENCE & STORAGE OPTIMIZATIONS
-[ ] Task JOB-002: Optimistic Locking Verification Check Implementation
+[x] Task JOB-002: Optimistic Locking Verification Check Implementation
 
 CRITICAL CONSTRAINTS:
 1. Locate tracking state persistence methods inside storage update blocks.
@@ -485,7 +485,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE STRUCTURAL SECURITY LOOKUP BLOCKS FOR CERTIFICATE ROUTING.
 
-[ ] Task JOB-004: Client-Side Upload Image Downsampling Compression Routine
+[x] Task JOB-004: Client-Side Upload Image Downsampling Compression Routine
 
 CRITICAL CONSTRAINTS:
 1. Target the script engine wrapping asynchronous multipart payload formatting processes.
@@ -509,7 +509,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE COMPLETE IMAGE TRANSFORM UTILITY BLOCK.
 
-[ ] Task JOB-006: Cross-Tenant Data Access Validation Rules
+[x] Task JOB-006: Cross-Tenant Data Access Validation Rules
 
 CRITICAL CONSTRAINTS:
 1. Target the authorization middleware handling data access lookups for tenant accounts.
@@ -550,7 +550,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE REMEDIATED OFFLINEBANNER STRATEGY.
 
-[ ] Task UI-002: System Focus Ring Palette Update
+[x] Task UI-002: System Focus Ring Palette Update
 
 CRITICAL CONSTRAINTS:
 1. Scan for standard CSS keyboard layout selection classes (`:focus`, `:focus-visible`).
@@ -574,7 +574,7 @@ CRITICAL CONSTRAINTS:
 
 OUTPUT THE COMPLETED FOCUS PROPERTY MODIFICATION INDEX.
 
-[ ] Task UI-003: Navigation Target Size Accessibility Overhaul
+[x] Task UI-003: Navigation Target Size Accessibility Overhaul
 
 CRITICAL CONSTRAINTS:
 1. Audit all structural links, interactive icons, and target selectors inside navigation components.

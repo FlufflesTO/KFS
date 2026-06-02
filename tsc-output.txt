@@ -1,0 +1,27 @@
+[96msrc/lib/server/openrouter.ts[0m:[93m66[0m:[93m5[0m - [91merror[0m[90m TS2769: [0mNo overload matches this call.
+  Overload 1 of 3, '(request: SendChatCompletionRequestRequest & { chatRequest: { stream?: false | undefined; }; }, options?: RequestOptions | undefined): Promise<...>', gave the following error.
+    Object literal may only specify known properties, and 'model' does not exist in type 'SendChatCompletionRequestRequest & { chatRequest: { stream?: false | undefined; }; }'.
+  Overload 2 of 3, '(request: SendChatCompletionRequestRequest & { chatRequest: { stream: true; }; }, options?: RequestOptions | undefined): Promise<...>', gave the following error.
+    Object literal may only specify known properties, and 'model' does not exist in type 'SendChatCompletionRequestRequest & { chatRequest: { stream: true; }; }'.
+  Overload 3 of 3, '(request: SendChatCompletionRequestRequest, options?: RequestOptions | undefined): Promise<SendChatCompletionRequestResponse>', gave the following error.
+    Object literal may only specify known properties, and 'model' does not exist in type 'SendChatCompletionRequestRequest'.
+
+[7m66[0m     model,
+[7m  [0m [91m    ~~~~~[0m
+
+
+[96msrc/lib/server/openrouter.ts[0m:[93m128[0m:[93m5[0m - [91merror[0m[90m TS2769: [0mNo overload matches this call.
+  Overload 1 of 3, '(request: SendChatCompletionRequestRequest & { chatRequest: { stream?: false | undefined; }; }, options?: RequestOptions | undefined): Promise<...>', gave the following error.
+    Object literal may only specify known properties, and 'model' does not exist in type 'SendChatCompletionRequestRequest & { chatRequest: { stream?: false | undefined; }; }'.
+  Overload 2 of 3, '(request: SendChatCompletionRequestRequest & { chatRequest: { stream: true; }; }, options?: RequestOptions | undefined): Promise<...>', gave the following error.
+    Object literal may only specify known properties, and 'model' does not exist in type 'SendChatCompletionRequestRequest & { chatRequest: { stream: true; }; }'.
+  Overload 3 of 3, '(request: SendChatCompletionRequestRequest, options?: RequestOptions | undefined): Promise<SendChatCompletionRequestResponse>', gave the following error.
+    Object literal may only specify known properties, and 'model' does not exist in type 'SendChatCompletionRequestRequest'.
+
+[7m128[0m     model,
+[7m   [0m [91m    ~~~~~[0m
+
+
+
+Found 2 errors in the same file, starting at: src/lib/server/openrouter.ts[90m:66[0m
+

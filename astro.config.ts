@@ -12,7 +12,6 @@ export default defineConfig({
   },
   output: "server",
   adapter: cloudflare({
-    configPath: "wrangler.jsonc",
     persistState: true
   }),
   integrations: [sitemap()],

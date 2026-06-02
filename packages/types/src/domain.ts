@@ -204,6 +204,60 @@ export interface DbUserFeedback {
 
 // ─── API Payloads & App State ───────────────────────────────────────────────
 
+export interface DbUserProfile {
+  user_id: string;
+  preferred_name: string | null;
+  phone: string | null;
+  job_title: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  notification_email: string | null;
+  portal_density: "compact" | "comfortable";
+  updated_at: string;
+}
+
+export interface DbStaffLeaveBalance {
+  user_id: string;
+  annual_days_remaining: number;
+  sick_days_remaining: number;
+  family_responsibility_days_remaining: number;
+  updated_at: string;
+}
+
+export type StaffLeaveType = "annual" | "sick" | "family_responsibility" | "unpaid";
+export type StaffLeaveStatus = "pending" | "approved" | "rejected" | "cancelled";
+export type StaffDocumentCategory = "medical_certificate" | "payslip" | "contract" | "training_certificate" | "id_document" | "other";
+
+export interface DbStaffLeaveRequest {
+  id: string;
+  user_id: string;
+  leave_type: StaffLeaveType;
+  start_date: string;
+  end_date: string;
+  days_requested: number;
+  reason: string | null;
+  status: StaffLeaveStatus;
+  supporting_document_id: string | null;
+  reviewed_by_user_id: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface DbStaffDocument {
+  id: string;
+  user_id: string;
+  category: StaffDocumentCategory;
+  file_name: string;
+  storage_path: string;
+  content_type: string;
+  size_bytes: number;
+  uploaded_by_user_id: string | null;
+  uploaded_at: string;
+  deleted_at: string | null;
+}
+
 export interface CurrentUser {
   id: string;
   name: string;

@@ -1,4 +1,11 @@
 ---
+/**
+ * Project Sentinel - Portal Login
+ * Purpose: Authentication portal login screen for clients, techs, finance and admin staff
+ * Dependencies: BaseLayout, KharonCard, CsrfInput, isLoggedIn middleware
+ * Structural Role: Entry point for user sessions and secure credential entry
+ */
+
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import KharonCard from "../../components/ui/KharonCard.astro";
 import { isLoggedIn } from "../../lib/server/middleware/auth";

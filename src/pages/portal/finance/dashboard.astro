@@ -1,4 +1,11 @@
 ---
+/**
+ * Project Sentinel - Finance Portal Dashboard
+ * Purpose: Financial operations control room displaying Sage-first VAT logs, Sage status synchronization and ledger lists
+ * Dependencies: PortalLayout, getDatabase, requireFinance, FinanceCreateForm, FinanceStatsPanel, FinanceExceptionPanel, FinanceSagePanel, FinanceLedgerTable
+ * Structural Role: Portal dashboard view for finance department staff
+ */
+
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
 import { requireFinance } from "../../../lib/server/access";

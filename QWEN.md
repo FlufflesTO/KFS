@@ -132,7 +132,7 @@ npm run deploy:cloudflare:preview
 ## Project Structure
 
 ```
-kharon-website/
+kfs/
 ├── src/
 │   ├── components/       # Astro components
 │   │   ├── ui/           # Reusable UI (Button, Card, StatusIndicator)

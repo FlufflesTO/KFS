@@ -58,4 +58,28 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
     await expect(loginButton).toBeEnabled();
   });
 
+  test('should load public secondary pages and verify key layout elements', async ({ page }) => {
+    const pagesToTest = [
+      { path: '/about', heading: 'About Kharon' },
+      { path: '/solutions', heading: 'Engineered Solutions' },
+      { path: '/compliance', heading: 'Protection Compliance' },
+      { path: '/contact', heading: 'Intake Command' },
+      { path: '/emergency-support', heading: 'Emergency Support' },
+      { path: '/industries', heading: 'Industries Served' }
+    ];
+
+    for (const p of pagesToTest) {
+      await page.goto(p.path);
+      const h1 = page.locator('h1').first();
+      await expect(h1).toBeVisible();
+      await expect(h1).toContainText(new RegExp(p.heading, 'i'));
+      
+      // Verify that header and footer are rendered
+      const header = page.locator('header');
+      const footer = page.locator('footer');
+      await expect(header).toBeVisible();
+      await expect(footer).toBeVisible();
+    }
+  });
+
 });

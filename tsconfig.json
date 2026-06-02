@@ -26,7 +26,8 @@
       "@lib/*": ["./src/lib/*"],
       "@utils/*": ["./src/lib/utils/*"],
       "@server/*": ["./src/lib/server/*"],
-      "@types/*": ["./src/types/*"]
+      "@types/*": ["./src/types/*"],
+      "@sentinel/types": ["./packages/types/src/index.ts"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true,
