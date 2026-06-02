@@ -15,7 +15,8 @@ The interface must reflect the serious, authoritative nature of Kharon Fire and 
   - Use color strictly for state and status indication.
   - Red/Amber/Green must be reserved exclusively for System Status, SLA Countdowns, and Compliance Heatmaps.
   - The general UI should be neutral (dark modes optimized for control rooms, high-contrast light modes for field visibility).
-- **Information Density:** Admin and Finance portals require high data density without clutter. Use collapsible panels, data tables with sticky headers, and clear typography.
+- **Information Density:** Public and Portal interfaces require high data density. Avoid excessive whitespace; use compact section padding (2.5rem mobile / 4.5rem desktop) and tight component grouping to maintain an authoritative, command-center feel.
+- **Layout:** Maintain a hub-and-spoke navigation model for complex service offerings, ensuring a central "Command Matrix" (Solutions Hub) links to deep technical specifications.
 - **Technician Portal (Mobile-First):** Tap targets must be large (minimum 44x44px) to accommodate gloved hands. Contrast must account for glare from direct sunlight or poor lighting in utility basements. Forms must support auto-save immediately upon input.
 
 ## 3. Engineering & Architecture Standards
