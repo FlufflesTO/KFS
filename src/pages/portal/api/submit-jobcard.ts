@@ -78,7 +78,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
 
   try {
     // Manual role check since requireRole doesn't exist
-    if (!locals.user || !["admin", "tech", "client"].includes(locals.user.role)) {
+    if (!locals.user || !["admin", "tech"].includes(locals.user.role)) {
       return forbidden("Insufficient permissions.");
     }
 
