@@ -1,0 +1,528 @@
+---
+/**
+ * Project Sentinel - Admin HR & Staff File Vault
+ * Purpose: Admin interface for managing staff members and their confidential documents
+ * Dependencies: PortalLayout, staff-repository, getDatabase, requireAdmin
+ * Structural Role: HR management and file vault for admin-only access
+ */
+import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
+import { getDatabase } from "../../../lib/server/bindings";
+import { requireAdmin } from "../../../lib/server/access";
+import CsrfInput from "../../../components/ui/CsrfInput.astro";
+// Data sources: staff_members and staff_files tables; R2 prefix staff-files/
+import type { DbStaffMember, DbStaffFile } from "../../../lib/server/db/staff-repository";
+import { listStaffMembers, listStaffFiles } from "../../../lib/server/db/staff-repository";
+
+export const prerender = false;
+
+const { user } = Astro.locals;
+const adminError = requireAdmin(user);
+if (adminError) {
+  return adminError;
+}
+
+interface StaffWithFiles extends DbStaffMember {
+  files: DbStaffFile[];
+  file_count: number;
+}
+
+let staffWithFiles: StaffWithFiles[] = [];
+let loadError = "";
+
+try {
+  const db = getDatabase();
+  const members = await listStaffMembers(db);
+  staffWithFiles = await Promise.all(
+    members.map(async (m) => {
+      const files = await listStaffFiles(db, m.id);
+      return { ...m, files, file_count: files.length };
+    })
+  );
+} catch (err) {
+  loadError = "Failed to load staff data.";
+  console.error("HR page load error:", err);
+}
+
+function statusBadgeCls(status: string): string {
+  if (status === "Active") return "bg-kharon-green/20 text-kharon-green border border-kharon-green/30";
+  if (status === "Inactive") return "bg-kharon-amber/20 text-kharon-amber border border-kharon-amber/30";
+  return "bg-kharon-red/20 text-kharon-red border border-kharon-red/30";
+}
+
+function typeBadgeCls(type: string): string {
+  if (type === "Contractor") return "bg-kharon-purple/20 text-white/70 border border-kharon-purple/30";
+  if (type === "Part-time") return "bg-kharon-blue/20 text-white/60 border border-kharon-blue/30";
+  return "bg-white/5 text-white/60 border border-white/10";
+}
+---
+
+<PortalLayout title="HR & Staff Files — Kharon Portal" active="admin-hr" user={user}>
+  <div class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-base font-black uppercase tracking-widest text-white">HR &amp; Staff File Vault</h1>
+        <p class="text-sm text-white/50 mt-1">Manage staff members and confidential documents</p>
+      </div>
+      <button
+        id="open-add-member"
+        type="button"
+        class="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg bg-gradient-to-r from-kharon-purple to-kharon-blue text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Staff Member
+      </button>
+    </div>
+
+    {loadError && (
+      <div class="rounded-lg border border-kharon-red/30 bg-kharon-red/10 px-4 py-3 text-sm text-kharon-red">
+        {loadError}
+      </div>
+    )}
+
+    <!-- Add / Edit Member Modal -->
+    <div id="member-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="w-full max-w-lg rounded-xl border border-white/10 bg-kharon-charcoal/95 shadow-2xl">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+          <h2 id="modal-title" class="text-base font-black uppercase tracking-widest text-white">Add Staff Member</h2>
+          <button id="close-modal" type="button" class="min-h-[44px] min-w-[44px] flex items-center justify-center text-white/50 hover:text-white transition-colors" aria-label="Close">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form id="member-form" class="p-6 space-y-4" novalidate>
+          <CsrfInput />
+          <input type="hidden" name="id" id="member-id-field" value="" />
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label for="full_name" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Full Name *</label>
+              <input id="full_name" name="full_name" type="text" required
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+            </div>
+            <div>
+              <label for="role_title" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Role / Title *</label>
+              <input id="role_title" name="role_title" type="text" required
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label for="email" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Email</label>
+              <input id="email" name="email" type="email"
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+            </div>
+            <div>
+              <label for="phone" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Phone</label>
+              <input id="phone" name="phone" type="tel"
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <label for="start_date" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Start Date</label>
+              <input id="start_date" name="start_date" type="date"
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+            </div>
+            <div>
+              <label for="employment_type" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Employment Type</label>
+              <select id="employment_type" name="employment_type"
+                class="w-full rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-sm text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan">
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Contractor">Contractor</option>
+              </select>
+            </div>
+            <div>
+              <label for="status" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Status</label>
+              <select id="status" name="status"
+                class="w-full rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-sm text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Terminated">Terminated</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="notes" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Notes</label>
+            <textarea id="notes" name="notes" rows="3"
+              class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan resize-none"></textarea>
+          </div>
+
+          <div id="member-form-result" class="hidden rounded-md border px-3 py-2 text-sm"></div>
+
+          <div class="flex justify-end gap-3 pt-2">
+            <button type="button" id="cancel-member" class="px-4 py-2 min-h-[44px] rounded-md border border-white/20 text-sm text-white/70 hover:text-white hover:border-white/40 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" id="member-submit-btn"
+              class="px-5 py-2 min-h-[44px] rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+              Save Member
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Staff List -->
+    {staffWithFiles.length === 0 && !loadError ? (
+      <div class="rounded-xl border border-white/10 bg-kharon-black/85 px-6 py-12 text-center">
+        <p class="text-sm text-white/40">No staff members found. Add the first member above.</p>
+      </div>
+    ) : (
+      <div class="space-y-6">
+        {staffWithFiles.map((member) => (
+          <div class="rounded-xl border border-white/10 bg-kharon-black/85 overflow-hidden" data-member-id={member.id}>
+
+            <!-- Member row -->
+            <div class="flex flex-wrap items-center gap-3 px-5 py-4">
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-sm font-semibold text-white truncate">{member.full_name}</span>
+                  <span class={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest ${statusBadgeCls(member.status)}`}>{member.status}</span>
+                  <span class={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest ${typeBadgeCls(member.employment_type)}`}>{member.employment_type}</span>
+                </div>
+                <p class="text-xs text-white/50 mt-0.5">{member.role_title}{member.email ? ` · ${member.email}` : ""}{member.phone ? ` · ${member.phone}` : ""}</p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="text-xs text-white/40">{member.file_count} file{member.file_count !== 1 ? "s" : ""}</span>
+                <button
+                  type="button"
+                  class="edit-member-btn min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+                  data-member={JSON.stringify({
+                    id: member.id,
+                    full_name: member.full_name,
+                    role_title: member.role_title,
+                    email: member.email ?? "",
+                    phone: member.phone ?? "",
+                    start_date: member.start_date ?? "",
+                    employment_type: member.employment_type,
+                    status: member.status,
+                    notes: member.notes ?? "",
+                  })}
+                  aria-label={`Edit ${member.full_name}`}
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="delete-member-btn min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-kharon-red/20 text-kharon-red/60 hover:text-kharon-red hover:border-kharon-red/40 transition-colors"
+                  data-member-id={member.id}
+                  data-member-name={member.full_name}
+                  aria-label={`Delete ${member.full_name}`}
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Files section -->
+            <div class="border-t border-white/5 bg-black/20 px-5 py-4 space-y-3">
+              <p class="text-[10px] font-semibold uppercase tracking-widest text-white/40">Documents</p>
+
+              {member.files.length > 0 && (
+                <div class="portal-scroll-x">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr class="text-[10px] uppercase tracking-widest text-white/40 border-b border-white/5">
+                        <th class="text-left py-2 pr-4 font-semibold">File Name</th>
+                        <th class="text-left py-2 pr-4 font-semibold">Type</th>
+                        <th class="text-left py-2 pr-4 font-semibold">Uploaded</th>
+                        <th class="text-left py-2 font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                      {member.files.map((f) => (
+                        <tr class="text-white/70">
+                          <td class="py-2 pr-4">
+                            <span class="text-sm text-white/80">{f.file_name}</span>
+                          </td>
+                          <td class="py-2 pr-4">
+                            <span class="text-xs text-white/50">{f.file_type}</span>
+                          </td>
+                          <td class="py-2 pr-4">
+                            <span class="text-xs text-white/40">{f.uploaded_at.slice(0, 10)}</span>
+                          </td>
+                          <td class="py-2">
+                            <div class="flex items-center gap-2">
+                              <a
+                                href={`/portal/api/staff/download/${f.id}`}
+                                class="min-h-[44px] px-3 flex items-center text-xs text-kharon-cyan hover:text-white transition-colors"
+                                download
+                              >
+                                Download
+                              </a>
+                              <button
+                                type="button"
+                                class="delete-file-btn min-h-[44px] px-3 text-xs text-kharon-red/60 hover:text-kharon-red transition-colors"
+                                data-file-id={f.id}
+                                data-file-name={f.file_name}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <!-- Upload form -->
+              <form
+                class="upload-form flex flex-wrap items-end gap-3 pt-1"
+                data-member-id={member.id}
+                enctype="multipart/form-data"
+                novalidate
+              >
+                <CsrfInput />
+                <input type="hidden" name="member_id" value={member.id} />
+                <div>
+                  <label class="block text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-1">File Type</label>
+                  <select name="file_type" class="rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-sm text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan min-h-[44px]">
+                    <option value="ID Document">ID Document</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Certificate">Certificate</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-1">File (max 10 MB)</label>
+                  <input
+                    type="file"
+                    name="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
+                    required
+                    class="block text-sm text-white/60 file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-xs file:text-white file:cursor-pointer file:min-h-[44px]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="px-4 py-2 min-h-[44px] rounded-md bg-white/10 border border-white/20 text-sm text-white hover:bg-white/15 transition-colors"
+                >
+                  Upload
+                </button>
+                <div class="upload-result hidden w-full rounded-md border px-3 py-2 text-sm"></div>
+              </form>
+            </div>
+
+          </div>
+        ))}
+      </div>
+    )}
+
+  </div>
+</PortalLayout>
+
+<script>
+import { portalPost, setResult } from "@lib/client/portalApi";
+
+// ── Modal helpers ────────────────────────────────────────────────────────────
+const modal = document.getElementById("member-modal") as HTMLElement;
+const modalTitle = document.getElementById("modal-title") as HTMLElement;
+const form = document.getElementById("member-form") as HTMLFormElement;
+const resultEl = document.getElementById("member-form-result") as HTMLElement;
+const memberIdField = document.getElementById("member-id-field") as HTMLInputElement;
+const submitBtn = document.getElementById("member-submit-btn") as HTMLButtonElement;
+
+function openModal(mode: "add" | "edit"): void {
+  modalTitle.textContent = mode === "edit" ? "Edit Staff Member" : "Add Staff Member";
+  submitBtn.textContent = mode === "edit" ? "Save Changes" : "Save Member";
+  setResult(resultEl, "", "success");
+  resultEl.classList.add("hidden");
+  modal.classList.remove("hidden");
+  (form.querySelector('[name="full_name"]') as HTMLInputElement)?.focus();
+}
+
+function closeModal(): void {
+  modal.classList.add("hidden");
+  form.reset();
+  memberIdField.value = "";
+}
+
+document.getElementById("open-add-member")?.addEventListener("click", () => {
+  form.reset();
+  memberIdField.value = "";
+  openModal("add");
+});
+
+document.getElementById("close-modal")?.addEventListener("click", closeModal);
+document.getElementById("cancel-member")?.addEventListener("click", closeModal);
+
+// Close on backdrop click
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) closeModal();
+});
+
+// ── Edit buttons ─────────────────────────────────────────────────────────────
+document.querySelectorAll<HTMLButtonElement>(".edit-member-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const raw = btn.dataset.member;
+    if (!raw) return;
+    let data: Record<string, string>;
+    try {
+      data = JSON.parse(raw) as Record<string, string>;
+    } catch {
+      return;
+    }
+    form.reset();
+    memberIdField.value = data.id ?? "";
+    const setField = (name: string, val: string): void => {
+      const el = form.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLSelectElement | null;
+      if (el) el.value = val;
+    };
+    setField("full_name", data.full_name ?? "");
+    setField("role_title", data.role_title ?? "");
+    setField("email", data.email ?? "");
+    setField("phone", data.phone ?? "");
+    setField("start_date", data.start_date ?? "");
+    setField("employment_type", data.employment_type ?? "Full-time");
+    setField("status", data.status ?? "Active");
+    setField("notes", data.notes ?? "");
+    openModal("edit");
+  });
+});
+
+// ── Member form submit ────────────────────────────────────────────────────────
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Saving...";
+
+  const fd = new FormData(form);
+  const id = memberIdField.value.trim();
+  const isEdit = id.length > 0;
+
+  const payload: Record<string, string | null> = {
+    full_name: String(fd.get("full_name") ?? "").trim(),
+    role_title: String(fd.get("role_title") ?? "").trim(),
+    email: String(fd.get("email") ?? "").trim() || null,
+    phone: String(fd.get("phone") ?? "").trim() || null,
+    start_date: String(fd.get("start_date") ?? "").trim() || null,
+    employment_type: String(fd.get("employment_type") ?? "Full-time"),
+    status: String(fd.get("status") ?? "Active"),
+    notes: String(fd.get("notes") ?? "").trim() || null,
+  };
+
+  if (isEdit) {
+    (payload as Record<string, string | null>).id = id;
+  }
+
+  const action = isEdit ? "update-member" : "create-member";
+  const { response, body } = await portalPost(`/portal/api/staff/${action}`, payload as Record<string, unknown>);
+
+  resultEl.classList.remove("hidden");
+  if (response.ok && body.ok) {
+    setResult(resultEl, body.message ?? "Saved.", "success");
+    setTimeout(() => {
+      window.location.reload();
+    }, 800);
+  } else {
+    setResult(resultEl, body.message ?? "Save failed.", "error");
+    submitBtn.disabled = false;
+    submitBtn.textContent = isEdit ? "Save Changes" : "Save Member";
+  }
+});
+
+// ── Delete member ─────────────────────────────────────────────────────────────
+document.querySelectorAll<HTMLButtonElement>(".delete-member-btn").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const memberId = btn.dataset.memberId ?? "";
+    const memberName = btn.dataset.memberName ?? "this member";
+    if (!memberId) return;
+    if (!confirm(`Remove ${memberName} from the HR register? This action cannot be undone.`)) return;
+
+    btn.disabled = true;
+    const { response, body } = await portalPost("/portal/api/staff/delete-member", { id: memberId });
+    if (response.ok && body.ok) {
+      window.location.reload();
+    } else {
+      alert(body.message ?? "Delete failed.");
+      btn.disabled = false;
+    }
+  });
+});
+
+// ── Delete file ────────────────────────────────────────────────────────────────
+document.querySelectorAll<HTMLButtonElement>(".delete-file-btn").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const fileId = btn.dataset.fileId ?? "";
+    const fileName = btn.dataset.fileName ?? "this file";
+    if (!fileId) return;
+    if (!confirm(`Permanently delete "${fileName}"? This cannot be undone.`)) return;
+
+    btn.disabled = true;
+    const { response, body } = await portalPost("/portal/api/staff/delete-file", { fileId });
+    if (response.ok && body.ok) {
+      window.location.reload();
+    } else {
+      alert(body.message ?? "Delete failed.");
+      btn.disabled = false;
+    }
+  });
+});
+
+// ── Upload forms ──────────────────────────────────────────────────────────────
+document.querySelectorAll<HTMLFormElement>(".upload-form").forEach((uploadForm) => {
+  const uploadResult = uploadForm.querySelector<HTMLElement>(".upload-result");
+
+  uploadForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const submitEl = uploadForm.querySelector<HTMLButtonElement>('[type="submit"]');
+    if (submitEl) {
+      submitEl.disabled = true;
+      submitEl.textContent = "Uploading...";
+    }
+
+    const formData = new FormData(uploadForm);
+    const csrfToken = (document.querySelector('meta[name="kharon-csrf-token"]') as HTMLMetaElement)?.content ?? "";
+
+    try {
+      const response = await window.kharonPortalFetch("/portal/api/staff/upload-file", {
+        method: "POST",
+        headers: { "x-csrf-token": csrfToken },
+        body: formData,
+      });
+      const body = (await response.json().catch(() => ({ ok: false, message: "Upload failed." }))) as { ok: boolean; message?: string };
+
+      if (uploadResult) {
+        uploadResult.classList.remove("hidden");
+        if (response.ok && body.ok) {
+          uploadResult.className = "upload-result rounded-md border border-kharon-green/30 bg-kharon-green/10 px-3 py-2 text-sm text-kharon-green";
+          uploadResult.textContent = body.message ?? "File uploaded.";
+          setTimeout(() => window.location.reload(), 800);
+        } else {
+          uploadResult.className = "upload-result rounded-md border border-kharon-red/30 bg-kharon-red/10 px-3 py-2 text-sm text-kharon-red";
+          uploadResult.textContent = body.message ?? "Upload failed.";
+          if (submitEl) {
+            submitEl.disabled = false;
+            submitEl.textContent = "Upload";
+          }
+        }
+      }
+    } catch {
+      if (uploadResult) {
+        uploadResult.classList.remove("hidden");
+        uploadResult.className = "upload-result rounded-md border border-kharon-red/30 bg-kharon-red/10 px-3 py-2 text-sm text-kharon-red";
+        uploadResult.textContent = "Network error. Please try again.";
+      }
+      if (submitEl) {
+        submitEl.disabled = false;
+        submitEl.textContent = "Upload";
+      }
+    }
+  });
+});
+</script>

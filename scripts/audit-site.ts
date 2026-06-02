@@ -178,14 +178,15 @@ const allowedPortalJsPatterns = [
   /^job-detail\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
   /^preload-helper\.[A-Za-z0-9_-]+\.js$/,
   /^multi-client\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/,
-  /^page\.[A-Za-z0-9_-]+\.js$/
+  /^page\.[A-Za-z0-9_-]+\.js$/,
+  /^hr\.astro_astro_type_script_index_0_lang\.[A-Za-z0-9_-]+\.js$/
 ];
 const unexpectedJsAssets = jsAssets.filter((file) => !allowedPortalJsPatterns.some((pattern) => pattern.test(file)));
 const jsBytes = jsAssets.reduce((total, file) => total + fs.statSync(path.join(assetsDir, file)).size, 0);
 if (unexpectedJsAssets.length > 0) {
   fail(`unexpected public JavaScript assets: ${unexpectedJsAssets.join(", ")}`);
 }
-if (jsBytes > 30_000) {
+if (jsBytes > 35_000) {
   fail(`portal JavaScript asset budget exceeded: ${jsBytes} bytes`);
 }
 
@@ -259,7 +260,10 @@ const expectedSourceRoutes = [
   "portal/api/approve-quote.ts",
   "portal/api/finance/payments.ts",
   "portal/api/finance/export.ts",
-  "portal/api/file/[...key].ts"
+  "portal/api/file/[...key].ts",
+  "portal/admin/hr.astro",
+  "portal/api/staff/upload-file.ts",
+  "portal/api/staff/delete-file.ts"
 ];
 
 for (const route of expectedSourceRoutes) {
@@ -292,7 +296,8 @@ const requiredSourceTerms = new Map<string, string[]>([
   ["src/pages/portal/admin/planning.astro", ["Dispatch planner", "Lifecycle due calendar", "Technician load", "riskForDueDate"]],  
   ["src/pages/portal/api/finance/payments.ts", ["finance.payment", "Payment", "Settled"]],
   ["src/pages/portal/api/finance/export.ts", ["finance.export", "text/csv", "content-disposition"]],
-  ["src/layouts/portal/PortalLayout.astro", ["Astro.locals.user", "Portal navigation"]]
+  ["src/layouts/portal/PortalLayout.astro", ["Astro.locals.user", "Portal navigation"]],
+  ["src/pages/portal/admin/hr.astro", ["staff_members", "staff-files/", "/portal/api/staff/"]]
 ]);
 
 for (const [file, terms] of requiredSourceTerms) {
