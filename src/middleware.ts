@@ -194,7 +194,7 @@ async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, session
     .prepare(
       `SELECT id, name, email, role, site_id, is_active, deleted_at, force_password_change, mfa_required, mfa_enabled
        FROM users
-       WHERE id = ?1
+       WHERE id = ?1 AND deleted_at IS NULL AND is_active = 1
        LIMIT 1`
     )
     .bind(sessionUser.id)

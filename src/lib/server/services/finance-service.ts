@@ -58,7 +58,7 @@ export class FinanceService {
    * Create a finance task (operational task, not official invoice)
    */
   async createFinanceTask(task: Omit<FinanceTask, 'id' | 'createdAt' | 'updatedAt'>): Promise<FinanceTask> {
-    const id = `ft-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+    const id = `ft-${crypto.randomUUID()}`;
     
     await this.db.prepare(`
       INSERT INTO finance_tasks (
@@ -434,7 +434,7 @@ export class FinanceService {
     // Create Document in Sage
     let document;
     if (isInvoice) {
-      document = await sageClient.createSalesInvoice(sageContactId, description, task.amount, task.vatAmount || 0);
+      document = await sageClient.createSalesInvoice(sageContactId, description, task.amount, task.vatAmount ?? Math.round((task.amount * 15) / 100));
       await this.updateFinanceTask(taskId, {
         status: 'Completed',
         taskType: 'Invoice Issued in Sage',
@@ -442,7 +442,7 @@ export class FinanceService {
         sageDocumentId: document.id
       });
     } else {
-      document = await sageClient.createSalesQuote(sageContactId, description, task.amount, task.vatAmount || 0);
+      document = await sageClient.createSalesQuote(sageContactId, description, task.amount, task.vatAmount ?? Math.round((task.amount * 15) / 100));
       await this.updateFinanceTask(taskId, {
         status: 'Completed',
         taskType: 'Quote Issued in Sage',

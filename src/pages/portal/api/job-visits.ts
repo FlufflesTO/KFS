@@ -109,7 +109,7 @@ export async function POST({ locals, request }: import('astro').APIContext) {
         return json({ ok: false, message: "GPS coordinates must be numeric." }, 400);
       }
 
-      const visitId = `visit_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const visitId = `visit_${crypto.randomUUID()}`;
       await db.prepare(
         `INSERT INTO job_visits (
           id, job_id, technician_id, visit_date, arrival_time,
@@ -135,7 +135,7 @@ export async function POST({ locals, request }: import('astro').APIContext) {
       }
       if (unableReason && !unableReasons.includes(unableReason)) return json({ ok: false, message: "Unable-to-complete reason is invalid." }, 400);
 
-      const visitId = `visit_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const visitId = `visit_${crypto.randomUUID()}`;
       await db.prepare(
         `INSERT INTO job_visits (
           id, job_id, technician_id, visit_date, departure_time,
