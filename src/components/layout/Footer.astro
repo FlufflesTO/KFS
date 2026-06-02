@@ -9,34 +9,34 @@ import { site, solutionLinks } from "../../data/site.js";
 ---
 
 <footer class="bg-kharon-black border-t border-kharon-purple/15 text-white">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
 
     <!-- Top row: Brand + Services + Contact + Corporate -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
 
       <!-- Brand -->
-      <div>
-        <a href="/" class="group inline-flex items-center gap-2.5 mb-4" aria-label="Kharon home">
-          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" class="transition-transform duration-300 group-hover:scale-110 flex-none h-8 w-8 object-contain"/>
+      <div class="max-w-[240px]">
+        <a href="/" class="group inline-flex items-center gap-2.5 mb-3" aria-label="Kharon home">
+          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="28" height="28" class="transition-transform duration-300 group-hover:scale-110 flex-none h-7 w-7 object-contain"/>
           <div>
-            <span class="block text-sm font-black uppercase tracking-[0.18em] text-white">Kharon</span>
-            <span class="block text-[0.55rem] font-bold uppercase tracking-[0.25em] text-kharon-purple/80">Fire &amp; Security</span>
+            <span class="block text-xs font-black uppercase tracking-[0.18em] text-white">Kharon</span>
+            <span class="block text-[0.5rem] font-bold uppercase tracking-[0.25em] text-kharon-purple/80">Fire &amp; Security</span>
           </div>
         </a>
-        <p class="text-xs leading-relaxed text-white/50 max-w-[220px]">
+        <p class="text-[0.65rem] leading-relaxed text-white/40">
           Commercial and industrial fire detection, clean-agent gas suppression and compliance maintenance for critical environments.
         </p>
       </div>
 
       <!-- Services -->
       <div>
-        <h3 class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Solutions</h3>
-        <ul class="space-y-1.5">
+        <h3 class="text-[0.55rem] font-black uppercase tracking-[0.25em] text-kharon-purple mb-3">Solutions</h3>
+        <ul class="space-y-1">
           {solutionLinks.map((link) => (
-            <li><a href={link.href} class="text-[0.7rem] font-medium text-white/50 hover:text-kharon-cyan transition-colors">{link.label}</a></li>
+            <li><a href={link.href} class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-cyan transition-colors">{link.label}</a></li>
           ))}
-          <li class="pt-1.5 mt-1.5 border-t border-kharon-purple/10">
-            <a href="/solutions" class="text-[0.65rem] font-black uppercase tracking-widest text-kharon-cyan hover:text-white transition-colors">
+          <li class="pt-1 mt-1 border-t border-kharon-purple/10">
+            <a href="/solutions" class="text-[0.6rem] font-black uppercase tracking-widest text-kharon-cyan hover:text-white transition-colors">
               All Solutions
             </a>
           </li>
@@ -45,18 +45,18 @@ import { site, solutionLinks } from "../../data/site.js";
 
       <!-- Contact -->
       <div>
-        <h3 class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Contact</h3>
-        <ul class="space-y-1.5">
-          <li><a href={`tel:${site.phone}`} class="text-[0.7rem] font-bold text-white/70 hover:text-kharon-cyan transition-colors">{site.phone}</a></li>
-          <li><a href={`mailto:${site.email}`} class="text-[0.7rem] font-medium text-white/50 hover:text-kharon-cyan transition-colors">{site.email}</a></li>
-          <li class="text-[0.65rem] leading-relaxed text-white/30 pt-1">{site.address}</li>
+        <h3 class="text-[0.55rem] font-black uppercase tracking-[0.25em] text-kharon-purple mb-3">Contact</h3>
+        <ul class="space-y-1">
+          <li><a href={`tel:${site.phone}`} class="text-[0.6rem] font-black uppercase tracking-widest text-white/60 hover:text-kharon-cyan transition-colors">{site.phone}</a></li>
+          <li><a href={`mailto:${site.email}`} class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-cyan transition-colors">{site.email}</a></li>
+          <li class="text-[0.55rem] leading-relaxed text-white/25 uppercase tracking-wider pt-0.5">{site.address}</li>
         </ul>
       </div>
 
       <!-- Corporate -->
       <div>
-        <h3 class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Corporate</h3>
-        <ul class="space-y-1.5 text-[0.6rem] text-white/40 uppercase tracking-widest font-bold">
+        <h3 class="text-[0.55rem] font-black uppercase tracking-[0.25em] text-kharon-purple mb-3">Corporate</h3>
+        <ul class="space-y-1 text-[0.6rem] text-white/40 uppercase tracking-widest font-bold">
           <li>Reg. {site.registration}</li>
           <li>B-BBEE Level 4 Contributor</li>
           <li>SAQCC FIRE-2024-0847</li>
@@ -65,16 +65,16 @@ import { site, solutionLinks } from "../../data/site.js";
     </div>
 
     <!-- Bottom bar -->
-    <div class="mt-8 pt-6 border-t border-kharon-purple/10 flex flex-col sm:flex-row justify-between items-center gap-3">
-      <p class="text-[0.6rem] font-bold uppercase tracking-widest text-white/30">
-        &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
+    <div class="mt-6 pt-5 border-t border-kharon-purple/10 flex flex-col sm:flex-row justify-between items-center gap-3">
+      <p class="text-[0.55rem] font-bold uppercase tracking-widest text-white/20">
+        &copy; {new Date().getFullYear()} {site.name}.
       </p>
-      <div class="flex gap-5">
-        <a href="/" class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-purple transition-colors">Home</a>
-        <a href="/about" class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-purple transition-colors">About</a>
-        <a href="/compliance" class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-purple transition-colors">SANS</a>
-        <a href="/legal/paia-manual.pdf" class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-purple transition-colors" target="_blank" rel="noopener noreferrer">PAIA</a>
-        <a href={site.portalLoginPath} class="text-[0.6rem] font-bold uppercase tracking-widest text-white/40 hover:text-kharon-purple transition-colors">Portal</a>
+      <div class="flex gap-4">
+        <a href="/" class="text-[0.55rem] font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors">Home</a>
+        <a href="/about" class="text-[0.55rem] font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors">About</a>
+        <a href="/compliance" class="text-[0.55rem] font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors">SANS</a>
+        <a href="/legal/paia-manual.pdf" class="text-[0.55rem] font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors" target="_blank" rel="noopener noreferrer">PAIA</a>
+        <a href={site.portalLoginPath} class="text-[0.55rem] font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors">Portal</a>
       </div>
     </div>
   </div>
