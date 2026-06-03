@@ -23,6 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### [Changed]
 - **DevOps Build Scripts**: Updated `build-site.ps1` and `cloudflare-pages.ps1` to clean up the cached `.wrangler/deploy` redirection catalog, preventing subsequent Wrangler Pages deployment failures.
 - **CI/CD Workflow**: Hardened the GitHub Actions pipeline to run automated Playwright E2E tests before cloud deployments.
+- **MFA Policy Hardening**: Updated `src/middleware.ts` to mandate Multi-Factor Authentication for all `admin` and `finance` roles, regardless of individual account settings, as per production security mandates.
+- **Jobcard Schema**: Extended `JobCardSchema` validation in `src/lib/validation/schemas.ts` to require `expectedVersion` for all closure mutations.
+
+### Phase 0 & Phase 2: Production Readiness & Field Resilience
+
+#### [Added]
+- **Industrial Staging Indicator**: Implemented `StagingBanner.astro` with high-visibility diagonal warning patterns and engineered aesthetics, active on `tequit.co.za` and `localhost` domains.
+- **Optimistic Locking (Concurrency Control)**: Integrated `version` column tracking and enforcement in `submit-jobcard.ts` API. System now detects and blocks stale data overwrites with a `409 Conflict` response.
+- **Field Draft Persistence**: Added auto-save capability to Technician Jobcards, persisting form state to local IndexedDB every 30 seconds via Service Worker messaging.
+- **Conflict Resolution UI**: Designed and implemented a high-contrast conflict resolution modal for field technicians to manage server-side data changes.
+
 
 ## [Unreleased] - 2026-06-01
 

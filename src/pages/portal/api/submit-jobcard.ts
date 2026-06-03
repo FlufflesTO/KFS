@@ -208,6 +208,23 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       return badRequest("Only scheduled or in-progress jobs can be closed.");
     }
 
+    // Optimistic concurrency: reject if the job changed since the technician loaded it.
+    if (typeof job.version === "number" && job.version !== expectedVersion) {
+      await auditEvent(db, request, {
+        eventType: "jobcard.close",
+        entityType: "job",
+        entityId: jobId,
+        outcome: "blocked",
+        user: locals.user,
+        subject: locals.user?.email || "unknown",
+        metadata: { reason: "version_conflict", expectedVersion, serverVersion: job.version }
+      });
+      return new Response(
+        JSON.stringify({ ok: false, error: "version_conflict", serverVersion: job.version, serverStatus: job.status }),
+        { status: 409, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     // Verify system exists using repository (soft-delete aware)
     const system = await systemRepository.findById(systemId);
     if (!system) {

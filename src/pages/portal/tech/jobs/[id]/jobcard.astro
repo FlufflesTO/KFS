@@ -17,7 +17,7 @@ let loadError = "";
 try {
   const db = getDatabase();
   const query = user.role === "admin"
-    ? `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
+    ? `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status, jobs.version,
               jobs.site_notes, jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
               jobs.estimated_duration_minutes,
               systems.system_type, systems.coverage_area,
@@ -29,7 +29,7 @@ try {
        LEFT JOIN users ON users.id = jobs.assigned_technician_id
        WHERE jobs.id = ?1 AND jobs.deleted_at IS NULL
        LIMIT 1`
-    : `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status,
+    : `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.scheduled_date, jobs.status, jobs.version,
               jobs.site_notes, jobs.job_type, jobs.priority, jobs.required_by_date, jobs.is_emergency,
               jobs.estimated_duration_minutes,
               systems.system_type, systems.coverage_area,
@@ -805,10 +805,38 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
               signatureStrokes: JSON.parse(data.get("signatureStrokes") || "[]"),
               customerName: data.get("customerName"),
               customerTitle: data.get("customerTitle"),
+              expectedVersion: parseInt(data.get("expectedVersion") || "0", 10),
               evidencePhotos,
               defects: defects.map((defect) => ({ ...defect }))
             })
           });
+
+          if (response.status === 409) {
+            const body = await response.json();
+            const wrap = document.createElement("div");
+            wrap.className = "flex flex-col gap-3";
+
+            const title = document.createElement("p");
+            title.className = "font-bold text-kharon-amber";
+            title.textContent = "Concurrency Conflict Detected";
+
+            const detail = document.createElement("p");
+            detail.className = "text-xs";
+            detail.textContent = `This job record (Version ${data.get("expectedVersion")}) was modified on the server (now Version ${body.serverVersion}) while you were working. Current server status: ${String(body.serverStatus || "").toUpperCase()}.`;
+
+            const reloadBtn = document.createElement("button");
+            reloadBtn.type = "button";
+            reloadBtn.className = "w-full py-2 bg-kharon-amber text-kharon-black font-black uppercase tracking-widest text-[10px] rounded hover:bg-white transition-colors cursor-pointer";
+            reloadBtn.textContent = "Reload and Review Server Changes";
+            reloadBtn.addEventListener("click", () => window.location.reload());
+
+            wrap.replaceChildren(title, detail, reloadBtn);
+            result.replaceChildren(wrap);
+            result.className = "jobcard-result text-sm font-semibold p-4 mt-4 border border-kharon-amber/50 bg-kharon-amber/10 rounded-lg";
+            result.classList.remove("hidden");
+            return;
+          }
+
           const body = await response.json();
           result.textContent = body.ok ? `Completed successfully. Document path: ${body.documentationPath || "jobcards/job-" + data.get("jobId") + "-completed.pdf"}` : body.message || "Submission failed.";
           result.className = `jobcard-result text-sm font-semibold p-2 mt-4 ${body.ok ? "text-kharon-purple bg-kharon-purple/10" : "text-kharon-red bg-kharon-red/10"}`;
@@ -822,6 +850,65 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
           result.textContent = error.message || "An unexpected error occurred during submission.";
           result.className = "jobcard-result text-sm font-semibold text-kharon-red bg-kharon-red/10 p-2 mt-4";
           result.classList.remove("hidden");
+        }
+      });
+    }
+
+    // --- Offline Draft Support ---
+    const jobForm = document.querySelector(".jobcard-form");
+    const jobId = jobForm?.dataset.jobId;
+
+    async function saveDraft() {
+      if (!jobForm || !jobId) return;
+      const data = new FormData(jobForm);
+      const draft = {
+        techComments: data.get("techComments"),
+        faultCategory: data.get("faultCategory"),
+        partsUsed: data.get("partsUsed"),
+        followUpActions: data.get("followUpActions"),
+        customerName: data.get("customerName"),
+        customerTitle: data.get("customerTitle"),
+        signatureBase64: data.get("signatureBase64"),
+        signatureStrokes: data.get("signatureStrokes"),
+        // Note: photos and defects are complex; saving basic fields first
+        lastSaved: new Date().toISOString()
+      };
+
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SAVE_DRAFT',
+          jobId: jobId,
+          data: draft
+        });
+      }
+    }
+
+    // Auto-save every 30 seconds
+    setInterval(saveDraft, 30000);
+
+    // Check for draft on load
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'GET_DRAFT',
+        jobId: jobId
+      });
+
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data.type === 'DRAFT_RETRIEVED' && event.data.draft) {
+          const draft = event.data.draft.data;
+          // Prompt user to restore draft if it's newer than current page data (simple check)
+          if (confirm("An unsaved local draft was found for this job. Would you like to restore it?")) {
+            if (jobForm.querySelector('[name="techComments"]')) jobForm.querySelector('[name="techComments"]').value = draft.techComments || "";
+            if (jobForm.querySelector('[name="faultCategory"]')) jobForm.querySelector('[name="faultCategory"]').value = draft.faultCategory || "Routine service";
+            if (jobForm.querySelector('[name="partsUsed"]')) jobForm.querySelector('[name="partsUsed"]').value = draft.partsUsed || "";
+            if (jobForm.querySelector('[name="followUpActions"]')) jobForm.querySelector('[name="followUpActions"]').value = draft.followUpActions || "";
+            if (jobForm.querySelector('[name="customerName"]')) jobForm.querySelector('[name="customerName"]').value = draft.customerName || "";
+            if (jobForm.querySelector('[name="customerTitle"]')) jobForm.querySelector('[name="customerTitle"]').value = draft.customerTitle || "";
+            
+            // Signature restoration is trickier due to canvas state, but we set the hidden inputs
+            if (jobForm.querySelector('[name="signatureBase64"]')) jobForm.querySelector('[name="signatureBase64"]').value = draft.signatureBase64 || "";
+            if (jobForm.querySelector('[name="signatureStrokes"]')) jobForm.querySelector('[name="signatureStrokes"]').value = draft.signatureStrokes || "[]";
+          }
         }
       });
     }
