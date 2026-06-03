@@ -1,7 +1,44 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx wrangler whoami)"
+      "Bash(npx wrangler whoami)",
+      "Bash(npx wrangler d1 migrations list *)",
+      "Bash(npx wrangler d1 migrations apply *)",
+      "Bash(npx wrangler d1 execute *)",
+      "Bash(npx wrangler deployments list *)",
+      "Bash(npx wrangler pages deployment list *)",
+      "Bash(npx wrangler pages project list)",
+      "Bash(npx wrangler secret list *)",
+      "Bash(npm run lint)",
+      "Bash(npm run check)",
+      "Bash(npm run build)",
+      "Bash(npm run audit:site)",
+      "Bash(npm run validate:site)",
+      "Bash(npm run test)",
+      "Bash(npm audit *)",
+      "Bash(npx playwright test *)",
+      "Bash(curl -sI *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr create *)",
+      "Bash(gh issue list *)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' 2>/dev/null | grep -qE '\\.(ts|astro|js|mjs)$' && cd \"C:/Users/User/Desktop/Astro/kfs\" && npm run lint --silent 2>/dev/null || true",
+            "statusMessage": "Linting...",
+            "async": true
+          }
+        ]
+      }
     ]
   }
 }
