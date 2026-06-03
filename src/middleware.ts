@@ -199,7 +199,7 @@ interface ActiveUserRow {
   id: string;
   name: string;
   email: string;
-  role: "tech" | "admin" | "client" | "finance";
+  role: "tech" | "admin" | "client" | "finance" | "manager";
   site_id: string | null;
   is_active: number;
   deleted_at: string | null;

@@ -2,10 +2,13 @@
 import { auditError } from "../../../lib/server/audit.js";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
+import { requireAdminOrManager } from "../../../lib/server/access.js";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
+const complianceGuard = requireAdminOrManager(user);
+if (complianceGuard) return complianceGuard;
 
 let stats = {
   openCriticalDefects: 0,

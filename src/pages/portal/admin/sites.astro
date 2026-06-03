@@ -7,7 +7,7 @@
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
-import { requireAdmin } from "../../../lib/server/access";
+import { requireAdminOrManager } from "../../../lib/server/access";
 import type { DbSite, DbUser } from "@sentinel/types";
 
 interface ClientSiteAccessJoin {
@@ -22,7 +22,7 @@ interface ClientSiteAccessJoin {
 export const prerender = false;
 
 const { user } = Astro.locals;
-const adminError = requireAdmin(user);
+const adminError = requireAdminOrManager(user);
 if (adminError) {
   return adminError;
 }

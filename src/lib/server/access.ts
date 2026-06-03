@@ -49,6 +49,10 @@ export function requireManager(user: AccessUser | null | undefined): Response | 
   return null;
 }
 
+export function requireAdminOrManager(user: AccessUser | null | undefined): Response | null {
+  return requireManager(user);
+}
+
 export async function clientSiteIds(db: D1Database, user: AccessUser | null | undefined): Promise<string[]> {
   if (!user || user.role !== "client") return [];
 

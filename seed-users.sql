@@ -30,7 +30,8 @@ VALUES
   ('usr_admin_001', 'Kharon Admin', 'admin@kharon.co.za', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'admin', NULL, 1),
   ('usr_tech_001', 'Kharon Technician', 'tech@kharon.co.za', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'tech', NULL, 1),
   ('usr_finance_001', 'Kharon Finance', 'finance@kharon.co.za', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'finance', NULL, 1),
-  ('usr_client_001', 'Client Portal User', 'client@example.com', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'client', 'site_tequit_staging', 1)
+  ('usr_client_001', 'Client Portal User', 'client@example.com', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'client', 'site_tequit_staging', 1),
+  ('usr_manager_001', 'Kharon Manager', 'manager@kharon.co.za', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'manager', NULL, 1)
 ON CONFLICT(email) DO UPDATE SET
   name = excluded.name,
   password_hash = excluded.password_hash,
