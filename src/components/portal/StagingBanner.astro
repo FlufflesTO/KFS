@@ -15,7 +15,7 @@ const isStaging = domain.endsWith("tequit.co.za") || domain === "localhost" || d
 
 {isStaging && (
   <div role="status" class="relative bg-kharon-amber text-kharon-black px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-center sticky top-0 z-[100] border-b border-kharon-black/10 flex items-center justify-center gap-3 overflow-hidden">
-    <div class="absolute inset-0 opacity-[0.07]" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, currentColor 10px, currentColor 20px);"></div>
+    <div class="staging-hazard-stripes absolute inset-0 opacity-[0.07]"></div>
     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="relative z-10 h-3.5 w-3.5 shrink-0">
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
     </svg>
