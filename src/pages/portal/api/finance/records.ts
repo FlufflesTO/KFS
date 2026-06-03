@@ -57,7 +57,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     const { siteId, jobId, amountExVat, vatAmount, reference, financeNotes } = validation.data;
 
     // Validate site exists
-    const site = await db.prepare(`SELECT id FROM sites WHERE id = ?1 LIMIT 1`).bind(siteId).first();
+    const site = await db.prepare(`SELECT id FROM sites WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`).bind(siteId).first();
     if (!site) return badRequest("The specified site was not found.");
 
     const financeService = new FinanceService(db);

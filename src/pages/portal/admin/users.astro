@@ -48,17 +48,17 @@ try {
   }
 
   const countQuery = `
-    SELECT COUNT(*) as total 
-    FROM users 
-    WHERE 1=1 ${searchCondition}
+    SELECT COUNT(*) as total
+    FROM users
+    WHERE deleted_at IS NULL ${searchCondition}
   `;
-  
+
   usersTotal = ((await db.prepare(countQuery).bind(...bindParams).first()) as { total: number } | null)?.total ?? 0;
 
   const dataQuery = `
     SELECT id, name, email, role, site_id, is_active, force_password_change, mfa_required, mfa_enabled, last_login_at
     FROM users
-    WHERE 1=1 ${searchCondition}
+    WHERE deleted_at IS NULL ${searchCondition}
     ORDER BY role, name
     LIMIT ? OFFSET ?
   `;
@@ -68,6 +68,7 @@ try {
   sites = ((await db.prepare(
     `SELECT id, owner_company_name, physical_address, site_contact_person, site_contact_email, site_contact_phone, billing_emails
      FROM sites
+     WHERE deleted_at IS NULL
      ORDER BY owner_company_name
      LIMIT 1000`
   ).all()).results ?? []) as unknown as DbSite[];

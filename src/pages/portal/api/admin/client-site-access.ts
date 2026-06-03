@@ -27,7 +27,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       return badRequest("Only active client users can be mapped to client sites.");
     }
 
-    const site = await db.prepare(`SELECT id FROM sites WHERE id = ?1 LIMIT 1`).bind(siteId).first();
+    const site = await db.prepare(`SELECT id FROM sites WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`).bind(siteId).first();
     if (!site) return badRequest("Selected site does not exist.");
 
     if (action === "grant") {

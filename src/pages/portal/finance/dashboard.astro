@@ -120,7 +120,7 @@ try {
   };
 
   // Get data for create form
-  const sitesResult = await db.prepare("SELECT id, owner_company_name FROM sites ORDER BY owner_company_name ASC").all();
+  const sitesResult = await db.prepare("SELECT id, owner_company_name FROM sites WHERE deleted_at IS NULL ORDER BY owner_company_name ASC").all();
   sites = sitesResult.results || [];
 
   const linkableJobsResult = await db.prepare(`
@@ -128,7 +128,7 @@ try {
            sys.system_type, sys.coverage_area, si.owner_company_name
     FROM jobs j
     JOIN systems sys ON sys.id = j.system_id AND sys.deleted_at IS NULL
-    JOIN sites si ON si.id = sys.site_id
+    JOIN sites si ON si.id = sys.site_id AND si.deleted_at IS NULL
     WHERE (j.status = 'Completed' OR j.status = 'In Progress') AND j.deleted_at IS NULL
     ORDER BY j.created_at DESC
   `).all();
