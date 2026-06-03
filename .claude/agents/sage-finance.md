@@ -117,16 +117,16 @@ Located at `src/lib/server/db/finance-repository.ts`.
 
 All queries must:
 - Use `getDatabase()` for D1 access
-- Filter `deleted_at IS NULL`
-- Return typed objects (types from `packages/types/src/domain.ts`)
+- Return typed objects (types from `@sentinel/types`)
 - Use INTEGER cents for all monetary columns
+- Note: `finance_tasks` has **no `deleted_at` column** — do not add soft-delete filtering to finance queries
 
 ## Type System
 
-Finance-related types from `packages/types/src/domain.ts`:
+Finance-related types from `@sentinel/types`:
 ```ts
-import type { DbFinancialRecord } from 'packages/types/src/domain';
-// Also: FinanceTask (from finance-service.ts, not domain.ts)
+import type { DbFinancialRecord } from '@sentinel/types';
+// Also: FinanceTask (from finance-service.ts, not @sentinel/types)
 ```
 
 ## Sage API Patterns

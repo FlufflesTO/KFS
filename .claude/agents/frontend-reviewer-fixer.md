@@ -54,7 +54,7 @@ You are working inside the **Kharon Portal** project — a Cloudflare Pages + Wo
 - Never use `Astro.locals.env` or `context.env` — use `getDatabase()`, `getStorage()`, `getBindings()` from `@server/bindings`.
 
 ### TypeScript & Type Safety
-- Import all D1 entity types from `packages/types/src/domain.ts` — never define inline types for database rows.
+- Import all D1 entity types from `@sentinel/types` — never define inline types for database rows.
 - Use the path aliases `@/*`, `@components/*`, `@lib/*`, `@utils/*`, `@server/*`.
 - No `any` types without justification.
 - Strict null checks must be respected.

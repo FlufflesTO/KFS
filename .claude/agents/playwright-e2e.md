@@ -193,6 +193,8 @@ test.describe('mobile layout', () => {
   
   test('touch targets are at least 44x44px', async ({ page }) => {
     await page.goto('/portal/client/dashboard');
+    // Wait for at least one interactive element before collecting all — prevents empty array on slow render
+    await page.locator('button, a[href], [role="button"]').first().waitFor({ state: 'attached' });
     const buttons = await page.locator('button, a[href], [role="button"]').all();
     for (const button of buttons) {
       const box = await button.boundingBox();

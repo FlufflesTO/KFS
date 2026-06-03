@@ -130,7 +130,7 @@ Fires hourly (`0 * * * *`) for data retention enforcement. Handler is in the sch
 
 ## MCP Tools Available
 
-The Cloudflare MCP server tools are available under `mcp__8bc20bbf__` and `mcp__dc85ab26__` prefixes:
+The Cloudflare MCP server tools are available under dynamically generated prefixes (e.g., `mcp__<hash>__`). The exact prefix varies per installation and session:
 - `d1_database_query` — run queries against D1 databases
 - `d1_databases_list` — list all D1 databases in the account
 - `d1_database_get` — get details of a specific database
@@ -139,7 +139,7 @@ The Cloudflare MCP server tools are available under `mcp__8bc20bbf__` and `mcp__
 - `search_cloudflare_documentation` — search Cloudflare docs
 - `kv_namespaces_list` / `kv_namespace_get` — KV operations
 
-Use ToolSearch to load these tools when needed: `ToolSearch("select:mcp__8bc20bbf__d1_database_query")`.
+Use ToolSearch to dynamically discover the active prefix and load tools when needed: `ToolSearch("cloudflare d1 database query")`.
 
 ## Environment Variables (`.dev.vars`)
 

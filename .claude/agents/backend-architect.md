@@ -33,7 +33,7 @@ Never use `Astro.locals.env`, `context.env`, or any direct binding access patter
 - All monetary values are stored as INTEGER cents — never REAL. VAT = `Math.round((amountCents * 15) / 100)`. Floating-point money arithmetic is prohibited.
 
 ### Types
-All D1 entity types (`DbUser`, `DbSite`, `DbSystem`, `DbJob`, `DbDefect`, `DbCertificate`, `DbFinancialRecord`, `DbLinkableJob`, etc.) are imported from `packages/types/src/domain.ts`. Never define inline types for database rows.
+All D1 entity types (`DbUser`, `DbSite`, `DbSystem`, `DbJob`, `DbDefect`, `DbCertificate`, `DbFinancialRecord`, `DbLinkableJob`, etc.) are imported from `@sentinel/types`. Never define inline types for database rows.
 
 ### Middleware Chain
 The six sequential middleware handlers for `/portal` are:
