@@ -5,12 +5,8 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md) [checkpoint: 6dcafb0]
 
 ## Phase 2: Offline Mutation Sync Queue
-- [ ] Task: Implement background sync queue architecture for buffering POST/PUT/DELETE requests while offline.
-    - [ ] Write Tests
-    - [ ] Implement Feature
-- [ ] Task: Implement conflict resolution favoring the most recent field data.
-    - [ ] Write Tests
-    - [ ] Implement Feature
+- [x] Task: Implement background sync queue architecture for buffering POST/PUT/DELETE requests while offline. [checkpoint: 20260603]
+- [x] Task: Implement conflict resolution favoring the most recent field data (Optimistic Locking). [checkpoint: 20260603]
 - [ ] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
 
 ## Phase 3: Mobile UI & Offline Indicators

@@ -128,4 +128,4 @@
 - [x] Security audit completion
 - [ ] Analytics business/POPIA sign-off
 - [ ] Staff/HR production policy sign-off
-- [ ] Remote D1 migration `0035_staff_hr.sql` applied and verified where intended
+- [x] Remote D1 migration `0035_staff_hr.sql` applied and verified where intended

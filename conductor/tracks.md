@@ -4,6 +4,9 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
+- [ ] **Track: Phase 0 - Production Readiness**
+  *Link: [./tracks/production_readiness_20260603/](./tracks/production_readiness_20260603/)*
+
 - [ ] **Track: Use conductor to setup all project tracks**
   *Link: [./tracks/setup_tracks_20260603/](./tracks/setup_tracks_20260603/)*
 
