@@ -25,6 +25,7 @@ interface JobQueryResult {
   status: string;
   scheduled_date: string;
   job_type: string;
+  version: number;
   site_id: string;
   system_type: string;
   coverage_area: string;
@@ -118,6 +119,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       followUpActions,
       customerName,
       customerTitle,
+      expectedVersion,
       evidencePhotos: rawEvidencePhotos,
       defects: rawDefects
     } = parsed.data;
@@ -148,7 +150,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     // Use JobRepository to fetch job with related data
     const job = await db
       .prepare(
-        `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, jobs.scheduled_date, jobs.job_type,
+        `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, jobs.scheduled_date, jobs.job_type, jobs.version,
                 systems.site_id, systems.system_type, systems.coverage_area,
                 systems.service_interval_months,
                 sites.owner_company_name, sites.physical_address,
@@ -306,8 +308,9 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
            customer_title = ?8,
            documentation_path = ?9,
            next_due_date = ?10,
+           version = version + 1,
            updated_at = CURRENT_TIMESTAMP
-         WHERE id = ?11`
+         WHERE id = ?11 AND version = ?12`
       ).bind(
         techComments,
         signatureBase64,
@@ -319,7 +322,8 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
         customerTitle,
         documentationPath,
         nextDueDate,
-        jobId
+        jobId,
+        expectedVersion
       )
     ];
 
