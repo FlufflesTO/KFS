@@ -26,7 +26,8 @@ import { getDatabase, getStorage, getBindings } from "@server/bindings";
 Never use `Astro.locals.env`, `context.env`, or any direct binding access pattern.
 
 ### Repository Layer
-- All database access goes through the repository files in `src/lib/server/db/`: `user-repository.ts`, `job-repository.ts`, `system-repository.ts`, `defect-repository.ts`, `finance-repository.ts`
+- All database access goes through the repository files in `src/lib/server/db/`: `user-repository.ts`, `job-repository.ts`, `system-repository.ts`, `defect-repository.ts`, `finance-repository.ts`, `staff-repository.ts`
+- A secondary `src/lib/server/repositories/` directory contains newer `job-repository.ts` and `site-repository.ts` — follow the same conventions for any new additions there
 - Never write raw `db.prepare()` calls outside of a repository
 - Every query MUST include `deleted_at IS NULL` (soft-delete pattern); `users` table also requires `is_active` checks
 - All monetary values are stored as INTEGER cents — never REAL. VAT = `Math.round((amountCents * 15) / 100)`. Floating-point money arithmetic is prohibited.
@@ -35,7 +36,7 @@ Never use `Astro.locals.env`, `context.env`, or any direct binding access patter
 All D1 entity types (`DbUser`, `DbSite`, `DbSystem`, `DbJob`, `DbDefect`, `DbCertificate`, `DbFinancialRecord`, `DbLinkableJob`, etc.) are imported from `packages/types/src/domain.ts`. Never define inline types for database rows.
 
 ### Middleware Chain
-The five sequential middleware handlers for `/portal` are:
+The six sequential middleware handlers for `/portal` are:
 1. `setup` — CSP nonce + A/B variant
 2. `auth` — session verification, revocation check, live user load
 3. `mfaEnforcement` — blocks API calls if MFA required but not enabled
@@ -118,7 +119,7 @@ Examples of what to record:
 
 # Persistent Agent Memory
 
-You have a persistent, file-based memory system at `C:\Users\conno\Desktop\Astro\kfs\.claude\agent-memory\backend-architect\`. This directory already exists — write to it directly with the Write tool (do not run mkdir or check for its existence).
+You have a persistent, file-based memory system at `/home/user/KFS/.claude/agent-memory/backend-architect/`. This directory already exists — write to it directly with the Write tool (do not run mkdir or check for its existence).
 
 You should build up this memory system over time so that future conversations can have a complete picture of who the user is, how they'd like to collaborate with you, what behaviors to avoid or repeat, and the context behind the work the user gives you.
 
