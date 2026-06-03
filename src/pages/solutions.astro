@@ -2,7 +2,7 @@
 /**
  * Project Sentinel - Solutions Index
  * Purpose: Top-level routing page for all Kharon service offerings
- * Dependencies: BaseLayout, SolutionHero, SectionHeading, ServiceIcons, pageMeta, solutionLinks
+ * Dependencies: BaseLayout, SolutionHero, SectionHeading, ServiceIcons, RouteMatrix, AuthorityEvidence, Testimonials, pageMeta, solutionLinks
  * Structural Role: Solutions navigation hub
  */
 
@@ -10,6 +10,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import SolutionHero from "../components/sections/SolutionHero.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import ServiceIcons from "../components/sections/ServiceIcons.astro";
+import RouteMatrix from "../components/sections/RouteMatrix.astro";
+import AuthorityEvidence from "../components/sections/AuthorityEvidence.astro";
+import Testimonials from "../components/trust/Testimonials.astro";
 import { pageMeta, solutionLinks } from "../data/site.js";
 
 const solutionBullets: Record<string, string[]> = {
@@ -61,9 +64,7 @@ const solutionBullets: Record<string, string[]> = {
     </div>
   </section>
 
-  <section class="section-padding bg-kharon-black">
-    <div class="mx-auto max-w-7xl px-6">
-      <div class="grid gap-12 lg:grid-cols-3">
+<div class="mt-10 grid gap-12 lg:grid-cols-3">
         {solutionLinks.map((solution) => {
           const bullets = solutionBullets[solution.label] ?? [];
           return (
@@ -116,6 +117,10 @@ const solutionBullets: Record<string, string[]> = {
       </div>
     </div>
   </section>
+
+  <RouteMatrix />
+  <AuthorityEvidence />
+  <Testimonials />
 
   <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">

@@ -9,6 +9,7 @@ This document outlines the core technology stack for the Kharon Fire and Securit
 - **Framework:** Astro (v6.3.3)
 - **Styling:** Tailwind CSS (v4)
 - **Component Architecture:** Astro Components (with React integrations as needed for complex UI)
+- **Design Pattern:** "Industrial Command Intelligence" — prioritizing information density and rapid status recognition over whitespace.
 
 ### Backend & API
 - **Compute:** Cloudflare Pages (Serverless Functions)

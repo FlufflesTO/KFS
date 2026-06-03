@@ -25,6 +25,7 @@ The platform utilizes a cutting-edge, edge-optimized technology stack to ensure 
 - **Backend & API:** Cloudflare Pages (Serverless Functions)
 - **Database:** Cloudflare D1 (Distributed SQLite) with Drizzle ORM
 - **File Storage:** Cloudflare R2 (Object Storage for evidence files and PDFs)
+- **Architecture:** Hub-and-spoke Solutions landing page with specialized technical detail pages.
 - **Offline Capabilities:** Service Workers (sw.ts), IndexedDB Draft Storage, and Background Sync Queues.
 - **Document Generation:** Automated PDF generation for Invoices, Certificates, and Job Cards.
 
