@@ -341,7 +341,8 @@ const mfaEnforcementMiddleware: MiddlewareHandler = async (context, next) => {
   }
 
   // Check MFA enforcement requirement
-  const mfaRequired = user.mfa_required === 1 || user.mfa_required === true;
+  const isElevatedRole = ["admin", "finance"].includes(user.role);
+  const mfaRequired = user.mfa_required === 1 || user.mfa_required === true || isElevatedRole;
   const mfaEnabled = user.mfa_enabled === 1 || user.mfa_enabled === true;
 
   if (mfaRequired && !mfaEnabled) {
@@ -430,7 +431,10 @@ const rbacMiddleware: MiddlewareHandler = async (context, next) => {
     return withSecurityHeaders(context.redirect(passwordPath, 302), nonce);
   }
 
-  if (user.mfaRequired && !user.mfaEnabled && pathname !== mfaPath && pathname !== mfaApiPath && pathname !== logoutApiPath) {
+  const isElevatedRole = ["admin", "finance"].includes(user.role);
+  const mfaRequired = user.mfaRequired || isElevatedRole;
+
+  if (mfaRequired && !user.mfaEnabled && pathname !== mfaPath && pathname !== mfaApiPath && pathname !== logoutApiPath) {
     return withSecurityHeaders(context.redirect(mfaPath, 302), nonce);
   }
 

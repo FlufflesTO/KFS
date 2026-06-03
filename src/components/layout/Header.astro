@@ -48,7 +48,7 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
     </a>
 
     <nav class="hidden items-center gap-8 lg:flex" aria-label="Primary navigation">
-      <a href="/" class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-purple" : "text-white/70 hover:text-white"}`}>
+      <a href="/" aria-current={isLinkActive("/") ? "page" : undefined} class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-purple" : "text-white/70 hover:text-white"}`}>
         Home
       </a>
 
