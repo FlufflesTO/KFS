@@ -23,7 +23,14 @@ if ($Target -eq "production") {
 }
 
 $env:CF_PAGES = "true"
-npm run build
+
+# Allow skipping the build step when dist/ already exists from a prior build
+# (e.g., during deploy:cloudflare where npm run build is called first)
+if ($env:SKIP_BUILD -eq "true" -and (Test-Path "dist/server")) {
+  Write-Host "SKIP_BUILD=true and dist/server exists. Skipping npm run build."
+} else {
+  npm run build
+}
 
 # Reorganize dist for Cloudflare Pages SSR compatibility
 # Move all client assets to the root so they are served correctly from /_astro, /brand, etc.
