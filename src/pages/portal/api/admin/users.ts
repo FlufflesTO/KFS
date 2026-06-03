@@ -9,8 +9,8 @@ import { cleanBoolean, cleanChoice, cleanEmail, cleanId, cleanText, readJson, re
 
 export const prerender = false;
 
-const roles = ["tech", "admin", "client", "finance"];
-const mfaEligibleRoles = ["admin", "finance", "tech"];
+const roles = ["tech", "admin", "client", "finance", "manager"];
+const mfaEligibleRoles = ["admin", "finance", "tech", "manager"];
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const adminError = requireAdmin(locals.user);

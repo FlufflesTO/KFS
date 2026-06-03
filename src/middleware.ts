@@ -81,7 +81,8 @@ function redirectToRoleDashboard(context: any, role: string, nonce: string = cre
     tech: "/portal/tech/dashboard",
     admin: "/portal/admin/dashboard",
     client: "/portal/client/dashboard",
-    finance: "/portal/finance/dashboard"
+    finance: "/portal/finance/dashboard",
+    manager: "/portal/manager/dashboard"
   };
 
   return withSecurityHeaders(context.redirect(destinations[role] || loginPath, 302), nonce);
@@ -92,9 +93,10 @@ function allowedForPath(pathname: string, role: string): boolean {
   
   if (pathname.startsWith("/portal/api/tech/")) return role === "tech" || role === "admin";
   if (pathname.startsWith("/portal/api/staff/")) return role === "tech" || role === "admin" || role === "finance";
-  if (pathname.startsWith("/portal/api/admin/")) return role === "admin";
+  if (pathname.startsWith("/portal/api/admin/")) return role === "admin"; // manager uses /portal/api/manager/ instead
   if (pathname.startsWith("/portal/api/finance/")) return role === "finance" || role === "admin";
   if (pathname.startsWith("/portal/api/client/")) return role === "client" || role === "admin";
+  if (pathname.startsWith("/portal/api/manager/")) return role === "manager" || role === "admin";
   if (pathname.startsWith("/portal/api/")) {
     const sharedApiPaths = new Set([
       "/portal/api/logout",
@@ -115,10 +117,27 @@ function allowedForPath(pathname: string, role: string): boolean {
   }
 
   if (pathname.startsWith("/portal/tech/")) return role === "tech" || role === "admin";
-  if (pathname.startsWith("/portal/staff/")) return role === "tech" || role === "admin" || role === "finance";
-  if (pathname.startsWith("/portal/admin/")) return role === "admin";
+  if (pathname.startsWith("/portal/staff/")) return role === "tech" || role === "admin" || role === "finance" || role === "manager";
+  if (pathname.startsWith("/portal/admin/")) {
+    if (role === "admin") return true;
+    if (role === "manager") {
+      const managerAllowedAdminPaths = [
+        "/portal/admin/dashboard",
+        "/portal/admin/jobs",
+        "/portal/admin/dispatch",
+        "/portal/admin/sites",
+        "/portal/admin/systems",
+        "/portal/admin/planning",
+        "/portal/admin/compliance",
+        "/portal/admin/advanced-reporting",
+      ];
+      return managerAllowedAdminPaths.some(p => pathname === p || pathname.startsWith(`${p}/`));
+    }
+    return false;
+  }
   if (pathname.startsWith("/portal/finance/")) return role === "finance" || role === "admin";
   if (pathname.startsWith("/portal/client/")) return role === "client" || role === "admin";
+  if (pathname.startsWith("/portal/manager/")) return role === "manager" || role === "admin";
   
   return false;
 }

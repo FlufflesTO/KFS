@@ -10,7 +10,7 @@ import { forbidden } from "./http.ts";
 
 export interface AccessUser {
   id: string;
-  role: "tech" | "admin" | "client" | "finance";
+  role: "tech" | "admin" | "client" | "finance" | "manager";
   site_id?: string | null;
   siteId?: string | null;
 }
@@ -40,6 +40,13 @@ export function requireFinance(user: AccessUser | null | undefined): Response | 
 
 export function requireAdminOrFinance(user: AccessUser | null | undefined): Response | null {
   return requireFinance(user);
+}
+
+export function requireManager(user: AccessUser | null | undefined): Response | null {
+  if (!user || (user.role !== "manager" && user.role !== "admin")) {
+    return forbidden("Only manager or admin accounts can perform this action.");
+  }
+  return null;
 }
 
 export async function clientSiteIds(db: D1Database, user: AccessUser | null | undefined): Promise<string[]> {

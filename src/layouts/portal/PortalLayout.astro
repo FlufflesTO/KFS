@@ -52,6 +52,15 @@ const roleLinks: Record<string, Array<{ label: string; href: string; key: string
   finance: [
     { label: "Ledger", href: "/portal/finance/dashboard", key: "finance" },
     { label: "Admin Matrix", href: "/portal/admin/dashboard", key: "admin" }
+  ],
+  manager: [
+    { label: "Overview", href: "/portal/manager/dashboard", key: "manager" },
+    { label: "Jobs Registry", href: "/portal/admin/jobs", key: "jobs" },
+    { label: "Dispatch Board", href: "/portal/admin/dispatch", key: "dispatch" },
+    { label: "Client Sites", href: "/portal/admin/sites", key: "sites" },
+    { label: "Protection Systems", href: "/portal/admin/systems", key: "systems" },
+    { label: "Advanced Reports", href: "/portal/admin/advanced-reporting", key: "advanced-reporting" },
+    { label: "SANS Compliance", href: "/portal/admin/compliance", key: "compliance" }
   ]
 };
 
@@ -123,6 +132,8 @@ function getIconPath(key: string): string {
       return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 0112 15a9 9 0 016.879 2.804M15 10a3 3 0 11-6 0 3 3 0 016 0zM12 3a9 9 0 100 18 9 9 0 000-18z" />`;
     case "admin-hr":
       return `<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />`;
+    case "manager":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z" />`;
     default:
       return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />`;
   }
@@ -181,7 +192,7 @@ if (user?.role === "admin") {
   });
 }
 
-if (["admin", "finance", "tech"].includes(user?.role || "")) {
+if (["admin", "finance", "tech", "manager"].includes(user?.role || "")) {
   categories.push({
     title: "Staff Services",
     links: [
@@ -195,7 +206,7 @@ categories.push({
   links: [
     { label: "Profile", href: "/portal/account/profile", key: "profile" },
     { label: "Password Reset", href: "/portal/account/password", key: "password" },
-    ...(["admin", "finance", "tech"].includes(user?.role || "") ? [{ label: "MFA Configuration", href: "/portal/account/mfa", key: "mfa" }] : [])
+    ...(["admin", "finance", "tech", "manager"].includes(user?.role || "") ? [{ label: "MFA Configuration", href: "/portal/account/mfa", key: "mfa" }] : [])
   ]
 });
 ---

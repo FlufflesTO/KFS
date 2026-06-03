@@ -13,7 +13,7 @@ export interface SessionUser {
   id: string;
   name: string;
   email: string;
-  role: "tech" | "admin" | "client" | "finance";
+  role: "tech" | "admin" | "client" | "finance" | "manager";
   site_id?: string | null;
   siteId?: string | null;
   force_password_change?: boolean | number;
@@ -29,7 +29,7 @@ interface SessionPayload {
   sub: string;
   name: string;
   email: string;
-  role: "tech" | "admin" | "client" | "finance";
+  role: "tech" | "admin" | "client" | "finance" | "manager";
   siteId: string | null;
   forcePasswordChange: boolean;
   mfaRequired: boolean;
@@ -170,8 +170,8 @@ export function getMfaSecret(): string {
   return secret;
 }
 
-function assertRole(role: string): asserts role is "tech" | "admin" | "client" | "finance" {
-  if (!["tech", "admin", "client", "finance"].includes(role)) {
+function assertRole(role: string): asserts role is "tech" | "admin" | "client" | "finance" | "manager" {
+  if (!["tech", "admin", "client", "finance", "manager"].includes(role)) {
     throw new Error("Invalid role in session payload.");
   }
 }

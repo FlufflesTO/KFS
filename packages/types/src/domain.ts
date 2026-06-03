@@ -2,7 +2,7 @@
 // All DbX types mirror D1 column names exactly (snake_case).
 // camelCase types are for session tokens and API payloads.
 
-export type UserRole = "tech" | "admin" | "client" | "finance";
+export type UserRole = "tech" | "admin" | "client" | "finance" | "manager";
 
 // ─── Database row types ─────────────────────────────────────────────────────
 

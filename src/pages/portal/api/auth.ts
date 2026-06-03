@@ -28,7 +28,8 @@ const roleDestinations: Record<string, string> = {
   tech: "/portal/tech/dashboard",
   admin: "/portal/admin/dashboard",
   client: "/portal/client/dashboard",
-  finance: "/portal/finance/dashboard"
+  finance: "/portal/finance/dashboard",
+  manager: "/portal/manager/dashboard"
 };
 
 async function readCredentials(request: Request): Promise<LoginCredentials> {
