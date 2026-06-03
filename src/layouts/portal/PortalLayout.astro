@@ -192,14 +192,8 @@ if (user?.role === "admin") {
   });
 }
 
-if (["admin", "finance", "tech", "manager"].includes(user?.role || "")) {
-  categories.push({
-    title: "Staff Services",
-    links: [
-      { label: "HR Vault", href: "/portal/staff/hr", key: "staff-hr" }
-    ]
-  });
-}
+// Self-service Staff Vault (/portal/staff/hr) is not yet built — its nav entry was
+// removed to avoid a 404. Admin HR roster remains available at /portal/admin/hr.
 
 categories.push({
   title: "Account Configuration",

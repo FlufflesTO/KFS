@@ -47,13 +47,17 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     if (authError) return authError;
 
     const formData = await request.formData();
-    // Assuming internal system CSRF bypassing or validation via middleware is already in place.
+    // CSRF is enforced by csrfAndRateLimitMiddleware for mutating /portal/api/* requests.
 
     const db = getDatabase();
     const financeService = new FinanceService(db);
 
     const action = formData.get('action');
-    const taskId = String(formData.get('taskId'));
+    const taskId = String(formData.get('taskId') ?? '').trim();
+    if (!taskId || taskId === 'null' || taskId === 'undefined' || taskId.length > 64) {
+      return new Response(JSON.stringify({ error: "A valid task ID is required." }), { status: 400 });
+    }
+
     const updates: {
       status?: 'Pending' | 'In Progress' | 'Completed' | 'Cancelled';
       notes?: string;
@@ -69,13 +73,24 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       }
       await financeService.updateFinanceTask(taskId, updates);
     } else if (action === 'add-note') {
-      updates.notes = String(formData.get('note'));
+      const note = String(formData.get('note') ?? '').trim();
+      if (note.length > 2000) {
+        return new Response(JSON.stringify({ error: "Note exceeds 2000 characters." }), { status: 400 });
+      }
+      updates.notes = note;
       await financeService.updateFinanceTask(taskId, updates);
     } else if (action === 'mark-complete') {
       updates.status = 'Completed';
-      const sageRef = formData.get('sageRef');
-      if (sageRef) updates.sageDocumentRef = String(sageRef);
+      const sageRef = String(formData.get('sageRef') ?? '').trim();
+      if (sageRef) {
+        if (sageRef.length > 120) {
+          return new Response(JSON.stringify({ error: "Sage reference exceeds 120 characters." }), { status: 400 });
+        }
+        updates.sageDocumentRef = sageRef;
+      }
       await financeService.updateFinanceTask(taskId, updates);
+    } else {
+      return new Response(JSON.stringify({ error: "Unknown action." }), { status: 400 });
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
@@ -101,11 +116,37 @@ export async function PATCH({ request, locals }: import('astro').APIContext) {
     const financeService = new FinanceService(db);
 
     if (body.id && body.updates) {
-      await financeService.updateFinanceTask(body.id, {
-        sageDocumentRef: body.updates.sageDocumentRef,
-        notes: body.updates.notes,
-        status: body.updates.status
-      });
+      const id = String(body.id).trim();
+      if (!id || id === 'null' || id === 'undefined' || id.length > 64) {
+        return new Response(JSON.stringify({ error: "A valid task ID is required." }), { status: 400 });
+      }
+
+      const validStatuses = ['Pending', 'In Progress', 'Completed', 'Cancelled'];
+      const patch: { sageDocumentRef?: string; notes?: string; status?: 'Pending' | 'In Progress' | 'Completed' | 'Cancelled' } = {};
+
+      if (body.updates.status !== undefined) {
+        const st = String(body.updates.status).trim();
+        if (!validStatuses.includes(st)) {
+          return new Response(JSON.stringify({ error: "Invalid status value" }), { status: 400 });
+        }
+        patch.status = st as 'Pending' | 'In Progress' | 'Completed' | 'Cancelled';
+      }
+      if (body.updates.notes !== undefined) {
+        const notes = String(body.updates.notes).trim();
+        if (notes.length > 2000) {
+          return new Response(JSON.stringify({ error: "Note exceeds 2000 characters." }), { status: 400 });
+        }
+        patch.notes = notes;
+      }
+      if (body.updates.sageDocumentRef !== undefined) {
+        const ref = String(body.updates.sageDocumentRef).trim();
+        if (ref.length > 120) {
+          return new Response(JSON.stringify({ error: "Sage reference exceeds 120 characters." }), { status: 400 });
+        }
+        patch.sageDocumentRef = ref;
+      }
+
+      await financeService.updateFinanceTask(id, patch);
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });

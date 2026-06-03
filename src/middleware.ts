@@ -270,9 +270,7 @@ const securityMiddleware: MiddlewareHandler = async (context, next) => {
   const response = await next();
   
   let finalResponse = response;
-  if (!finalResponse.headers.has("X-Content-Type-Options")) {
-      finalResponse = await withHtmlSecurityHeaders(finalResponse, nonce);
-  }
+  finalResponse = await withHtmlSecurityHeaders(finalResponse, nonce);
 
   if (context.locals.needsVariantCookie) {
     finalResponse.headers.append(

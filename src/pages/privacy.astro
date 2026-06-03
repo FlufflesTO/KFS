@@ -1,0 +1,135 @@
+---
+/**
+ * Project Sentinel - Privacy Policy
+ * Purpose: POPIA-compliant privacy statement for the public website and operations portal.
+ * Dependencies: BaseLayout, site data
+ * Structural Role: Legal/compliance information page (required under POPIA).
+ */
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site } from "../data/site.js";
+
+const title = "Privacy Policy | Kharon Fire and Security Solutions";
+const description =
+  "How Kharon Fire and Security Solutions collects, uses, protects and shares personal information in line with the Protection of Personal Information Act (POPIA).";
+
+const effectiveDate = "3 June 2026";
+
+const sections = [
+  {
+    heading: "1. Who we are",
+    body: [
+      `${site.name} (registration ${site.registration}) is the responsible party for the personal information processed through this website and the Kharon operations portal. Our registered address is ${site.address}.`,
+      `For any privacy matter, including access, correction or deletion requests, contact our Information Officer at ${site.email} or ${site.phone}.`
+    ]
+  },
+  {
+    heading: "2. Information we collect",
+    body: [
+      "Website enquiries: when you submit a contact or site-assessment request we collect the name, email address, phone number and message details you provide.",
+      "Portal accounts: for authorised admin, technician, client, finance and manager users we process account identity (name, email, role), authentication credentials (stored only as salted PBKDF2 hashes), multi-factor authentication settings and operational records relevant to your role.",
+      "Operational data: where you are an authorised user, we process job, site, system, certificate, defect and finance task records necessary to deliver fire-protection and compliance services.",
+      "Technical data: we retain only SHA-256 hashes of IP addresses for security and rate-limiting purposes. We do not store raw IP addresses."
+    ]
+  },
+  {
+    heading: "3. How we use your information",
+    body: [
+      "To respond to enquiries and provide quotations and site assessments.",
+      "To deliver, schedule and document fire detection, gas suppression, compliance maintenance and security services.",
+      "To authenticate portal users, enforce role-based access and maintain audit trails.",
+      "To meet legal, regulatory and SANS compliance record-keeping obligations.",
+      "To protect our systems against fraud, abuse and unauthorised access."
+    ]
+  },
+  {
+    heading: "4. Legal basis for processing",
+    body: [
+      "We process personal information on the basis of your consent, the performance of a contract or service request, compliance with legal obligations, and our legitimate operational and security interests, as permitted by POPIA."
+    ]
+  },
+  {
+    heading: "5. Sharing and cross-border processing",
+    body: [
+      "Hosting and infrastructure: this website, portal and database are hosted on Cloudflare's global network, which may process data outside South Africa under appropriate safeguards.",
+      "Accounting: where finance services are provided, invoice and quote records are processed in Sage Accounting. We do not duplicate official accounting records outside Sage.",
+      "We do not sell personal information. We share it only with service providers necessary to operate our services, or where required by law."
+    ]
+  },
+  {
+    heading: "6. Analytics and cookies",
+    body: [
+      "Public pages may use privacy-respecting, cookieless analytics that do not track individuals across sites. No advertising or cross-site tracking is used.",
+      "The secure operations portal (/portal) loads no analytics or third-party tracking of any kind. The portal sets only the strictly necessary cookies required for authentication, session security and CSRF protection."
+    ]
+  },
+  {
+    heading: "7. Data retention",
+    body: [
+      "We retain personal information only for as long as necessary to fulfil the purposes above and to meet legal and compliance obligations. Operational and compliance records are kept for the periods required by applicable standards and law, after which they are securely deleted or anonymised."
+    ]
+  },
+  {
+    heading: "8. Security",
+    body: [
+      "We apply technical and organisational safeguards including encrypted transport (HTTPS/HSTS), hashed credentials, multi-factor authentication for privileged accounts, strict role-based access control, CSRF protection, rate limiting, content-security policies and audit logging."
+    ]
+  },
+  {
+    heading: "9. Your rights under POPIA",
+    body: [
+      "You have the right to be informed about how your personal information is processed; to access it; to request correction or deletion; to object to processing; and to lodge a complaint.",
+      `To exercise any of these rights, contact our Information Officer at ${site.email}. We may need to verify your identity before actioning a request.`,
+      "Our PAIA manual, which describes how to request access to records, is available from the link in the site footer."
+    ]
+  },
+  {
+    heading: "10. Complaints",
+    body: [
+      "If you believe we have not handled your personal information lawfully, you may lodge a complaint with the Information Regulator of South Africa (inforeg.org.za) after first raising the matter with our Information Officer."
+    ]
+  },
+  {
+    heading: "11. Changes to this policy",
+    body: [
+      `We may update this policy from time to time. The current version is effective from ${effectiveDate}. Material changes will be reflected on this page.`
+    ]
+  }
+];
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="section-padding bg-kharon-black">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6">
+      <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Legal &amp; Compliance</p>
+      <h1 class="kharon-h1 mt-3 text-white">Privacy Policy</h1>
+      <p class="mt-4 max-w-2xl text-base leading-7 text-kharon-light/70">
+        How {site.shortName} collects, uses, protects and shares personal information in accordance with the
+        Protection of Personal Information Act, 2013 (POPIA).
+      </p>
+      <p class="mt-2 text-sm font-semibold text-kharon-light/50">Effective {effectiveDate}</p>
+    </div>
+  </section>
+
+  <section class="section-padding bg-kharon-black pt-0">
+    <div class="mx-auto grid max-w-4xl gap-8 px-4 sm:px-6">
+      {sections.map((s) => (
+        <article class="kharon-surface rounded-xl border border-kharon-purple/10 p-6">
+          <h2 class="kharon-h3 text-white">{s.heading}</h2>
+          <div class="mt-3 grid gap-3">
+            {s.body.map((para) => (
+              <p class="text-sm leading-7 text-kharon-light/70">{para}</p>
+            ))}
+          </div>
+        </article>
+      ))}
+
+      <div class="flex flex-col gap-3 rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/40 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-kharon-light/70">
+          Questions about your personal information? Contact our Information Officer.
+        </p>
+        <a href="/contact" class="kharon-command-button min-h-[44px] px-6 py-2 text-xs text-center">Contact Kharon</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

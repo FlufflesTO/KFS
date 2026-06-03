@@ -228,7 +228,8 @@ export const sitemapPages: string[] = [
   "industries",
   "about",
   "contact",
-  "compliance"
+  "compliance",
+  "privacy"
 ];
 
 export const industries: IndustryItem[] = [

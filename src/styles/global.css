@@ -11,8 +11,8 @@
 @source "../**/*.astro";
 
 @theme {
-  --color-kharon-purple: #7C5DC2;
-  --color-kharon-blue: #38BDF8;
+  --color-kharon-purple: #4B2E83;
+  --color-kharon-blue: #1F4E79;
   --color-kharon-black: #0B0D0F;
   --color-kharon-charcoal: #15191D;
   --color-kharon-grey: #4A5568;
@@ -21,18 +21,18 @@
   --color-kharon-amber: #F59E0B;
   --color-kharon-red: #C4332F;
   --color-kharon-green: #16A34A;
-  --color-kharon-cyan: #38BDF8;
+  --color-kharon-cyan: #00C2FF;
 
   --color-surface-obsidian: #0B0D0F;
   --color-surface-charcoal: #15191D;
   --color-surface-graphite: #1A2027;
   --color-surface-elevated: rgba(21, 25, 29, 0.82);
   --color-surface-glass: rgba(21, 25, 29, 0.68);
-  --color-line-cyan-soft: rgba(56, 189, 248, 0.15);
-  --color-line-purple-soft: rgba(124, 93, 194, 0.25);
+  --color-line-cyan-soft: rgba(0, 194, 255, 0.15);
+  --color-line-purple-soft: rgba(75, 46, 131, 0.25);
   --color-line-white-soft: rgba(226, 232, 240, 0.08);
-  --shadow-glow-cyan: 0 0 20px rgba(56, 189, 248, 0.12);
-  --shadow-glow-purple: 0 0 24px rgba(124, 93, 194, 0.15);
+  --shadow-glow-cyan: 0 0 20px rgba(0, 194, 255, 0.12);
+  --shadow-glow-purple: 0 0 24px rgba(75, 46, 131, 0.15);
   
   --color-text-primary-dark: #E2E8F0;
   --color-text-secondary-dark: #A0AEC0;
