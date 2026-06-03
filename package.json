@@ -36,10 +36,10 @@
     "cloudflare:domains": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 domains",
     "cloudflare:retry-portal": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 retry-portal",
     "cloudflare:check-portal": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 check-portal",
-    "deploy:website": "npx wrangler deploy --config wrangler.website.jsonc",
+    "deploy:website": "npx wrangler pages deploy dist --project-name kfs-website --branch main",
     "deploy:portal": "npx wrangler deploy --config dist/server/wrangler.json",
-    "deploy:cloudflare": "npm run build:sw && npm run build:astro && npm run deploy:website && npm run deploy:portal",
-    "deploy:cloudflare:preview": "npx wrangler pages deploy dist/client --project-name kfs-portal --branch preview",
+    "deploy:cloudflare": "npm run build:sw && npm run build:astro && npm run deploy:portal && npm run build:css && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 staging && npm run deploy:website",
+    "deploy:cloudflare:preview": "npx wrangler pages deploy dist --project-name kfs-website --branch preview",
     "deploy:cloudflare:ps": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 production",
     
     "prepare": "husky"
