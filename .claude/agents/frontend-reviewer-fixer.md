@@ -24,7 +24,7 @@ You are working inside the **Kharon Portal** project — a Cloudflare Pages + Wo
 
 ### Security Invariants (non-negotiable — fix immediately)
 - Every inline `<script>` must have `nonce={Astro.locals.nonce}` set explicitly.
-- Every portal `<form>` that mutates state must contain `<CsrfInput />` imported from `src/components/portal/`.
+- Every portal `<form>` that mutates state must contain `<CsrfInput />` imported from `src/components/ui/CsrfInput.astro` (renders `<input name="csrf_token" ...>` when `Astro.locals.csrfToken` is set).
 - **innerHTML/outerHTML/insertAdjacentHTML are strictly banned.** Replace with `element.textContent`, `element.replaceChildren()`, or `document.createRange().createContextualFragment()`.
 - Session token comparisons must use constant-time equality — never `===`.
 - IP addresses must never be stored or logged raw — only SHA-256 hashes.

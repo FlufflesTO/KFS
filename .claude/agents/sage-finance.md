@@ -203,24 +203,26 @@ const totalWithVat = task.amount + vatAmount;
 
 ## Audit Trail
 
-Every finance state transition should write to the audit log (via `audit-service.ts`). Finance data is particularly sensitive — all mutations require an audit record.
+Every finance state transition should write to the audit log. Finance data is particularly sensitive — all mutations require an audit record.
 
 ```ts
-import { AuditService } from './audit-service.js';
-const audit = new AuditService(db);
-await audit.log({
-  userId: currentUser.id,
-  action: 'finance_task_updated',
+// Use auditEvent from src/lib/server/audit.ts (NOT AuditService — that only has getEvents() for reads)
+import { auditEvent } from '@server/audit.js';
+
+await auditEvent(db, request, {
+  eventType: 'finance_task_updated',
   entityType: 'finance_task',
   entityId: taskId,
-  changes: { from: oldStatus, to: newStatus }
+  outcome: 'success',
+  user: { id: currentUser.id, name: currentUser.name, email: currentUser.email, role: currentUser.role },
+  metadata: { from: oldStatus, to: newStatus }
 });
 ```
 
 ## Security
 
 - CSRF token required on all finance form submissions (`<CsrfInput />`)
-- Finance endpoints require `requireFinance(user)` or `requireAdmin(user)` guard
+- Finance endpoints require `requireFinance(user)` guard — this allows both `finance` and `admin` roles. Do NOT use `requireAdmin(user)` on finance endpoints; it rejects finance users.
 - Monetary validation: always parse as integer, reject if not a valid positive integer
 - Never log raw financial amounts in error messages that reach the client
 

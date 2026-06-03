@@ -19,9 +19,12 @@ The Astro adapter uses `configPath: "wrangler.portal.jsonc"` — never remove th
 
 **Deployment commands:**
 ```bash
-npm run deploy:cloudflare           # Production deploy
-npm run deploy:cloudflare:preview   # Preview deploy
+npm run deploy:cloudflare           # Production deploy (build + portal Worker + website Pages)
+npm run deploy:portal               # Portal Worker only (wrangler deploy from dist/server/wrangler.json)
+npm run deploy:website              # Website Pages only (kfs-website, main branch)
 ```
+
+> **Warning:** `npm run deploy:cloudflare:preview` deploys **only** the `kfs-website` Pages project to the `preview` branch — it does NOT build or deploy the `kfs-portal` Worker. For portal changes, use `npm run build && npm run deploy:portal`.
 
 **Staging domain:** `tequit.co.za` — intentional, not an error. Production cutover to `kharon.co.za` requires:
 1. Updating `PUBLIC_SITE_URL`, `PUBLIC_PORTAL_URL`, `PUBLIC_CONTACT_EMAIL` env vars
@@ -132,7 +135,7 @@ await storage.delete(key);
 
 ## Cron Trigger
 
-Fires hourly (`0 * * * *`) for data retention enforcement. Handler is in the scheduled event export of the worker. Any retention-related work should be invocable from this handler.
+Fires hourly (`0 * * * *`) for **rate-limit pruning** (`pruneRateLimits(db, 24)` — removes `rate_limits` rows older than 24 hours). Handler is in `src/cron.ts`, exported as `scheduled`. The wrangler config comment says "data retention" but the actual implementation only prunes rate-limit rows.
 
 ## MCP Tools Available
 

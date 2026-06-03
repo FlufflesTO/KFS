@@ -91,20 +91,28 @@ type RoleFixtures = {
   clientPage: Page;
 };
 
+// Seeded email addresses are known (from seed-users.sql):
+//   admin:   admin@kharon.co.za
+//   tech:    tech@kharon.co.za
+//   finance: finance@kharon.co.za
+//   client:  client@example.com
+//
+// Passwords are NOT in git. Set a known local password first (see CLAUDE.md):
+//   node --input-type=module --eval "..." → get hash → wrangler d1 execute … UPDATE users SET password_hash='...'
+// Then export it: export TEST_PASSWORD=YourLocalPassword
 export const test = base.extend<RoleFixtures>({
   adminPage: async ({ browser }, use) => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
-    // Log in using seeded admin credentials (see seed-users.sql)
     await page.goto('/portal/login');
-    await page.locator('[name="email"]').fill(process.env.TEST_ADMIN_EMAIL!);
-    await page.locator('[name="password"]').fill(process.env.TEST_ADMIN_PASSWORD!);
+    await page.locator('[name="email"]').fill('admin@kharon.co.za');
+    await page.locator('[name="password"]').fill(process.env.TEST_PASSWORD!);
     await page.locator('[type="submit"]').click();
     await page.waitForURL('/portal/admin/dashboard');
     await use(page);
     await ctx.close();
   },
-  // ... similar for other roles
+  // ... similar for other roles (tech → /portal/tech/dashboard, etc.)
 });
 ```
 
@@ -138,11 +146,14 @@ test('no accessibility violations', async ({ page }) => {
 
 ### CSRF Token Presence
 ```ts
-test('login form has CSRF token', async ({ page }) => {
-  await page.goto('/portal/login');
-  const csrfInput = page.locator('input[name="_csrf"]');
-  await expect(csrfInput).toHaveCount(1);
-  const value = await csrfInput.getAttribute('value');
+// NOTE: The login page is bypassed by the CSRF middleware for unauthenticated users,
+// so it does NOT have a csrf_token input. Test CSRF on authenticated mutating forms instead.
+test('admin form has CSRF token', async ({ adminPage: page }) => {
+  await page.goto('/portal/admin/dashboard');
+  // CsrfInput.astro renders name="csrf_token" (not "_csrf")
+  const csrfInput = page.locator('input[name="csrf_token"]');
+  await expect(csrfInput.first()).toBeVisible();
+  const value = await csrfInput.first().getAttribute('value');
   expect(value).toBeTruthy();
   expect(value!.length).toBeGreaterThan(20);
 });
@@ -175,10 +186,12 @@ test('inline scripts have nonces', async ({ page }) => {
 ## Offline / PWA Testing
 
 ```ts
+// NOTE: /portal/tech/jobs does not exist as an index route. Valid tech routes:
+// dashboard, schedule, history, jobs/[id], jobs/[id]/jobcard, jobs/[id]/log-visit
 test('draft persists offline', async ({ page, context }) => {
-  await page.goto('/portal/tech/jobs');
+  await page.goto('/portal/tech/schedule');  // or jobs/[id] with a real job ID
   
-  // Fill a draft form
+  // Fill a draft form (verify the actual field name exists on the chosen page)
   await page.fill('[name="description"]', 'Test job description');
   
   // Go offline
@@ -256,8 +269,14 @@ CI=true npx playwright test
 
 Before running tests, the dev server must be running with D1 seeded:
 ```bash
-npx wrangler d1 migrations apply kharon-portal --local
-npx wrangler d1 execute kharon-portal --local < seed-users.sql
+npx wrangler d1 migrations apply kharon-portal --local --config wrangler.portal.jsonc
+npx wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --file seed-users.sql
+
+# Set a known password for all seeded users (hash it first via scripts/hash-password.ts):
+# node --input-type=module --eval "$(cat scripts/hash-password.ts | sed 's/process.argv\[2\]/\"YourLocalPassword\"/g')"
+# Then update: wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --command "UPDATE users SET password_hash='<hash>'"
+export TEST_PASSWORD=YourLocalPassword
+
 npm run preview  # starts on port 4321
 ```
 
