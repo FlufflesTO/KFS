@@ -262,7 +262,7 @@ try {
       applyQuotesFilter();
     }
   </script>
-  <script is:inline>
+  <script is:inline nonce={Astro.locals.nonce}>
     const _inFlight = new WeakSet();
     for (const button of document.querySelectorAll("[data-quote-id]")) {
       button.addEventListener("click", async () => {

@@ -439,7 +439,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
     </div>
   </section>
 
-  <script is:inline>
+  <script is:inline nonce={Astro.locals.nonce}>
     async function postJson(url, payload) {
       const response = await window.kharonPortalFetch(url, {
         method: "POST",

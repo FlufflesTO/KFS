@@ -58,7 +58,7 @@ export function clientLocation(request: Request): { country?: string; city?: str
   return result;
 }
 
-export function clientFingerprint(request: Request): string {
+export async function clientFingerprint(request: Request): Promise<string> {
   const ip = clientIp(request) || "unknown";
   const userAgent = request.headers.get("user-agent") || "unknown";
   const acceptLanguage = request.headers.get("accept-language") || "unknown";
@@ -66,14 +66,16 @@ export function clientFingerprint(request: Request): string {
   
   // @ts-ignore - env might not be typed in standard TypeScript
   const secret = String(env.FINGERPRINT_SECRET || env.SESSION_SECRET || env.AUTH_SECRET || "default-secret");
-  const combined = `${ip}|${userAgent}|${acceptLanguage}|${acceptEncoding}|${secret}`;
+  const hashedIp = await sha256Text(ip);
+  const combined = `${hashedIp}|${userAgent}|${acceptLanguage}|${acceptEncoding}|${secret}`;
   
-  return base64Encode(combined).substring(0, 32);
+  return sha256Text(combined);
 }
 
 export { sha256Text };
 
 // Export the function that was previously missing
-export function requestFingerprint(request: Request): string {
+export async function requestFingerprint(request: Request): Promise<string> {
   return clientFingerprint(request);
 }
+

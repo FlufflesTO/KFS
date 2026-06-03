@@ -226,7 +226,7 @@ categories.push({
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="KFS Portal" />
-    <script is:inline>
+    <script is:inline nonce={Astro.locals.nonce}>
       // Register Service Worker
       if ('serviceWorker' in navigator) {
         const csrfToken = document.querySelector('meta[name="kharon-csrf-token"]')?.content || "";
@@ -264,7 +264,7 @@ categories.push({
         });
       }
     </script>
-    <script is:inline>
+    <script is:inline nonce={Astro.locals.nonce}>
       window.kharonPortalFetch = async (input, init = {}) => {
         const token = document.querySelector('meta[name="kharon-csrf-token"]')?.content || "";
         const headers = new Headers(init.headers || {});
@@ -557,7 +557,7 @@ categories.push({
       }
     });
   </script>
-  <script is:inline>
+  <script is:inline nonce={Astro.locals.nonce}>
     // Sliding mobile menu drawer interactivity
     (function() {
       const openBtn = document.getElementById("mobile-drawer-toggle");
