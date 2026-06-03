@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Compliance Service
+ * Purpose: Provides business logic and aggregations for compliance status, defects, and certificates
+ * Dependencies: @cloudflare/workers-types
+ * Structural Role: Service Layer
+ */
+
 import type { D1Database } from "@cloudflare/workers-types";
 
 export interface ComplianceStats {
@@ -48,7 +55,10 @@ export class ComplianceService {
       this.db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND severity = 'Critical'`)
     ]);
 
-    const getCount = (result: any) => (result.results[0] as { n: number } | undefined)?.n ?? 0;
+    const getCount = (result: unknown) => {
+      const res = result as { results: { n: number }[] };
+      return res?.results?.[0]?.n ?? 0;
+    };
 
     return {
       criticalDefects: getCount(cntCritical),
@@ -67,7 +77,7 @@ export class ComplianceService {
       FROM defects
       INNER JOIN systems ON systems.id = defects.system_id
       INNER JOIN sites ON sites.id = systems.site_id
-      WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL
+      WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL
         AND defects.severity IN ('Critical', 'Major') AND defects.status IN ('Open', 'In Progress')
       ORDER BY CASE defects.severity WHEN 'Critical' THEN 1 ELSE 2 END, defects.created_at ASC
       LIMIT 50
@@ -85,7 +95,7 @@ export class ComplianceService {
       INNER JOIN systems ON systems.id = certificates.system_id
       INNER JOIN sites ON sites.id = systems.site_id
       LEFT JOIN defects AS blocking_defect ON blocking_defect.id = certificates.blocked_by_defect_id AND blocking_defect.deleted_at IS NULL
-      WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND certificates.status = 'Blocked'
+      WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status = 'Blocked'
       ORDER BY certificates.issued_date DESC
       LIMIT 50
     `).all();

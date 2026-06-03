@@ -6,6 +6,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-06-03
+
+### Core Security & Codebase Hardening
+
+#### [Security]
+- **Fingerprint Privacy**: Upgraded request and client fingerprinting to use secure SHA-256 Web Crypto hashing for IP addresses instead of encoding them in plaintext.
+- **Service Fees**: Aligned `STANDARD_SERVICE_FEE` to cents-only `"185000"` integer representation.
+- **CSP Nonces**: Injected `nonce={Astro.locals.nonce}` to all inline layout and page scripts.
+
+#### [Fixed]
+- **SQLite Syntax**: Refactored the rate-limiting prune query to avoid unsupported SQLite `DELETE ... LIMIT` syntax.
+- **Database Soft-Deletes**: Patched multiple queries across repositories and services to ensure parent records correctly respect `deleted_at IS NULL` filters.
+- **Strict Type Safety**: Refactored various files to eliminate the prohibited `any` type (including D1 query return casting and custom access maps).
+
+#### [Changed]
+- **DevOps Build Scripts**: Updated `build-site.ps1` and `cloudflare-pages.ps1` to clean up the cached `.wrangler/deploy` redirection catalog, preventing subsequent Wrangler Pages deployment failures.
+- **CI/CD Workflow**: Hardened the GitHub Actions pipeline to run automated Playwright E2E tests before cloud deployments.
+
 ## [Unreleased] - 2026-06-01
 
 ### Codebase Hardening & Visual Test Fixes

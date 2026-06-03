@@ -46,7 +46,7 @@ export interface AuditEvent {
 export interface AuditError {
   entityType?: string;
   entityId?: string;
-  user?: any;
+  user?: AuditEvent["user"];
   metadata?: Record<string, unknown>;
 }
 

@@ -1,3 +1,8 @@
+# Project Sentinel - Cloudflare Pages Deployment Utility
+# Purpose: Manages project creation, login, domains, and environment deployment routing for Cloudflare Pages.
+# Dependencies: wrangler, Node.js
+# Structural Role: DevOps deployment script helper for environment sync.
+
 param(
   [ValidateSet("login", "whoami", "list", "create", "domains", "retry-portal", "check-portal", "preview", "production")]
   [string] $Action = "whoami"
@@ -10,7 +15,7 @@ Set-Location -LiteralPath (Resolve-Path "$PSScriptRoot\..")
 $ProjectName = "kfs-portal"
 $WebsiteProjectName = "kfs-website"
 $PortalDomain = "portal.tequit.co.za"
-$AccountId = if ($env:CLOUDFLARE_ACCOUNT_ID) { $env:CLOUDFLARE_ACCOUNT_ID } else { "75012acd08c1e7bdccb82f3ea3fabdb8" }
+$AccountId = if ($env:CLOUDFLARE_ACCOUNT_ID) { $env:CLOUDFLARE_ACCOUNT_ID } else { "1b6ad8d0efcc066f4689065f5f24f5f9" }
 
 if ($env:CLOUDFLARE_API_TOKEN) {
   Remove-Item Env:CLOUDFLARE_API_TOKEN -ErrorAction SilentlyContinue

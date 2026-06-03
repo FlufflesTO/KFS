@@ -25,7 +25,7 @@
   ],
   "vars": {
     "SESSION_COOKIE_NAME": "kharon_session_token",
-    "STANDARD_SERVICE_FEE": "1850.00"
+    "STANDARD_SERVICE_FEE": "185000"
   },
   "triggers": {
     "crons": ["0 * * * *"]

@@ -7,7 +7,7 @@
 
 // @ts-ignore - defineMiddleware is used implicitly through MiddlewareHandler type
 import { sequence } from "astro:middleware";
-import type { MiddlewareHandler } from "astro";
+import type { MiddlewareHandler, APIContext } from "astro";
 import type { SessionUser } from "./lib/server/auth.js";
 import { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } from "./lib/server/auth.js";
 import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
@@ -70,13 +70,13 @@ async function withHtmlSecurityHeaders(response: Response, nonce: string = creat
   }), nonce);
 }
 
-function redirectToLogin(context: any, nonce: string = createCspNonce()): Response {
+function redirectToLogin(context: APIContext, nonce: string = createCspNonce()): Response {
   const loginUrl = new URL(loginPath, context.url);
   loginUrl.searchParams.set("next", context.url.pathname);
   return withSecurityHeaders(context.redirect(loginUrl.toString(), 302), nonce);
 }
 
-function redirectToRoleDashboard(context: any, role: string, nonce: string = createCspNonce()): Response {
+function redirectToRoleDashboard(context: APIContext, role: string, nonce: string = createCspNonce()): Response {
   const destinations: Record<string, string> = {
     tech: "/portal/tech/dashboard",
     admin: "/portal/admin/dashboard",

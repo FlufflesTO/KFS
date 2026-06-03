@@ -96,7 +96,7 @@ export function getStorage(): R2Bucket {
 
 export function getStandardServiceFee(): number {
   const bindings = resolveBindings();
-  const raw = String(bindings.STANDARD_SERVICE_FEE || "1850.00");
+  const raw = String(bindings.STANDARD_SERVICE_FEE || "185000");
   const configured = Number(raw);
   if (Number.isFinite(configured) && configured >= 0) {
     if (raw.includes(".") || configured < 100000) {
