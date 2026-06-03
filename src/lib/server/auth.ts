@@ -1,13 +1,12 @@
 /**
  * Project Sentinel - Session Authentication Services
  * Purpose: Manages generation, verification, and revocation of HMAC signed session tokens
- * Dependencies: @cloudflare/workers-types
+ * Dependencies: @cloudflare/workers-types, ./bindings-auth.ts
  * Structural Role: Session cryptography and validation layer
  */
 
 import type { D1Database } from "@cloudflare/workers-types";
-// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
-import { env } from "cloudflare:workers";
+import { resolveBindingsForAuth } from "./bindings-auth.js";
 
 export interface SessionUser {
   id: string;
@@ -96,28 +95,9 @@ async function hmacKey(secret: string): Promise<CryptoKey> {
   );
 }
 
-interface AuthEnv {
-  SESSION_SECRET?: string;
-  AUTH_SECRET?: string;
-  MFA_SECRET?: string;
-  ENCRYPTION_SECRET?: string;
-  DB?: D1Database;
-  STORAGE?: unknown;
-  [key: string]: unknown;
-}
-
-function resolveBindings(): AuthEnv {
-  try {
-    const runtimeEnv = env as AuthEnv | undefined;
-    if (runtimeEnv && (runtimeEnv.SESSION_SECRET || runtimeEnv.DB || runtimeEnv.STORAGE)) {
-      return runtimeEnv;
-    }
-  } catch (e) {
-    // Ignore if module is not available
-  }
-  const globalEnv = (globalThis as Record<string, unknown>).__env__ as AuthEnv | undefined;
-  if (globalEnv) return globalEnv;
-  return globalThis as unknown as AuthEnv;
+// Use shared bindings resolver
+function resolveBindings() {
+  return resolveBindingsForAuth();
 }
 
 /**
