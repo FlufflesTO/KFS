@@ -17,6 +17,7 @@ const configs: Record<string, {
     headers: ["id", "name", "email", "role", "site_id", "is_active", "force_password_change", "mfa_required", "mfa_enabled", "last_login_at"],
     sql: `SELECT id, name, email, role, site_id, is_active, force_password_change, mfa_required, mfa_enabled, last_login_at
           FROM users
+          WHERE deleted_at IS NULL
           ORDER BY role, name`
   },
   sites: {
@@ -24,6 +25,7 @@ const configs: Record<string, {
     headers: ["id", "owner_company_name", "physical_address", "site_contact_person", "site_contact_email", "site_contact_phone", "billing_emails"],
     sql: `SELECT id, owner_company_name, physical_address, site_contact_person, site_contact_email, site_contact_phone, billing_emails
           FROM sites
+          WHERE deleted_at IS NULL
           ORDER BY owner_company_name`
   },
   systems: {

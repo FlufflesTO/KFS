@@ -19,7 +19,7 @@ function cleanImportId(value: unknown): string {
 
 async function siteExists(db: import("@cloudflare/workers-types").D1Database, id: string | null | undefined): Promise<boolean> {
   if (!id) return false;
-  const record = await db.prepare(`SELECT id FROM sites WHERE id = ?1 LIMIT 1`).bind(id).first();
+  const record = await db.prepare(`SELECT id FROM sites WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`).bind(id).first();
   return Boolean(record);
 }
 
@@ -88,7 +88,7 @@ async function importSystems(db: import("@cloudflare/workers-types").D1Database,
       const data = row.data;
       const id = cleanImportId(data.id);
       const siteId = cleanId(data.site_id, "site_id");
-      const site = await db.prepare(`SELECT id FROM sites WHERE id = ?1 LIMIT 1`).bind(siteId).first();
+      const site = await db.prepare(`SELECT id FROM sites WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`).bind(siteId).first();
       if (!site) throw new Error("site_id does not match an existing site.");
 
       const systemType = cleanChoice(data.system_type, "system_type", systemTypes);

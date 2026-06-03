@@ -64,7 +64,7 @@ try {
 
   sites = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as unknown as DbSite[];
 
-  clientUsers = ((await db.prepare(`SELECT id, name, email FROM users WHERE role = 'client' AND is_active = 1`).all()).results ?? []) as unknown as DbUser[];
+  clientUsers = ((await db.prepare(`SELECT id, name, email FROM users WHERE role = 'client' AND is_active = 1 AND deleted_at IS NULL`).all()).results ?? []) as unknown as DbUser[];
 
   clientSiteAccess = ((await db.prepare(
     `SELECT client_site_access.user_id, client_site_access.site_id, client_site_access.granted_at,

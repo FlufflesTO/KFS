@@ -62,7 +62,7 @@ try {
   unassigned = jobs.filter(j => !j.assigned_technician_id && j.status === 'Scheduled');
   dispatched = jobs.filter(j => j.assigned_technician_id && (j.status === 'Scheduled' || j.status === 'In Progress'));
   
-  const techResult = await db.prepare(`SELECT id, name FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name ASC`).all();
+  const techResult = await db.prepare(`SELECT id, name FROM users WHERE role = 'tech' AND is_active = 1 AND deleted_at IS NULL ORDER BY name ASC`).all();
   techs = (techResult.results || []) as { id: string; name: string }[];
 
   stats = {
