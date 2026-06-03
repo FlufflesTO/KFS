@@ -1,12 +1,11 @@
 /**
  * Project Sentinel - Request Utilities
  * Purpose: Handles IP address extraction and geolocation resolution from client requests
- * Dependencies: cloudflare:workers
+ * Dependencies: ./bindings-auth.ts
  * Structural Role: Client identification utilities
  */
 
-// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
-import { env } from "cloudflare:workers";
+import { resolveBindingsForAuth } from "./bindings-auth.js";
 
 const textEncoder = new TextEncoder();
 
@@ -63,12 +62,12 @@ export async function clientFingerprint(request: Request): Promise<string> {
   const userAgent = request.headers.get("user-agent") || "unknown";
   const acceptLanguage = request.headers.get("accept-language") || "unknown";
   const acceptEncoding = request.headers.get("accept-encoding") || "unknown";
-  
-  // @ts-ignore - env might not be typed in standard TypeScript
-  const secret = String(env.FINGERPRINT_SECRET || env.SESSION_SECRET || env.AUTH_SECRET || "default-secret");
+
+  const bindings = resolveBindingsForAuth();
+  const secret = String(bindings.FINGERPRINT_SECRET || bindings.SESSION_SECRET || bindings.AUTH_SECRET || "default-secret");
   const hashedIp = await sha256Text(ip);
   const combined = `${hashedIp}|${userAgent}|${acceptLanguage}|${acceptEncoding}|${secret}`;
-  
+
   return sha256Text(combined);
 }
 
