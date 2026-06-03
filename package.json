@@ -37,8 +37,8 @@
     "cloudflare:retry-portal": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 retry-portal",
     "cloudflare:check-portal": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 check-portal",
     "deploy:website": "npx wrangler deploy --config wrangler.website.jsonc",
-    "deploy:portal": "npx wrangler deploy --config wrangler.portal.jsonc",
-    "deploy:cloudflare": "npm run deploy:website && npm run deploy:portal",
+    "deploy:portal": "npx wrangler deploy --config dist/server/wrangler.json",
+    "deploy:cloudflare": "npm run build:sw && npm run build:astro && npm run deploy:website && npm run deploy:portal",
     "deploy:cloudflare:preview": "npx wrangler pages deploy dist/client --project-name kfs-portal --branch preview",
     "deploy:cloudflare:ps": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 production",
     
