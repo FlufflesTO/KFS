@@ -58,20 +58,20 @@ import { test, expect, type Page, type Locator } from '@playwright/test';
 
 class PortalLoginPage {
   readonly page: Page;
-  readonly usernameInput: Locator;
+  readonly emailInput: Locator;
   readonly passwordInput: Locator;
   readonly submitButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.usernameInput = page.locator('[name="username"]');
+    this.emailInput = page.locator('[name="email"]');   // login form uses name="email"
     this.passwordInput = page.locator('[name="password"]');
     this.submitButton = page.locator('[type="submit"]');
   }
 
-  async login(username: string, password: string) {
+  async login(email: string, password: string) {
     await this.page.goto('/portal/login');
-    await this.usernameInput.fill(username);
+    await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
     await this.submitButton.click();
   }
@@ -80,19 +80,28 @@ class PortalLoginPage {
 
 ### Multi-Role Fixture Pattern
 
+No pre-saved auth state files exist in this repo (`playwright/.auth/` is not committed). Use
+programmatic login in fixtures instead:
+
 ```ts
 import { test as base, type Page } from '@playwright/test';
 
 type RoleFixtures = {
   adminPage: Page;
   clientPage: Page;
-  financePage: Page;
 };
 
 export const test = base.extend<RoleFixtures>({
   adminPage: async ({ browser }, use) => {
-    const ctx = await browser.newContext({ storageState: 'playwright/.auth/admin.json' });
-    await use(await ctx.newPage());
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    // Log in using seeded admin credentials (see seed-users.sql)
+    await page.goto('/portal/login');
+    await page.locator('[name="email"]').fill(process.env.TEST_ADMIN_EMAIL!);
+    await page.locator('[name="password"]').fill(process.env.TEST_ADMIN_PASSWORD!);
+    await page.locator('[type="submit"]').click();
+    await page.waitForURL('/portal/admin/dashboard');
+    await use(page);
     await ctx.close();
   },
   // ... similar for other roles

@@ -66,14 +66,13 @@ import { SageClient } from './sage-client.js';
 
 const client = new SageClient(db, env);
 
-// Base URL
-// https://api.accounting.sage.com/v3.1
+// Search / create contacts
+const contact = await client.searchContacts(name);       // returns first match or null
+const newContact = await client.createContact(name);
 
-// Key operations
-const contacts = await client.getContacts();
-const contact = await client.getContact(contactId);
-const invoice = await client.createSalesInvoice({ ... });
-const quote = await client.createQuote({ ... });
+// Create documents (amounts in INTEGER cents)
+const invoice = await client.createSalesInvoice(contactId, description, amountExVat, vatAmount);
+const quote = await client.createSalesQuote(contactId, description, amountExVat, vatAmount);
 ```
 
 The client handles:
@@ -90,7 +89,9 @@ Token management is in `src/lib/server/sage.ts` (the `getValidSageToken` functio
 4. Store new token + expiry in D1
 5. Return access_token
 
-**Never hardcode tokens.** All Sage credentials come from the `env` bindings (SAGE_CLIENT_ID, SAGE_CLIENT_SECRET, SAGE_REFRESH_TOKEN — stored as Cloudflare secrets).
+**Never hardcode tokens.** The OAuth2 flow uses:
+- `SAGE_CLIENT_ID` and `SAGE_CLIENT_SECRET` — Cloudflare secrets (env bindings)
+- `refresh_token` — stored **encrypted** in the `sage_config` D1 table, NOT as a Cloudflare secret. `getValidSageToken` reads and decrypts it from D1, then uses the client credentials to obtain a new access token when expired.
 
 ## Finance Service
 
@@ -99,14 +100,21 @@ Located at `src/lib/server/services/finance-service.ts`. Exposes:
 ```ts
 const service = new FinanceService(db);
 
-// CRUD
+// Create
 await service.createFinanceTask({ siteId, taskType, amount, status, ... });
-await service.updateFinanceTask(id, updates);
-await service.getFinanceTask(id);
-await service.getFinanceTasksBySite(siteId);
 
-// Summary data
-await service.getFinanceSummary(siteId);
+// Read
+const task = await service.getTaskById(taskId);
+const tasks = await service.getTasksBySite(siteId);
+
+// Update — only updates status, sageDocumentRef, sageDocumentId, notes
+// IMPORTANT: updateFinanceTask does NOT update taskType — the implementation
+// only applies changes to status/sage fields/notes. Use a direct DB update
+// via the repository layer if taskType must change.
+await service.updateFinanceTask(id, { status, sageDocumentRef, sageDocumentId, notes });
+
+// Summary (no siteId parameter — returns aggregate across all sites)
+await service.getFinanceSummary();
 ```
 
 **Key constraint:** `amount` is always INTEGER cents.
@@ -125,8 +133,9 @@ All queries must:
 
 Finance-related types from `@sentinel/types`:
 ```ts
-import type { DbFinancialRecord } from '@sentinel/types';
-// Also: FinanceTask (from finance-service.ts, not @sentinel/types)
+import type { DbFinanceTask, DbFinanceSummary } from '@sentinel/types';
+// Note: FinanceTask is a non-exported internal interface in finance-service.ts —
+// use DbFinanceTask from @sentinel/types at API/repository boundaries instead.
 ```
 
 ## Sage API Patterns
@@ -168,13 +177,15 @@ RBAC is enforced by the middleware chain — use `requireFinance(user)` guard at
 
 ### Recording a Sage Quote
 ```ts
-// 1. Update FinanceTask type to 'Quote Issued in Sage'
+// updateFinanceTask only updates status/sage refs/notes — it does NOT update taskType.
+// To advance the task type, use the service's dedicated lifecycle methods, or update
+// task_type directly via the repository if no lifecycle method exists for the transition.
 await service.updateFinanceTask(taskId, {
-  taskType: 'Quote Issued in Sage',
   sageDocumentRef: 'QUO-042',
   sageDocumentId: sageQuote.id,
   status: 'In Progress'
 });
+// Then separately update task_type if required via DB or a higher-level service method.
 ```
 
 ### Sage-First Invoice Flow

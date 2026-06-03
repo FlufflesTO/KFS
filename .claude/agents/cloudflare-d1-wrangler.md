@@ -23,7 +23,9 @@ npm run deploy:cloudflare           # Production deploy
 npm run deploy:cloudflare:preview   # Preview deploy
 ```
 
-**Staging domain:** `tequit.co.za` — intentional, not an error. Production cutover to `kharon.co.za` requires only env var changes, no code changes.
+**Staging domain:** `tequit.co.za` — intentional, not an error. Production cutover to `kharon.co.za` requires:
+1. Updating `PUBLIC_SITE_URL`, `PUBLIC_PORTAL_URL`, `PUBLIC_CONTACT_EMAIL` env vars
+2. **Also** updating the `routes` patterns and `zone_name` in `wrangler.portal.jsonc` and `wrangler.website.jsonc` — routes are hardcoded to `tequit.co.za` and must be changed to `kharon.co.za`
 
 ## D1 Database
 
@@ -31,20 +33,24 @@ npm run deploy:cloudflare:preview   # Preview deploy
 **Binding name:** `DB`
 
 ### Migration Commands
+
+All D1 commands require `--config wrangler.portal.jsonc` — there is no default `wrangler.jsonc` in this repo.
+
 ```bash
 # Apply locally (MUST run before first login)
-npx wrangler d1 migrations apply kharon-portal --local
+npx wrangler d1 migrations apply kharon-portal --local --config wrangler.portal.jsonc
 
 # Apply to remote (production)
-npx wrangler d1 migrations apply kharon-portal --remote
+npx wrangler d1 migrations apply kharon-portal --remote --config wrangler.portal.jsonc
 
 # List migrations
-npx wrangler d1 migrations list kharon-portal --local
-npx wrangler d1 migrations list kharon-portal --remote
+npx wrangler d1 migrations list kharon-portal --local --config wrangler.portal.jsonc
+npx wrangler d1 migrations list kharon-portal --remote --config wrangler.portal.jsonc
 
 # Execute arbitrary SQL locally
-npx wrangler d1 execute kharon-portal --local --command "SELECT * FROM users"
-npx wrangler d1 execute kharon-portal --local < some-file.sql
+npx wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --command "SELECT * FROM users"
+# Execute a SQL file (use --file, not stdin redirect — wrangler d1 execute does not read stdin)
+npx wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --file some-file.sql
 ```
 
 ### Migration File Conventions
