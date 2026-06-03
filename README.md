@@ -150,8 +150,11 @@ All PRs must pass the UI checklist in `.github/pull_request_template.md`:
 2. Configure local environment variables: Create a `.dev.vars` file in the root directory:
    ```env
    SESSION_SECRET=your-32+-character-secret-key-here
+   ENCRYPTION_SECRET=your-32+-character-encryption-key-here
+   MFA_SECRET=your-32+-character-mfa-key-here-different-from-session
    ENVIRONMENT=local
    ```
+   All four secrets are required. Missing `MFA_SECRET` silently breaks portal login.
 3. Run local database migrations:
    ```bash
    npx wrangler d1 migrations apply kharon-portal --local

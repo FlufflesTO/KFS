@@ -32,7 +32,7 @@ async function currentUserRecord(db: import('@cloudflare/workers-types').D1Datab
     .prepare(
       `SELECT id, name, email, role, site_id, mfa_required, mfa_enabled, mfa_secret_encrypted, force_password_change
        FROM users
-       WHERE id = ?1 AND is_active = 1
+       WHERE id = ?1 AND is_active = 1 AND deleted_at IS NULL
        LIMIT 1`
     )
     .bind(userId)
