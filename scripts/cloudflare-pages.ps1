@@ -113,7 +113,7 @@ switch ($Action) {
     exit $LASTEXITCODE
   }
   "production" {
-    powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" staging
+    powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" production
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     # Remove wrangler deploy config if created to prevent deployment redirection errors
     Remove-Item -Path "$PSScriptRoot\..\.wrangler\deploy" -Recurse -Force -ErrorAction SilentlyContinue

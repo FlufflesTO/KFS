@@ -178,7 +178,7 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
 
   const mobileMenu = document.querySelector("details.mobile-menu");
   if (mobileMenu instanceof HTMLDetailsElement) {
-    for (const link of mobileMenu.querySelectorAll("nav a")) {
+    for (const link of mobileMenu.querySelectorAll("a[href]")) {
       link.addEventListener("click", () => {
         mobileMenu.removeAttribute("open");
       });

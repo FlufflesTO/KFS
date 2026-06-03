@@ -1,6 +1,6 @@
 # Kharon Fire and Security Solutions
 
-Comprehensive fire protection and security solutions portal for South African commercial/industrial applications. Built with Astro, deployed on Cloudflare Pages with D1 database and R2 storage.
+Comprehensive fire protection and security solutions portal for South African commercial/industrial applications. Built with Astro, deployed on Cloudflare Pages for the public site and Cloudflare Workers for the portal, with D1 database and R2 storage.
 
 ## Current Project Status
 
@@ -57,7 +57,7 @@ As of 2026-06-01, the repository passes lint, Astro check, full build, site audi
 
 - **Framework**: Astro v6.3.3 with SSR
 - **Styling**: TailwindCSS v4 with custom industrial design components
-- **Deployment**: Cloudflare Pages with D1 database and R2 storage
+- **Deployment**: Cloudflare Pages for the public site plus Cloudflare Workers with D1 and R2 for the portal
 - **Authentication**: Custom session management with CSRF protection
 - **Forms**: Anti-spam with honeypot fields and rate limiting
 - **Analytics**: POPIA-compliant (Plausible/Fathom) - public pages only
@@ -175,11 +175,13 @@ npm run build
 ## ☁️ Cloudflare Deployment
 
 ### Configuration
-The site is configured for deployment to Cloudflare Pages with the following setup:
-- **Domain**: www.tequit.co.za, portal.tequit.co.za
+The site is configured for a hybrid Cloudflare deployment with the following setup:
+- **Domains**: www.tequit.co.za, tequit.co.za, portal.tequit.co.za
+- **Public Site Runtime**: Cloudflare Pages SSR upload from `dist`
+- **Portal Runtime**: Cloudflare Worker deploy from `dist/server/wrangler.json`
 - **Database**: Cloudflare D1 with existing schema
 - **Storage**: Cloudflare R2 for document management
-- **Authentication**: OAuth-based with Wrangler CLI
+- **Authentication**: OAuth or API-token-based Wrangler CLI access
 
 ### Deployment Process
 1. Authenticate with Cloudflare:
@@ -190,21 +192,29 @@ The site is configured for deployment to Cloudflare Pages with the following set
    ```bash
    npm run cloudflare:whoami
    ```
-3. Deploy to production:
+3. Deploy the active Tequit environment:
    ```bash
    npm run deploy:cloudflare
    ```
-4. For preview deployments:
+4. Deploy a preview build:
    ```bash
    npm run deploy:cloudflare:preview
+   ```
+5. Build final Kharon production URLs when cutover is approved:
+   ```bash
+   npm run build:production:kharon
+   npm run deploy:cloudflare:ps
    ```
 
 ### Automated Deployment
 The system is configured for automatic deployments from the `main` branch. Each push to `main` triggers:
+- Linting
+- Type checking
 - Build process with CSS purging
-- Asset optimization
 - Security scanning
-- Deployment to Cloudflare Pages
+- D1 preflight and migration checks
+- Portal Worker deployment from the generated Astro bundle
+- Public-site Pages deployment from the flattened `dist` output
 
 For detailed deployment configuration, see [docs/cloudflare-deployment.md](docs/cloudflare-deployment.md).
 

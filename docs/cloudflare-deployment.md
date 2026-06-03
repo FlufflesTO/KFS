@@ -1,172 +1,108 @@
-# Kharon Cloudflare Deployment Configuration
+# Kharon Cloudflare Deployment
 
-## 🚀 Overview
-This document describes the Cloudflare Pages deployment configuration for the Kharon Fire & Security Solutions website. The deployment is configured for high availability, security, and performance optimization.
+## Overview
 
-## 🏗️ Architecture
-- **Platform**: Cloudflare Pages (Server-Side Rendering)
-- **Database**: Cloudflare D1 (SQL Database)
-- **Storage**: Cloudflare R2 (Object Storage)
-- **Environment**: Production (www.tequit.co.za, portal.tequit.co.za)
+The repository deploys as a hybrid Astro SSR application:
 
-## 📋 Deployment Configuration
+- the public site uploads to Cloudflare Pages from a flattened `dist` output
+- the portal deploys as a Cloudflare Worker from the generated `dist/server/wrangler.json`
 
-### Domain Setup
-```json
-{
-  "routes": [
-    {
-      "pattern": "tequit.co.za/*",
-      "zone_name": "tequit.co.za"
-    },
-    {
-      "pattern": "www.tequit.co.za/*",
-      "zone_name": "tequit.co.za"
-    },
-    {
-      "pattern": "portal.tequit.co.za/*",
-      "zone_name": "tequit.co.za"
-    }
-  ]
-}
+D1 backs portal data, and R2 stores portal documents.
+
+## Active Topology
+
+- Runtime: Astro `output: "server"` with `@astrojs/cloudflare`
+- Public site Pages project: `kfs-website`
+- Portal base config: `wrangler.portal.jsonc`
+- Generated portal Worker config: `dist/server/wrangler.json`
+- Staging domains: `www.tequit.co.za`, `tequit.co.za`, `portal.tequit.co.za`
+- Final production domains: `www.kharon.co.za`, `kharon.co.za`, `portal.kharon.co.za`
+
+The Astro adapter is configured with `configPath: "wrangler.portal.jsonc"`, so the generated `dist/server/wrangler.json` carries the portal bindings needed by the server bundle. `scripts/build-site.ps1` then reshapes the build output into the flat `dist` structure expected by Cloudflare Pages SSR uploads.
+
+## Commands
+
+### Authentication
+
+```bash
+npm run auth:cloudflare
+npm run cloudflare:whoami
 ```
 
-### Database Configuration
-- **Binding**: `DB`
-- **Database Name**: `kharon-portal`
-- **Database ID**: `327db922-1c44-438d-8328-af7ba33e9ae0`
-- **Migration Directory**: `migrations/`
+### Build
 
-### Storage Configuration
-- **Binding**: `STORAGE`
-- **Bucket Name**: `kharon-portal-storage`
-
-### Environment Variables
-- `SESSION_COOKIE_NAME`: `kharon_session_token`
-- `STANDARD_SERVICE_FEE`: `1850.00`
-
-## 🚀 Deployment Process
-
-### Prerequisites
-1. Cloudflare account with proper permissions
-2. Wrangler CLI installed (`npm install -g wrangler`)
-3. OAuth authentication configured
-4. Account ID set in environment
-
-### Deployment Commands
 ```bash
-# Login and authenticate
-npm run auth:cloudflare
+npm run build
+npm run build:staging
+npm run build:production:kharon
+```
 
-# Check current status
-npm run cloudflare:whoami
+`build:staging` produces the Tequit-domain output used for the current active environment. `build:production:kharon` swaps the public URLs to the final Kharon domain set.
 
-# View project list
-npm run cloudflare:list
+### Deploy
 
-# Deploy to production
+```bash
+# Active Tequit environment
 npm run deploy:cloudflare
 
-# Deploy to preview
+# Preview upload
 npm run deploy:cloudflare:preview
+
+# PowerShell deploy path with production-domain build variables
+npm run deploy:cloudflare:ps
 ```
 
-### Automated Build Process
-The deployment process includes:
-1. Environment variable configuration
-2. Astro build process
-3. CSS purging optimization
-4. Asset optimization
-5. Cloudflare Pages deployment
+`deploy:cloudflare` runs the repo's current hybrid path:
 
-## 🔧 Build Configuration
+- `npm run build`
+- portal deploy from `dist/server/wrangler.json`
+- staging rebuild via `scripts/build-site.ps1`
+- Pages deploy for the public site
 
-### Astro Configuration
-```typescript
-export default defineConfig({
-  site: siteUrl,
-  output: "server",  // Server-Side Rendering
-  adapter: cloudflare({
-    configPath: "wrangler.jsonc",
-    persistState: true
-  }),
-  vite: {
-    build: {
-      chunkSizeWarningLimit: 900,  // Increased for larger bundles
-    },
-  },
-});
-```
+`deploy:cloudflare:ps` uses the PowerShell helper when a production-domain build is required.
 
-### Build Scripts
-- `npm run build`: Main build with CSS purging
-- `npm run build:staging`: Staging build with tequit.co.za URLs
-- `npm run build:production:kharon`: Production build with kharon.co.za URLs
+## GitHub Actions
 
-## 🔒 Security Configuration
+`.github/workflows/ci-cd.yml` is the intended unattended deploy gate. It currently performs:
 
-### Authentication Flow
-- OAuth-based authentication
-- Session management with CSRF protection
-- MFA implementation
-- Rate limiting and IP-based security
+- `npm ci`
+- `npm run lint`
+- `npm run check`
+- `npm run build`
+- `npm run audit:site`
+- `npm audit --omit=dev`
+- remote D1 preflight and schema smoke checks on push to `main` or `staging`
+- D1 backup and migrations on push to `main` or `staging`
+- `wrangler deploy --config dist/server/wrangler.json` for the portal on push to `main` or `staging`
+- `wrangler pages deploy dist --project-name kfs-website --branch <branch>` for the public site on push to `main` or `staging`
 
-### SSL/TLS
-- Automatic SSL certificate management
-- HSTS headers
-- Secure cookies
+Required repository secrets:
 
-## 📊 Performance Optimization
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
 
-### Caching Strategy
-- Edge caching for static assets
-- Dynamic content caching with appropriate TTL
-- CDN distribution
+## Deployment Configuration
 
-### Asset Optimization
-- CSS purging (reduced from 110KB to ~90KB)
-- Image optimization with WebP fallbacks
-- JavaScript bundling and minification
+### Public Site Pages Project
 
-## 🧪 Testing & Validation
+- Project name: `kfs-website`
+- Deploy command: `wrangler pages deploy dist --project-name kfs-website --branch <branch>`
+- Build helper: `scripts/build-site.ps1`
+- Purpose: public site routing for `www.tequit.co.za` and `tequit.co.za`
 
-### Pre-deployment Checks
-- Build process validation
-- Type checking
-- Link validation
-- Performance metrics
-- Security scanning
+### `wrangler.portal.jsonc`
 
-### Post-deployment Monitoring
-- Health checks
-- Performance monitoring
-- Error tracking
-- User experience metrics
+- Portal Worker name: `kfs-portal`
+- Route:
+  - `portal.tequit.co.za/*`
+- D1 binding: `DB`
+- R2 binding: `STORAGE`
+- Cron: `0 * * * *`
 
-## 🔄 Rollback Procedures
+## Operational Notes
 
-In case of deployment issues:
-1. Identify the problematic release
-2. Use Cloudflare Pages rollback feature
-3. Monitor for service restoration
-4. Investigate and fix the issue
-5. Redeploy with fix
-
-## 📞 Support & Maintenance
-
-### Contact Information
-- Primary: admin@kharon.co.za
-- Technical: admin@kharon.co.za
-
-### Monitoring
-- Automated health checks
-- Performance monitoring
-- Security scanning
-- Uptime monitoring
-
-## 📈 Performance Targets
-
-- Build size: < 91KB (achieved: ~90KB)
-- Load time: < 3 seconds
-- TTFB: < 200ms
-- Core Web Vitals: All green
+- Direct local deployment remains blocked until Wrangler auth is valid.
+- The generated `dist/server/wrangler.json` should exist after build and include both `DB` and `STORAGE`.
+- Dry-run verification showed `wrangler.website.jsonc` and `wrangler.portal.jsonc` are not directly deployable by themselves because they do not define a `main` script or assets directory. Use the generated or flattened outputs above instead.
+- Domain-level apex-to-www redirects should stay in Cloudflare zone rules, not `_redirects`.
+- If Kharon production cutover is approved, use the production build path before deploy so canonical URLs, metadata, and portal links do not keep pointing at Tequit.
