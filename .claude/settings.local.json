@@ -7,7 +7,8 @@
       "Bash(npx skills:*)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\conno\\\\Desktop\\\\Astro\\\\kfs\" -Recurse -Filter \"*.css\" -ErrorAction SilentlyContinue)",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(Get-Content \"C:\\\\Users\\\\conno\\\\Desktop\\\\Astro\\\\kfs\\\\dist\\\\_astro\\\\global.Kf4-NnOg.css\" -TotalCount 100)"
+      "Bash(Get-Content \"C:\\\\Users\\\\conno\\\\Desktop\\\\Astro\\\\kfs\\\\dist\\\\_astro\\\\global.Kf4-NnOg.css\" -TotalCount 100)",
+      "PowerShell(npx skills find \"accessibility a11y\" 2>&1 | Select-Object -First 40)"
     ]
   },
   "outputStyle": "Proactive"

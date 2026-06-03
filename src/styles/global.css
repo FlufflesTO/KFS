@@ -252,11 +252,6 @@ summary::-webkit-details-marker { display: none; }
 .kharon-status-chip.warning { background: var(--color-kharon-amber); color: var(--color-kharon-black); }
 .kharon-status-chip.danger  { background: var(--color-kharon-red); color: white; }
 
-/* Staging banner hazard stripes — defined here (not inline) to satisfy CSP style-src nonce policy */
-.staging-hazard-stripes {
-  background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, currentColor 10px, currentColor 20px);
-}
-
 /* Custom Scrollbar for Command Console */
 .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: var(--color-kharon-black); }

@@ -198,9 +198,13 @@ export const solutionLinks: SolutionLink[] = [
 
 export const sectorLinks: NavLink[] = [
   { label: "Data Centres", href: "/industries#data-centres" },
+  { label: "Telecoms & Control Rooms", href: "/industries#telecoms" },
+  { label: "Electrical & Switchgear", href: "/industries#electrical" },
+  { label: "Logistics & Warehousing", href: "/industries#warehousing" },
   { label: "Industrial Facilities", href: "/industries#industrial" },
-  { label: "Warehousing", href: "/industries#warehousing" },
-  { label: "Critical Utilities", href: "/industries#utilities" }
+  { label: "Critical Utilities", href: "/industries#utilities" },
+  { label: "Healthcare", href: "/industries#healthcare" },
+  { label: "Control Rooms", href: "/industries#control-rooms" }
 ];
 
 export const resourceLinks: NavLink[] = [

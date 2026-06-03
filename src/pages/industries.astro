@@ -22,13 +22,22 @@ const coreSectors = [
     color: "purple"
   },
   {
-    id: "industrial",
-    title: "Industrial & Manufacturing Facilities",
-    risk: "Risk-segmented zones, rugged detection choices and maintenance access planning.",
-    priority: "Process risk",
-    icon: "/brand/icons/sector-factory.svg",
-    sans: ["SANS 10139", "SANS 1475", "SANS 10400-T"],
+    id: "telecoms",
+    title: "Telecoms & Control Rooms",
+    risk: "Protected electronics, controlled release, alarm routing and fault visibility.",
+    priority: "Signal integrity",
+    icon: "/brand/icons/sector-radio-tower.svg",
+    sans: ["SANS 10139", "SANS 14520", "SANS 10198"],
     color: "cyan"
+  },
+  {
+    id: "electrical",
+    title: "Electrical Rooms & Switchgear Spaces",
+    risk: "Rapid detection, asset protection and suppression methods that limit collateral damage.",
+    priority: "Asset protection",
+    icon: "/brand/icons/sector-switchgear.svg",
+    sans: ["SANS 10142", "SANS 14520"],
+    color: "purple"
   },
   {
     id: "warehousing",
@@ -37,15 +46,42 @@ const coreSectors = [
     priority: "Coverage",
     icon: "/brand/icons/sector-warehouse.svg",
     sans: ["SANS 10139", "SANS 1475"],
+    color: "cyan"
+  },
+  {
+    id: "industrial",
+    title: "Industrial & Manufacturing Facilities",
+    risk: "Risk-segmented zones, rugged detection choices and maintenance access planning.",
+    priority: "Process risk",
+    icon: "/brand/icons/sector-factory.svg",
+    sans: ["SANS 10139", "SANS 1475", "SANS 10400-T"],
     color: "purple"
   },
   {
     id: "utilities",
-    title: "Critical Utilities & Switchgear",
-    risk: "Rapid detection, asset protection and suppression methods that limit collateral damage.",
-    priority: "Asset protection",
+    title: "Critical Utilities & Infrastructure",
+    risk: "Compliance records, escalation pathways and response logic for high-consequence assets.",
+    priority: "Resilience",
     icon: "/brand/icons/sector-power-grid.svg",
-    sans: ["SANS 10142", "SANS 14520", "SANS 10090"],
+    sans: ["SANS 10139", "SANS 10142", "SANS 10090"],
+    color: "cyan"
+  },
+  {
+    id: "healthcare",
+    title: "Healthcare & Commercial Infrastructure",
+    risk: "Occupancy-aware detection, documented servicing and continuity-sensitive protection.",
+    priority: "Occupancy",
+    icon: "/brand/icons/sector-healthcare.svg",
+    sans: ["SANS 10139", "SANS 14520", "SANS 10400-T"],
+    color: "purple"
+  },
+  {
+    id: "control-rooms",
+    title: "Control Rooms & Operations Centres",
+    risk: "Fire detection and suppression architecture for spaces coordinating wider site response.",
+    priority: "Operational command",
+    icon: "/brand/icons/sector-control-room.svg",
+    sans: ["SANS 10139", "SANS 10222", "SANS 10198"],
     color: "cyan"
   }
 ];

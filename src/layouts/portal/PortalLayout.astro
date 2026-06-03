@@ -7,7 +7,6 @@
  */
 import "../../styles/global.css";
 import ClientOperationsManager from "../../components/portal/ClientOperationsManager.astro";
-import StagingBanner from "../../components/portal/StagingBanner.astro";
 
 const {
   title = "Kharon Portal",
@@ -304,7 +303,6 @@ categories.push({
     </script>
   </head>
   <body data-variant={variant} class="portal-shell bg-kharon-black min-h-screen text-kharon-light selection:bg-kharon-purple/30 selection:text-kharon-purple overflow-x-hidden">
-  <StagingBanner />
   <!-- Skip link for accessibility -->
   <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:bg-kharon-charcoal focus:px-4 focus:py-2 focus:border focus:border-kharon-purple focus:rounded focus:text-white focus:shadow-lg">
     Skip to main content

@@ -40,5 +40,8 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "twilio-developer-kit@claude-plugins-official": true
   }
 }
