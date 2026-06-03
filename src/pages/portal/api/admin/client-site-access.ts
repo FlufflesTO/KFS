@@ -20,7 +20,7 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     const siteId = cleanId(body.siteId, "siteId");
 
     const target = await db
-      .prepare(`SELECT id, role, is_active FROM users WHERE id = ?1 LIMIT 1`)
+      .prepare(`SELECT id, role, is_active FROM users WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`)
       .bind(userId)
       .first();
     if (!target || target.role !== "client" || !target.is_active) {
