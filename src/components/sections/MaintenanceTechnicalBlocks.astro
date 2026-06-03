@@ -1,0 +1,198 @@
+---
+/**
+ * Project Sentinel - Maintenance Technical Blocks
+ * Purpose: Service cadence matrix, inspection lifecycle flow, defect classification, and service-report anatomy.
+ * Dependencies: Astro section layout, inline SVG.
+ * Structural Role: Deep technical-depth section for the Compliance & Maintenance page.
+ */
+
+const cadence = [
+  { system: "Fire Detection (SANS 10139)", monthly: "User log & panel check", quarterly: "25% device test", annual: "100% device + battery test", longTerm: "Battery replace 4–5 yr" },
+  { system: "Gas Suppression (SANS 14520)", monthly: "Pressure & nozzle visual", quarterly: "Control logic check", annual: "Cylinder weigh + integrity", longTerm: "Hydrostatic test 10 yr" },
+  { system: "Hose Reels & Extinguishers (SANS 1475/10105)", monthly: "Accessibility & seal check", quarterly: "Pressure verification", annual: "Service & recharge", longTerm: "Pressure test 5 yr" },
+  { system: "Emergency Lighting (SANS 10114)", monthly: "Function test", quarterly: "Discharge test", annual: "Full 3-hour duration test", longTerm: "Battery replace 4 yr" },
+];
+
+const lifecycle = [
+  { stage: "01", title: "Assess", text: "Baseline survey of installed systems, zones, asset risk and current compliance status." },
+  { stage: "02", title: "Service", text: "Scheduled inspection and testing of detection, suppression and signalling per SANS interval." },
+  { stage: "03", title: "Document", text: "Findings, readings and device-level results captured against each asset in the portal." },
+  { stage: "04", title: "Remediate", text: "Defects classified, quoted and resolved before they can block certification." },
+  { stage: "05", title: "Certify", text: "Compliance certificate issued once no certificate-blocking defects remain." },
+];
+
+// Literal Tailwind class strings per severity (interpolated class names are not
+// detected by the Tailwind v4 scanner / purge step, so they must appear in full).
+const defectClasses = [
+  { sev: "Critical", card: "border-kharon-red/30 hover:border-kharon-red/60", badge: "bg-kharon-red/10 text-kharon-red border-kharon-red/30", accent: "text-kharon-red", text: "Immediate life-safety risk or non-functional protection. Blocks certification until resolved.", action: "Same-day escalation" },
+  { sev: "Major", card: "border-kharon-amber/30 hover:border-kharon-amber/60", badge: "bg-kharon-amber/10 text-kharon-amber border-kharon-amber/30", accent: "text-kharon-amber", text: "Significant impairment to system performance or coverage. Requires scheduled remediation.", action: "Remediate before next cycle" },
+  { sev: "Minor", card: "border-kharon-cyan/30 hover:border-kharon-cyan/60", badge: "bg-kharon-cyan/10 text-kharon-cyan border-kharon-cyan/30", accent: "text-kharon-cyan", text: "Limited-impact fault that should be corrected during routine servicing.", action: "Next service visit" },
+  { sev: "Observation", card: "border-kharon-purple/30 hover:border-kharon-purple/60", badge: "bg-kharon-purple/10 text-kharon-purple border-kharon-purple/30", accent: "text-kharon-purple", text: "Advisory note or recommendation for improved resilience; no compliance impact.", action: "Logged for review" },
+];
+
+const reportContents = [
+  "Per-device test results mapped to each zone and asset",
+  "Pressure, battery and signal readings with pass/fail thresholds",
+  "Photographic evidence of faults and remediation",
+  "Defect register with SANS clause references and severity",
+  "Technician sign-off and responsible-person acknowledgement",
+  "Certificate status and next service due date",
+];
+
+const lapseRisks = [
+  "Lapsed service intervals invalidating insurance cover",
+  "Undocumented modifications breaking cause-and-effect logic",
+  "Expired certificates discovered during an audit or incident",
+  "Defects left unresolved between service visits",
+];
+---
+
+<section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
+  <div class="mx-auto max-w-7xl px-6">
+
+    <!-- ─── Block 1: Service Cadence Matrix ─── -->
+    <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Service Cadence — SANS Intervals</span>
+    <h2 class="mt-2 text-3xl font-bold leading-tight text-white">Maintenance frequency by system.</h2>
+    <p class="mt-4 max-w-3xl text-lg leading-8 text-white/70">
+      Each protection system carries its own mandated inspection rhythm. Kharon schedules and documents every interval so compliance is continuous, not reactive.
+    </p>
+
+    <div class="mt-10 overflow-x-auto portal-scroll-x scrollbar-hide">
+      <table class="w-full min-w-[720px] border-collapse text-sm">
+        <thead>
+          <tr>
+            <th scope="col" class="border border-kharon-purple/20 bg-kharon-purple px-4 py-3 text-left font-bold text-white">System</th>
+            <th scope="col" class="border border-kharon-purple/20 bg-kharon-blue px-4 py-3 text-left font-bold text-white">Monthly</th>
+            <th scope="col" class="border border-kharon-purple/20 bg-kharon-blue px-4 py-3 text-left font-bold text-white">Quarterly</th>
+            <th scope="col" class="border border-kharon-purple/20 bg-kharon-blue px-4 py-3 text-left font-bold text-white">Annual</th>
+            <th scope="col" class="border border-kharon-purple/20 bg-kharon-blue px-4 py-3 text-left font-bold text-white">Long-Term</th>
+          </tr>
+        </thead>
+        <tbody>
+          {cadence.map((row, rowIdx) => (
+            <tr class={rowIdx % 2 === 0 ? "bg-kharon-charcoal" : "bg-kharon-charcoal/50"}>
+              <td class="border border-kharon-purple/20 px-4 py-4 font-bold text-white">{row.system}</td>
+              <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-light/80">{row.monthly}</td>
+              <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-light/80">{row.quarterly}</td>
+              <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-cyan font-medium">{row.annual}</td>
+              <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-light/60 text-xs uppercase tracking-wider">{row.longTerm}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ─── Block 2: Inspection Lifecycle Flowchart ─── -->
+    <div class="mt-14">
+      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Maintenance Lifecycle</span>
+      <h2 class="mt-2 text-3xl font-bold leading-tight text-white">From assessment to certificate.</h2>
+      <p class="mt-4 max-w-3xl text-lg leading-8 text-white/70">
+        Every maintenance engagement follows a closed loop — nothing is certified until every defect that blocks compliance has been resolved.
+      </p>
+
+      <div class="mt-10 w-full overflow-x-auto">
+        <div class="min-w-[860px] px-2">
+          <svg viewBox="0 0 980 170" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto overflow-visible" role="img" aria-label="Maintenance lifecycle flow: Assess, Service, Document, Remediate, Certify">
+            <defs>
+              <marker id="maintArrow" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto">
+                <path d="M0,0 L10,4 L0,8 Z" fill="#4B2E83" />
+              </marker>
+            </defs>
+            {lifecycle.map((node, i) => (
+              <g transform={`translate(${i * 192}, 45)`}>
+                <rect width="168" height="84" rx="8" fill={i === 4 ? "#4B2E83" : "#15191D"} stroke="#4B2E83" stroke-width="2" />
+                <text x="84" y="30" text-anchor="middle" fill={i === 4 ? "#FFFFFF" : "#00C2FF"} font-size="11" font-weight="800">STAGE {node.stage}</text>
+                <text x="84" y="52" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">{node.title}</text>
+                <text x="84" y="70" text-anchor="middle" fill="#FFFFFF" opacity="0.55" font-size="9">{i === 4 ? "Compliance achieved" : "Logged in portal"}</text>
+              </g>
+            ))}
+            {[0, 1, 2, 3].map((i) => (
+              <line x1={i * 192 + 168} y1="87" x2={i * 192 + 192} y2="87" stroke="#4B2E83" stroke-width="2" marker-end="url(#maintArrow)" />
+            ))}
+          </svg>
+        </div>
+      </div>
+
+      <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+        {lifecycle.map((node) => (
+          <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal p-5 transition-all hover:border-kharon-purple/40">
+            <span class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-kharon-purple">Stage {node.stage}</span>
+            <h3 class="mt-2 text-base font-bold text-white">{node.title}</h3>
+            <p class="mt-1.5 text-xs leading-relaxed text-white/50">{node.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- ─── Block 3: Defect Classification ─── -->
+    <div class="mt-16">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-1 w-8 bg-kharon-purple"></div>
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Defect Governance</p>
+      </div>
+      <h2 class="kharon-h2 text-white">How findings are classified.</h2>
+      <p class="mt-4 max-w-3xl text-lg leading-relaxed text-white/70">
+        Every fault is graded so responsible persons can prioritise remediation. Certificate-blocking defects must be cleared before a compliance certificate is issued.
+      </p>
+
+      <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {defectClasses.map((d) => (
+          <div class={`rounded-xl border bg-kharon-charcoal p-6 transition-all ${d.card}`}>
+            <span class={`inline-block px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest mb-4 border ${d.badge}`}>
+              {d.sev}
+            </span>
+            <p class="text-xs leading-relaxed text-white/60">{d.text}</p>
+            <div class="mt-4 pt-4 border-t border-white/10">
+              <p class="text-[0.625rem] font-bold uppercase tracking-widest text-white/40">Response</p>
+              <p class={`mt-1 text-xs font-semibold ${d.accent}`}>{d.action}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- ─── Block 4: Report Anatomy vs Lapse Risk ─── -->
+    <div class="mt-20">
+      <div class="grid gap-12 lg:grid-cols-2 items-start">
+        <div>
+          <span class="text-sm font-bold uppercase tracking-wider text-kharon-cyan">Evidence Layer</span>
+          <h2 class="mt-2 text-3xl font-bold leading-tight text-white">What a service report contains.</h2>
+          <p class="mt-6 text-lg text-white/70 leading-relaxed">
+            Each visit produces inspection-ready documentation — the audit trail that proves a system was maintained, not just visited.
+          </p>
+          <div class="mt-8 space-y-4">
+            {reportContents.map((item) => (
+              <div class="flex gap-4">
+                <div class="mt-1 flex-none h-5 w-5 rounded-full border border-kharon-cyan/50 flex items-center justify-center">
+                  <div class="h-2 w-2 rounded-full bg-kharon-cyan"></div>
+                </div>
+                <p class="text-sm text-white/60 leading-relaxed">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/50 p-8 relative overflow-hidden group">
+          <div class="absolute -right-20 -top-20 h-64 w-64 bg-kharon-red/10 rounded-full blur-3xl group-hover:bg-kharon-red/20 transition-colors"></div>
+          <div class="relative z-10">
+            <h3 class="text-xl font-bold text-white mb-4">Why compliance lapses</h3>
+            <ul class="space-y-4 text-sm text-white/60">
+              {lapseRisks.map((risk) => (
+                <li class="flex gap-3">
+                  <span class="text-kharon-red font-bold">&times;</span>
+                  {risk}
+                </li>
+              ))}
+            </ul>
+            <div class="mt-8 pt-6 border-t border-kharon-purple/10">
+              <p class="text-xs font-medium text-kharon-cyan italic">
+                A managed maintenance schedule keeps certificates valid and protection demonstrably in service.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
