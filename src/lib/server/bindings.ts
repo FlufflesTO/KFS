@@ -57,16 +57,6 @@ function resolveBindings(): Env {
       const db = (astroLocals.db || astroLocals.DB) as D1Database;
       const storage = (astroLocals.storage || astroLocals.STORAGE) as R2Bucket | undefined;
       
-      // Runtime validation for D1 binding
-      if (!db || typeof db !== "object" || !("prepare" in db)) {
-        throw new Error("Cloudflare D1 binding 'DB' is not configured correctly");
-      }
-      
-      // R2 is optional, but validate if present
-      if (storage && (typeof storage !== "object" || !("get" in storage))) {
-        throw new Error("Cloudflare R2 binding 'STORAGE' is not configured correctly");
-      }
-      
       return {
         DB: db,
         STORAGE: storage,
@@ -76,21 +66,11 @@ function resolveBindings(): Env {
         ENVIRONMENT: (astroLocals.ENVIRONMENT as string) || "local"
       };
     }
-
+    
     // Direct global properties (fallback)
     if (gh.DB || gh.STORAGE) {
       const db = gh.DB as D1Database;
       const storage = gh.STORAGE as R2Bucket | undefined;
-      
-      // Runtime validation for D1 binding
-      if (db && (typeof db !== "object" || !("prepare" in db))) {
-        throw new Error("Cloudflare D1 binding 'DB' is not configured correctly");
-      }
-      
-      // R2 is optional, but validate if present
-      if (storage && (typeof storage !== "object" || !("get" in storage))) {
-        throw new Error("Cloudflare R2 binding 'STORAGE' is not configured correctly");
-      }
       
       return {
         DB: db,

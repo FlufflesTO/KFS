@@ -232,14 +232,29 @@ export async function POST({ request }: APIContext): Promise<Response> {
       }
     );
   } catch (error) {
-    console.error("AUTH_API_ERROR_STACK:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : "No stack trace";
+    console.error("AUTH_API_ERROR:", errorMessage);
+    console.error("AUTH_API_ERROR_STACK:", errorStack);
+    
     if (db) {
-      await auditError(db, request, error as Error, {
-        entityType: "portal_api",
-        entityId: "auth_login"
-      });
+      try {
+        await auditError(db, request, error as Error, {
+          entityType: "portal_api",
+          entityId: "auth_login"
+        });
+      } catch (auditErr) {
+        console.error("Failed to audit auth error:", auditErr);
+      }
     } else {
-      console.error("Database connection was not established for error auditing:", error);
+      console.error("Database connection was not established for error auditing");
+      // Try to get DB again to see what's wrong
+      try {
+        const testDb = getDatabase();
+        console.log("Database obtained successfully after error:", !!testDb);
+      } catch (dbErr) {
+        console.error("Database binding issue:", dbErr instanceof Error ? dbErr.message : String(dbErr));
+      }
     }
     return serverError("Authentication could not be completed.");
   }
