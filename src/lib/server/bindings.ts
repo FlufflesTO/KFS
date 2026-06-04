@@ -56,7 +56,7 @@ function resolveBindings(): Env {
     if (astroLocals && (astroLocals.db || astroLocals.DB)) {
       return {
         DB: (astroLocals.db || astroLocals.DB) as D1Database,
-        STORAGE: astroLocals.storage || astroLocals.STORAGE as R2Bucket,
+        STORAGE: (astroLocals.storage || astroLocals.STORAGE) as R2Bucket,
         SESSION_SECRET: (astroLocals.SESSION_SECRET as string) || process.env.SESSION_SECRET || "",
         MFA_SECRET: (astroLocals.MFA_SECRET as string) || process.env.MFA_SECRET || "",
         ENCRYPTION_SECRET: (astroLocals.ENCRYPTION_SECRET as string) || process.env.ENCRYPTION_SECRET || "",
