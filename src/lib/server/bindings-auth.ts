@@ -1,7 +1,14 @@
 /**
  * Helper module for resolving bindings in auth context.
- * This provides a unified way to access environment variables across local and production.
+ * Provides a unified way to access secrets/config across Workers runtime and local tooling.
+ *
+ * Mirrors `bindings.ts`: reads the `cloudflare:workers` runtime `env` first (canonical for
+ * the portal Worker and for `astro dev` under workerd in @astrojs/cloudflare v13), falling
+ * back to `process.env` for non-worker contexts (CLI scripts).
  */
+
+// @ts-ignore - cloudflare:workers is a Cloudflare runtime virtual module provided by the adapter
+import { env as workerEnv } from "cloudflare:workers";
 
 export interface AuthEnv {
   SESSION_SECRET?: string;
@@ -20,35 +27,19 @@ export interface AuthEnv {
 /**
  * Resolves bindings from the runtime environment.
  * Used by auth.ts and other server modules to access secrets and configuration.
- * 
- * @throws {Error} If required secrets are missing in production
+ *
+ * @throws {Error} If required secrets are missing in a non-local environment
  */
 export function resolveBindingsForAuth(): AuthEnv {
-  // Try Cloudflare Pages SSR context first
-  if (typeof globalThis !== "undefined") {
-    const gh = globalThis as Record<string, unknown>;
-
-    // Cloudflare Pages injects env vars into globalThis.__env__
-    const pagesEnv = gh.__env__ as AuthEnv | undefined;
-    if (pagesEnv && (pagesEnv.SESSION_SECRET || pagesEnv.MFA_SECRET || pagesEnv.DB)) {
-      return pagesEnv;
-    }
-
-    // Astro Cloudflare adapter may use __astro_locals__
-    const astroLocals = gh.__astro_locals__ as Record<string, unknown> | undefined;
-    if (astroLocals && (astroLocals.SESSION_SECRET || astroLocals.MFA_SECRET)) {
-      return astroLocals as AuthEnv;
-    }
-
-    // Direct global properties
-    if (gh.SESSION_SECRET || gh.MFA_SECRET) {
-      return gh as AuthEnv;
-    }
+  // Primary: Cloudflare Workers runtime env (Workers + `astro dev` under workerd).
+  const runtime = workerEnv as AuthEnv | undefined;
+  if (runtime && (runtime.SESSION_SECRET || runtime.MFA_SECRET || runtime.DB)) {
+    return runtime;
   }
 
-  // Local development fallback - use process.env
+  // Fallback: local tooling / CLI scripts via process.env.
   if (typeof process !== "undefined" && process.env) {
-    const env = {
+    const env: AuthEnv = {
       SESSION_SECRET: process.env.SESSION_SECRET,
       AUTH_SECRET: process.env.AUTH_SECRET,
       MFA_SECRET: process.env.MFA_SECRET,
@@ -58,20 +49,13 @@ export function resolveBindingsForAuth(): AuthEnv {
       FINGERPRINT_SECRET: process.env.FINGERPRINT_SECRET,
       ENVIRONMENT: process.env.ENVIRONMENT
     };
-    
-    // In production, require secrets to be configured
+
     const environment = env.ENVIRONMENT || "local";
     if (environment !== "local" && !env.SESSION_SECRET) {
       throw new Error("SESSION_SECRET must be configured in production environment");
     }
-    
-    return env;
-  }
 
-  // If we reach here with no secrets, check if we're in production
-  const environment = (globalThis as Record<string, unknown>).ENVIRONMENT as string | undefined;
-  if (environment && environment !== "local") {
-    throw new Error("Required secrets not configured. Set SESSION_SECRET and MFA_SECRET in Cloudflare Pages.");
+    return env;
   }
 
   return {};
