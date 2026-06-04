@@ -79,24 +79,8 @@ export async function POST({ request }: APIContext): Promise<Response> {
       return badRequest("Email and password are required.");
     }
 
-    const rateLimit = await consumeRateLimit(db!, request, {
-      scope: "portal.login",
-      subject: email,
-      maxAttempts: 8,
-      windowSeconds: 15 * 60
-    });
-
-    if (!rateLimit.allowed) {
-      await auditEvent(db!, request, {
-        eventType: "auth.rate_limited",
-        entityType: "user",
-        entityId: email,
-        outcome: "blocked",
-        subject: email,
-        metadata: { attempts: rateLimit.attempts, retryAfter: rateLimit.retryAfter }
-      });
-      return tooManyRequests("Too many sign-in attempts. Try again later.", rateLimit.retryAfter);
-    }
+    // Rate limiting is handled by middleware (5 attempts per 15min)
+    // No duplicate check needed here to avoid confusion
 
     const userRepo = new UserRepository(db!);
     const user = await userRepo.findWithSecretsByEmail(email);
