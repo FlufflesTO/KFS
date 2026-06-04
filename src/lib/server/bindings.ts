@@ -54,21 +54,47 @@ function resolveBindings(): Env {
     // Astro Cloudflare adapter may use __astro_locals__
     const astroLocals = gh.__astro_locals__ as Record<string, unknown> | undefined;
     if (astroLocals && (astroLocals.db || astroLocals.DB)) {
+      const db = (astroLocals.db || astroLocals.DB) as D1Database;
+      const storage = (astroLocals.storage || astroLocals.STORAGE) as R2Bucket | undefined;
+      
+      // Runtime validation for D1 binding
+      if (!db || typeof db !== "object" || !("prepare" in db)) {
+        throw new Error("Cloudflare D1 binding 'DB' is not configured correctly");
+      }
+      
+      // R2 is optional, but validate if present
+      if (storage && (typeof storage !== "object" || !("get" in storage))) {
+        throw new Error("Cloudflare R2 binding 'STORAGE' is not configured correctly");
+      }
+      
       return {
-        DB: (astroLocals.db || astroLocals.DB) as D1Database,
-        STORAGE: astroLocals.storage || astroLocals.STORAGE as R2Bucket,
+        DB: db,
+        STORAGE: storage,
         SESSION_SECRET: (astroLocals.SESSION_SECRET as string) || process.env.SESSION_SECRET || "",
         MFA_SECRET: (astroLocals.MFA_SECRET as string) || process.env.MFA_SECRET || "",
         ENCRYPTION_SECRET: (astroLocals.ENCRYPTION_SECRET as string) || process.env.ENCRYPTION_SECRET || "",
         ENVIRONMENT: (astroLocals.ENVIRONMENT as string) || "local"
       };
     }
-    
+
     // Direct global properties (fallback)
     if (gh.DB || gh.STORAGE) {
+      const db = gh.DB as D1Database;
+      const storage = gh.STORAGE as R2Bucket | undefined;
+      
+      // Runtime validation for D1 binding
+      if (db && (typeof db !== "object" || !("prepare" in db))) {
+        throw new Error("Cloudflare D1 binding 'DB' is not configured correctly");
+      }
+      
+      // R2 is optional, but validate if present
+      if (storage && (typeof storage !== "object" || !("get" in storage))) {
+        throw new Error("Cloudflare R2 binding 'STORAGE' is not configured correctly");
+      }
+      
       return {
-        DB: gh.DB as D1Database,
-        STORAGE: gh.STORAGE as R2Bucket,
+        DB: db,
+        STORAGE: storage,
         SESSION_SECRET: (gh.SESSION_SECRET as string) || "",
         MFA_SECRET: (gh.MFA_SECRET as string) || "",
         ENCRYPTION_SECRET: (gh.ENCRYPTION_SECRET as string) || "",

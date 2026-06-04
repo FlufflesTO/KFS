@@ -77,6 +77,13 @@ export async function auditEvent(db: D1Database, request: Request, event: AuditE
       event.metadata ? JSON.stringify(event.metadata) : null
     ).run();
   } catch (error) {
+    // For security-critical events, re-throw to prevent silent failures
+    const securityEvents = ["login", "logout", "password_change", "mfa_enrollment", "access_denied"];
+    if (securityEvents.includes(event.eventType)) {
+      console.error(`Security audit failed for event: ${event.eventType}`, error);
+      throw error; // Force failure on security audit to maintain compliance trail
+    }
+    // For non-security events, log but continue
     console.error("Audit event logging failed", error);
   }
 }
