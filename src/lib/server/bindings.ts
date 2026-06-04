@@ -10,6 +10,25 @@
 
 import type { D1Database, R2Bucket } from "@cloudflare/workers-types";
 
+// Global store for Cloudflare bindings (set by middleware)
+let globalCloudflareEnv: Env | null = null;
+
+/**
+ * Set the global Cloudflare environment from middleware.
+ * This is called by the storeBindings middleware to make bindings available globally.
+ */
+export function setCloudflareEnv(env: Env): void {
+  globalCloudflareEnv = env;
+}
+
+/**
+ * Get the global Cloudflare environment.
+ * Returns null if not yet set (will be set by middleware on first request).
+ */
+export function getCloudflareEnv(): Env | null {
+  return globalCloudflareEnv;
+}
+
 export interface WorkerBindings {
   db: D1Database;
   storage: R2Bucket;
@@ -35,12 +54,18 @@ export interface Env {
  * Resolves Cloudflare bindings from the runtime environment.
  * 
  * Binding resolution order:
- * 1. Cloudflare Pages function context (globalThis.__env__)
- * 2. Astro locals fallback (__astro_locals__)
- * 3. Direct globalThis properties
- * 4. Process environment variables (local development)
+ * 1. Global Cloudflare env (set by middleware)
+ * 2. Cloudflare Pages function context (globalThis.__env__)
+ * 3. Astro locals fallback (__astro_locals__)
+ * 4. Direct globalThis properties
+ * 5. Process environment variables (local development)
  */
 function resolveBindings(): Env {
+  // Check global Cloudflare env first (set by middleware)
+  if (globalCloudflareEnv) {
+    return globalCloudflareEnv;
+  }
+  
   // Try Cloudflare Pages SSR context first
   if (typeof globalThis !== "undefined") {
     const gh = globalThis as Record<string, unknown>;
@@ -48,6 +73,7 @@ function resolveBindings(): Env {
     // Cloudflare Pages injects env vars into globalThis.__env__
     const pagesEnv = gh.__env__ as Env | undefined;
     if (pagesEnv && (pagesEnv.DB || pagesEnv.STORAGE || pagesEnv.SESSION_SECRET)) {
+      globalCloudflareEnv = pagesEnv;
       return pagesEnv;
     }
     
@@ -57,7 +83,7 @@ function resolveBindings(): Env {
       const db = (astroLocals.db || astroLocals.DB) as D1Database;
       const storage = (astroLocals.storage || astroLocals.STORAGE) as R2Bucket | undefined;
       
-      return {
+      const env = {
         DB: db,
         STORAGE: storage,
         SESSION_SECRET: (astroLocals.SESSION_SECRET as string) || process.env.SESSION_SECRET || "",
@@ -65,6 +91,8 @@ function resolveBindings(): Env {
         ENCRYPTION_SECRET: (astroLocals.ENCRYPTION_SECRET as string) || process.env.ENCRYPTION_SECRET || "",
         ENVIRONMENT: (astroLocals.ENVIRONMENT as string) || "local"
       };
+      globalCloudflareEnv = env;
+      return env;
     }
     
     // Direct global properties (fallback)
@@ -72,7 +100,7 @@ function resolveBindings(): Env {
       const db = gh.DB as D1Database;
       const storage = gh.STORAGE as R2Bucket | undefined;
       
-      return {
+      const env = {
         DB: db,
         STORAGE: storage,
         SESSION_SECRET: (gh.SESSION_SECRET as string) || "",
@@ -80,19 +108,23 @@ function resolveBindings(): Env {
         ENCRYPTION_SECRET: (gh.ENCRYPTION_SECRET as string) || "",
         ENVIRONMENT: (gh.ENVIRONMENT as string) || "local"
       };
+      globalCloudflareEnv = env;
+      return env;
     }
   }
   
   // Local development fallback - use process.env
   // This works when running `astro dev` with .dev.vars loaded
   if (typeof process !== "undefined" && process.env) {
-    return {
+    const env = {
       SESSION_SECRET: process.env.SESSION_SECRET || "",
       MFA_SECRET: process.env.MFA_SECRET || "",
       ENCRYPTION_SECRET: process.env.ENCRYPTION_SECRET || "",
       ENVIRONMENT: process.env.ENVIRONMENT || "local",
       STANDARD_SERVICE_FEE: process.env.STANDARD_SERVICE_FEE || "185000"
     } as Env;
+    globalCloudflareEnv = env;
+    return env;
   }
 
   return {} as Env;

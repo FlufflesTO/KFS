@@ -11,7 +11,7 @@ import type { MiddlewareHandler, APIContext } from "astro";
 import type { SessionUser } from "./lib/server/auth.js";
 import { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } from "./lib/server/auth.js";
 import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
-import { getDatabase } from "./lib/server/bindings.ts";
+import { getDatabase, setCloudflareEnv } from "./lib/server/bindings.ts";
 import { consumeRateLimit } from "./lib/server/rateLimit.js";
 import { auditEvent } from "./lib/server/audit";
 
@@ -30,6 +30,22 @@ function createCspNonce(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Middleware: Store Cloudflare bindings in global for API access
+ * This makes DB, STORAGE, and env vars available to all routes
+ */
+async function storeBindings(context: APIContext, next: () => Promise<Response>) {
+  // Cloudflare Pages passes env vars via the function context
+  // In Astro, these are available through context.locals or context.env
+  const cloudflareEnv = (context as any).env || (context as any).locals?.cloudflareEnv;
+  
+  if (cloudflareEnv) {
+    setCloudflareEnv(cloudflareEnv);
+  }
+  
+  return next();
 }
 
 function securityHeaders(nonce: string): Record<string, string> {
@@ -448,6 +464,7 @@ const rbacMiddleware: MiddlewareHandler = async (context, next) => {
 };
 
 const middlewareChain = sequence(
+  storeBindings,
   setupMiddleware,
   authMiddleware,
   mfaEnforcementMiddleware,
