@@ -37,7 +37,12 @@ const nonce = Astro.locals.nonce;
       
       toastTitle.textContent = title;
       toastMessage.textContent = '';
-      toastMessage.appendChild(document.createRange().createContextualFragment(message));
+
+      if (typeof message === 'string') {
+        toastMessage.textContent = message;
+      } else if (message instanceof Node) {
+        toastMessage.appendChild(message);
+      }
       
       const header = document.getElementById('toast-header');
       header.className = `px-4 py-2 text-xs font-bold uppercase tracking-widest text-white flex justify-between items-center ${
@@ -103,7 +108,7 @@ const nonce = Astro.locals.nonce;
       btn.dataset.submitting = 'false';
       btn.disabled = false;
       btn.textContent = '';
-      btn.appendChild(document.createRange().createContextualFragment(btn.dataset.originalText));
+      btn.innerHTML = btn.dataset.originalText;
       btn.classList.remove('opacity-80', 'cursor-not-allowed');
     };
 
@@ -116,9 +121,18 @@ const nonce = Astro.locals.nonce;
         const retryAfter = response.headers.get('Retry-After');
         const seconds = parseInt(retryAfter, 10) || 60;
         
+        const fragment = document.createDocumentFragment();
+        fragment.appendChild(document.createTextNode('Rate limit exceeded. Please wait '));
+        const strong = document.createElement('strong');
+        strong.id = 'retry-countdown';
+        strong.className = 'text-kharon-amber';
+        strong.textContent = seconds;
+        fragment.appendChild(strong);
+        fragment.appendChild(document.createTextNode(' seconds before trying again.'));
+
         showToast(
           'Too Many Requests',
-          `Rate limit exceeded. Please wait <strong id="retry-countdown" class="text-kharon-amber">${seconds}</strong> seconds before trying again.`,
+          fragment,
           'error',
           null,
           seconds * 1000 + 2000

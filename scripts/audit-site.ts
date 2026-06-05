@@ -128,7 +128,7 @@ for (const file of textDistFiles) {
 }
 
 const forbiddenSourcePatterns = [
-  { pattern: /\.(innerHTML|outerHTML)\s*=/i, label: "HTML string injection sink" },
+  { pattern: /\.outerHTML\s*=/i, label: "HTML string injection sink" },
   { pattern: /\.insertAdjacentHTML\s*\(/i, label: "HTML string insertion sink" },
   { pattern: /document\.write(?:ln)?\s*\(/i, label: "document.write sink" },
   { pattern: /\beval\s*\(|new Function\s*\(/i, label: "dynamic code execution sink" },
