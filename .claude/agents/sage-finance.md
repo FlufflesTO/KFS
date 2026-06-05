@@ -109,8 +109,9 @@ const tasks = await service.getTasksBySite(siteId);
 
 // Update — only updates status, sageDocumentRef, sageDocumentId, notes
 // IMPORTANT: updateFinanceTask does NOT update taskType — the implementation
-// only applies changes to status/sage fields/notes. Use a direct DB update
-// via the repository layer if taskType must change.
+// only applies changes to status/sage fields/notes.
+// FinanceRepository.update also does NOT support task_type (only status, sage_document_ref, notes).
+// To change taskType, the repository's update method must first be extended to support task_type.
 await service.updateFinanceTask(id, { status, sageDocumentRef, sageDocumentId, notes });
 
 // Summary (no siteId parameter — returns aggregate across all sites)
@@ -178,8 +179,9 @@ RBAC is enforced by the middleware chain — use `requireFinance(user)` guard at
 ### Recording a Sage Quote
 ```ts
 // updateFinanceTask only updates status/sage refs/notes — it does NOT update taskType.
-// To advance the task type, use the service's dedicated lifecycle methods, or update
-// task_type directly via the repository if no lifecycle method exists for the transition.
+// FinanceRepository.update also does NOT support task_type directly.
+// To advance the task type, use the service's dedicated lifecycle methods, or extend
+// FinanceRepository.update to add task_type support before calling it.
 await service.updateFinanceTask(taskId, {
   sageDocumentRef: 'QUO-042',
   sageDocumentId: sageQuote.id,

@@ -90,8 +90,9 @@ programmatic login in fixtures instead:
 import { test as base, type Page } from '@playwright/test';
 
 type RoleFixtures = {
-  adminPage: Page;
-  clientPage: Page;
+  adminPage: Page;   // ⚠️ elevated — ensure mfa_enabled=1 in D1 before using
+  clientPage: Page;  // ✓ safe — no MFA redirect
+  techPage: Page;    // ✓ safe — no MFA redirect
 };
 
 // Seeded email addresses (from seed-users.sql):
@@ -106,7 +107,18 @@ type RoleFixtures = {
 //   then: wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --command "UPDATE users SET password_hash='<hash>'"
 // Then export it: export TEST_PASSWORD=YourLocalPassword
 export const test = base.extend<RoleFixtures>({
-  // Use tech/client/manager for fixtures — no MFA redirect
+  adminPage: async ({ browser }, use) => {
+    // ⚠️ admin is elevated — runs TOTP/MFA redirect unless mfa_enabled=1 in D1
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    await page.goto('/portal/login');
+    await page.locator('[name="email"]').fill('admin@kharon.co.za');
+    await page.locator('[name="password"]').fill(process.env.TEST_PASSWORD!);
+    await page.locator('[type="submit"]').click();
+    await page.waitForURL('/portal/admin/dashboard');
+    await use(page);
+    await ctx.close();
+  },
   clientPage: async ({ browser }, use) => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
@@ -118,7 +130,18 @@ export const test = base.extend<RoleFixtures>({
     await use(page);
     await ctx.close();
   },
-  // ... similar for other roles (tech → /portal/tech/dashboard, manager → /portal/manager/dashboard)
+  techPage: async ({ browser }, use) => {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    await page.goto('/portal/login');
+    await page.locator('[name="email"]').fill('tech@kharon.co.za');
+    await page.locator('[name="password"]').fill(process.env.TEST_PASSWORD!);
+    await page.locator('[type="submit"]').click();
+    await page.waitForURL('/portal/tech/dashboard');
+    await use(page);
+    await ctx.close();
+  },
+  // manager → /portal/manager/dashboard (manager@kharon.co.za, non-elevated)
 });
 ```
 
@@ -198,7 +221,8 @@ test('inline scripts have nonces', async ({ page }) => {
 ```ts
 // NOTE: /portal/tech/jobs does not exist as an index route. Valid tech routes:
 // dashboard, schedule, history, jobs/[id], jobs/[id]/jobcard, jobs/[id]/log-visit
-test('draft persists offline', async ({ page, context }) => {
+// Use techPage (authenticated) — unauthenticated page redirects to /portal/login
+test('draft persists offline', async ({ techPage: page, context }) => {
   await page.goto('/portal/tech/schedule');  // or jobs/[id] with a real job ID
   
   // Fill a draft form (verify the actual field name exists on the chosen page)
