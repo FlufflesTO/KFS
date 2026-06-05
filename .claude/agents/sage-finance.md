@@ -160,7 +160,9 @@ sageDocumentRef: string;
 sageDocumentId: string;
 ```
 
-Always store both `sageDocumentRef` and `sageDocumentId` when recording a Sage document against a FinanceTask.
+When recording a Sage document against a FinanceTask, pass both refs to `service.updateFinanceTask()`.
+Note: `DbFinanceTask` from `@sentinel/types` does **not** include `sage_document_id` — that field is handled
+at the service layer only (`updateFinanceTask` writes it directly via SQL). Do not expect it on the typed object.
 
 ### API Rate Limits
 Sage API v3.1: 3600 requests per hour per company. Cache responses where appropriate.
@@ -171,8 +173,8 @@ Sage API v3.1: 3600 requests per hour per company. Cache responses where appropr
 |------|--------|
 | `finance` | Full finance portal — all sites' tasks |
 | `admin` | Can view finance data from admin dashboard |
-| `client` | Can see their own site's finance summary |
 | `tech` | No finance access |
+| `client` | No finance access — `/portal/finance/*` and `/portal/api/finance/*` reject client role |
 
 RBAC is enforced by the middleware chain — use `requireFinance(user)` guard at endpoint level.
 

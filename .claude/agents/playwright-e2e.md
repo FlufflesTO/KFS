@@ -108,14 +108,18 @@ type RoleFixtures = {
 // Then export it: export TEST_PASSWORD=YourLocalPassword
 export const test = base.extend<RoleFixtures>({
   adminPage: async ({ browser }, use) => {
-    // ⚠️ admin is elevated — runs TOTP/MFA redirect unless mfa_enabled=1 in D1
+    // ⚠️ admin is elevated — requires MFA. Two options:
+    //   A) Set mfa_enabled=1 in D1 AND provide TOTP code: fill name="mfaCode" after password
+    //   B) Use techPage/clientPage instead (non-elevated, no MFA required)
+    // For most tests, prefer option B. Use adminPage only when testing admin-specific UI.
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
     await page.goto('/portal/login');
     await page.locator('[name="email"]').fill('admin@kharon.co.za');
     await page.locator('[name="password"]').fill(process.env.TEST_PASSWORD!);
+    // If mfa_enabled=1: await page.locator('[name="mfaCode"]').fill(totpCode);
     await page.locator('[type="submit"]').click();
-    await page.waitForURL('/portal/admin/dashboard');
+    await page.waitForURL('/portal/admin/dashboard'); // only works if mfa_enabled=1 + valid TOTP
     await use(page);
     await ctx.close();
   },
@@ -206,8 +210,10 @@ test('security headers present', async ({ page }) => {
 
 ### CSP Nonce Validation
 ```ts
-test('inline scripts have nonces', async ({ page }) => {
-  await page.goto('/portal/admin/dashboard');
+// Use an authenticated fixture — unauthenticated page redirects to /portal/login
+// Use a non-elevated role (tech/client) to avoid MFA setup complexity
+test('inline scripts have nonces', async ({ techPage: page }) => {
+  await page.goto('/portal/tech/dashboard');
   const inlineScripts = await page.locator('script:not([src])').all();
   for (const script of inlineScripts) {
     const nonce = await script.getAttribute('nonce');
@@ -228,8 +234,9 @@ test('draft persists offline', async ({ techPage: page, context }) => {
   // Fill a draft form (verify the actual field name exists on the chosen page)
   await page.fill('[name="description"]', 'Test job description');
   
-  // Go offline
-  await context.setOffline(true);
+  // Go offline — use page.context() NOT the built-in `context` fixture;
+  // techPage creates its own browser context so they are different objects
+  await page.context().setOffline(true);
   
   // Reload — draft should persist via IndexedDB
   await page.reload();
@@ -237,7 +244,7 @@ test('draft persists offline', async ({ techPage: page, context }) => {
   expect(value).toBe('Test job description');
   
   // Restore network
-  await context.setOffline(false);
+  await page.context().setOffline(false);
 });
 ```
 
@@ -247,7 +254,8 @@ test('draft persists offline', async ({ techPage: page, context }) => {
 test.describe('mobile layout', () => {
   test.use({ ...devices['iPhone 14 Pro'] });
   
-  test('touch targets are at least 44x44px', async ({ page }) => {
+  // Use authenticated fixture — unauthenticated page redirects to /portal/login
+  test('touch targets are at least 44x44px', async ({ clientPage: page }) => {
     await page.goto('/portal/client/dashboard');
     // Wait for at least one interactive element before collecting all — prevents empty array on slow render
     await page.locator('button, a[href], [role="button"]').first().waitFor({ state: 'attached' });
