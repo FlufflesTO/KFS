@@ -17,7 +17,7 @@ const { title, subtitle, description, image, reverse = false } = Astro.props;
         <div class="rounded-xl border border-kharon-purple/15 bg-kharon-surface-elevated p-8 backdrop-blur-sm kharon-surface-strong">
           <div class="aspect-video bg-kharon-charcoal rounded-lg flex items-center justify-center overflow-hidden">
             {image ? (
-              <img 
+              <img loading="lazy" decoding="async"
                 src={image} 
                 alt="Feature visualization" 
                 class="w-full h-full object-cover"

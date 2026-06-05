@@ -21,7 +21,7 @@ const { title, subtitle, description, icon } = Astro.props;
 
   <div class="container relative z-10 mx-auto max-w-7xl px-6 text-center">
     <div class="inline-flex items-center justify-center h-20 w-20 rounded-2xl bg-kharon-purple/10 border border-kharon-purple/20 mb-8 p-4 shadow-2xl shadow-kharon-purple/5">
-      <img src={icon} alt="" class="h-full w-full object-contain" />
+      <img loading="eager" decoding="async" src={icon} alt="" class="h-full w-full object-contain" />
     </div>
 
     <div class="space-y-6">

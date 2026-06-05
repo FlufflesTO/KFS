@@ -52,7 +52,7 @@ const pathways = [
         <article class={`rounded-lg border p-5 ${item.tone} flex gap-4 items-start`}>
           {item.icon && (
             <div class="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden flex-none">
-              <img src={item.icon} class="w-full h-full object-contain" alt={`${item.severity} severity icon`} />
+              <img loading="lazy" decoding="async" src={item.icon} class="w-full h-full object-contain" alt={`${item.severity} severity icon`} />
             </div>
           )}
           <div class="flex-grow">

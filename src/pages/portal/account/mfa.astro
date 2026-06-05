@@ -75,7 +75,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
                 <div class="flex flex-col items-center gap-4 text-center">
                   <p class="text-sm font-semibold text-white">Scan this QR code with your authenticator app.</p>
                   <div class="rounded-lg bg-white p-2">
-                    <img id="mfa-qr" class="h-48 w-48" alt="MFA QR Code" />
+                    <img loading="lazy" decoding="async" id="mfa-qr" class="h-48 w-48" alt="MFA QR Code" />
                   </div>
                   <a id="mfa-link" class="text-xs font-bold uppercase tracking-widest text-kharon-cyan hover:underline">
                     Open in Authenticator App
