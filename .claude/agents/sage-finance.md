@@ -108,10 +108,12 @@ const task = await service.getTaskById(taskId);
 const tasks = await service.getTasksBySite(siteId);
 
 // Update — only updates status, sageDocumentRef, sageDocumentId, notes
-// IMPORTANT: updateFinanceTask does NOT update taskType — the implementation
-// only applies changes to status/sage fields/notes.
-// FinanceRepository.update also does NOT support task_type (only status, sage_document_ref, notes).
-// To change taskType, the repository's update method must first be extended to support task_type.
+// IMPORTANT: updateFinanceTask does NOT update taskType — both the service method and
+// FinanceRepository.update silently ignore it (only status, sageDocumentRef, sageDocumentId,
+// notes are applied). The lifecycle methods (markQuoteIssuedInSage etc.) also call
+// updateFinanceTask with taskType and are therefore equally broken for task_type transitions.
+// To change taskType, add a direct SQL UPDATE in the repository, or extend updateFinanceTask
+// to include a `task_type = ?` field.
 await service.updateFinanceTask(id, { status, sageDocumentRef, sageDocumentId, notes });
 
 // Summary (no siteId parameter — returns aggregate across all sites)
@@ -178,10 +180,10 @@ RBAC is enforced by the middleware chain — use `requireFinance(user)` guard at
 
 ### Recording a Sage Quote
 ```ts
-// updateFinanceTask only updates status/sage refs/notes — it does NOT update taskType.
-// FinanceRepository.update also does NOT support task_type directly.
-// To advance the task type, use the service's dedicated lifecycle methods, or extend
-// FinanceRepository.update to add task_type support before calling it.
+// updateFinanceTask only updates status/sage refs/notes/sageDocumentId — taskType is silently ignored.
+// The lifecycle methods (markQuoteIssuedInSage, markInvoiceIssuedInSage, etc.) call updateFinanceTask
+// with taskType, so they are ALSO broken for task_type transitions. To advance task_type in the DB,
+// add a direct SQL UPDATE in the repository, or extend updateFinanceTask to handle task_type.
 await service.updateFinanceTask(taskId, {
   sageDocumentRef: 'QUO-042',
   sageDocumentId: sageQuote.id,

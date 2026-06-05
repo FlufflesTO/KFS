@@ -306,9 +306,11 @@ Before running tests, the dev server must be running with D1 seeded:
 npx wrangler d1 migrations apply kharon-portal --local --config wrangler.portal.jsonc
 npx wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --file seed-users.sql
 
-# Set a known password for all seeded users (hash it first via scripts/hash-password.ts):
-# node --input-type=module --eval "$(cat scripts/hash-password.ts | sed 's/process.argv\[2\]/\"YourLocalPassword\"/g')"
-# Then update: wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --command "UPDATE users SET password_hash='<hash>'"
+# Set a known password for all seeded users (scripts/hash-password.ts is TypeScript — use tsx):
+# npm run portal:hash-password -- YourLocalPassword
+# (or: npx tsx scripts/hash-password.ts YourLocalPassword)
+# Copy the output hash, then:
+# wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --command "UPDATE users SET password_hash='<hash>'"
 export TEST_PASSWORD=YourLocalPassword
 
 npm run build   # required — preview serves dist/ which must exist

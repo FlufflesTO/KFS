@@ -97,7 +97,7 @@ Before finalising any implementation:
 - [ ] Session token comparisons are constant-time
 - [ ] No raw IPs stored
 - [ ] No `db.prepare()` outside repositories
-- [ ] All types imported from `packages/types/src/domain.ts`
+- [ ] All types imported from `@sentinel/types` (never from `packages/types/src/domain.ts` directly)
 - [ ] Binding access via `getDatabase()`/`getStorage()` only
 
 ## Communication Style

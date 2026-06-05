@@ -61,7 +61,7 @@ npx wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --f
 - Named with sequential number prefix: `0001_create_users.sql`, `0002_add_sites.sql`, etc.
 - Always use `IF NOT EXISTS` for `CREATE TABLE` and `IF NOT EXISTS` for `CREATE INDEX`
 - D1 uses SQLite syntax — no `SERIAL`, no `AUTO_INCREMENT`, use `INTEGER PRIMARY KEY` for auto-increment
-- All tables must have `deleted_at TEXT` for soft-delete pattern (except junction tables)
+- User-facing entity tables must have `deleted_at TEXT` for soft-delete (e.g. `users`, `sites`, `jobs`, `defects`, `certificates`). Exceptions — these tables do **NOT** have `deleted_at`: `finance_tasks`, `sage_config`, `rate_limits`, `offline_mutations`, junction/mapping tables
 - Users table additionally uses `is_active INTEGER NOT NULL DEFAULT 1`
 - All monetary values stored as `INTEGER` (cents) — never `REAL`
 - Timestamps stored as `TEXT` in ISO 8601 format
@@ -187,8 +187,8 @@ ENVIRONMENT=local
 2. Write the SQL using D1/SQLite syntax (no PostgreSQL-isms)
 3. Add `IF NOT EXISTS` guards on CREATE statements
 4. Include soft-delete column if it's a new entity table
-5. Test locally: `npx wrangler d1 migrations apply kharon-portal --local`
-6. Verify with: `npx wrangler d1 execute kharon-portal --local --command "SELECT name FROM sqlite_master WHERE type='table'"`
+5. Test locally: `npx wrangler d1 migrations apply kharon-portal --local --config wrangler.portal.jsonc`
+6. Verify with: `npx wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --command "SELECT name FROM sqlite_master WHERE type='table'"`
 7. Apply remotely only when ready for production
 
 ### Debugging Binding Errors
