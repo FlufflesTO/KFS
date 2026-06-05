@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Current-stack reference:** `docs/STACK_REFERENCE.md` holds the version-pinned official-docs
+> index plus **canonical patterns verified against live docs (Astro 6 / `@astrojs/cloudflare` v13,
+> Tailwind v4, Zod v4, Wrangler 4)** and the curated skill/MCP map for this stack. Read it before
+> any version-sensitive change — APIs on this stack drift fast.
+
 ---
 
 ## Commands
