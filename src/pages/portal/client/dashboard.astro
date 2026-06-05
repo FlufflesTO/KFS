@@ -45,8 +45,19 @@ try {
 }
 
 // Derive overall stats from site aggregates
-const totalSystems    = siteAggregates.reduce((n, s) => n + s.system_count, 0);
-const overdueCount    = siteAggregates.reduce((n, s) => n + s.overdue_count, 0);
+// Optimization: Combine multiple passes into a single loop to reduce O(4n) to O(n)
+let totalSystems = 0;
+let overdueCount = 0;
+let totalDefects = 0;
+let totalCritical = 0;
+
+for (let i = 0; i < siteAggregates.length; i++) {
+  const s = siteAggregates[i];
+  totalSystems += s.system_count;
+  overdueCount += s.overdue_count;
+  totalDefects += s.defect_count;
+  totalCritical += s.critical_count;
+}
 
 const compliantCount  = totalSystems - overdueCount;
 const compliancePercentage = totalSystems > 0 ? Math.round((compliantCount / totalSystems) * 100) : 100;
@@ -200,11 +211,11 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
           <div class="mt-8 grid gap-4 sm:grid-cols-2">
             <div class="p-4 rounded-xl bg-kharon-black/40 border border-kharon-purple/10">
               <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Open Remediation</p>
-              <p class="text-xl font-black text-white">{siteAggregates.reduce((n, s) => n + s.defect_count, 0)} <span class="text-xs font-bold text-white/30 ml-1">Defects recorded</span></p>
+              <p class="text-xl font-black text-white">{totalDefects} <span class="text-xs font-bold text-white/30 ml-1">Defects recorded</span></p>
             </div>
             <div class="p-4 rounded-xl bg-kharon-black/40 border border-kharon-purple/10">
               <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Critical Exceptions</p>
-              <p class="text-xl font-black text-kharon-red">{siteAggregates.reduce((n, s) => n + s.critical_count, 0)} <span class="text-xs font-bold text-white/30 ml-1">Action items</span></p>
+              <p class="text-xl font-black text-kharon-red">{totalCritical} <span class="text-xs font-bold text-white/30 ml-1">Action items</span></p>
             </div>
           </div>
         </div>
