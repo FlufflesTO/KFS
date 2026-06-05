@@ -43,13 +43,16 @@ desktop-chrome, mobile-android-3g  // mobile-safari skipped in CI
 
 ## Portal Authentication Roles
 
-The portal has four roles, each with distinct dashboard routes:
-- `admin` → `/portal/admin/dashboard`
-- `tech` → `/portal/tech/dashboard`  
+The portal has five roles, each with distinct dashboard routes:
+- `admin` → `/portal/admin/dashboard` ⚠️ elevated — MFA redirect if `mfa_enabled=0`
+- `tech` → `/portal/tech/dashboard`
 - `client` → `/portal/client/dashboard`
-- `finance` → `/portal/finance/dashboard`
+- `finance` → `/portal/finance/dashboard` ⚠️ elevated — MFA redirect if `mfa_enabled=0`
+- `manager` → `/portal/manager/dashboard`
 
-Login requires: username + password + MFA (TOTP). Test users are seeded via `seed-users.sql`.
+Login requires: email + password + MFA (TOTP). Test users are seeded via `seed-users.sql`.
+
+> **MFA gotcha:** `admin` and `finance` are elevated roles — the middleware redirects them to `/portal/account/mfa` when `mfa_enabled = 0`. Seeded users all have `mfa_enabled = 0`. For test fixtures, prefer `tech`, `client`, or `manager` (non-elevated) to avoid the MFA redirect; admin/finance fixtures need a TOTP step or `mfa_enabled` set to `1` in D1 first.
 
 ### Authentication Pattern (Page Object Model)
 
@@ -91,28 +94,31 @@ type RoleFixtures = {
   clientPage: Page;
 };
 
-// Seeded email addresses are known (from seed-users.sql):
-//   admin:   admin@kharon.co.za
-//   tech:    tech@kharon.co.za
-//   finance: finance@kharon.co.za
-//   client:  client@example.com
+// Seeded email addresses (from seed-users.sql):
+//   admin:   admin@kharon.co.za   ⚠️ elevated — redirected to /portal/account/mfa unless mfa_enabled=1
+//   tech:    tech@kharon.co.za    ✓ safe for fixtures
+//   finance: finance@kharon.co.za ⚠️ elevated
+//   client:  client@example.com   ✓ safe for fixtures
+//   manager: manager@kharon.co.za ✓ safe for fixtures
 //
 // Passwords are NOT in git. Set a known local password first (see CLAUDE.md):
-//   node --input-type=module --eval "..." → get hash → wrangler d1 execute … UPDATE users SET password_hash='...'
+//   node --input-type=module --eval "$(cat scripts/hash-password.ts | sed 's/process.argv\[2\]/\"YourLocalPassword\"/g')"
+//   then: wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --command "UPDATE users SET password_hash='<hash>'"
 // Then export it: export TEST_PASSWORD=YourLocalPassword
 export const test = base.extend<RoleFixtures>({
-  adminPage: async ({ browser }, use) => {
+  // Use tech/client/manager for fixtures — no MFA redirect
+  clientPage: async ({ browser }, use) => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
     await page.goto('/portal/login');
-    await page.locator('[name="email"]').fill('admin@kharon.co.za');
+    await page.locator('[name="email"]').fill('client@example.com');
     await page.locator('[name="password"]').fill(process.env.TEST_PASSWORD!);
     await page.locator('[type="submit"]').click();
-    await page.waitForURL('/portal/admin/dashboard');
+    await page.waitForURL('/portal/client/dashboard');
     await use(page);
     await ctx.close();
   },
-  // ... similar for other roles (tech → /portal/tech/dashboard, etc.)
+  // ... similar for other roles (tech → /portal/tech/dashboard, manager → /portal/manager/dashboard)
 });
 ```
 
@@ -123,7 +129,9 @@ Use `@axe-core/playwright` (already installed as devDependency):
 ```ts
 import AxeBuilder from '@axe-core/playwright';
 
-test('no accessibility violations', async ({ page }) => {
+// Use an authenticated fixture — unauthenticated page gets redirected to /portal/login
+test('no accessibility violations', async ({ clientPage: page }) => {
+  // page is already logged in as client (non-elevated, no MFA redirect)
   await page.goto('/portal/client/dashboard');
 
   const results = await new AxeBuilder({ page })
@@ -146,10 +154,12 @@ test('no accessibility violations', async ({ page }) => {
 
 ### CSRF Token Presence
 ```ts
-// NOTE: The login page is bypassed by the CSRF middleware for unauthenticated users,
-// so it does NOT have a csrf_token input. Test CSRF on authenticated mutating forms instead.
+// NOTE: The login page is bypassed by CSRF middleware — it has no csrf_token input.
+// Test CSRF on authenticated pages that have mutating forms with <CsrfInput />.
+// /portal/admin/dashboard has NO CsrfInput — use pages like exports, jobs, or users.
 test('admin form has CSRF token', async ({ adminPage: page }) => {
-  await page.goto('/portal/admin/dashboard');
+  // admin@kharon.co.za is elevated — ensure mfa_enabled=1 in D1 before running
+  await page.goto('/portal/admin/exports'); // exports.astro imports CsrfInput
   // CsrfInput.astro renders name="csrf_token" (not "_csrf")
   const csrfInput = page.locator('input[name="csrf_token"]');
   await expect(csrfInput.first()).toBeVisible();
@@ -277,6 +287,7 @@ npx wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --f
 # Then update: wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc --command "UPDATE users SET password_hash='<hash>'"
 export TEST_PASSWORD=YourLocalPassword
 
+npm run build   # required — preview serves dist/ which must exist
 npm run preview  # starts on port 4321
 ```
 

@@ -27,7 +27,7 @@ Never use `Astro.locals.env`, `context.env`, or any direct binding access patter
 
 ### Repository Layer
 - All database access goes through the repository files in `src/lib/server/db/`: `user-repository.ts`, `job-repository.ts`, `system-repository.ts`, `defect-repository.ts`, `finance-repository.ts`, `staff-repository.ts`
-- A secondary `src/lib/server/repositories/` directory contains newer `job-repository.ts` and `site-repository.ts` — follow the same conventions for any new additions there
+- A secondary `src/lib/server/repositories/` directory exists with `job-repository.ts` and `site-repository.ts` — this is legacy; **all new repositories must go in `src/lib/server/db/`**, not in `repositories/`
 - Never write raw `db.prepare()` calls outside of a repository
 - Every query MUST include `deleted_at IS NULL` (soft-delete pattern); `users` table also requires `is_active` checks
 - All monetary values are stored as INTEGER cents — never REAL. VAT = `Math.round((amountCents * 15) / 100)`. Floating-point money arithmetic is prohibited.
