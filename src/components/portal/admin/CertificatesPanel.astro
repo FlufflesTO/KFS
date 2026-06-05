@@ -23,8 +23,9 @@ const { certificates, systems, today } = Astro.props;
           class="rounded-md border border-kharon-purple/20 px-3 py-2 text-sm"
           placeholder="Search site, area, type…"
           size="24"
+          aria-label="Search certificates"
         />
-        <select id="certificates-status-filter" class="rounded-md border border-kharon-purple/20 px-3 py-2 text-sm">
+        <select id="certificates-status-filter" class="rounded-md border border-kharon-purple/20 px-3 py-2 text-sm" aria-label="Filter certificates by status">
           <option value="">All statuses</option>
           <option value="Valid">Valid</option>
           <option value="Expired">Expired</option>
