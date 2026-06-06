@@ -56,8 +56,9 @@ export default defineConfig({
     stderr: 'pipe',
     timeout: 60000,
   },
-  // Global setup for integration tests
-  // Note: Uncomment when database seeding is automated
-  // globalSetup: './tests/setup.ts',
+  // Global setup seeds fixture test users via wrangler d1 before the suite runs.
+  // Requires migrations to be applied first:
+  //   npx wrangler d1 migrations apply kharon-portal --local --config wrangler.portal.jsonc
+  globalSetup: './tests/setup.ts',
 });
 
