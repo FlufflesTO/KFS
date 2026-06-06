@@ -220,7 +220,7 @@ async function deleteExpiredRecords(
         LIMIT ?
       `).bind(cutoffDate, BATCH_SIZE).run();
 
-      const deleted = result.meta?.rows_written || 0;
+      const deleted = result.meta?.changes || 0;
       totalDeleted += deleted;
       batchesProcessed++;
 

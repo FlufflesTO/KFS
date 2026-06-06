@@ -64,7 +64,12 @@ export class FinanceRepository {
       fields.push('status = ?');
       values.push(updates.status);
     }
-    
+
+    if (updates.task_type !== undefined) {
+      fields.push('task_type = ?');
+      values.push(updates.task_type);
+    }
+
     if (updates.sage_document_ref !== undefined) {
       fields.push('sage_document_ref = ?');
       values.push(updates.sage_document_ref);

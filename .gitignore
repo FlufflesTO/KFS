@@ -68,6 +68,8 @@ config/secrets.yml
 
 # Local development
 dev.vars
+.dev.vars
+.dev.vars.*
 .local/
 
 # Build artifacts that should be ignored

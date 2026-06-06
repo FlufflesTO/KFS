@@ -62,6 +62,11 @@ export function calculateOptimalTechnician(
   let lowestLoad = Infinity;
 
   for (const tech of availableTechnicians) {
+    // Gate 0: Skip technicians who are not currently available (on leave / off shift)
+    if (!tech.current_availability) {
+      continue;
+    }
+
     // Gate 1: Check compliance qualifications
     if (!hasCertification(tech.credentials, requiredCertifications)) {
       continue;

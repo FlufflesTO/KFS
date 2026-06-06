@@ -94,8 +94,8 @@ export class DashboardService {
       this.db.prepare(
         `SELECT sites.id, sites.owner_company_name,
                 COUNT(DISTINCT s.id) AS system_count,
-                COUNT(DISTINCT CASE WHEN s.next_due_date < ? THEN s.id END) AS overdue_count,
-                COUNT(DISTINCT CASE WHEN s.next_due_date >= ? AND s.next_due_date <= ? THEN s.id END) AS due_soon_count,
+                COUNT(DISTINCT CASE WHEN date(s.next_due_date) < date(?) THEN s.id END) AS overdue_count,
+                COUNT(DISTINCT CASE WHEN date(s.next_due_date) >= date(?) AND date(s.next_due_date) <= date(?) THEN s.id END) AS due_soon_count,
                 COUNT(DISTINCT d.id) AS defect_count,
                 COUNT(DISTINCT CASE WHEN d.severity IN ('Critical', 'Major') THEN d.id END) AS critical_count
           FROM sites

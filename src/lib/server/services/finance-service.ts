@@ -98,7 +98,12 @@ export class FinanceService {
       fields.push('status = ?');
       values.push(updates.status);
     }
-    
+
+    if (updates.taskType !== undefined) {
+      fields.push('task_type = ?');
+      values.push(updates.taskType);
+    }
+
     if (updates.sageDocumentRef !== undefined) {
       fields.push('sage_document_ref = ?');
       values.push(updates.sageDocumentRef);

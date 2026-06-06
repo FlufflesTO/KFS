@@ -66,7 +66,7 @@ export interface DbJob {
   is_emergency: number;
   required_by_date: string | null;
   estimated_duration_minutes: number | null;
-  completed_date: string | null;
+  completed_at: string | null;
   version: number;
   coverage_area: string;
   owner_company_name: string;

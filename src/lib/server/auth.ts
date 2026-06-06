@@ -22,6 +22,8 @@ export interface SessionUser {
   mfa_enabled?: boolean | number;
   mfaEnabled?: boolean;
   expiresAt?: string;
+  /** Token issued-at (epoch seconds). Used to invalidate sessions minted before a password change. */
+  issuedAt?: number;
 }
 
 interface SessionPayload {
@@ -230,7 +232,8 @@ export async function verifySessionToken(token: string | null | undefined): Prom
     forcePasswordChange: Boolean(payload.forcePasswordChange),
     mfaRequired: Boolean(payload.mfaRequired),
     mfaEnabled: Boolean(payload.mfaEnabled),
-    expiresAt: new Date(Number(payload.exp) * 1000).toISOString()
+    expiresAt: new Date(Number(payload.exp) * 1000).toISOString(),
+    issuedAt: Number(payload.iat)
   };
 }
 

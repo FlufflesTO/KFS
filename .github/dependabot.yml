@@ -1,0 +1,32 @@
+version: 2
+updates:
+  # npm dependencies (Astro 6 / Cloudflare / TS toolchain move fast — keep them current).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      # Batch low-risk dev/test tooling into one PR to reduce noise.
+      dev-tooling:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+          - "@playwright/*"
+          - "typescript"
+          - "tsx"
+          - "esbuild"
+    labels:
+      - "dependencies"
+
+  # GitHub Actions — surfaces action version bumps and helps move toward SHA pinning.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci"

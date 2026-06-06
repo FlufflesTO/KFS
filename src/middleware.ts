@@ -206,12 +206,13 @@ interface ActiveUserRow {
   force_password_change: number;
   mfa_required: number;
   mfa_enabled: number;
+  password_changed_at: string | null;
 }
 
 async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, sessionUser: SessionUser): Promise<SessionUser | null> {
   const record = await db
     .prepare(
-      `SELECT id, name, email, role, site_id, is_active, deleted_at, force_password_change, mfa_required, mfa_enabled
+      `SELECT id, name, email, role, site_id, is_active, deleted_at, force_password_change, mfa_required, mfa_enabled, password_changed_at
        FROM users
        WHERE id = ?1 AND deleted_at IS NULL AND is_active = 1
        LIMIT 1`
@@ -220,6 +221,15 @@ async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, session
     .first<ActiveUserRow>();
 
   if (!record || !record.is_active || record.deleted_at) return null;
+
+  // Invalidate any session minted before the user's last password change.
+  // A password change/reset stamps password_changed_at; tokens issued earlier are no longer trusted.
+  if (record.password_changed_at && typeof sessionUser.issuedAt === "number") {
+    const changedAtSeconds = Math.floor(new Date(record.password_changed_at).getTime() / 1000);
+    if (Number.isFinite(changedAtSeconds) && sessionUser.issuedAt < changedAtSeconds) {
+      return null;
+    }
+  }
 
   return {
     id: record.id,

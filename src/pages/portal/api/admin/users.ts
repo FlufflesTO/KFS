@@ -166,7 +166,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (body.password) {
       const password = cleanText(body.password, "password", { min: 14, max: 200 });
       await db
-        .prepare(`UPDATE users SET password_hash = ?1, force_password_change = 1 WHERE id = ?2`)
+        .prepare(`UPDATE users SET password_hash = ?1, force_password_change = 1, password_changed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?2`)
         .bind(await hashPassword(password), id)
         .run();
     }

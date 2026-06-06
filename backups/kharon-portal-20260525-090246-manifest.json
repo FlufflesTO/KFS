@@ -1,8 +1,0 @@
-﻿{
-    "createdAt":  "2026-05-25T07:03:04.8439508Z",
-    "d1Database":  "kharon-portal",
-    "d1ExportPath":  "C:\\Users\\User\\Desktop\\Astro\\kharon-website\\backups\\kharon-portal-20260525-090246.sql",
-    "r2Bucket":  "kharon-portal-storage",
-    "r2AvailabilityOutput":  "\n ⛅️ wrangler 4.93.0 (update available 4.94.0)\n─────────────────────────────────────────────\nGetting info for \u0027kharon-portal-storage\u0027...\nname:                   kharon-portal-storage\ncreated:                2026-05-20T14:42:30.507Z\nlocation:               WEUR\ndefault_storage_class:  Standard\nobject_count:           4\nbucket_size:            17.2 kB",
-    "r2EvidenceBackupNote":  "Use the documented S3-compatible R2 mirror procedure with credentials supplied outside the repository."
-}

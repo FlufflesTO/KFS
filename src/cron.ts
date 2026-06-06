@@ -19,33 +19,38 @@ export interface Env {
 }
 
 /**
- * Cron handler - invoked by Cloudflare Workers cron triggers
- * @param _scheduledTime - The scheduled time as a Date object
- * @param cron - The cron expression that triggered this invocation
+ * Cron handler - invoked by Cloudflare Workers cron triggers.
+ * Signature matches the Workers runtime: (controller, env, ctx).
+ * @param controller - ScheduledController (exposes the triggering cron expression)
  * @param env - Worker environment bindings
+ * @param ctx - Execution context (used to keep the worker alive via waitUntil)
  */
 export async function scheduled(
-  _scheduledTime: ScheduledController,
-  cron: string,
-  env: Env
+  controller: ScheduledController,
+  env: Env,
+  ctx: ExecutionContext
 ): Promise<void> {
-  const now = new Date();
-  const timestamp = now.toISOString();
+  const run = (async () => {
+    const timestamp = new Date().toISOString();
+    console.log(`[Cron] Triggered at ${timestamp} with cron: ${controller.cron}`);
 
-  console.log(`[Cron] Triggered at ${timestamp} with cron: ${cron}`);
+    try {
+      // Rate limit pruning - runs every hour
+      // Remove entries older than 24 hours to keep table size manageable
+      const deletedCount = await pruneRateLimits(env.DB, 24);
+      console.log(`[Cron] Rate limit pruning complete: ${deletedCount} entries deleted`);
+    } catch (error) {
+      const err = error as Error;
+      console.error(`[Cron] Error during scheduled task: ${err.message}`, {
+        name: err.name,
+        stack: err.stack
+      });
+      // Re-throw to ensure the error is surfaced in Workers logs / cron dashboard
+      throw error;
+    }
+  })();
 
-  try {
-    // Rate limit pruning - runs every hour
-    // Remove entries older than 24 hours to keep table size manageable
-    const deletedCount = await pruneRateLimits(env.DB, 24);
-    console.log(`[Cron] Rate limit pruning complete: ${deletedCount} entries deleted`);
-  } catch (error) {
-    const err = error as Error;
-    console.error(`[Cron] Error during scheduled task: ${err.message}`, {
-      name: err.name,
-      stack: err.stack
-    });
-    // Re-throw to ensure the error is logged by the Workers runtime
-    throw error;
-  }
+  // Keep the worker alive until the work completes; await so errors propagate.
+  ctx.waitUntil(run);
+  await run;
 }

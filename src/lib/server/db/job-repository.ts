@@ -62,7 +62,7 @@ export class JobRepository {
       .bind(newStatus, id, expectedVersion)
       .run();
 
-    if (result.meta?.rows_written === 0) {
+    if (result.meta?.changes === 0) {
       // Fetch current version for error reporting
       const currentJob = await this.findById(id);
       if (!currentJob) {
@@ -85,7 +85,7 @@ export class JobRepository {
    */
   async update(
     id: string,
-    updates: Partial<Pick<DbJob, "status" | "priority" | "assigned_technician_id" | "completed_date">>,
+    updates: Partial<Pick<DbJob, "status" | "priority" | "assigned_technician_id" | "completed_at">>,
     expectedVersion: number
   ): Promise<DbJob> {
     const setClauses: string[] = [];
@@ -103,9 +103,9 @@ export class JobRepository {
       setClauses.push("assigned_technician_id = ?");
       bindValues.push(updates.assigned_technician_id);
     }
-    if (updates.completed_date !== undefined) {
-      setClauses.push("completed_date = ?");
-      bindValues.push(updates.completed_date);
+    if (updates.completed_at !== undefined) {
+      setClauses.push("completed_at = ?");
+      bindValues.push(updates.completed_at);
     }
 
     setClauses.push("version = version + 1", "updated_at = CURRENT_TIMESTAMP");
@@ -122,7 +122,7 @@ export class JobRepository {
       .bind(...bindValues)
       .run();
 
-    if (result.meta?.rows_written === 0) {
+    if (result.meta?.changes === 0) {
       const currentJob = await this.findById(id);
       if (!currentJob) {
         throw new Error(`Job ${id} not found`);

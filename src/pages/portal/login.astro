@@ -44,8 +44,9 @@ if (sessionToken) {
         <form id="portal-login-form" method="post" action="/portal/api/auth" class="space-y-5">
           <CsrfInput />
           <div>
-            <label class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Email Address</label>
+            <label for="login-email" class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Email Address</label>
             <input
+              id="login-email"
               type="email"
               name="email"
               required
@@ -56,8 +57,9 @@ if (sessionToken) {
           </div>
           
           <div>
-            <label class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Password</label>
+            <label for="login-password" class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Password</label>
             <input
+              id="login-password"
               type="password"
               name="password"
               required
@@ -68,8 +70,9 @@ if (sessionToken) {
           </div>
 
           <div>
-            <label class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Authenticator Code</label>
+            <label for="login-mfa" class="block text-kharon-purple text-xs font-bold uppercase tracking-widest mb-2">Authenticator Code</label>
             <input
+              id="login-mfa"
               type="text"
               name="mfaCode"
               inputmode="numeric"

@@ -232,13 +232,6 @@ export async function POST({ request }: APIContext): Promise<Response> {
       }
     } else {
       console.error("Database connection was not established for error auditing");
-      // Try to get DB again to see what's wrong
-      try {
-        const testDb = getDatabase();
-        console.log("Database obtained successfully after error:", !!testDb);
-      } catch (dbErr) {
-        console.error("Database binding issue:", dbErr instanceof Error ? dbErr.message : String(dbErr));
-      }
     }
     return serverError("Authentication could not be completed.");
   }

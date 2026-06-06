@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-06-06
+
+### Tooling & Capabilities Initialization
+
+#### [Added]
+- **Capability Mapping**: Loaded and documented all plugins, MCP servers, custom skills, and custom agents used in the project into [project_capabilities.md](file:///C:/Users/User/.gemini/antigravity-cli/brain/3aa0d675-0c9d-4cea-8871-6465559b640a/project_capabilities.md).
+- **Verification & Validation**: Loaded the project documentation review skill and executed full validation check via `npm run validate:site`, outputting details to [verification_report.md](file:///C:/Users/User/.gemini/antigravity-cli/brain/3aa0d675-0c9d-4cea-8871-6465559b640a/verification_report.md).
+
 ## [Unreleased] - 2026-06-03
 
 ### Core Security & Codebase Hardening

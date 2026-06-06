@@ -147,12 +147,12 @@ export async function updateStaffMember(
       `UPDATE staff_members
        SET full_name      = COALESCE(?1, full_name),
            role_title     = COALESCE(?2, role_title),
-           email          = ?3,
-           phone          = ?4,
-           start_date     = ?5,
+           email          = COALESCE(?3, email),
+           phone          = COALESCE(?4, phone),
+           start_date     = COALESCE(?5, start_date),
            employment_type= COALESCE(?6, employment_type),
            status         = COALESCE(?7, status),
-           notes          = ?8,
+           notes          = COALESCE(?8, notes),
            updated_at     = datetime('now')
        WHERE id = ?9 AND deleted_at IS NULL`
     )

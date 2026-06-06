@@ -83,7 +83,7 @@ const nonce = Astro.locals.nonce;
             e.preventDefault();
             return;
           }
-          submitBtn.dataset.originalText = submitBtn.innerHTML;
+          submitBtn.__originalNodes = Array.from(submitBtn.childNodes).map((n) => n.cloneNode(true));
           submitBtn.dataset.submitting = 'true';
           submitBtn.disabled = true;
           submitBtn.textContent = '';
@@ -108,7 +108,9 @@ const nonce = Astro.locals.nonce;
       btn.dataset.submitting = 'false';
       btn.disabled = false;
       btn.textContent = '';
-      btn.innerHTML = btn.dataset.originalText;
+      if (btn.__originalNodes) {
+        btn.replaceChildren(...btn.__originalNodes.map((n) => n.cloneNode(true)));
+      }
       btn.classList.remove('opacity-80', 'cursor-not-allowed');
     };
 
