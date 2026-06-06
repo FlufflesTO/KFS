@@ -7,7 +7,8 @@
 import type { APIContext } from "astro";
 import { getDatabase } from "../../../../lib/server/bindings.js";
 import { auditEvent, auditError } from "../../../../lib/server/audit";
-import { badRequest, json, methodNotAllowed, serverError, unauthorized } from "../../../../lib/server/http.js";
+import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.js";
+import { requireAdmin } from "../../../../lib/server/access.js";
 
 export const prerender = false;
 
@@ -50,9 +51,8 @@ async function assertActiveTechnician(db: ReturnType<typeof getDatabase>, techni
 export async function POST({ request, locals }: APIContext): Promise<Response> {
   let jobIdForAudit = "unknown";
   try {
-    if (!locals.user || locals.user.role !== "admin") {
-      return unauthorized("Admin access required.");
-    }
+    const adminError = requireAdmin(locals.user);
+    if (adminError) return adminError;
 
     const body = await request.json() as DispatchBody;
     const action = String(body.action || "").trim();
@@ -128,7 +128,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       entityId: jobId,
       outcome: "success",
       user: locals.user,
-      subject: locals.user.email || "unknown",
+      subject: locals.user!.email || "unknown",
       metadata
     });
 

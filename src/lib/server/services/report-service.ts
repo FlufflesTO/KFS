@@ -67,7 +67,7 @@ export class ReportService {
           (SELECT COUNT(*) FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical') AS critical_defects,
           (SELECT COUNT(*) FROM financial_records WHERE payment_status = 'Unpaid') AS unpaid_invoices,
           (SELECT COALESCE(SUM(amount), 0) / 100.0 FROM financial_records WHERE payment_status = 'Unpaid') AS unpaid_amount,
-          (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL) AS active_users
+          (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL AND is_active = 1) AS active_users
       `),
       this.db.prepare(`
         SELECT

@@ -40,7 +40,6 @@ export async function POST({ request, locals }: import('astro').APIContext) {
       return badRequest("Only transition to In Progress is supported from the technician workspace.");
     }
 
-    const db = getDatabase();
     const job = await db
       .prepare(
         `SELECT id, assigned_technician_id, status

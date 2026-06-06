@@ -2,6 +2,7 @@
 import { getDatabase } from "../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../lib/server/audit";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../lib/server/http.ts";
+import { cleanChoice, cleanText } from "../../../lib/server/access";
 
 export const prerender = false;
 
@@ -17,19 +18,18 @@ export async function POST({ request, locals, cookies }: import('astro').APICont
     } catch (e) {
       return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
     }
-    const { category, message } = body;
     const { pathname } = new URL(request.url);
     const variant = cookies.get("kharon_ui_variant")?.value || "unknown";
 
-    if (!category || !message) {
-      return badRequest("Category and message are required.");
-    }
+    const category = cleanChoice(body.category, "category", ["ui", "performance", "bug", "suggestion"]);
+    const message = cleanText(body.message, "message", { min: 1, max: 2000 });
+    const pagePath = cleanText(body.path || pathname, "path", { required: false, max: 500 }) || pathname;
 
     const id = crypto.randomUUID();
     await db.prepare(
       `INSERT INTO user_feedback (id, user_id, variant, page_path, category, message)
        VALUES (?, ?, ?, ?, ?, ?)`
-    ).bind(id, locals.user.id, variant, body.path || pathname, category, message).run();
+    ).bind(id, locals.user.id, variant, pagePath, category, message).run();
 
     await auditEvent(db, request, {
       eventType: "user.feedback.submitted",

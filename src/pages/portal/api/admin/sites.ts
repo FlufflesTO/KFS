@@ -46,7 +46,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
                site_contact_email = ?4,
                site_contact_phone = ?5,
                billing_emails = ?6
-           WHERE id = ?7`
+           WHERE id = ?7 AND deleted_at IS NULL`
         )
         .bind(ownerCompanyName, physicalAddress, siteContactPerson, siteContactEmail, siteContactPhone, billingEmails, id)
         .run();
