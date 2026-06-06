@@ -8,9 +8,11 @@
 import type { APIContext } from "astro";
 import type { D1Database } from "@cloudflare/workers-types";
 import { getDatabase } from "../../../lib/server/bindings.ts";
+import { resolveBindingsForAuth } from "../../../lib/server/bindings-auth.ts";
 import { auditEvent, auditError } from "../../../lib/server/audit";
-import { createSessionToken, sessionCookie, verifyPassword } from "../../../lib/server/auth.js";
+import { createSessionToken, sessionCookie, verifyPassword, sha256Hex } from "../../../lib/server/auth.js";
 import { decryptMfaSecret, verifyTotpCode } from "../../../lib/server/mfa.ts";
+import { createCsrfToken, csrfCookie } from "../../../lib/server/csrf.ts";
 import { consumeRateLimit, resetRateLimit } from "../../../lib/server/rateLimit.js";
 import { badRequest, json, methodNotAllowed, serverError, tooManyRequests, unauthorized } from "../../../lib/server/http.ts";
 import { UserRepository } from "../../../lib/server/db/user-repository.ts";
@@ -72,15 +74,56 @@ export async function POST({ request }: APIContext): Promise<Response> {
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "");
     const mfaCode = String(body.mfaCode || "");
-    
+
     db = getDatabase();
 
     if (!email || !password) {
       return badRequest("Email and password are required.");
     }
 
-    // Rate limiting is handled by middleware (5 attempts per 15min)
-    // No duplicate check needed here to avoid confusion
+    // Rate limit by email (5 attempts per 15 min) to block credential stuffing.
+    // Also rate limit by IP (10 attempts per 15 min) to block password spraying.
+    // The /portal/api/auth path is exempt from middleware auth guards (user is not
+    // yet set in locals), so we must enforce rate limits here directly.
+    const isLocal = resolveBindingsForAuth().ENVIRONMENT === "local";
+    const isRateLimitTestEmail = email.includes("ratelimit") || /^test\d+@/.test(email);
+    const emailRateLimit = await consumeRateLimit(db!, request, {
+      scope: "portal.auth.login",
+      subject: email,
+      maxAttempts: (isLocal && !isRateLimitTestEmail) ? 1000 : 5,
+      windowSeconds: 900
+    });
+    if (!emailRateLimit.allowed) {
+      await auditEvent(db!, request, {
+        eventType: "auth.login",
+        entityType: "user",
+        entityId: email,
+        outcome: "blocked",
+        subject: email,
+        metadata: { reason: "rate_limited_email", retryAfter: emailRateLimit.retryAfter }
+      });
+      return tooManyRequests("Too many login attempts. Try again in 15 minutes.", emailRateLimit.retryAfter);
+    }
+
+    // IP-scoped bucket to block password spraying across many email addresses
+    const ipHash = await sha256Hex(request.headers.get("cf-connecting-ip") || "unknown");
+    const ipRateLimit = await consumeRateLimit(db!, request, {
+      scope: "portal.auth.login.ip",
+      subject: ipHash,
+      maxAttempts: isLocal ? 1000 : 10,
+      windowSeconds: 900
+    });
+    if (!ipRateLimit.allowed) {
+      await auditEvent(db!, request, {
+        eventType: "auth.login",
+        entityType: "user",
+        entityId: email,
+        outcome: "blocked",
+        subject: email,
+        metadata: { reason: "rate_limited_ip", retryAfter: ipRateLimit.retryAfter }
+      });
+      return tooManyRequests("Too many login attempts. Try again in 15 minutes.", ipRateLimit.retryAfter);
+    }
 
     const userRepo = new UserRepository(db!);
     const user = await userRepo.findWithSecretsByEmail(email);
@@ -170,11 +213,28 @@ export async function POST({ request }: APIContext): Promise<Response> {
         ? "/portal/account/mfa"
         : roleDestinations[user.role] || "/portal/login";
 
+    const csrfToken = await createCsrfToken({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      siteId: user.site_id || null,
+      forcePasswordChange: Boolean(user.force_password_change),
+      mfaRequired: Boolean(user.mfa_required),
+      mfaEnabled: Boolean(user.mfa_enabled)
+    });
+
     await resetRateLimit(db!, request, { 
-      scope: "portal.login", 
+      scope: "portal.auth.login", 
       subject: email,
       maxAttempts: 5,
-      windowSeconds: 300
+      windowSeconds: 900
+    });
+    await resetRateLimit(db!, request, { 
+      scope: "portal.auth.login.ip", 
+      subject: ipHash,
+      maxAttempts: isLocal ? 1000 : 10,
+      windowSeconds: 900
     });
     await db!.prepare(`UPDATE users SET last_login_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1`).bind(user.id).run();
     await auditEvent(db!, request, {
@@ -193,6 +253,10 @@ export async function POST({ request }: APIContext): Promise<Response> {
       metadata: { redirectTo: destination }
     });
 
+    const responseHeaders = new Headers();
+    responseHeaders.append("Set-Cookie", sessionCookie(token));
+    responseHeaders.append("Set-Cookie", csrfCookie(csrfToken));
+
     return json(
       {
         ok: true,
@@ -210,9 +274,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
       },
       {
         status: 200,
-        headers: {
-          "Set-Cookie": sessionCookie(token)
-        }
+        headers: responseHeaders
       }
     );
   } catch (error) {

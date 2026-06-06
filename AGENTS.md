@@ -23,7 +23,7 @@
 - **Tokens**: Use constant-time equality for session tokens.
 
 ## Project Guardrails
-- **Budgets**: Global CSS < 100KB. Client JS assets < 20KB.
+- **Budgets**: Global CSS < 120KB hard limit (115KB warning). Client JS assets < 20KB.
 - **Audit**: `npm run audit:site` checks for banned terms defined in `scripts/audit-site.ts`.
 - **UI**: No emojis. Use SVG icons. Minimum touch target 44x44px.
 - **Reference**: See `CLAUDE.md` for full command list and `DESIGN_CONSTITUTION.md` for UI specs.

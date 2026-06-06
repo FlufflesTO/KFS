@@ -187,54 +187,59 @@ export async function createSessionToken(user: SessionUser): Promise<string> {
 export async function verifySessionToken(token: string | null | undefined): Promise<SessionUser | null> {
   if (!token || typeof token !== "string" || !token.includes(".")) return null;
 
-  const [encodedPayload, encodedSignature] = token.split(".");
-  if (!encodedPayload || !encodedSignature) return null;
-
-  const providedSignature = base64UrlDecode(encodedSignature);
-  
-  // Compute expected signature using HMAC
-  const expectedSignature = new Uint8Array(await crypto.subtle.sign(
-    "HMAC",
-    await hmacKey(getSessionSecret()),
-    textEncoder.encode(encodedPayload)
-  ));
-  
-  // Timing-safe comparison to prevent side-channel timing attacks
-  const signatureValid = timingSafeEqual(providedSignature, expectedSignature);
-
-  // Always perform the comparison even if signatures differ to maintain constant time
-  if (!signatureValid) return null;
-
-  let payload: SessionPayload;
   try {
-    payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload))) as SessionPayload;
+    const [encodedPayload, encodedSignature] = token.split(".");
+    if (!encodedPayload || !encodedSignature) return null;
+
+    const providedSignature = base64UrlDecode(encodedSignature);
+    
+    // Compute expected signature using HMAC
+    const expectedSignature = new Uint8Array(await crypto.subtle.sign(
+      "HMAC",
+      await hmacKey(getSessionSecret()),
+      textEncoder.encode(encodedPayload)
+    ));
+    
+    // Timing-safe comparison to prevent side-channel timing attacks
+    const signatureValid = timingSafeEqual(providedSignature, expectedSignature);
+
+    // Always perform the comparison even if signatures differ to maintain constant time
+    if (!signatureValid) return null;
+
+    let payload: SessionPayload;
+    try {
+      payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload))) as SessionPayload;
+    } catch {
+      // Malformed token payload - treat as invalid
+      return null;
+    }
+    
+    assertRole(payload.role);
+
+    if (!payload.sub || !payload.name || !payload.email || !payload.exp || !payload.iat) return null;
+
+    const nowInSeconds = Math.floor(Date.now() / 1000);
+    if (Number(payload.exp) <= nowInSeconds) return null;
+
+    // Enforce absolute 8-hour timeout from token creation
+    if (nowInSeconds - Number(payload.iat) > sessionDurationSeconds) return null;
+
+    return {
+      id: payload.sub,
+      name: payload.name,
+      email: payload.email,
+      role: payload.role,
+      siteId: payload.siteId || null,
+      forcePasswordChange: Boolean(payload.forcePasswordChange),
+      mfaRequired: Boolean(payload.mfaRequired),
+      mfaEnabled: Boolean(payload.mfaEnabled),
+      expiresAt: new Date(Number(payload.exp) * 1000).toISOString(),
+      issuedAt: Number(payload.iat)
+    };
   } catch {
-    // Malformed token payload - treat as invalid
+    // Malformed signature or decode exception
     return null;
   }
-  
-  assertRole(payload.role);
-
-  if (!payload.sub || !payload.name || !payload.email || !payload.exp || !payload.iat) return null;
-
-  const nowInSeconds = Math.floor(Date.now() / 1000);
-  if (Number(payload.exp) <= nowInSeconds) return null;
-
-  // Enforce absolute 8-hour timeout from token creation
-  if (nowInSeconds - Number(payload.iat) > sessionDurationSeconds) return null;
-
-  return {
-    id: payload.sub,
-    name: payload.name,
-    email: payload.email,
-    role: payload.role,
-    siteId: payload.siteId || null,
-    forcePasswordChange: Boolean(payload.forcePasswordChange),
-    mfaRequired: Boolean(payload.mfaRequired),
-    mfaEnabled: Boolean(payload.mfaEnabled),
-    expiresAt: new Date(Number(payload.exp) * 1000).toISOString(),
-    issuedAt: Number(payload.iat)
-  };
 }
 
 export function sessionCookie(token: string): string {
@@ -319,27 +324,31 @@ export async function hashPassword(password: string, salt?: string): Promise<str
 export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
   if (typeof password !== "string" || typeof storedHash !== "string") return false;
 
-  const [scheme, iterationsText, encodedSalt, encodedHash] = storedHash.split("$");
-  if (scheme !== "pbkdf2_sha256" || !iterationsText || !encodedSalt || !encodedHash) return false;
+  try {
+    const [scheme, iterationsText, encodedSalt, encodedHash] = storedHash.split("$");
+    if (scheme !== "pbkdf2_sha256" || !iterationsText || !encodedSalt || !encodedHash) return false;
 
-  const iterations = Number(iterationsText);
-  // Accept both old (100k) and new (600k) iteration counts during migration
-  if (!Number.isInteger(iterations) || iterations < 100000 || iterations > 1000000) return false;
+    const iterations = Number(iterationsText);
+    // Accept both old (100k) and new (600k) iteration counts during migration
+    if (!Number.isInteger(iterations) || iterations < 100000 || iterations > 1000000) return false;
 
-  const salt = textDecoder.decode(base64UrlDecode(encodedSalt));
-  const keyMaterial = await crypto.subtle.importKey("raw", textEncoder.encode(password), "PBKDF2", false, ["deriveBits"]);
-  const derived = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      hash: "SHA-256",
-      salt: textEncoder.encode(salt),
-      iterations
-    },
-    keyMaterial,
-    256
-  );
+    const salt = textDecoder.decode(base64UrlDecode(encodedSalt));
+    const keyMaterial = await crypto.subtle.importKey("raw", textEncoder.encode(password), "PBKDF2", false, ["deriveBits"]);
+    const derived = await crypto.subtle.deriveBits(
+      {
+        name: "PBKDF2",
+        hash: "SHA-256",
+        salt: textEncoder.encode(salt),
+        iterations
+      },
+      keyMaterial,
+      256
+    );
 
-  return constantTimeEqual(base64UrlEncode(new Uint8Array(derived)), encodedHash);
+    return constantTimeEqual(base64UrlEncode(new Uint8Array(derived)), encodedHash);
+  } catch {
+    return false;
+  }
 }
 
 function constantTimeEqual(left: string, right: string): boolean {

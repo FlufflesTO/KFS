@@ -1,0 +1,6 @@
+{
+  "name": "cursor-team-kit",
+  "displayName": "cursor-team-kit",
+  "description": "Cursor team engineering workflows: CI fixes, PR review, smoke tests, deslop, and UI/CLI control.",
+  "skills": "./skills/"
+}

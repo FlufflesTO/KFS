@@ -103,7 +103,7 @@ INSERT OR REPLACE INTO users (
 -- Insert test site for technician and client
 INSERT OR REPLACE INTO sites (
   id, owner_company_name, physical_address, site_contact_person,
-  site_contact_email, site_contact_phone, gps_coordinates
+  site_contact_email, site_contact_phone, billing_emails
 ) VALUES (
   'test-site-001',
   'Test Company Pty Ltd',
@@ -111,5 +111,5 @@ INSERT OR REPLACE INTO sites (
   'Test Contact Person',
   'contact@testcompany.co.za',
   '+27 12 345 6789',
-  '{"latitude": -25.7479, "longitude": 28.2293}'
+  'finance@testcompany.co.za'
 );

@@ -22,6 +22,7 @@ interface FinanceTask {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  completedAt?: string;
 }
 
 interface FinanceTaskRow {
@@ -38,6 +39,7 @@ interface FinanceTaskRow {
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+  completed_at: string | null;
 }
 
 interface FinanceSummaryRow {
@@ -57,14 +59,15 @@ export class FinanceService {
   /**
    * Create a finance task (operational task, not official invoice)
    */
-  async createFinanceTask(task: Omit<FinanceTask, 'id' | 'createdAt' | 'updatedAt'>): Promise<FinanceTask> {
+  async createFinanceTask(task: Omit<FinanceTask, 'id' | 'createdAt' | 'updatedAt' | 'completedAt'>): Promise<FinanceTask> {
     const id = `ft-${crypto.randomUUID()}`;
+    const completedAt = (task.status === 'Completed' || task.status === 'Cancelled') ? new Date().toISOString() : null;
     
     await this.db.prepare(`
       INSERT INTO finance_tasks (
         id, site_id, job_id, task_type, amount, vat_amount, reference, 
-        sage_document_ref, sage_document_id, status, notes, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        sage_document_ref, sage_document_id, status, notes, created_at, updated_at, completed_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)
     `).bind(
       id,
       task.siteId,
@@ -76,12 +79,14 @@ export class FinanceService {
       task.sageDocumentRef || null,
       task.sageDocumentId || null,
       task.status,
-      task.notes || null
+      task.notes || null,
+      completedAt
     ).run();
 
     return {
       ...task,
       id,
+      completedAt: completedAt || undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     } as FinanceTask;
@@ -91,41 +96,52 @@ export class FinanceService {
    * Update a finance task status
    */
   async updateFinanceTask(id: string, updates: Partial<FinanceTask>): Promise<void> {
-    const fields = [];
-    const values = [];
-    
-    if (updates.status !== undefined) {
-      fields.push('status = ?');
-      values.push(updates.status);
-    }
+    const fields: string[] = [];
+    const values: unknown[] = [];
 
     if (updates.taskType !== undefined) {
       fields.push('task_type = ?');
       values.push(updates.taskType);
     }
 
+    if (updates.status !== undefined) {
+      fields.push('status = ?');
+      values.push(updates.status);
+
+      fields.push('completed_at = ?');
+      if (updates.status === 'Completed' || updates.status === 'Cancelled') {
+        values.push(new Date().toISOString());
+      } else {
+        values.push(null);
+      }
+    }
+
+    if (updates.completedAt !== undefined) {
+      fields.push('completed_at = ?');
+      values.push(updates.completedAt);
+    }
     if (updates.sageDocumentRef !== undefined) {
       fields.push('sage_document_ref = ?');
       values.push(updates.sageDocumentRef);
     }
-    
+
     if (updates.sageDocumentId !== undefined) {
       fields.push('sage_document_id = ?');
       values.push(updates.sageDocumentId);
     }
-    
+
     if (updates.notes !== undefined) {
       fields.push('notes = ?');
       values.push(updates.notes);
     }
-    
+
     if (fields.length === 0) return;
-    
+
     fields.push('updated_at = CURRENT_TIMESTAMP');
     values.push(id);
-    
+
     await this.db.prepare(`
-      UPDATE finance_tasks 
+      UPDATE finance_tasks
       SET ${fields.join(', ')}
       WHERE id = ?
     `).bind(...values).run();
@@ -139,7 +155,7 @@ export class FinanceService {
       SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
              vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
              sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
-             updated_at as updatedAt
+             updated_at as updatedAt, completed_at as completedAt
       FROM finance_tasks 
       WHERE site_id = ? 
       ORDER BY created_at DESC
@@ -158,7 +174,8 @@ export class FinanceService {
       status: row.status,
       notes: row.notes ?? undefined,
       createdAt: row.createdAt,
-      updatedAt: row.updatedAt
+      updatedAt: row.updatedAt,
+      completedAt: row.completed_at ?? undefined
     }));
   }
 
@@ -170,7 +187,7 @@ export class FinanceService {
       SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
              vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
              sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
-             updated_at as updatedAt
+             updated_at as updatedAt, completed_at as completedAt
       FROM finance_tasks 
       WHERE job_id = ? 
       ORDER BY created_at DESC
@@ -189,7 +206,8 @@ export class FinanceService {
       status: row.status,
       notes: row.notes ?? undefined,
       createdAt: row.createdAt,
-      updatedAt: row.updatedAt
+      updatedAt: row.updatedAt,
+      completedAt: row.completed_at ?? undefined
     }));
   }
 
@@ -201,7 +219,7 @@ export class FinanceService {
       SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
              vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
              sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
-             updated_at as updatedAt
+             updated_at as updatedAt, completed_at as completedAt
       FROM finance_tasks 
       WHERE status = 'Pending'
       ORDER BY created_at ASC
@@ -220,7 +238,8 @@ export class FinanceService {
       status: row.status,
       notes: row.notes ?? undefined,
       createdAt: row.createdAt,
-      updatedAt: row.updatedAt
+      updatedAt: row.updatedAt,
+      completedAt: row.completed_at ?? undefined
     }));
   }
 
@@ -326,7 +345,7 @@ export class FinanceService {
       SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
              vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
              sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
-             updated_at as updatedAt
+             updated_at as updatedAt, completed_at as completedAt
       FROM finance_tasks 
       WHERE id = ?
     `).bind(taskId).first<FinanceTaskRow>();
@@ -348,7 +367,8 @@ export class FinanceService {
       status: task.status,
       notes: task.notes ?? undefined,
       createdAt: task.createdAt,
-      updatedAt: task.updatedAt
+      updatedAt: task.updatedAt,
+      completedAt: task.completed_at ?? undefined
     };
   }
 

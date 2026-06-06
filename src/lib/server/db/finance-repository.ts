@@ -6,12 +6,13 @@ export class FinanceRepository {
 
   async create(task: Omit<DbFinanceTask, 'id' | 'created_at' | 'updated_at'>): Promise<DbFinanceTask> {
     const id = `ft-${crypto.randomUUID()}`;
+    const completedAt = (task.status === 'Completed' || task.status === 'Cancelled') ? new Date().toISOString() : null;
     
     await this.db.prepare(`
       INSERT INTO finance_tasks (
         id, site_id, job_id, task_type, amount, vat_amount, reference, 
-        sage_document_ref, status, notes, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        sage_document_ref, status, notes, created_at, updated_at, completed_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)
     `).bind(
       id,
       task.site_id,
@@ -22,7 +23,8 @@ export class FinanceRepository {
       task.reference || null,
       task.sage_document_ref || null,
       task.status,
-      task.notes || null
+      task.notes || null,
+      completedAt
     ).run();
 
     return this.findById(id) as Promise<DbFinanceTask>;
@@ -57,34 +59,44 @@ export class FinanceRepository {
   }
 
   async update(id: string, updates: Partial<DbFinanceTask>): Promise<void> {
-    const fields = [];
-    const values = [];
-    
-    if (updates.status !== undefined) {
-      fields.push('status = ?');
-      values.push(updates.status);
-    }
+    const fields: string[] = [];
+    const values: unknown[] = [];
 
     if (updates.task_type !== undefined) {
       fields.push('task_type = ?');
       values.push(updates.task_type);
     }
 
+    if (updates.status !== undefined) {
+      fields.push('status = ?');
+      values.push(updates.status);
+      
+      fields.push('completed_at = ?');
+      if (updates.status === 'Completed' || updates.status === 'Cancelled') {
+        values.push(new Date().toISOString());
+      } else {
+        values.push(null);
+      }
+    }
+    if (updates.completed_at !== undefined) {
+      fields.push('completed_at = ?');
+      values.push(updates.completed_at);
+    }
     if (updates.sage_document_ref !== undefined) {
       fields.push('sage_document_ref = ?');
       values.push(updates.sage_document_ref);
     }
-    
+
     if (updates.notes !== undefined) {
       fields.push('notes = ?');
       values.push(updates.notes);
     }
-    
+
     if (fields.length === 0) return;
-    
+
     fields.push('updated_at = CURRENT_TIMESTAMP');
     values.push(id);
-    
+
     await this.db.prepare(`
       UPDATE finance_tasks SET ${fields.join(', ')} WHERE id = ?
     `).bind(...values).run();
@@ -105,12 +117,13 @@ export class FinanceRepository {
       unpaid_amount: number;
     }>();
 
-    // D1 returns integers as numbers - ensure strict integer typing
+    // D1 returns aggregates as numbers. Use Math.round rather than bitwise | 0:
+    // bitwise OR truncates to a signed 32-bit integer, which wraps negative above ~R21.47m.
     return {
-      pending_tasks: Number(result?.pending_tasks ?? 0) | 0,
-      total_pending_value: Number(result?.total_pending_value ?? 0) | 0,
-      overdue_invoices: Number(result?.overdue_invoices ?? 0) | 0,
-      unpaid_amount: Number(result?.unpaid_amount ?? 0) | 0
+      pending_tasks: Math.round(Number(result?.pending_tasks ?? 0)),
+      total_pending_value: Math.round(Number(result?.total_pending_value ?? 0)),
+      overdue_invoices: Math.round(Number(result?.overdue_invoices ?? 0)),
+      unpaid_amount: Math.round(Number(result?.unpaid_amount ?? 0))
     };
   }
 }

@@ -37,10 +37,13 @@ export interface ApiResponse<T = unknown> {
 }
 
 /**
- * Extract CSRF token from HTML content or response
+ * Extract CSRF token from HTML content or response.
+ * CsrfInput.astro renders name="csrf_token" (not "kharon_csrf_token").
+ * Prefer extractCsrfTokenFromCookie() for API tests — the hidden input
+ * is for form-submission pages only.
  */
 export async function extractCsrfToken(page: Page): Promise<string | null> {
-  const csrfInput = page.locator('input[name="kharon_csrf_token"]');
+  const csrfInput = page.locator('input[name="csrf_token"]');
   const token = await csrfInput.getAttribute('value');
   return token;
 }
@@ -97,10 +100,16 @@ export async function loginAsTestUser(
 }
 
 /**
- * Logout from the portal
+ * Logout from the portal.
+ * /portal/api/logout is a state-changing POST covered by CSRF middleware.
+ * The x-csrf-token header must be present or the middleware returns 403.
  */
 export async function logoutFromPortal(page: Page): Promise<APIResponse> {
-  const response = await page.request.post('/portal/api/logout');
+  const cookies = await page.context().cookies();
+  const csrfToken = cookies.find(c => c.name === 'kharon_csrf_token')?.value;
+  const response = await page.request.post('/portal/api/logout', {
+    headers: csrfToken ? { 'x-csrf-token': csrfToken } : {},
+  });
   return response;
 }
 

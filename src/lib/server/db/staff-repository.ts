@@ -1,36 +1,15 @@
 
+import type { D1Database } from "@cloudflare/workers-types";
+import type { DbStaffMember, DbStaffFile } from "@sentinel/types";
+
 /**
  * Staff HR Repository
  * Abstraction layer for staff_members and staff_files tables.
  * Enforces soft-delete pattern (deleted_at IS NULL) on all reads.
  */
 
-export interface DbStaffMember {
-  id: string;
-  full_name: string;
-  role_title: string;
-  email: string | null;
-  phone: string | null;
-  start_date: string | null;
-  employment_type: string;
-  status: string;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  file_count?: number;
-}
-
-export interface DbStaffFile {
-  id: string;
-  staff_member_id: string;
-  file_name: string;
-  file_type: string;
-  r2_key: string;
-  uploaded_by: string;
-  uploaded_at: string;
-  deleted_at: string | null;
-}
+// Re-export for consumers that import from this module directly
+export type { DbStaffMember, DbStaffFile };
 
 export interface CreateStaffMemberData {
   full_name: string;

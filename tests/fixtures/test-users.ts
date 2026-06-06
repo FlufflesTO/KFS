@@ -68,6 +68,15 @@ export const testUsers: Record<string, TestUser> = {
     siteId: null,
     mfaEnabled: false,
   },
+  mfa: {
+    id: 'test-mfa-001',
+    email: 'mfa.test@kharon.co.za',
+    password: 'TestPassword123!',
+    name: 'Test MFA User',
+    role: 'tech',
+    siteId: null,
+    mfaEnabled: true,
+  },
 };
 
 /**
@@ -113,6 +122,9 @@ export function generateTestPassword(): string {
  * Run these before integration tests
  */
 export const seedTestUsersSQL = `
+-- Clear rate limit records before tests run to prevent 429 cascades
+DELETE FROM rate_limits;
+
 -- Insert test users (password hash is for 'TestPassword123!')
 -- Hash generated with: pbkdf2_sha256$600000$<salt>$<hash>
 -- For testing, we use a pre-computed hash
@@ -186,12 +198,25 @@ INSERT OR REPLACE INTO users (
     NULL,
     0,
     NULL
+  ),
+  (
+    'test-mfa-001',
+    'Test MFA User',
+    'mfa.test@kharon.co.za',
+    'pbkdf2_sha256$600000$NzMxZTVlMTdhM2ViYTUwZjhhOWU4YWNiZTQ5MDc2ZjY$ilF6KpEL6QvzvB-s4Zim0aLfMPrVfuYy-T-rl5DDBOM',
+    'tech',
+    1,
+    0,
+    1,
+    'MFA_SECRET_PLACEHOLDER',
+    0,
+    NULL
   );
 
 -- Insert test site for technician and client
 INSERT OR REPLACE INTO sites (
   id, owner_company_name, physical_address, site_contact_person,
-  site_contact_email, site_contact_phone, gps_coordinates
+  site_contact_email, site_contact_phone, billing_emails
 ) VALUES (
   'test-site-001',
   'Test Company Pty Ltd',
@@ -199,7 +224,7 @@ INSERT OR REPLACE INTO sites (
   'Test Contact Person',
   'contact@testcompany.co.za',
   '+27 12 345 6789',
-  '{"latitude": -25.7479, "longitude": 28.2293}'
+  'finance@testcompany.co.za'
 );
 `;
 
@@ -213,7 +238,8 @@ DELETE FROM users WHERE id IN (
   'test-finance-001',
   'test-tech-001',
   'test-client-001',
-  'test-inactive-001'
+  'test-inactive-001',
+  'test-mfa-001'
 );
 
 -- Delete test site

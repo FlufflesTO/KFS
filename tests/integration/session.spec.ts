@@ -249,15 +249,16 @@ test.describe('CSRF Protection', () => {
   test('should reject POST request with missing CSRF token', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
 
-    // Make POST request without CSRF token
+    // Make POST request without CSRF token — CSRF middleware returns 403
+    // csrfErrorResponse() shape: { ok: false, message: "Security token is missing or invalid." }
     const response = await page.request.post('/portal/api/logout', {
       headers: {},
     });
 
     expect(response.status()).toBe(403);
     const body = await response.json() as AuthResponse;
-    expect(body.error).toBe('forbidden');
-    expect(body.message).toContain('CSRF');
+    expect(body.ok).toBe(false);
+    expect(body.message).toContain('Security token');
   });
 
   test('should reject POST request with invalid CSRF token', async ({ page }) => {

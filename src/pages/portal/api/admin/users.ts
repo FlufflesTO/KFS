@@ -61,7 +61,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (action === "deactivate") {
       if (id === locals.user!.id) return badRequest("Admins cannot deactivate their own account.");
-      await db.prepare(`UPDATE users SET is_active = 0 WHERE id = ?1`).bind(id).run();
+      await db.prepare(`UPDATE users SET is_active = 0 WHERE id = ?1 AND deleted_at IS NULL`).bind(id).run();
       await auditEvent(db, request, {
         eventType: "admin.user.deactivate",
         entityType: "user",
@@ -126,7 +126,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
            SET mfa_enabled = 0,
                mfa_secret_encrypted = NULL,
                mfa_enabled_at = NULL
-           WHERE id = ?1`
+           WHERE id = ?1 AND deleted_at IS NULL`
         )
         .bind(id)
         .run();
@@ -158,7 +158,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
              is_active = ?4,
              force_password_change = ?5,
              mfa_required = ?6
-         WHERE id = ?7`
+         WHERE id = ?7 AND deleted_at IS NULL`
       )
       .bind(name, role, siteId, isActive, forcePasswordChange, mfaRequired, id)
       .run();
@@ -166,7 +166,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (body.password) {
       const password = cleanText(body.password, "password", { min: 14, max: 200 });
       await db
-        .prepare(`UPDATE users SET password_hash = ?1, force_password_change = 1, password_changed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?2`)
+        .prepare(`UPDATE users SET password_hash = ?1, force_password_change = 1, password_changed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?2 AND deleted_at IS NULL`)
         .bind(await hashPassword(password), id)
         .run();
     }

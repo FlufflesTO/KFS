@@ -83,16 +83,20 @@ export async function encryptMfaSecret(secret: string): Promise<string> {
 
 export async function decryptMfaSecret(value: string | null | undefined): Promise<string | null> {
   if (!value || !value.includes(".")) return null;
-  const [encodedIv, encodedData] = value.split(".");
-  if (!encodedIv || !encodedData) return null;
-  const ivBuffer = base64UrlDecode(encodedIv);
-  const dataBuffer = base64UrlDecode(encodedData);
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: new Uint8Array(ivBuffer) },
-    await encryptionKey(),
-    new Uint8Array(dataBuffer)
-  );
-  return decoder.decode(decrypted);
+  try {
+    const [encodedIv, encodedData] = value.split(".");
+    if (!encodedIv || !encodedData) return null;
+    const ivBuffer = base64UrlDecode(encodedIv);
+    const dataBuffer = base64UrlDecode(encodedData);
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: new Uint8Array(ivBuffer) },
+      await encryptionKey(),
+      new Uint8Array(dataBuffer)
+    );
+    return decoder.decode(decrypted);
+  } catch {
+    return null;
+  }
 }
 
 export function generateTotpSecret(): string {

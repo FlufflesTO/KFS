@@ -1,3 +1,8 @@
+-- KFS Dev Seed Users
+-- All users share the dev password: KharonDev2026!
+-- MFA and force_password_change disabled for local development.
+
+-- Client site (required FK for client role)
 INSERT INTO sites (
   id,
   owner_company_name,
@@ -8,13 +13,13 @@ INSERT INTO sites (
   billing_emails
 )
 VALUES (
-  'site_tequit_staging',
-  'Tequit Staging Client',
-  'Staging address to be replaced',
-  'Client Contact',
-  'client@example.com',
+  'site_gwc_dev',
+  'GWC (Dev Client)',
+  '123 Dev Street, Cape Town',
+  'Alistair',
+  'alistair@gwc.com',
   '',
-  'billing@example.com'
+  'alistair@gwc.com'
 )
 ON CONFLICT(id) DO UPDATE SET
   owner_company_name = excluded.owner_company_name,
@@ -23,15 +28,15 @@ ON CONFLICT(id) DO UPDATE SET
   site_contact_email = excluded.site_contact_email,
   billing_emails = excluded.billing_emails;
 
--- Temporary role password hash. Do not store the plaintext password in git.
--- Hash: pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk
+-- Dev password hash for: KharonDev2026!
+-- pbkdf2_sha256$100000$NWU2ODc1MmItZDhkNi00MGJiLTk3MDAtY2IyZWI1ZTdkZDg3$tnhFUWlLjU2n6IhXU8nitcJ1KYJsUCxkJzrC-0EA6pg
 INSERT INTO users (id, name, email, password_hash, role, site_id, is_active)
 VALUES
-  ('usr_admin_001', 'Kharon Admin', 'admin@kharon.co.za', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'admin', NULL, 1),
-  ('usr_tech_001', 'Kharon Technician', 'tech@kharon.co.za', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'tech', NULL, 1),
-  ('usr_finance_001', 'Kharon Finance', 'finance@kharon.co.za', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'finance', NULL, 1),
-  ('usr_client_001', 'Client Portal User', 'client@example.com', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'client', 'site_tequit_staging', 1),
-  ('usr_manager_001', 'Kharon Manager', 'manager@kharon.co.za', 'pbkdf2_sha256$100000$ZTcxYTQ4MWEtMDgyZS00Y2Q0LTg1ZjctMWY5NGYxZjI5YWNl$1l58I_zPJV9q-BRZBdok6RWiBI7UqaqFJ9BmubgQlIk', 'manager', NULL, 1)
+  ('usr_connor', 'Connor Venter', 'connor@kharon.co.za', 'pbkdf2_sha256$100000$NWU2ODc1MmItZDhkNi00MGJiLTk3MDAtY2IyZWI1ZTdkZDg3$tnhFUWlLjU2n6IhXU8nitcJ1KYJsUCxkJzrC-0EA6pg', 'admin', NULL, 1),
+  ('usr_kim', 'Kim', 'kim@kharon.co.za', 'pbkdf2_sha256$100000$NWU2ODc1MmItZDhkNi00MGJiLTk3MDAtY2IyZWI1ZTdkZDg3$tnhFUWlLjU2n6IhXU8nitcJ1KYJsUCxkJzrC-0EA6pg', 'finance', NULL, 1),
+  ('usr_anthony', 'Anthony', 'anthony@kharon.co.za', 'pbkdf2_sha256$100000$NWU2ODc1MmItZDhkNi00MGJiLTk3MDAtY2IyZWI1ZTdkZDg3$tnhFUWlLjU2n6IhXU8nitcJ1KYJsUCxkJzrC-0EA6pg', 'manager', NULL, 1),
+  ('usr_alistair', 'Alistair', 'alistair@gwc.com', 'pbkdf2_sha256$100000$NWU2ODc1MmItZDhkNi00MGJiLTk3MDAtY2IyZWI1ZTdkZDg3$tnhFUWlLjU2n6IhXU8nitcJ1KYJsUCxkJzrC-0EA6pg', 'client', 'site_gwc_dev', 1),
+  ('usr_georgiy', 'Georgiy', 'georgiy@kharon.co.za', 'pbkdf2_sha256$100000$NWU2ODc1MmItZDhkNi00MGJiLTk3MDAtY2IyZWI1ZTdkZDg3$tnhFUWlLjU2n6IhXU8nitcJ1KYJsUCxkJzrC-0EA6pg', 'tech', NULL, 1)
 ON CONFLICT(email) DO UPDATE SET
   name = excluded.name,
   password_hash = excluded.password_hash,

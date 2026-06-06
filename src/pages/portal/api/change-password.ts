@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { auditError } from "../../../lib/server/audit";
 import { getDatabase } from "../../../lib/server/bindings";
 import { auditEvent } from "../../../lib/server/audit";
-import { createSessionToken, hashPassword, sessionCookie, verifyPassword } from "../../../lib/server/auth";
+import { createSessionToken, hashPassword, sessionCookie, verifyPassword, revokeSessionToken, sessionCookieName } from "../../../lib/server/auth";
 import { badRequest, forbidden, json, methodNotAllowed, serverError, unauthorized } from "../../../lib/server/http";
 
 export const prerender = false;
@@ -97,6 +97,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
       )
       .bind(nextHash, user.id)
       .run();
+
+    // Revoke the current session token so it cannot be reused after a credential
+    // change. A fresh token is issued below. Without this, a stolen session cookie
+    // extracted before the password change would remain valid for up to 8 hours.
+    const oldToken = request.headers.get("cookie")
+      ?.split("; ")
+      .find(c => c.startsWith(`${sessionCookieName}=`))
+      ?.split("=")[1];
+    if (oldToken) {
+      await revokeSessionToken(db, oldToken);
+    }
 
     const token = await createSessionToken({ ...record, force_password_change: 0 } as any);
 

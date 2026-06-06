@@ -62,10 +62,10 @@ const rolePaths = {
   tech: {
     allowed: [
       '/portal/tech/dashboard',
-      '/portal/tech/jobs',
       '/portal/tech/schedule',
-      '/portal/tech/jobcard',
-      '/portal/tech/inventory',
+      '/portal/tech/history',
+      // Note: /portal/tech/jobs has no index route — job detail is /portal/tech/jobs/[id]
+      // /portal/tech/jobcard and /portal/tech/inventory do not exist as Astro routes
     ],
     api: [
       '/portal/api/tech/jobs',

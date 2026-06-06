@@ -58,7 +58,6 @@ try {
 }
 
 const totalPages = Math.max(1, Math.ceil(total / perPage));
-import CsrfInput from "../../../components/ui/CsrfInput.astro";
 ---
 
 <PortalLayout title="Website Enquiries | Kharon Portal" active="enquiries" user={user}>
@@ -80,7 +79,6 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
           Enquiries <span class="ml-2 text-sm font-normal text-white/70">({total})</span>
         </h2>
         <form class="flex flex-wrap gap-3" method="get">
-          <CsrfInput />
           <input
             name="q"
             type="search"

@@ -31,32 +31,36 @@ export interface AuthEnv {
  * @throws {Error} If required secrets are missing in a non-local environment
  */
 export function resolveBindingsForAuth(): AuthEnv {
-  // Primary: Cloudflare Workers runtime env (Workers + `astro dev` under workerd).
   const runtime = workerEnv as AuthEnv | undefined;
-  if (runtime && (runtime.SESSION_SECRET || runtime.MFA_SECRET || runtime.DB)) {
-    return runtime;
-  }
+  const env: AuthEnv = {};
 
-  // Fallback: local tooling / CLI scripts via process.env.
+  // 1. Load from process.env fallback (local tooling / CLI / astro preview env inheritance)
   if (typeof process !== "undefined" && process.env) {
-    const env: AuthEnv = {
-      SESSION_SECRET: process.env.SESSION_SECRET,
-      AUTH_SECRET: process.env.AUTH_SECRET,
-      MFA_SECRET: process.env.MFA_SECRET,
-      ENCRYPTION_SECRET: process.env.ENCRYPTION_SECRET,
-      CSRF_SECRET: process.env.CSRF_SECRET,
-      AUDIT_IP_SALT: process.env.AUDIT_IP_SALT,
-      FINGERPRINT_SECRET: process.env.FINGERPRINT_SECRET,
-      ENVIRONMENT: process.env.ENVIRONMENT
-    };
-
-    const environment = env.ENVIRONMENT || "local";
-    if (environment !== "local" && !env.SESSION_SECRET) {
-      throw new Error("SESSION_SECRET must be configured in production environment");
-    }
-
-    return env;
+    env.SESSION_SECRET = process.env.SESSION_SECRET;
+    env.AUTH_SECRET = process.env.AUTH_SECRET;
+    env.MFA_SECRET = process.env.MFA_SECRET;
+    env.ENCRYPTION_SECRET = process.env.ENCRYPTION_SECRET;
+    env.CSRF_SECRET = process.env.CSRF_SECRET;
+    env.AUDIT_IP_SALT = process.env.AUDIT_IP_SALT;
+    env.FINGERPRINT_SECRET = process.env.FINGERPRINT_SECRET;
+    env.ENVIRONMENT = process.env.ENVIRONMENT;
   }
 
-  return {};
+  // 2. Overlay Cloudflare Worker runtime bindings (takes precedence)
+  if (runtime) {
+    for (const key of Object.keys(runtime)) {
+      const val = runtime[key];
+      if (val !== undefined) {
+        env[key] = val;
+      }
+    }
+  }
+
+  // 3. Validation guard
+  const environment = env.ENVIRONMENT || "local";
+  if (environment !== "local" && !env.SESSION_SECRET) {
+    throw new Error("SESSION_SECRET must be configured in production environment");
+  }
+
+  return env;
 }

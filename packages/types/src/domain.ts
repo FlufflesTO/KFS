@@ -178,6 +178,7 @@ export interface DbFinanceTask {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  completed_at: string | null;
   owner_company_name: string;
   job_type: string | null;
 }

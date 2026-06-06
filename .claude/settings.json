@@ -1,4 +1,8 @@
 {
+  "enabledPlugins": {
+    "cloudflare-developer-kit@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true
+  },
   "permissions": {
     "allow": [
       "Bash(npx wrangler whoami)",
@@ -25,26 +29,5 @@
       "Bash(gh run list *)",
       "Bash(gh run view *)"
     ]
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r '.tool_input.file_path // empty' 2>/dev/null | grep -qE '\\.(ts|astro|js|mjs)$' && cd \"C:/Users/User/Desktop/Astro/kfs\" && npm run lint --silent 2>/dev/null || true",
-            "statusMessage": "Linting...",
-            "async": true
-          }
-        ]
-      }
-    ]
-  },
-  "enabledPlugins": {
-    "twilio-developer-kit@claude-plugins-official": true
-  },
-  "worktree": {
-    "bgIsolation": "none"
   }
 }

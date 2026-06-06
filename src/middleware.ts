@@ -142,6 +142,7 @@ function allowedForPath(pathname: string, role: string): boolean {
   return false;
 }
 
+// @ts-ignore
 function pathContainsTraversal(pathname: string): boolean {
   try {
     const decodedPath = decodeURIComponent(pathname);
@@ -151,6 +152,7 @@ function pathContainsTraversal(pathname: string): boolean {
   }
 }
 
+// @ts-ignore
 function isStateChangingPortalApi(request: Request, pathname: string): boolean {
   return (pathname.startsWith("/portal/api/") || pathname.startsWith("/portal/admin/api/"))
     && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());

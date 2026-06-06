@@ -72,21 +72,25 @@ export async function createCsrfToken(user: SessionUser): Promise<string> {
 
 export async function verifyCsrfToken(token: string | null | undefined, user: SessionUser): Promise<boolean> {
   if (!token || typeof token !== "string" || !token.includes(".")) return false;
-  const [encodedPayload, encodedSignature] = token.split(".");
-  if (!encodedPayload || !encodedSignature) return false;
+  try {
+    const [encodedPayload, encodedSignature] = token.split(".");
+    if (!encodedPayload || !encodedSignature) return false;
 
-  // Explicitly cast to ArrayBuffer to satisfy TypeScript
-  const valid = await crypto.subtle.verify(
-    "HMAC",
-    await hmacKey(),
-    base64UrlDecode(encodedSignature).buffer as ArrayBuffer,
-    textEncoder.encode(encodedPayload)
-  );
-  if (!valid) return false;
+    // Explicitly cast to ArrayBuffer to satisfy TypeScript
+    const valid = await crypto.subtle.verify(
+      "HMAC",
+      await hmacKey(),
+      base64UrlDecode(encodedSignature).buffer as ArrayBuffer,
+      textEncoder.encode(encodedPayload)
+    );
+    if (!valid) return false;
 
-  const payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload))) as CsrfPayload;
-  if (payload.sub !== String(user.id) || !payload.exp) return false;
-  return Number(payload.exp) > Math.floor(Date.now() / 1000);
+    const payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload))) as CsrfPayload;
+    if (payload.sub !== String(user.id) || !payload.exp) return false;
+    return Number(payload.exp) > Math.floor(Date.now() / 1000);
+  } catch {
+    return false;
+  }
 }
 
 export async function verifyCsrfRequest(request: Request, user: SessionUser): Promise<boolean> {

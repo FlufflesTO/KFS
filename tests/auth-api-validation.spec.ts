@@ -6,18 +6,18 @@
 
 import { test, expect } from '@playwright/test';
 
-// Test configuration
-const BASE_URL = 'http://localhost:4321';
-const AUTH_ENDPOINT = `${BASE_URL}/portal/api/auth`;
+// Test configuration — use relative path so Playwright resolves against baseURL
+const AUTH_ENDPOINT = '/portal/api/auth';
 
-// Test data
+// Test data — must match a user present in seedTestUsersSQL (tests/fixtures/test-users.ts)
+// Using tech role (non-elevated): no MFA redirect, safe for fixture login
 const VALID_TEST_USER = {
-  email: 'test.admin@kharon.co.za',
+  email: 'tech.test@kharon.co.za',
   password: 'TestPassword123!'
 };
 
 const INVALID_CREDENTIALS = {
-  email: 'test.admin@kharon.co.za',
+  email: 'tech.test@kharon.co.za',
   password: 'WrongPassword456!'
 };
 
@@ -141,7 +141,7 @@ test.describe('Auth API - Invalid Credentials', () => {
   test('should not reveal if email exists vs password wrong', async ({ request }) => {
     // Security: Both cases should return identical error messages
     const response1 = await request.post(AUTH_ENDPOINT, {
-      data: { email: 'test.admin@kharon.co.za', password: 'wrong' }
+      data: { email: 'tech.test@kharon.co.za', password: 'wrong' }
     });
 
     const response2 = await request.post(AUTH_ENDPOINT, {
@@ -215,7 +215,7 @@ test.describe('Auth API - Malformed Requests', () => {
     // Email with leading/trailing spaces should be trimmed
     const response = await request.post(AUTH_ENDPOINT, {
       data: {
-        email: '  test.admin@kharon.co.za  ',
+        email: '  tech.test@kharon.co.za  ',
         password: VALID_TEST_USER.password
       }
     });
@@ -289,7 +289,7 @@ test.describe('Auth API - Rate Limiting', () => {
 
     const body = await response.json();
     expect(body.retryAfter).toBeGreaterThan(0);
-    expect(body.message).toContain('Too many sign-in attempts');
+    expect(body.message).toContain('Too many login attempts');
   });
 });
 
@@ -355,10 +355,15 @@ test.describe('Auth API - Security Headers', () => {
 test.describe('Auth API - MFA', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
+  const MFA_TEST_USER = {
+    email: 'mfa.test@kharon.co.za',
+    password: 'TestPassword123!'
+  };
+
   test('should request MFA code when MFA is enabled', async ({ request }) => {
     // If test user has MFA enabled, should get 401 with MFA required message
     const response = await request.post(AUTH_ENDPOINT, {
-      data: VALID_TEST_USER
+      data: MFA_TEST_USER
     });
 
     // Either succeeds (MFA not enabled) or requests MFA code
@@ -375,7 +380,7 @@ test.describe('Auth API - MFA', () => {
     // First get a session that requires MFA
     const response = await request.post(AUTH_ENDPOINT, {
       data: {
-        ...VALID_TEST_USER,
+        ...MFA_TEST_USER,
         mfaCode: '000000' // Invalid code
       }
     });
@@ -408,7 +413,11 @@ test.describe('Auth API - HTTP Methods', () => {
   });
 
   test('should reject DELETE requests', async ({ request }) => {
-    const response = await request.delete(AUTH_ENDPOINT);
+    const response = await request.delete(AUTH_ENDPOINT, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     expect(response.status()).toBe(405);
   });
 
