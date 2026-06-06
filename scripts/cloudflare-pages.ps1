@@ -4,7 +4,7 @@
 # Structural Role: DevOps deployment script helper for environment sync.
 
 param(
-  [ValidateSet("login", "whoami", "list", "create", "domains", "retry-portal", "check-portal", "preview", "production")]
+  [ValidateSet("login", "whoami", "list", "create", "domains", "retry-portal", "check-portal", "production")]
   [string] $Action = "whoami"
 )
 
@@ -12,9 +12,9 @@ $ErrorActionPreference = "Stop"
 
 Set-Location -LiteralPath (Resolve-Path "$PSScriptRoot\..")
 
-$ProjectName = "kfs-portal"
-$WebsiteProjectName = "kfs-website"
-$PortalDomain = "portal.tequit.co.za"
+$ProjectName = "kfs-website"
+$WebsiteProjectName = $ProjectName
+$PortalDomain = "portal.kharon.co.za"
 $AccountId = if ($env:CLOUDFLARE_ACCOUNT_ID) { $env:CLOUDFLARE_ACCOUNT_ID } else { "1b6ad8d0efcc066f4689065f5f24f5f9" }
 
 if ($env:CLOUDFLARE_API_TOKEN) {
@@ -104,27 +104,17 @@ switch ($Action) {
     curl.exe -I "https://$PortalDomain/"
     exit $LASTEXITCODE
   }
-  "preview" {
-    powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" staging
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    # Try to create project if it doesn't exist
-    $oldPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    npx wrangler pages project create $ProjectName --production-branch main --compatibility-date 2026-05-18 2>$null | Out-Null
-    $ErrorActionPreference = $oldPreference
-    # Remove wrangler deploy config if created to prevent deployment redirection errors
-    Remove-Item -Path "$PSScriptRoot\..\.wrangler\deploy" -Recurse -Force -ErrorAction SilentlyContinue
-    npx wrangler pages deploy dist --project-name $ProjectName --branch preview
-    exit $LASTEXITCODE
-  }
   "production" {
+    npm run build
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    npx wrangler deploy --config dist/server/wrangler.json
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    $env:SKIP_BUILD = "true"
     powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" production
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     # Remove wrangler deploy config if created to prevent deployment redirection errors
     Remove-Item -Path "$PSScriptRoot\..\.wrangler\deploy" -Recurse -Force -ErrorAction SilentlyContinue
-    npx wrangler deploy --config wrangler.website.jsonc
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    npx wrangler deploy --config wrangler.portal.jsonc
+    npx wrangler pages deploy dist --project-name $WebsiteProjectName --branch main
     exit $LASTEXITCODE
   }
 }

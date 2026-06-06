@@ -2,14 +2,11 @@
 
 ## Scope
 
-Deploy the Astro website and SSR portal to Cloudflare's serverless runtime. The current test host is Tequit; the intended final public host is Kharon.
+Deploy the Astro website and SSR portal to Cloudflare's serverless runtime. The active environment is production only.
 
-- Staging/test canonical domain: `https://www.tequit.co.za`
-- Staging/test apex alias: `https://tequit.co.za`
-- Staging/test portal host: `https://portal.tequit.co.za`
-- Final production canonical domain: `https://www.kharon.co.za`
-- Final production redirect domain: `https://kharon.co.za`
-- Final production portal host: `https://portal.kharon.co.za`
+- Production canonical domain: `https://www.kharon.co.za`
+- Production redirect domain: `https://kharon.co.za`
+- Production portal host: `https://portal.kharon.co.za`
 - Cloudflare Worker/Pages application: `kharon-website`
 - Node version: `>=22.12.0`
 - Build output directory: `dist`
@@ -17,17 +14,7 @@ Deploy the Astro website and SSR portal to Cloudflare's serverless runtime. The 
 
 ## Build Variables
 
-Set these in the Cloudflare deployment environment for each environment, or in PowerShell before a manual build:
-
-### Tequit staging/test
-
-```powershell
-$env:PUBLIC_SITE_URL="https://www.tequit.co.za"
-$env:PUBLIC_PORTAL_URL="https://portal.tequit.co.za"
-$env:PUBLIC_CONTACT_EMAIL="admin@kharon.co.za"
-```
-
-### Final Kharon production
+Set these in the Cloudflare deployment environment, or in PowerShell before a manual build:
 
 ```powershell
 $env:PUBLIC_SITE_URL="https://www.kharon.co.za"
@@ -92,69 +79,64 @@ Gate requirements:
    ```powershell
    npm run auth:cloudflare
    ```
-5. Deploy preview:
-   ```powershell
-   npm run build:staging
-   npm run deploy:cloudflare:preview
-   ```
-6. Validate security headers and path-level redirects. Cloudflare `_redirects` does not replace zone-level apex/www redirect rules.
-7. Attach domains:
-   For Tequit staging:
-   - `www.tequit.co.za`
-   - `tequit.co.za`
-   - `portal.tequit.co.za`
-
-   For final Kharon production:
+5. Validate security headers and path-level redirects. Cloudflare `_redirects` does not replace zone-level apex/www redirect rules.
+6. Attach production domains:
    - `www.kharon.co.za`
    - `kharon.co.za`
    - `portal.kharon.co.za`
-8. Deploy production:
+7. Deploy production:
    ```powershell
-   npm run build:staging
+   npm run build:production
    npm run deploy:cloudflare
    ```
    The production script deploys with `--branch main` so custom domains attached to the production branch receive the new build.
-9. Promote to production if using a dashboard-managed preview first.
 
 ### Domain Redirects
 
 Cloudflare Pages `_redirects` does not support host/domain-level redirects. Configure canonical forwarding in Cloudflare:
 
-- Tequit staging: redirect `tequit.co.za/*` to `https://www.tequit.co.za/$1`, preserving path and query string.
-- Final Kharon production: redirect `kharon.co.za/*` to `https://www.kharon.co.za/$1`, preserving path and query string.
+- Production: redirect `kharon.co.za/*` to `https://www.kharon.co.za/$1`, preserving path and query string.
 
 Use Cloudflare Redirect Rules or Bulk Redirects for this. Do not add full-domain rules to `public/_redirects`; they will not be enforced by Pages.
 
+### Cloudflare Zone Features And CSP
+
+The portal uses a nonce-based CSP with `strict-dynamic`. Do not run Cloudflare features that inject un-nonced scripts on portal HTML.
+
+- Disable Rocket Loader for `portal.kharon.co.za/*` and any public-host `/portal/*` route.
+- Disable Email Obfuscation for the same portal routes, or disable it zone-wide if route-level rules are not available.
+- Re-check the browser console after deployment; `cdn-cgi/scripts/.../rocket-loader.min.js` and `cdn-cgi/scripts/.../email-decode.min.js` should not be injected on `/portal/login`.
+
 ### Portal DNS And Routing
 
-`portal.tequit.co.za`, `www.tequit.co.za` and `tequit.co.za` are attached to the SSR Worker deployment. Do not leave public traffic on the old static Pages deployment, otherwise public navigation can drift from the portal-backed SSR build.
+`portal.kharon.co.za`, `www.kharon.co.za` and `kharon.co.za` are attached to the production deployment. Do not leave public traffic on an old static Pages deployment, otherwise public navigation can drift from the portal-backed SSR build.
 
-Current Tequit Worker routes in `wrangler.jsonc`:
+Current production Worker routes:
 
-- `tequit.co.za/*`
-- `www.tequit.co.za/*`
-- `portal.tequit.co.za/*`
+- `kharon.co.za/*`
+- `www.kharon.co.za/*`
+- `portal.kharon.co.za/*`
 
 Expected checks:
 
 ```powershell
-curl.exe -I https://www.tequit.co.za/contact/
-curl.exe -I https://portal.tequit.co.za/portal/login
-curl.exe -I https://portal.tequit.co.za/portal/tech/dashboard
+curl.exe -I https://www.kharon.co.za/contact/
+curl.exe -I https://portal.kharon.co.za/portal/login
+curl.exe -I https://portal.kharon.co.za/portal/tech/dashboard
 ```
 
 Expected results:
 
 - `/portal/login` returns `200`.
 - Protected dashboards return `302` to `/portal/login?...` when unauthenticated.
-- Public `Access Records` links render `https://portal.tequit.co.za/portal/login`.
+- Public `Access Records` links render `https://portal.kharon.co.za/portal/login`.
 
-If `www.tequit.co.za` or `portal.tequit.co.za` serves stale Pages output, it is attached to the wrong Cloudflare application. Remove the affected custom domain from the Pages/static app or add a Worker route/custom domain on the Worker deployment.
+If `www.kharon.co.za` or `portal.kharon.co.za` serves stale Pages output, it is attached to the wrong Cloudflare application. Remove the affected custom domain from the stale Pages/static app or add a Worker route/custom domain on the Worker deployment.
 
 After the DNS/custom domain is saved, re-check routing:
 
 ```powershell
-curl.exe -I https://portal.tequit.co.za/portal/login
+curl.exe -I https://portal.kharon.co.za/portal/login
 ```
 
 If direct `npx wrangler login` fails with `You are logged in with an API Token`, the shell has `CLOUDFLARE_API_TOKEN` set. Either use the npm scripts above or clear it for the current PowerShell session:
@@ -180,23 +162,21 @@ To ensure GitHub Actions CI/CD can deploy to Cloudflare, you must define the `CL
    - **Zone** -> **Zone** -> **Read** (Required to read custom zone metadata)
    - **Account** -> **D1** -> **Edit** (Required to bind D1 databases)
    - **Account** -> **R2** -> **Edit** (Required to bind R2 buckets)
-7. Set the token's **Zone Resources** to **All zones** (or explicitly add `tequit.co.za` and `kharon.co.za`).
+7. Set the token's **Zone Resources** to **All zones** or explicitly add `kharon.co.za`.
 8. Trigger the workflow (e.g., by pushing a commit or manually re-running a failed job) to redeploy.
 
-### Final Kharon DNS
+### Production DNS
 
-When moving from Tequit staging to Kharon production, add the Kharon custom domains to Cloudflare and create DNS records in the `kharon.co.za` zone:
+Add the Kharon custom domains to Cloudflare and create DNS records in the `kharon.co.za` zone:
 
 - `www` -> `kharon-website.pages.dev`
 - apex `kharon.co.za` -> Pages apex/custom-domain target shown by Cloudflare
 - `portal` -> the Worker/SSR portal target
 
-When moving to `portal.kharon.co.za`, update `PUBLIC_PORTAL_URL`, attach the new custom domain to the Worker/SSR deployment, and verify login plus protected dashboard redirects before announcing the cutover.
-
-Final cutover build and deploy:
+Production build and deploy:
 
 ```powershell
-npm run build:production:kharon
+npm run build:production
 npm run deploy:cloudflare
 ```
 
@@ -251,7 +231,7 @@ Current migrations and their scope:
 
 For a fresh database, apply `schema.sql` first (full schema including all migrations). For an existing database, identify the highest applied migration and apply only the subsequent files in order.
 
-Applied to staging D1 as of 2026-05-25: all migrations through `0017`.
+Applied to production D1 as of 2026-05-25: all migrations through `0017`.
 
 Generate a PBKDF2 password hash before inserting users:
 
@@ -287,16 +267,16 @@ Admin operations route:
 Live smoke checks:
 
 ```powershell
-curl.exe -I https://portal.tequit.co.za/portal/login
-curl.exe -I https://portal.tequit.co.za/portal/tech/dashboard
+curl.exe -I https://portal.kharon.co.za/portal/login
+curl.exe -I https://portal.kharon.co.za/portal/tech/dashboard
 ```
 
 Authenticated dashboard smoke check:
 
 ```powershell
 Set-Content -Path .\auth-test.json -Value '{"email":"tech@kharon.co.za","password":"<enter QA password supplied outside the repo>"}'
-curl.exe -s -c .\portal-cookies.txt -X POST https://portal.tequit.co.za/portal/api/auth -H "Content-Type: application/json" --data-binary "@auth-test.json"
-curl.exe -I -b .\portal-cookies.txt https://portal.tequit.co.za/portal/tech/dashboard
+curl.exe -s -c .\portal-cookies.txt -X POST https://portal.kharon.co.za/portal/api/auth -H "Content-Type: application/json" --data-binary "@auth-test.json"
+curl.exe -I -b .\portal-cookies.txt https://portal.kharon.co.za/portal/tech/dashboard
 Remove-Item .\auth-test.json,.\portal-cookies.txt -ErrorAction SilentlyContinue
 ```
 
@@ -305,8 +285,8 @@ Expected authenticated result: `/portal/tech/dashboard` returns `200`.
 Logout smoke check:
 
 ```powershell
-curl.exe -i -b .\portal-cookies.txt -c .\portal-cookies-after.txt -X POST https://portal.tequit.co.za/portal/api/logout -H "Origin: https://portal.tequit.co.za"
-curl.exe -I -b .\portal-cookies-after.txt https://portal.tequit.co.za/portal/tech/dashboard
+curl.exe -i -b .\portal-cookies.txt -c .\portal-cookies-after.txt -X POST https://portal.kharon.co.za/portal/api/logout -H "Origin: https://portal.kharon.co.za"
+curl.exe -I -b .\portal-cookies-after.txt https://portal.kharon.co.za/portal/tech/dashboard
 ```
 
 Expected result: logout returns `200` and the next dashboard request returns `302` to login.
@@ -320,7 +300,7 @@ npx wrangler d1 execute kharon-portal --remote --command "SELECT scope, COUNT(*)
 
 ### Google Workspace Email DNS
 
-Because Kharon uses Google Workspace for `admin@kharon.co.za` and `connor@kharon.co.za`, email DNS belongs on the `kharon.co.za` zone, not the temporary `tequit.co.za` test zone unless Tequit also needs mail.
+Because Kharon uses Google Workspace for `admin@kharon.co.za` and `connor@kharon.co.za`, email DNS belongs on the `kharon.co.za` zone.
 
 Add Google Workspace's current required records:
 
@@ -340,7 +320,7 @@ Do not add a second SPF record. If another sender is added later, merge it into 
 - Validate contact flow and portal links.
 - `/sitemap.xml` returns XML using the configured canonical domain.
 - `/robots.txt` returns a sitemap URL using the configured canonical domain.
-- The non-canonical apex domain redirects at the Cloudflare zone layer, or is documented as an intentional staging alias.
+- The non-canonical apex domain redirects at the Cloudflare zone layer.
 
 ## Regression Smoke Checklist
 

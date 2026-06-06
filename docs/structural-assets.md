@@ -14,12 +14,12 @@ The OpenAPI 3.0 specification ([api-spec.yaml](./api-spec.yaml)) establishes the
 
 ## 2. CI/CD Pipeline
 
-The GitHub Actions configuration ([.github/workflows/ci-cd.yml](../../.github/workflows/ci-cd.yml)) enforces strict TypeScript validation, ensures Tailwind CSS compilation efficiency via the purging script, and acts as a deployment gate for the Cloudflare Pages staging and production environments.
+The GitHub Actions configuration ([.github/workflows/ci-cd.yml](../../.github/workflows/ci-cd.yml)) enforces strict TypeScript validation, ensures Tailwind CSS compilation efficiency via the purging script, and acts as the production deployment gate for Cloudflare.
 
 ### Pipeline Stages:
 - **Validation**: TypeScript strict validation and CSS purging
 - **Build**: Application compilation with environment-specific variables
-- **Deploy**: Conditional deployment to staging or production based on branch
+- **Deploy**: Production deployment from `main`
 
 ## 3. Compliance Components
 

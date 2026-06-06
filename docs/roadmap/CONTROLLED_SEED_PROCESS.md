@@ -1,17 +1,17 @@
-# Controlled Portal Seed Process
+﻿# Controlled Portal Seed Process
 
-This process is for staging and dry-run data only. Do not commit live passwords, password hashes, reset links, MFA secrets, session cookies, Cloudflare tokens or client-confidential production exports.
+This process is for QA and dry-run data only. Do not commit live passwords, password hashes, reset links, MFA secrets, session cookies, Cloudflare tokens or client-confidential production exports.
 
 ## Purpose
 
-Seed enough representative portal data to review dashboards, role behavior, dispatch planning, lifecycle calendars, finance visibility and document access without turning staging data into uncontrolled production evidence.
+Seed enough representative portal data to review dashboards, role behavior, dispatch planning, lifecycle calendars, finance visibility and document access without turning QA data into uncontrolled production evidence.
 
 ## Allowed Seed Data
 
-- Synthetic or approved staging sites.
-- Synthetic protected systems linked to staging sites.
-- Synthetic jobs linked to staging systems.
-- Synthetic financial records linked to staging jobs or sites.
+- Synthetic or approved QA sites.
+- Synthetic protected systems linked to QA sites.
+- Synthetic jobs linked to QA systems.
+- Synthetic financial records linked to QA jobs or sites.
 - Synthetic maintenance requests.
 - Test users only when created through an operator-run command or admin UI with external passwords.
 
@@ -72,8 +72,8 @@ User seed SQL containing `password_hash` is operational material, not source mat
 
 ## Pre-Seed Checklist
 
-- [ ] Confirm target: local D1, staging D1 or production D1.
-- [ ] Export D1 before modifying shared staging or production data.
+- [ ] Confirm target: local D1, QA D1 or production D1.
+- [ ] Export D1 before modifying shared QA or production data.
 - [ ] Confirm seed file contains no live passwords or hashes if it will be committed.
 - [ ] Confirm users are unique per tester.
 - [ ] Confirm test users use external credentials.
@@ -92,5 +92,6 @@ User seed SQL containing `password_hash` is operational material, not source mat
 
 - Remove temporary SQL files containing password hashes.
 - Clear terminal history only where policy permits and where credentials were accidentally pasted.
-- Disable stale staging users after QA.
+- Disable stale QA users after QA.
 - Keep D1 backups and approved QA records outside the repository.
+

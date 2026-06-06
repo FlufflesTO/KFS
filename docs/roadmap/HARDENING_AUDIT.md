@@ -1,16 +1,16 @@
-# Hardening Audit
+﻿# Hardening Audit
 
 Date: 2026-05-18
 
 ## Result
 
-The public site is static-first, deployable on Cloudflare Pages, and hardened for the current Tequit staging domain and future Kharon production cutover.
+The public site is static-first, deployable on Cloudflare Pages, and hardened for the current Kharon QA domain and future Kharon production cutover.
 
 ## Pass 1: Build And Deployment
 
 - Verified Astro static build emits 11 HTML pages.
 - Verified no public app JavaScript bundle is emitted.
-- Verified staging canonical output uses `https://www.tequit.co.za`.
+- Verified QA canonical output uses `https://www.kharon.co.za`.
 - Verified production Kharon build output uses `https://www.kharon.co.za`.
 - Corrected Pages redirect assumptions: Cloudflare Pages `_redirects` is not used for apex/www domain forwarding.
 
@@ -25,8 +25,8 @@ The public site is static-first, deployable on Cloudflare Pages, and hardened fo
 ## Pass 3: UX, Content, And Routing
 
 - Homepage is compact and routing-focused: cinematic hero, compliance strip, operational route matrix, technical proof, footer.
-- Removed stale fake-dashboard language and decorative “System Overview” output.
-- Confirmed no “Coming Soon” portal language remains.
+- Removed stale fake-dashboard language and decorative â€œSystem Overviewâ€ output.
+- Confirmed no â€œComing Soonâ€ portal language remains.
 - Confirmed security remains subordinate to gas suppression, fire detection, compliance and lifecycle support.
 - Added hardened contextual inquiry forms with explicit request types, bounded input lengths and email-client submission guidance.
 
@@ -40,7 +40,7 @@ The public site is static-first, deployable on Cloudflare Pages, and hardened fo
 
 ## Enterprise Hardening Pass
 
-- Added `npm run validate:site`, which builds the tequit staging bundle and audits generated output for routes, metadata, contextual forms, internal links, security headers, CSS budget, JS-free output and forbidden pseudo-dashboard terms.
+- Added `npm run validate:site`, which builds the tequit QA bundle and audits generated output for routes, metadata, contextual forms, internal links, security headers, CSS budget, JS-free output and forbidden pseudo-dashboard terms.
 - Hardened deployment so `npm run deploy:cloudflare` rebuilds the tequit bundle before uploading to Cloudflare Pages.
 - Removed hover-lift and glow effects from reusable cards, status markers and schematic visuals.
 - Reworked shared navigation/footer assessment links to preserve request intent instead of dumping users into generic contact routing.
@@ -50,19 +50,19 @@ The public site is static-first, deployable on Cloudflare Pages, and hardened fo
 ## Operational Notes
 
 - Configure apex/www canonical forwarding in Cloudflare Redirect Rules or Bulk Redirects:
-  - `tequit.co.za/*` -> `https://www.tequit.co.za/$1`
+  - `kharon.co.za/*` -> `https://www.kharon.co.za/$1`
   - `kharon.co.za/*` -> `https://www.kharon.co.za/$1`
 - Keep real project photography and case evidence as the next authority phase once approved assets are available.
 
 ## Residual External Control
 
-- `https://tequit.co.za/` currently serves the same hardened site instead of redirecting to `https://www.tequit.co.za/`.
-- The current Wrangler OAuth token can read the `tequit.co.za` zone but returned an authentication error for zone Rulesets API access.
+- `https://kharon.co.za/` currently serves the same hardened site instead of redirecting to `https://www.kharon.co.za/`.
+- The current Wrangler OAuth token can read the `kharon.co.za` zone but returned an authentication error for zone Rulesets API access.
 - This cannot be resolved inside the Pages bundle because Cloudflare Pages `_redirects` does not support domain-level redirects. Add the Redirect Rule in the Cloudflare dashboard or with a token that has Dynamic URL Redirects Write / Zone Rulesets permissions.
 
 ---
 
-## Audit Update — 2026-05-25
+## Audit Update â€” 2026-05-25
 
 Scope of this update: SSR portal security state, contact form handler, session revocation, and current build posture.
 
@@ -74,7 +74,7 @@ Scope of this update: SSR portal security state, contact form handler, session r
 
 ### Portal Security Additions Since May 2026-05-18
 
-- **Session token revocation (Phase 10):** Logout inserts a SHA-256 token fingerprint into `revoked_sessions` D1 table. Middleware checks revocation on every portal request. Migration `0009_revoked_sessions.sql` applied to staging.
+- **Session token revocation (Phase 10):** Logout inserts a SHA-256 token fingerprint into `revoked_sessions` D1 table. Middleware checks revocation on every portal request. Migration `0009_revoked_sessions.sql` applied to QA.
 - **CSRF protection:** User-bound HMAC tokens delivered via meta tag, validated in middleware for all authenticated portal write POSTs. Login is intentionally exempt.
 - **Rate limiting:** Per-endpoint limits on all portal write APIs. Public contact endpoint rate-limited at 5 per 15-minute window per IP.
 - **TOTP MFA:** Admin and finance users can enrol an authenticator app. MFA-required flag enforced in middleware.
@@ -104,11 +104,11 @@ Scope of this update: SSR portal security state, contact form handler, session r
 
 ---
 
-## Audit Update — 2026-05-25 (Phase 14, 15, 16 Completion)
+## Audit Update â€” 2026-05-25 (Phase 14, 15, 16 Completion)
 
 Scope: public page differentiation, compliance hub, and operational data model expansion.
 
-### Phase 14 — Public Page Differentiation
+### Phase 14 â€” Public Page Differentiation
 
 - All service pages now use unique technical block components instead of the shared `EngineeringSystems` component.
 - Each page has at least one unique SVG diagram, checklist, matrix, or evidence section.
@@ -116,7 +116,7 @@ Scope: public page differentiation, compliance hub, and operational data model e
 - No client names, vendor partnership claims, or absolute compliance guarantees introduced.
 - `npm run build` and `npm run audit:site` pass.
 
-### Phase 15 — Compliance Hub
+### Phase 15 â€” Compliance Hub
 
 - `/compliance` hub page live with SANS 10139 and SANS 14520 practical summaries.
 - Service checklists, defect severity classification, certificate readiness flowchart, maintenance cadence table.
@@ -124,18 +124,18 @@ Scope: public page differentiation, compliance hub, and operational data model e
 - No copyrighted SANS text reproduced; summary-level only with disclaimers.
 - PDF downloads and FAQ schema deferred pending design approval.
 
-### Phase 16 — Data Model Expansion
+### Phase 16 â€” Data Model Expansion
 
 - Four new D1 tables: `clients`, `job_visits`, `defects`, `certificates`.
 - Admin dashboard: 7-card quick-stats row including open defects, blocked certificates. Exception queue includes defect register.
 - Client dashboard: open defects and certificate register sections scoped to client-accessible systems.
 - Technician dashboard: visit history per job, log arrival form with GPS capture, `/portal/api/job-visits` endpoint.
-- Migrations `0014` through `0017` committed and applied to staging.
+- Migrations `0014` through `0017` committed and applied to QA.
 - `npm run build` passes; Cloudflare deployment successful.
 
 ### Updated Production Blockers
 
-- [ ] Rotate all shared staging credentials and enforce unique per-user passwords.
+- [ ] Rotate all shared QA credentials and enforce unique per-user passwords.
 - [ ] Complete credential-backed role QA for Admin, Technician, Client and Finance.
 - [ ] Confirm Admin and Finance MFA enforcement policy.
 
@@ -212,3 +212,5 @@ Scope: dependency security, project status reconciliation and deploy gate verifi
 - Wrangler is installed locally at 4.93.0.
 - Local Cloudflare deployment is blocked until OAuth or token authentication is restored; `npm run cloudflare:whoami` reports unauthenticated and `npm run auth:cloudflare` timed out waiting for OAuth completion.
 - The GitHub `main` workflow remains the automated deploy path when Cloudflare repository secrets are valid.
+
+

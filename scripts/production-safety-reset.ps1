@@ -29,4 +29,4 @@ foreach ($email in $techEmails) {
 }
 
 Write-Host "--- SAFETY RESET COMPLETE ---" -ForegroundColor Green
-Write-Host "Action Required: Impacted users must log in to portal.kharon.co.za (or staging) to rotate credentials and setup MFA."
+Write-Host "Action Required: Impacted users must log in to portal.kharon.co.za to rotate credentials and setup MFA."

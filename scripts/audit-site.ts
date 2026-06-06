@@ -33,7 +33,7 @@ function fail(message: string): void {
 }
 
 if (!fs.existsSync(dist)) {
-  fail("dist directory is missing. Run npm run build:staging first.");
+  fail("dist directory is missing. Run npm run build:production first.");
 }
 
 // Cloudflare SSR build output structure varies by adapter version. 

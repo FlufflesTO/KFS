@@ -1,4 +1,4 @@
-# Implementation Plan: Production Readiness
+﻿# Implementation Plan: Production Readiness
 
 ## Phase 1: Security & Identity Reset
 - [x] Task: Create Production Safety Reset script for password rotation and MFA. [checkpoint: 20260603]
@@ -10,7 +10,7 @@
 - [x] Task: Hardened CI/CD to preserve D1 backups as artifacts. [checkpoint: 20260603]
 
 ## Phase 2: Environment & Deployment
-- [x] Task: Add staging banner to portal and website. [checkpoint: 20260603]
+- [x] Task: Add QA banner to portal and website. [checkpoint: 20260603]
 - [x] Task: Confirm deployment command shape for split architecture. [checkpoint: 20260603]
 - [x] Task: Verify remote D1 migration `0035_staff_hr.sql` readiness. [checkpoint: 20260603]
 
@@ -19,3 +19,4 @@
 - [ ] Task: Complete business/POPIA sign-off for analytics.
 - [ ] Task: Final security audit verification.
 - [ ] Task: Director sign-off for domain cutover.
+

@@ -1,4 +1,4 @@
-# Kharon Portal - Production Audit
+﻿# Kharon Portal - Production Audit
 
 ## Executive Summary
 This document provides a comprehensive audit of the Kharon Fire and Security Solutions portal, detailing completed features, security measures, and compliance requirements for production deployment.
@@ -68,7 +68,7 @@ The portal meets all requirements for production deployment with the following n
 - All critical security measures are in place
 - Compliance requirements for South African regulations are satisfied
 - Performance optimizations have been implemented
-- The system is ready for migration from tequit.co.za to kharon.co.za
+- The system is ready for migration from kharon.co.za to kharon.co.za
 
 ## Post-Deployment Tasks
 - [ ] Monitor system performance and user feedback

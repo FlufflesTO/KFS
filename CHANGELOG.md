@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Phase 0 & Phase 2: Production Readiness & Field Resilience
 
 #### [Added]
-- **Industrial Staging Indicator**: Implemented `StagingBanner.astro` with high-visibility diagonal warning patterns and engineered aesthetics, active on `tequit.co.za` and `localhost` domains.
+- **Industrial QA Indicator**: Implemented `QABanner.astro` with high-visibility diagonal warning patterns and engineered aesthetics, active on `kharon.co.za` and `localhost` domains.
 - **Optimistic Locking (Concurrency Control)**: Integrated `version` column tracking and enforcement in `submit-jobcard.ts` API. System now detects and blocks stale data overwrites with a `409 Conflict` response.
 - **Field Draft Persistence**: Added auto-save capability to Technician Jobcards, persisting form state to local IndexedDB every 30 seconds via Service Worker messaging.
 - **Conflict Resolution UI**: Designed and implemented a high-contrast conflict resolution modal for field technicians to manage server-side data changes.
@@ -159,12 +159,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Code Quality Metrics
 | Metric | Before | After | Change |
 |--------|--------|-------|--------|
-| TypeScript Errors | 65 | 0 | ✅ -65 |
-| TypeScript Warnings | 49 | 0 | ✅ -49 |
-| Hints | 21 | 1 | ✅ -20 |
-| `as any` Escapes | 4 | 0 | ✅ -4 |
-| IDB Null-Safety | ❌ | ✅ | Fixed |
-| Offline Indicator | ❌ | ✅ | Deployed |
+| TypeScript Errors | 65 | 0 | âœ… -65 |
+| TypeScript Warnings | 49 | 0 | âœ… -49 |
+| Hints | 21 | 1 | âœ… -20 |
+| `as any` Escapes | 4 | 0 | âœ… -4 |
+| IDB Null-Safety | âŒ | âœ… | Fixed |
+| Offline Indicator | âŒ | âœ… | Deployed |
 
 #### Remaining Hints (1 - Non-actionable)
 - 1x `ErrorHandlerOptions<T>` type parameter - used internally by generic interface
@@ -179,11 +179,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **QWEN.md**: Added DOM Type Safety Helpers and IndexedDB Null-Safety Pattern sections
 
 ### Build Status
-- ✅ TypeScript: 0 errors, 0 warnings, 1 hint
-- ✅ Production Build: PASS
-- ✅ Deployment Ready: YES
+- âœ… TypeScript: 0 errors, 0 warnings, 1 hint
+- âœ… Production Build: PASS
+- âœ… Deployment Ready: YES
 - **tsconfig.json Relaxation**: Adjusted strict TypeScript settings for pragmatic CI/CD pipeline compatibility. Disabled `exactOptionalPropertyTypes`, `strictPropertyInitialization`, `noUnusedLocals`, and `noUnusedParameters`. Excluded scripts, tests, eslint.config.ts, and playwright.config.ts from type checking to focus validation on production source code.
-- **Zod Schema Fix**: Corrected `nonNegative` → `nonnegative` (case sensitivity) in `FinanceTaskCreateSchema`. Replaced deprecated `z.ZodIssueCode` with imported `ZodIssueCode`.
+- **Zod Schema Fix**: Corrected `nonNegative` â†’ `nonnegative` (case sensitivity) in `FinanceTaskCreateSchema`. Replaced deprecated `z.ZodIssueCode` with imported `ZodIssueCode`.
 - **Error Class Updates**: Added `override` modifier to `name` and `cause` properties in custom error classes (`DraftStorageError`, `DraftQuotaExceededError`, `SyncQueueError`, `SyncQueueQuotaExceededError`, `TooManyRequestsError.toJSON()`) to satisfy TypeScript 6.0 strict mode requirements.
 - **Missing Types Installed**: Added `@cloudflare/workers-types` dev dependency for D1Database, R2Bucket, and ScheduledController type definitions.
 - **Type Definition Fixes**:
@@ -218,15 +218,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Migration Sequence De-duplication (Task DB-006)
 - **Renamed Duplicate Migration Files**: Resolved sorting conflicts in migration file index where duplicate numbering prefixes occurred (`0018`, `0020`, `0024`). Applied alphabetical suffixes to maintain chronological schema generation logic:
-  - `0018_mfa_policy.sql` → `0018a_mfa_policy.sql`
-  - `0018_finance_task_status_pipeline.sql` → `0018b_finance_task_status_pipeline.sql`
-  - `0020_finance_vat_hardening.sql` → `0020a_finance_vat_hardening.sql`
-  - `0020_job_visit_status.sql` → `0020b_job_visit_status.sql`
-  - `0024_phase11_telemetry.sql` → `0024a_phase11_telemetry.sql`
-  - `0024_sage_oauth_tokens.sql` → `0024b_sage_oauth_tokens.sql`
+  - `0018_mfa_policy.sql` â†’ `0018a_mfa_policy.sql`
+  - `0018_finance_task_status_pipeline.sql` â†’ `0018b_finance_task_status_pipeline.sql`
+  - `0020_finance_vat_hardening.sql` â†’ `0020a_finance_vat_hardening.sql`
+  - `0020_job_visit_status.sql` â†’ `0020b_job_visit_status.sql`
+  - `0024_phase11_telemetry.sql` â†’ `0024a_phase11_telemetry.sql`
+  - `0024_sage_oauth_tokens.sql` â†’ `0024b_sage_oauth_tokens.sql`
 
 ### POPIA Cascade Deletion Repair (Task DB-001)
-- **Replaced ON DELETE CASCADE with RESTRICT/SET NULL**: Modified foreign key constraints across 10 tables to preserve historical data for POPIA Section 14 compliance. Core entity chain (`sites` → `systems` → `jobs` → `defects`) now uses `ON DELETE RESTRICT` to prevent accidental data loss. Audit-related tables (`password_reset_tokens`, `document_access_logs`, `client_site_access`, `job_evidence_files`, `job_visits`) use `ON DELETE SET NULL` to maintain historical records while allowing user deactivation.
+- **Replaced ON DELETE CASCADE with RESTRICT/SET NULL**: Modified foreign key constraints across 10 tables to preserve historical data for POPIA Section 14 compliance. Core entity chain (`sites` â†’ `systems` â†’ `jobs` â†’ `defects`) now uses `ON DELETE RESTRICT` to prevent accidental data loss. Audit-related tables (`password_reset_tokens`, `document_access_logs`, `client_site_access`, `job_evidence_files`, `job_visits`) use `ON DELETE SET NULL` to maintain historical records while allowing user deactivation.
 
 ### Soft-Delete Pattern Standardization (Task DB-007)
 - **Users Table Schema Update**: Added `deleted_at TIMESTAMP` column and `idx_users_deleted_at` index to `schema.sql` for ISO 8601 soft-delete timestamp pattern.
@@ -296,7 +296,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Verified Implementation**: Certificate generation at `/portal/api/certificates/generate-pdf.ts` already queries `defects` table with `certificate_blocking` flag check. Certificates cannot be generated when blocking defects exist with `status != 'Closed'`, ensuring compliance with SANS inspection requirements.
 
 ### Client-Side Upload Image Downsampling (Task JOB-004)
-- **compressImage Function**: Added client-side image compression utility in `src/pages/portal/tech/jobs/[id]/jobcard.astro`. Uses HTML5 Canvas to downsample images to max 1920px longest side, then iteratively compresses JPEG (quality 0.92→0.60) until under 2MB target.
+- **compressImage Function**: Added client-side image compression utility in `src/pages/portal/tech/jobs/[id]/jobcard.astro`. Uses HTML5 Canvas to downsample images to max 1920px longest side, then iteratively compresses JPEG (quality 0.92â†’0.60) until under 2MB target.
 - **Job Card Integration**: Evidence photo upload loop now processes all images through `compressImage()` before submission. Large images automatically resized and converted to JPEG format, reducing upload bandwidth and storage requirements while preserving visual evidence quality.
 
 ### Cross-Tenant Data Access Validation (Task JOB-006)
@@ -349,7 +349,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Deployment
-- **Cloudflare Pages Deploy**: Built and deployed the hardened and modernised build to Cloudflare Pages (Version ID: `7b2cd252-a051-4ac8-9f4b-35c25fb4cbcd`) targeting the `tequit.co.za` and `portal.tequit.co.za` staging gateways.
+- **Cloudflare Pages Deploy**: Built and deployed the hardened and modernised build to Cloudflare Pages (Version ID: `7b2cd252-a051-4ac8-9f4b-35c25fb4cbcd`) targeting the `kharon.co.za` and `portal.kharon.co.za` QA gateways.
 
 ## [Unreleased] - 2026-05-26
 
@@ -380,7 +380,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Feedback Button Visibility**: Changed threshold from sm:flex to md:flex for better mobile space utilization
 
 ### TypeScript Error Resolution (391 errors fixed)
-- **middleware.ts**: Removed unused `defineMiddleware` import, added proper type assertions for `csrfToken` (string | undefined → string)
+- **middleware.ts**: Removed unused `defineMiddleware` import, added proper type assertions for `csrfToken` (string | undefined â†’ string)
 - **sw.ts**: Added `@ts-nocheck` for ServiceWorker/DOM type conflicts, added proper function return types and parameter annotations
 - **dispatch.astro**: Changed `||` to `??` (nullish coalescing) for `estimated_duration_minutes`
 - **log-visit.astro**: Added proper TypeScript type annotations for DOM elements (HTMLFormElement, HTMLSelectElement, HTMLInputElement) and event handlers
@@ -395,7 +395,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scrollbar Hiding**: Cross-browser `.scrollbar-hide` utility for Chrome, Firefox, Safari, Edge
 
 ### Deployment & Build
-- **CSS Purging**: 111,053 → 95,498 bytes (14% reduction) through intelligent class detection
+- **CSS Purging**: 111,053 â†’ 95,498 bytes (14% reduction) through intelligent class detection
 - **Build Time**: 17.04s server build with zero errors
 - **Production Deploy**: Version ID `fbed201a-f287-4a10-9d65-294d00e0bea5` deployed to Cloudflare
 
@@ -470,11 +470,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Phase 14 - Public Page Differentiation (completed)
 - Removed shared `EngineeringSystems` component from all service pages (gas-suppression, fire-detection, compliance-maintenance, critical-infrastructure).
 - Each service page now uses its own technical block component:
-  - `SuppressionTechnicalBlocks.astro` — room integrity checklist, agent selection matrix (FM-200/Inergen/Novec/CO2), discharge sequence SVG, pre-quote data capture.
-  - `DetectionTechnicalBlocks.astro` — cause-and-effect matrix, false-alarm diagnosis flowchart SVG, service evidence checklist, zoning strategy guide.
-  - `ComplianceTechnicalBlocks.astro` — maintenance cadence table, defect severity classification (Critical/Major/Minor), certificate readiness flowchart SVG, service report structure.
-  - `InfrastructureTechnicalBlocks.astro` — uptime impact model, escalation/response dependency map SVG, site risk-tier matrix.
-  - `SecurityTechnicalBlocks.astro` — access control tiers, CCTV coverage planning, integration points diagram SVG.
+  - `SuppressionTechnicalBlocks.astro` â€” room integrity checklist, agent selection matrix (FM-200/Inergen/Novec/CO2), discharge sequence SVG, pre-quote data capture.
+  - `DetectionTechnicalBlocks.astro` â€” cause-and-effect matrix, false-alarm diagnosis flowchart SVG, service evidence checklist, zoning strategy guide.
+  - `ComplianceTechnicalBlocks.astro` â€” maintenance cadence table, defect severity classification (Critical/Major/Minor), certificate readiness flowchart SVG, service report structure.
+  - `InfrastructureTechnicalBlocks.astro` â€” uptime impact model, escalation/response dependency map SVG, site risk-tier matrix.
+  - `SecurityTechnicalBlocks.astro` â€” access control tiers, CCTV coverage planning, integration points diagram SVG.
 - CSS budget raised to 60 KB to accommodate new Tailwind utility classes from technical block content.
 
 ### Phase 15 - Compliance Hub (completed by Claude)
@@ -485,10 +485,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Phase 16 - Portal Operational Data Model Expansion (completed)
 - **New migrations:**
-  - `0014_clients.sql` — `clients` table for customer entity management (company_name, contact fields, billing_address).
-  - `0015_job_visits.sql` — `job_visits` table for technician arrival/departure logging with GPS coordinates, on-site contact, and notes.
-  - `0016_defects.sql` — `defects` table with severity (Critical/Major/Minor/Observation), SANS clause reference, certificate_blocking flag, status tracking, remediation_notes.
-  - `0017_certificates.sql` — `certificates` table with certificate_type, issued/expiry dates, blocked_by_defect_id FK, status (Valid/Expired/Revoked/Blocked).
+  - `0014_clients.sql` â€” `clients` table for customer entity management (company_name, contact fields, billing_address).
+  - `0015_job_visits.sql` â€” `job_visits` table for technician arrival/departure logging with GPS coordinates, on-site contact, and notes.
+  - `0016_defects.sql` â€” `defects` table with severity (Critical/Major/Minor/Observation), SANS clause reference, certificate_blocking flag, status tracking, remediation_notes.
+  - `0017_certificates.sql` â€” `certificates` table with certificate_type, issued/expiry dates, blocked_by_defect_id FK, status (Valid/Expired/Revoked/Blocked).
 - **schema.sql** updated with all new tables, indexes, and updated_at triggers.
 - **Admin dashboard** enhanced:
   - Quick-stats row expanded to 7 cards including open defects (with critical count), blocked certificates, and valid certificate count.
@@ -504,3 +504,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Reframed the portal finance dashboard (`src/pages/portal/finance/dashboard.astro`) and associated APIs (`records.js`, `payments.js`) to act as a Sage manual control register, replacing legacy ledger terminology with Sage-aligned labels (e.g. `Record Paid in Sage` and manual Sage reference fields).
+
+

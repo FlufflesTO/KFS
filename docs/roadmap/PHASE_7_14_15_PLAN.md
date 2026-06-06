@@ -1,8 +1,8 @@
-# Phases 7, 14 & 15 - Design and Implementation Plan
+﻿# Phases 7, 14 & 15 - Design and Implementation Plan
 
 ## Executive Summary
 
-These three phases work together to transform the public website from a **competent staging site** into an **authority-positioned production website**:
+These three phases work together to transform the public website from a **competent QA site** into an **authority-positioned production website**:
 
 | Phase | Focus | Outcome |
 |-------|-------|---------|
@@ -61,7 +61,7 @@ Replace abstract authority signals with **approved, publishable evidence** that 
 
 #### 7.2 - Approved Industrial Photography
 
-**Asset清单:**
+**Assetæ¸…å•:**
 - [ ] Gas suppression cylinder bank (1-2 images)
 - [ ] Fire detection control panel (1-2 images)
 - [ ] Detector/installation close-up (1-2 images)
@@ -132,9 +132,9 @@ Eliminate "templated" feel by giving each major service page **unique proof bloc
 ```
 
 #### B. Agent Selection Matrix
-| Factor | FM-200 | Inergen | Novec 1230 | CO₂ |
+| Factor | FM-200 | Inergen | Novec 1230 | COâ‚‚ |
 |--------|--------|---------|------------|-----|
-| Occupied spaces | ✓ | ✓ | ✓ | ✗ |
+| Occupied spaces | âœ“ | âœ“ | âœ“ | âœ— |
 | Environmental impact | Moderate | Low | Low | High |
 | Storage pressure | High | Very High | Low | High |
 | Cost per kg | Medium | High | Very High | Low |
@@ -143,14 +143,14 @@ Eliminate "templated" feel by giving each major service page **unique proof bloc
 #### C. Discharge Sequence Diagram
 Create SVG showing:
 ```
-Detection → Alarm Stage 1 → Alarm Stage 2 → Shutdown → Delay → Release → Post-Release Alarm
+Detection â†’ Alarm Stage 1 â†’ Alarm Stage 2 â†’ Shutdown â†’ Delay â†’ Release â†’ Post-Release Alarm
 ```
 
 #### D. Pre-Quote Data Capture
 ```markdown
 **Information Required:**
-1. Protected room dimensions (L×W×H)
-2. Room volume (m³)
+1. Protected room dimensions (LÃ—WÃ—H)
+2. Room volume (mÂ³)
 3. Door/window count and sizes
 4. Existing penetration count
 5. Agent type (if replacement)
@@ -180,16 +180,16 @@ Detection → Alarm Stage 1 → Alarm Stage 2 → Shutdown → Delay → Release
 Create SVG flowchart:
 ```
 False Alarm Reported
-  ↓
+  â†“
 Environmental check (dust, steam, airflow)
-  ↓
+  â†“
 Device inspection (damage, contamination)
-  ↓
+  â†“
 Wiring test (earth fault, insulation)
-  ↓
+  â†“
 Panel configuration review
-  ↓
-Root cause identified → Remediation
+  â†“
+Root cause identified â†’ Remediation
 ```
 
 #### C. Service Evidence Examples
@@ -256,14 +256,14 @@ Root cause identified → Remediation
 Create flowchart:
 ```
 Service Completed
-  ↓
+  â†“
 Any Category 1 defects?
-  ├─ Yes → Certificate BLOCKED until rectified
-  └─ No → Continue
-        ↓
+  â”œâ”€ Yes â†’ Certificate BLOCKED until rectified
+  â””â”€ No â†’ Continue
+        â†“
 Any Category 2 defects?
-  ├─ Yes → Certificate ISSUED with defect advisory
-  └─ No → Certificate ISSUED clear
+  â”œâ”€ Yes â†’ Certificate ISSUED with defect advisory
+  â””â”€ No â†’ Certificate ISSUED clear
 ```
 
 #### D. Sample Service Report Structure
@@ -300,7 +300,7 @@ Any Category 2 defects?
 #### B. Escalation and Response Dependency Map
 Create SVG showing:
 ```
-Site Alarm → On-Site Response → Remote Monitoring → Technician Dispatch → Specialist Engineer → OEM Support
+Site Alarm â†’ On-Site Response â†’ Remote Monitoring â†’ Technician Dispatch â†’ Specialist Engineer â†’ OEM Support
 ```
 
 #### C. Site Risk-Tier Matrix
@@ -351,12 +351,12 @@ Site Alarm → On-Site Response → Remote Monitoring → Technician Dispatch �
 #### C. Integration Points Diagram
 Show how security supports fire/gas:
 ```
-Access Control → Fire Alarm Interface
+Access Control â†’ Fire Alarm Interface
   - Unlock doors on alarm
   - Lock down on gas discharge
   - Prevent re-entry until reset
 
-CCTV → Alarm Verification
+CCTV â†’ Alarm Verification
   - Visual confirm before dispatch
   - Post-incident review
   - False alarm evidence
@@ -417,15 +417,15 @@ Transform compliance from a **service page** into a **practical resource hub** t
 
 ```
 /compliance (hub page)
-  ├── /compliance/sans-10139 (fire detection summary)
-  ├── /compliance/sans-14520 (gas suppression summary)
-  ├── /compliance/checklists
-  │     ├── fire-detection-service-checklist
-  │     └── gas-suppression-service-checklist
-  ├── /compliance/defects
-  │     └── defect-examples-and-certificates
-  ├── /compliance/maintenance-cadence
-  └── /compliance/downloads (PDF versions)
+  â”œâ”€â”€ /compliance/sans-10139 (fire detection summary)
+  â”œâ”€â”€ /compliance/sans-14520 (gas suppression summary)
+  â”œâ”€â”€ /compliance/checklists
+  â”‚     â”œâ”€â”€ fire-detection-service-checklist
+  â”‚     â””â”€â”€ gas-suppression-service-checklist
+  â”œâ”€â”€ /compliance/defects
+  â”‚     â””â”€â”€ defect-examples-and-certificates
+  â”œâ”€â”€ /compliance/maintenance-cadence
+  â””â”€â”€ /compliance/downloads (PDF versions)
 ```
 
 ### 15.1 - Compliance Hub Page
@@ -535,7 +535,7 @@ Design, installation, testing, commissioning, inspection and maintenance of gase
 - Inert gas systems (IG-01, IG-55, IG-541)
 - Fluoroketone systems (FK-5-1-12 / Novec 1230)
 - HFC systems (HFC-227ea / FM-200)
-- CO₂ systems (special application)
+- COâ‚‚ systems (special application)
 
 **Key Requirements (Operator Summary):**
 
@@ -724,16 +724,16 @@ Non-critical issues:
 
 ```
 Service Completed
-       ↓
+       â†“
 Category 1 defects present?
-   ├─ YES → Certificate BLOCKED
-   │        (cannot issue until rectified)
-   └─ NO  → Continue
-            ↓
+   â”œâ”€ YES â†’ Certificate BLOCKED
+   â”‚        (cannot issue until rectified)
+   â””â”€ NO  â†’ Continue
+            â†“
    Category 2 defects present?
-      ├─ YES → Certificate ISSUED with Advisory
-      │        (client acknowledges defects)
-      └─ NO  → Certificate ISSUED Clear
+      â”œâ”€ YES â†’ Certificate ISSUED with Advisory
+      â”‚        (client acknowledges defects)
+      â””â”€ NO  â†’ Certificate ISSUED Clear
 ```
 
 ### What Blocks a Certificate?
@@ -920,32 +920,32 @@ These are typical minimum frequencies. Your insurer, site risk assessment or spe
 
 ```
 Homepage
-  → All service pages
-  → Compliance hub
+  â†’ All service pages
+  â†’ Compliance hub
 
 Gas Suppression
-  → Compliance hub → SANS 14520
-  → Compliance hub → Gas checklist
-  → Case studies (suppression examples)
+  â†’ Compliance hub â†’ SANS 14520
+  â†’ Compliance hub â†’ Gas checklist
+  â†’ Case studies (suppression examples)
 
 Fire Detection
-  → Compliance hub → SANS 10139
-  → Compliance hub → Fire checklist
-  → Case studies (detection examples)
+  â†’ Compliance hub â†’ SANS 10139
+  â†’ Compliance hub â†’ Fire checklist
+  â†’ Case studies (detection examples)
 
 Compliance & Maintenance
-  → Compliance hub (primary)
-  → All compliance resources
-  → Maintenance cadence
+  â†’ Compliance hub (primary)
+  â†’ All compliance resources
+  â†’ Maintenance cadence
 
 Critical Infrastructure
-  → Gas suppression page
-  → Fire detection page
-  → Compliance hub
+  â†’ Gas suppression page
+  â†’ Fire detection page
+  â†’ Compliance hub
 
 Security Systems
-  → Fire detection page (integration)
-  → Critical infrastructure page
+  â†’ Fire detection page (integration)
+  â†’ Critical infrastructure page
 ```
 
 ---
@@ -1011,3 +1011,4 @@ All three phases complete when:
 4. **Phase 14 second** - page differentiation
 5. **Phase 15 third** - compliance hub (largest content lift)
 6. **Combined deploy** - all phases tested together before production cutover
+

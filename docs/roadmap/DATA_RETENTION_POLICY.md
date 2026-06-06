@@ -71,9 +71,9 @@ Records under legal hold must not be deleted, anonymised or overwritten.
 - D1 row deletion must not orphan client-visible records, jobcard links, invoice references or audit evidence.
 - Any future purge script must default to dry-run mode and require an explicit approval reference.
 
-## Production Cutover Requirement
+## Production Requirement
 
-Before moving from `portal.tequit.co.za` staging to `portal.kharon.co.za`, run and save:
+Before broad production use on `portal.kharon.co.za`, run and save:
 
 - `npm run portal:backup:d1`
 - R2 evidence backup/mirror check

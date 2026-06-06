@@ -1,6 +1,7 @@
-# Kharon Portal - Master Roadmap
+﻿# Kharon Portal - Master Roadmap
 
 > Current status note, 2026-06-02: use `docs/PROJECT_STATUS_2026-06-02.md` as the canonical current project status. This file remains a phase ledger; where older completed checkboxes imply production authority, the dated status document takes precedence.
+> Production-only update, 2026-06-06: QA deployment paths have been removed from active config, scripts and CI. Runtime defaults, Wrangler routes, monitoring and QA commands now target `www.kharon.co.za`, `kharon.co.za` and `portal.kharon.co.za`.
 
 ## Phase 0: Release Freeze & Safety Reset (CURRENT - BLOCKED BY PRODUCTION SIGN-OFF)
 - [ ] Rotate all temporary role credentials
@@ -8,7 +9,6 @@
 - [ ] Require MFA for admin and finance roles
 - [ ] Confirm D1/R2 backup procedures
 - [ ] Confirm all secrets in Cloudflare (not in code)
-- [ ] Add staging banner to portal.tequit.co.za
 - [ ] Apply and verify pending remote D1 migration `0035_staff_hr.sql` only after approval
 - [ ] Confirm deployment command shape for the split website/portal Cloudflare architecture
 - [ ] Complete HR production policy gates before staff records become authoritative
@@ -32,7 +32,7 @@
 - [x] Compliance pages (SANS standards, emergency support)
 - [x] Remove stale "default email client" copy from contact pages
 - [x] Rename "Assessment Intake" to "Request a Site Assessment"
-- [x] Fix text encoding issues (e.g., 2000m² instead of 2000mï¿½2)
+- [x] Fix text encoding issues (e.g., 2000mÂ² instead of 2000mÃ¯Â¿Â½2)
 
 ## Phase 3: Portal Core Features (COMPLETED - NEEDS FINANCE REFACTOR)
 - [x] Job dispatch and scheduling system
@@ -73,7 +73,7 @@
 
 ## Phase 7: Finance Integration (COMPLETED)
 - [x] Manual Sage entry with portal tracking
-- [x] Quote → Invoice → Payment workflow
+- [x] Quote â†’ Invoice â†’ Payment workflow
 - [x] VAT handling with separate amounts stored
 - [x] Credit note tracking with self-referential structure
 - [x] **CRITICAL**: Refactor to Sage-first model (portal creates finance tasks, not official records)
@@ -121,7 +121,7 @@
 - [ ] Production HR policy, privacy, retention and delegated authority sign-off
 
 ## Production Approval Gates (BLOCKERS)
-- [ ] Director sign-off for kharon.co.za cutover
+- [ ] Director sign-off for broader production use
 - [x] Admin UX density improvements
 - [x] Public copy corrections
 - [x] POPIA compliance documentation
@@ -129,3 +129,4 @@
 - [ ] Analytics business/POPIA sign-off
 - [ ] Staff/HR production policy sign-off
 - [x] Remote D1 migration `0035_staff_hr.sql` applied and verified where intended
+

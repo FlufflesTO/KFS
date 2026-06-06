@@ -10,7 +10,7 @@
 
 ### 1.1 Automated Backups (CI/CD)
 The GitHub Actions pipeline (`ci-cd.yml`) automatically exports the D1 database before applying any migrations.
-- **Frequency:** Every push to `main` or `staging`.
+- **Frequency:** Every push to `main`.
 - **Retention:** GitHub Workflow Artifacts (default 90 days).
 - **Tool:** `npx wrangler d1 export`
 

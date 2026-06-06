@@ -122,7 +122,7 @@ test.describe('Phase 3: E2E Verification & Hardening', () => {
 
     const portalLink = page.getByRole('link', { name: /^Portal$/ }).first();
     await expect(portalLink).toBeVisible();
-    await expect(portalLink).toHaveAttribute('href', 'https://portal.tequit.co.za/portal/login');
+    await expect(portalLink).toHaveAttribute('href', 'https://portal.kharon.co.za/portal/login');
   });
 
   test('Public-host portal requests are canonicalized before portal auth or DB code runs', async () => {

@@ -74,8 +74,8 @@ export interface ProofSignal {
   status: string;
 }
 
-const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://www.tequit.co.za";
-const portalUrl = import.meta.env.PUBLIC_PORTAL_URL || "https://portal.tequit.co.za";
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://www.kharon.co.za";
+const portalUrl = import.meta.env.PUBLIC_PORTAL_URL || "https://portal.kharon.co.za";
 const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || "admin@kharon.co.za";
 const portalLoginUrl = `${portalUrl.replace(/\/$/, "")}/portal/login`;
 

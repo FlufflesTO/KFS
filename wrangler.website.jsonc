@@ -5,12 +5,12 @@
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
-      "pattern": "tequit.co.za/*",
-      "zone_name": "tequit.co.za"
+      "pattern": "kharon.co.za/*",
+      "zone_name": "kharon.co.za"
     },
     {
-      "pattern": "www.tequit.co.za/*",
-      "zone_name": "tequit.co.za"
+      "pattern": "www.kharon.co.za/*",
+      "zone_name": "kharon.co.za"
     }
   ],
   "vars": {

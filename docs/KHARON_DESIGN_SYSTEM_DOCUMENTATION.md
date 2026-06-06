@@ -338,7 +338,7 @@ html {
 
 ```javascript
 export default defineConfig({
-  site: siteUrl,  // https://www.tequit.co.za
+  site: siteUrl,  // https://www.kharon.co.za
   output: "server",  // SSR mode
   adapter: cloudflare({
     configPath: "wrangler.jsonc",
@@ -368,13 +368,12 @@ export default defineConfig({
 ### 4.4 Site URL Strategy
 
 ```javascript
-const siteUrl = process.env.PUBLIC_SITE_URL || "https://www.tequit.co.za";
+const siteUrl = process.env.PUBLIC_SITE_URL || "https://www.kharon.co.za";
 ```
 
 **Domains:**
-- Production: `www.tequit.co.za`
-- Portal: `portal.tequit.co.za`
-- Staging: `*.tequit.co.za` (subdomain)
+- Production: `www.kharon.co.za`
+- Portal: `portal.kharon.co.za`
 
 ---
 
@@ -957,7 +956,7 @@ const configs = {
 
 **SEO Strategy:**
 - **Canonical URLs:** Full absolute URLs
-- **Robots:** `noindex` for staging, `index` for production
+- **Robots:** `index` for production
 - **JSON-LD:** Organization schema with full details
 - **Analytics:** Plausible (privacy-friendly, POPIA-compliant)
 

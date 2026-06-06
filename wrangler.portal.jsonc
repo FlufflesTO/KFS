@@ -5,8 +5,8 @@
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
-      "pattern": "portal.tequit.co.za/*",
-      "zone_name": "tequit.co.za"
+      "pattern": "portal.kharon.co.za/*",
+      "zone_name": "kharon.co.za"
     }
   ],
   "d1_databases": [

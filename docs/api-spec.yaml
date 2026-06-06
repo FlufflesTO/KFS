@@ -6,8 +6,6 @@ info:
 servers:
   - url: https://portal.kharon.co.za
     description: Production Environment
-  - url: https://portal.tequit.co.za
-    description: Staging Environment
 security:
   - SessionCookie: []
     CsrfToken: []

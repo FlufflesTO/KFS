@@ -1,4 +1,4 @@
-<!--
+﻿<!--
  * Project Sentinel - Production Audit
  * Purpose: Production readiness audit and Sage finance alignment report for KharonOps portal
  * Dependencies: docs/roadmap/MASTER_ROADMAP.md, docs/qa/PORTAL_ROLE_QA_CHECKLIST.md
@@ -7,19 +7,19 @@
 
 # KharonOps Portal: Production Readiness Audit Report
 
-This report outlines the security posture, operational alignment, and data integrity checks completed on the KharonOps portal staging instance in preparation for the final cutover to `kharon.co.za`.
+This report outlines the security posture, operational alignment, and data integrity checks completed on the KharonOps portal QA instance in preparation for the final cutover to `kharon.co.za`.
 
 ---
 
 ## 1. Executive Summary & Production Authorization Status
 
-Staging validation has been executed using automated regression harnesses, site build analyzers, and direct remote database/storage integrity checks. The codebase is highly hardened and stable.
+QA validation has been executed using automated regression harnesses, site build analyzers, and direct remote database/storage integrity checks. The codebase is highly hardened and stable.
 
 > [!IMPORTANT]
-> The codebase is fully staging-hardened and passes all automated checks. However, final cutover to the production domains (`www.kharon.co.za` and `portal.kharon.co.za`) remains **GATED** by the manual administrative tasks detailed in Section 6.
+> The codebase is fully QA-hardened and passes all automated checks. However, final cutover to the production domains (`www.kharon.co.za` and `portal.kharon.co.za`) remains **GATED** by the manual administrative tasks detailed in Section 6.
 
 ### System Verification Metrics
-* **Astro SSR Staging Build:** `PASS`
+* **Astro SSR QA Build:** `PASS`
 * **Static Assets & JS Bundles Check:** `PASS` (No client-side app JS is emitted; CSS budget is within limits)
 * **Security Headers Auditing (`validate:site`):** `PASS` (CSRF headers and security frame policies are active)
 * **D1/R2 Infrastructure Bindings (`portal:monitor`):** `PASS` (Remote connectivity to Cloudflare D1 `kharon-portal` and R2 `kharon-portal-storage` verified)
@@ -28,7 +28,7 @@ Staging validation has been executed using automated regression harnesses, site 
 
 ## 2. Infrastructure & Data Integrity Audit
 
-A live operational health probe was run against the Cloudflare staging databases. Results are documented below.
+A live operational health probe was run against the Cloudflare QA databases. Results are documented below.
 
 ### Database & Storage Binding Status
 
@@ -126,7 +126,7 @@ The portal employs several runtime safeguards in its middleware and auth API han
 
 ---
 
-## 5. Staging QA Checklists (Manual Scenarios)
+## 5. QA QA Checklists (Manual Scenarios)
 
 The following manual QA checks should be run by the operations team using external credentials:
 
@@ -157,9 +157,9 @@ The following manual QA checks should be run by the operations team using extern
 
 ---
 
-## 7. Phase 14–16 Completion Summary
+## 7. Phase 14â€“16 Completion Summary
 
-### Phase 14 — Public Page Differentiation
+### Phase 14 â€” Public Page Differentiation
 
 All five major service pages now use unique technical block components:
 
@@ -171,11 +171,11 @@ All five major service pages now use unique technical block components:
 
 Each page has at least one unique SVG diagram or structured checklist. No two pages share identical proof-card copy.
 
-### Phase 15 — Compliance Hub
+### Phase 15 â€” Compliance Hub
 
 The `/compliance` hub provides practical SANS summaries, service checklists, defect/certificate guidance, and maintenance cadence information. All content is summary-level with disclaimers; no copyrighted SANS text is reproduced.
 
-### Phase 16 — Data Model Expansion
+### Phase 16 â€” Data Model Expansion
 
 Four new D1 tables extend the portal's operational capability:
 
@@ -204,3 +204,4 @@ To execute the final cutover to `kharon.co.za`, complete the following steps:
   - Issue unique, high-entropy secrets for `SESSION_SECRET` (at least 32 characters) on the Cloudflare production environment.
 - [ ] **DNS Switchover:** Configure apex redirects in Cloudflare Rulesets (`kharon.co.za/*` -> `https://www.kharon.co.za/$1`) and map CNAMEs for `portal.kharon.co.za`.
 - [ ] **POPIA Compliance:** Ensure chosen analytics snippet is POPIA-compliant and loaded only on the public pages, never on `/portal/*` paths.
+

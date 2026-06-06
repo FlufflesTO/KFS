@@ -176,7 +176,7 @@ npm run build
 
 ### Configuration
 The site is configured for a hybrid Cloudflare deployment with the following setup:
-- **Domains**: www.tequit.co.za, tequit.co.za, portal.tequit.co.za
+- **Domains**: www.kharon.co.za, kharon.co.za, portal.kharon.co.za
 - **Public Site Runtime**: Cloudflare Pages SSR upload from `dist`
 - **Portal Runtime**: Cloudflare Worker deploy from `dist/server/wrangler.json`
 - **Database**: Cloudflare D1 with existing schema
@@ -192,17 +192,13 @@ The site is configured for a hybrid Cloudflare deployment with the following set
    ```bash
    npm run cloudflare:whoami
    ```
-3. Deploy the active Tequit environment:
+3. Deploy production:
    ```bash
    npm run deploy:cloudflare
    ```
-4. Deploy a preview build:
+4. Build production URLs:
    ```bash
-   npm run deploy:cloudflare:preview
-   ```
-5. Build final Kharon production URLs when cutover is approved:
-   ```bash
-   npm run build:production:kharon
+   npm run build:production
    npm run deploy:cloudflare:ps
    ```
 

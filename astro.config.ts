@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
 import sitemap from "@astrojs/sitemap";
 
-const siteUrl = process.env.PUBLIC_SITE_URL || "https://www.tequit.co.za";
+const siteUrl = process.env.PUBLIC_SITE_URL || "https://www.kharon.co.za";
 
 export default defineConfig({
   site: siteUrl,

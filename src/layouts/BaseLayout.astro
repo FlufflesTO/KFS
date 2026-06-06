@@ -14,7 +14,7 @@ import "../styles/global.css";
 const SITE_CONFIG = {
   title: "Kharon Fire & Security",
   description: "Specialist Fire and Security Solutions",
-  url: import.meta.env.PUBLIC_SITE_URL || "https://www.tequit.co.za"
+  url: import.meta.env.PUBLIC_SITE_URL || "https://www.kharon.co.za"
 };
 
 export interface Props {
@@ -26,8 +26,7 @@ export interface Props {
 
 const { title, description, canonical, noindex = false } = Astro.props;
 const fullCanonical = canonical ? `${SITE_CONFIG.url}${canonical}` : `${SITE_CONFIG.url}${Astro.url.pathname}`;
-const isStagingDomain = new URL(SITE_CONFIG.url).hostname.endsWith("tequit.co.za");
-const robotsContent = noindex || isStagingDomain ? "noindex, nofollow" : "index, follow";
+const robotsContent = noindex ? "noindex, nofollow" : "index, follow";
 
 // Only load analytics on non-portal pages
 const shouldLoadAnalytics = !Astro.url.pathname.startsWith('/portal');

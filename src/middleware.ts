@@ -25,12 +25,12 @@ const passwordApiPath = "/portal/api/change-password";
 const mfaPath = "/portal/account/mfa";
 const mfaApiPath = "/portal/api/mfa";
 const portalRootPath = "/portal";
-const configuredPortalUrl = import.meta.env.PUBLIC_PORTAL_URL || "https://portal.tequit.co.za";
+const configuredPortalUrl = import.meta.env.PUBLIC_PORTAL_URL || "https://portal.kharon.co.za";
 const portalOrigin = (() => {
   try {
     return new URL(configuredPortalUrl).origin;
   } catch {
-    return "https://portal.tequit.co.za";
+    return "https://portal.kharon.co.za";
   }
 })();
 const portalHostname = new URL(portalOrigin).hostname.toLowerCase();
@@ -298,7 +298,7 @@ const setupMiddleware: MiddlewareHandler = async (context, next) => {
     return redirectToPortalHost(context, nonce);
   }
 
-  if (host === "portal.tequit.co.za" && (pathname === "/" || pathname === "")) {
+  if (host === "portal.kharon.co.za" && (pathname === "/" || pathname === "")) {
     return withSecurityHeaders(context.redirect("/portal/login", 302), nonce);
   }
 

@@ -1,4 +1,4 @@
-# Error Telemetry And Cloudflare Review Policy
+﻿# Error Telemetry And Cloudflare Review Policy
 
 ## Purpose
 
@@ -10,15 +10,15 @@ Define how production failures, security events and service degradation are obse
 
 Portal security events and errors are recorded in two D1 tables:
 
-- `audit_events` — auth, CSRF, rate limiting, data changes and file access security history.
-- `document_access_logs` — per-download records for jobcard PDFs and technician evidence photos.
+- `audit_events` â€” auth, CSRF, rate limiting, data changes and file access security history.
+- `document_access_logs` â€” per-download records for jobcard PDFs and technician evidence photos.
 
 ### Category 1: Authentication Failures
 
 Events to watch in `audit_events` where `event_type IN ('auth.login', 'auth.logout')` and `outcome = 'failure'`:
 
-- Repeated login failures for the same email address — possible credential stuffing or brute force.
-- Login failures immediately followed by a success — possible successful credential attack.
+- Repeated login failures for the same email address â€” possible credential stuffing or brute force.
+- Login failures immediately followed by a success â€” possible successful credential attack.
 - Unusual login times or IP sources for known admin or finance users.
 
 Threshold for review: 10 or more login failures within a 15-minute window from a single IP.
@@ -27,9 +27,9 @@ Threshold for review: 10 or more login failures within a 15-minute window from a
 
 Events in `audit_events` where `event_type = 'security.rate_limit'` and `outcome = 'blocked'`:
 
-- Repeated blocks on `portal.login` — potential bot or credential spray.
-- Blocks on `portal.admin.*` or `portal.finance.*` — potential automated scraping or abuse.
-- Blocks on `public.contact` — potential contact form spam.
+- Repeated blocks on `portal.login` â€” potential bot or credential spray.
+- Blocks on `portal.admin.*` or `portal.finance.*` â€” potential automated scraping or abuse.
+- Blocks on `public.contact` â€” potential contact form spam.
 
 Threshold for review: more than 20 rate-limit blocks in one hour from a single IP.
 
@@ -37,7 +37,7 @@ Threshold for review: more than 20 rate-limit blocks in one hour from a single I
 
 Events in `audit_events` where `event_type = 'security.csrf'` and `outcome = 'blocked'`:
 
-- Any CSRF block on a production session is a meaningful signal — legitimate users should not trigger these.
+- Any CSRF block on a production session is a meaningful signal â€” legitimate users should not trigger these.
 - Clusters of CSRF failures may indicate session fixation attempts or automated form submission tools.
 
 Threshold for review: any CSRF block on a finance or admin endpoint.
@@ -47,7 +47,7 @@ Threshold for review: any CSRF block on a finance or admin endpoint.
 Events in `document_access_logs` where `outcome IN ('failure', 'blocked')`:
 
 - Blocked attempts to download jobcard PDFs or evidence photos for sites the user does not own.
-- Failure outcomes where `reason` contains `not found` — may indicate stale references or R2 storage gaps.
+- Failure outcomes where `reason` contains `not found` â€” may indicate stale references or R2 storage gaps.
 - Blocked attempts from client users trying to access records for unlinked sites.
 
 Threshold for review: any `blocked` outcome on a document download endpoint.
@@ -57,10 +57,10 @@ Threshold for review: any `blocked` outcome on a document download endpoint.
 Worker-level `console.error` calls and uncaught exceptions surface in Cloudflare Worker logs under **Logs > Real-time Logs** and **Analytics > Workers** in the Cloudflare dashboard.
 
 Look for:
-- HTTP 500 responses on portal API endpoints — indicates unhandled exceptions in server-side logic.
-- HTTP 503 responses — D1 or R2 binding unavailable; may indicate infrastructure issues.
-- D1 `prepare` or `bind` errors — usually a schema mismatch after a migration or a missing column.
-- R2 `put` or `get` errors — indicates storage binding issues or key path mismatches.
+- HTTP 500 responses on portal API endpoints â€” indicates unhandled exceptions in server-side logic.
+- HTTP 503 responses â€” D1 or R2 binding unavailable; may indicate infrastructure issues.
+- D1 `prepare` or `bind` errors â€” usually a schema mismatch after a migration or a missing column.
+- R2 `put` or `get` errors â€” indicates storage binding issues or key path mismatches.
 
 Threshold for review: any 500 on a portal write endpoint; 3 or more 503s in a 10-minute window.
 
@@ -72,9 +72,9 @@ Threshold for review: any 500 on a portal write endpoint; 3 or more 503s in a 10
 
 1. Sign in to the Cloudflare dashboard at `dash.cloudflare.com`.
 2. Select the relevant Cloudflare account (the account holding the Kharon Workers deployment).
-3. Navigate to **Workers & Pages** → select the Kharon Worker.
-4. Use **Logs → Real-time Logs** to stream live Worker output.
-5. For historical query, use **Workers Analytics** → filter by date range and status code.
+3. Navigate to **Workers & Pages** â†’ select the Kharon Worker.
+4. Use **Logs â†’ Real-time Logs** to stream live Worker output.
+5. For historical query, use **Workers Analytics** â†’ filter by date range and status code.
 
 ### Accessing D1 Query Results
 
@@ -125,7 +125,7 @@ Run on the first working day of each month. Takes approximately 30 minutes.
 - [ ] Confirm audit event coverage: spot-check 5 recent finance settlements and verify each has a corresponding `finance.payment_settled` audit event.
 - [ ] Review contact submission pipeline. Confirm all received enquiries have been acknowledged.
 - [ ] Run the retention report (`npm run portal:retention`) and flag any category approaching review thresholds.
-- [ ] Confirm all D1 migrations have been applied to staging and production (`npx wrangler d1 execute DB --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"`).
+- [ ] Confirm all D1 migrations have been applied to QA and production (`npx wrangler d1 execute DB --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"`).
 - [ ] Confirm no Worker secrets, API keys or password hashes appear in committed files (`git log --oneline -20`).
 
 ---
@@ -150,3 +150,4 @@ These thresholds trigger immediate action rather than scheduled review.
 - Cloudflare Worker logs are not persistently stored beyond the real-time stream window. For long-term log retention, consider enabling Cloudflare Logpush to an R2 bucket or external SIEM.
 - `console.error` calls in Worker code are the primary server-side error signal. Structured error reporting (e.g. Sentry or Cloudflare Workers observability) would improve root-cause investigation speed and should be evaluated before production cutover at `kharon.co.za`.
 - Contact form submissions are stored in D1 only. An email notification trigger is deferred to Phase 9 (provider-backed email delivery).
+

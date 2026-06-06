@@ -1,7 +1,7 @@
 param(
-  [string] $PublicUrl = "https://www.tequit.co.za/",
-  [string] $PortalLoginUrl = "https://portal.tequit.co.za/portal/login",
-  [string] $ProtectedDashboardUrl = "https://portal.tequit.co.za/portal/admin/dashboard",
+  [string] $PublicUrl = "https://www.kharon.co.za/",
+  [string] $PortalLoginUrl = "https://portal.kharon.co.za/portal/login",
+  [string] $ProtectedDashboardUrl = "https://portal.kharon.co.za/portal/admin/dashboard",
   [string] $D1Database = "kharon-portal",
   [string] $R2Bucket = "kharon-portal-storage",
   [string] $OutputDir = "monitor-results"
@@ -111,8 +111,8 @@ $results = @(
   (Test-HttpRedirect "protected_dashboard_redirect" $ProtectedDashboardUrl "/portal/login"),
   (Test-SecurityHeaders "headers_public_home" $PublicUrl "GET" "" @(200)),
   (Test-SecurityHeaders "headers_portal_login" $PortalLoginUrl "GET" "" @(200)),
-  (Test-SecurityHeaders "headers_public_api_json" "https://www.tequit.co.za/api/contact" "POST" "{}" @(422)),
-  (Test-SecurityHeaders "headers_protected_file_redirect" "https://portal.tequit.co.za/portal/api/file/jobcards/nonexistent.pdf" "GET" "" @(302)),
+  (Test-SecurityHeaders "headers_public_api_json" "https://www.kharon.co.za/api/contact" "POST" "{}" @(422)),
+  (Test-SecurityHeaders "headers_protected_file_redirect" "https://portal.kharon.co.za/portal/api/file/jobcards/nonexistent.pdf" "GET" "" @(302)),
   (Test-D1Availability $D1Database),
   (Test-R2Availability $R2Bucket)
 )

@@ -1,6 +1,6 @@
 # Kharon Portal Operations SOP
 
-This SOP covers staging checks for `portal.tequit.co.za` and the later production cutover to `portal.kharon.co.za`. Do not store passwords, session cookies, API tokens or exported evidence in git.
+This SOP covers production checks for `portal.kharon.co.za`. Do not store passwords, session cookies, API tokens or exported evidence in git.
 
 ## Monitoring Check
 
@@ -21,14 +21,13 @@ The script checks:
 
 Output is written to `monitor-results/`, which is gitignored.
 
-Latest staging evidence:
+Latest production evidence:
 
 - 2026-05-25: `npm run portal:monitor` passed after Cloudflare deployment `e9a1820c-fb1e-4264-b685-4753013fc157`. Public home, portal login, protected dashboard redirect, public/portal/API/redirect security-header checks, D1 availability and R2 availability all passed.
 
 Frequency:
 
-- Staging: run after each deployment and before user QA.
-- Production: run daily during early rollout, then at least weekly, plus after Cloudflare, DNS, schema or portal changes.
+- Run daily during early rollout, then at least weekly, plus after Cloudflare, DNS, schema or portal changes.
 
 Failure response:
 
@@ -57,8 +56,7 @@ Output is written to `backups/`, which is gitignored.
 
 Minimum cadence:
 
-- Staging: before schema migrations and before destructive seed resets.
-- Production: before every schema migration, before bulk import, and on a recurring schedule approved by operations.
+- Before every schema migration, before bulk import, and on a recurring schedule approved by operations.
 
 Restore drill:
 
@@ -66,7 +64,7 @@ Restore drill:
 - Test restore into a non-production D1 database before trusting the process for production recovery.
 - Record the export timestamp, operator and restore-test outcome in the external operations log.
 
-Latest staging evidence:
+Latest production evidence:
 
 - 2026-05-25: `npm run portal:backup:d1` completed against remote `kharon-portal`; export and manifest were written under gitignored `backups/`.
 - 2026-05-25: Remote `d1_migrations` was reconciled for migrations `0001_kharon_portal.sql` through `0017_certificates.sql`; `npx wrangler d1 migrations list kharon-portal --remote` returned `No migrations to apply`.
@@ -84,7 +82,7 @@ Minimum process:
 4. Mirror `kharon-portal-storage` to approved backup storage.
 5. Verify at least one recent jobcard PDF can be restored and opened.
 
-Latest staging evidence:
+Latest production evidence:
 
 - 2026-05-25: R2 restore drill created a temporary object under `restore-drills/`, downloaded it, verified matching SHA-256 hashes, and deleted the temporary object. Bucket availability remained healthy afterwards.
 
@@ -100,11 +98,11 @@ Retention:
 - Retention periods for jobcards, quote records, invoices and audit evidence must be approved before production use.
 - Do not delete R2 evidence without a written retention decision.
 
-## Production Cutover Notes
+## Production Routing Notes
 
-- Repeat the monitoring script after adding `portal.kharon.co.za`.
+- Repeat the monitoring script after any DNS, route or custom-domain change.
 - Confirm D1 and R2 bindings point to the intended production resources.
-- Confirm backup exports are taken before switching client operations from Tequit staging to Kharon production.
+- Confirm backup exports are taken before any production schema or bulk data change.
 
 ## User Onboarding SOP
 
@@ -213,7 +211,7 @@ Immediate containment:
 2. If the issue is privileged, rotate the user's password and reset MFA.
 3. Preserve logs. Do not delete `audit_events`, `document_access_logs`, jobcards or evidence.
 4. Run `npm run portal:monitor`.
-5. Run the relevant role QA checks with external staging credentials where safe.
+5. Run the relevant role QA checks with external production QA credentials where safe.
 6. Export D1 before any manual corrective SQL if production data is involved.
 
 Investigation checklist:
@@ -238,9 +236,9 @@ Escalation:
 - Escalate immediately if any client could view another client's records.
 - Treat any suspected legal or contractual reporting requirement as a management/legal decision, not a developer-only decision.
 
-## Production Cutover Checklist
+## Production Readiness Checklist
 
-Use this checklist before moving from Tequit staging to `portal.kharon.co.za`.
+Use this checklist before enabling broader operational use of `portal.kharon.co.za`.
 
 DNS and routing:
 
@@ -257,14 +255,14 @@ Configuration:
 - [ ] Production MFA encryption secret is set if separate from session secrets.
 - [ ] D1 binding `DB` points to the intended production database.
 - [ ] R2 binding `STORAGE` points to the intended production bucket.
-- [ ] No staging passwords, reset links or temporary credentials are committed.
+- [ ] No reset links or temporary credentials are committed.
 
 Data:
 
 - [ ] D1 backup/export taken before cutover.
 - [ ] R2 backup or restore verification completed.
 - [ ] Production users are unique per person.
-- [ ] Shared staging credentials are removed or disabled.
+- [ ] Shared credentials are removed or disabled.
 - [ ] Admin and finance MFA requirement is reviewed.
 - [ ] Client users are mapped only to approved sites.
 
@@ -282,7 +280,7 @@ Go/no-go:
 - [ ] Critical and high incidents are closed.
 - [ ] Backup location and restore owner are confirmed.
 - [ ] Operations owner accepts the onboarding, dispatch and incident procedures.
-- [ ] Rollback path is documented: re-point portal access to staging or disable production route while preserving D1/R2 evidence.
+- [ ] Rollback path is documented: disable the affected production route or restore the last known good deployment while preserving D1/R2 evidence.
 
 ## Field Photo Evidence And Poor-Signal Expectations
 
@@ -395,8 +393,7 @@ The script is non-destructive. It reports records older than the current review 
 
 Minimum cadence:
 
-- Staging: before production cutover and after major seed/import exercises.
-- Production: quarterly, before any evidence cleanup decision and before major system migrations.
+- Quarterly, before any evidence cleanup decision and before major system migrations.
 
 Review rules:
 
@@ -421,7 +418,7 @@ Logged fields include:
 
 Review expectations:
 
-- During staging QA, confirm successful jobcard and evidence downloads create success rows.
+- During role QA, confirm successful jobcard and evidence downloads create success rows.
 - Confirm unauthorized document access attempts create blocked or failure rows.
 - During production, review document access logs during client disputes, audit requests, suspected credential compromise and evidence-retention reviews.
 - Do not expose raw document access exports to clients without management approval and any required redaction.

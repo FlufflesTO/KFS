@@ -1,4 +1,4 @@
-# Kharon Website Master Roadmap
+﻿# Kharon Website Master Roadmap
 
 ## Purpose
 
@@ -42,16 +42,16 @@ Implemented:
 - Accessibility basics: skip link, visible focus state, semantic sections, labelled contact form, reduced-motion CSS.
 - Secure dependency baseline with current installed stack.
 - Cloudflare resources: D1 binding `DB`, R2 binding `STORAGE`, `SESSION_SECRET`, and `kharon_session_token` session cookie.
-- Live staging hosts verified on 2026-05-20:
-  - `https://www.tequit.co.za/`
-  - `https://portal.tequit.co.za/portal/login`
+- Production-only domain defaults now target:
+  - `https://www.kharon.co.za/`
+  - `https://portal.kharon.co.za/portal/login`
 
 Open constraints:
 
 - Original roadmap specified Astro 4. Current dependency audit required a secure upgrade path beyond Astro 4. Treat exact Astro version as a compatibility constraint to revisit only if the deployment target strictly requires Astro 4.
 - The previous React/Three.js hero chunk has been removed to preserve static-first performance. The homepage now uses a CSS/SVG fake-3D cinematic Kharon mark instead of live WebGL.
 - Industrial imagery is currently represented by code-native schematic visuals, not final photographic or optimized image assets.
-- Portal data is seeded only for staging. Production credential rotation, representative role QA data, final onboarding approval, manual QA evidence and operational cutover sign-off still require dedicated workflows.
+- Production credential rotation, representative role QA data, final onboarding approval, manual QA evidence and operational sign-off still require dedicated workflows.
 
 ## Current Review And Recommendations
 
@@ -59,17 +59,17 @@ Review date: 2026-05-20.
 
 Verified live status:
 
-- Public homepage: `200 OK` on `https://www.tequit.co.za/`.
+- Production-domain deployment should be verified on `https://www.kharon.co.za/` after release.
 - Contact page: `200 OK`.
 - Sitemap: `200 OK` with XML content type.
-- Portal login: `200 OK` on `https://portal.tequit.co.za/portal/login`.
+- Portal login should be verified on `https://portal.kharon.co.za/portal/login` after release.
 - Protected portal dashboard: unauthenticated `/portal/tech/dashboard` returns `302` to login.
 - Authenticated technician dashboard smoke check returns `200` with a valid session cookie.
 - Public `Access Records` links now route to the portal login instead of the contact flow.
 
 Immediate refinements recommended:
 
-- Replace shared temporary staging passwords with per-user credentials and document a controlled reset process.
+- Replace shared temporary passwords with per-user credentials and document a controlled reset process.
 - Add password reset before broader internal use; logout and first-login password rotation are now implemented.
 - Admin CRUD foundations for sites, systems, users and jobs are now implemented in `/portal/admin/operations`; continue hardening with richer validation, imports and reporting.
 - Add audit logging before sensitive client records and financial approvals become operationally authoritative.
@@ -78,8 +78,18 @@ Immediate refinements recommended:
 - Client maintenance requests and admin exception queues are now D1-backed; continue hardening with request status management, scheduling conversion and notification workflows.
 - Admins can now update client request status and convert requests into scheduled dispatches linked back to the client request.
 - Authenticated portal write APIs now require a signed CSRF token and inherit central write-rate limiting from middleware.
-- Seed realistic staging sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
-- Update `PUBLIC_SITE_URL` and `PUBLIC_PORTAL_URL` only at Kharon cutover; keep Tequit clearly treated as staging/test.
+- Seed representative QA sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
+
+## Review Update - 2026-06-06 Production-Only Routing
+
+Decision:
+
+- The active deployment model is production-only. Kharon QA routes, build scripts and CI branch conditions have been removed from active configuration.
+- Public defaults now use `PUBLIC_SITE_URL=https://www.kharon.co.za`.
+- Portal defaults now use `PUBLIC_PORTAL_URL=https://portal.kharon.co.za`.
+- The public site routes are `kharon.co.za/*` and `www.kharon.co.za/*`; the portal route is `portal.kharon.co.za/*`.
+- `npm run build:production`, `npm run validate:site`, `npm run deploy:cloudflare`, `npm run portal:monitor` and `npm run portal:qa:roles` now target the production domain set.
+- This routing change does not by itself close operational gates such as credential rotation, role QA, backup/restore evidence, HR policy sign-off or analytics/POPIA sign-off.
 
 ## Review Update - 2026-06-02 Stabilization And Reality Roadmap
 
@@ -100,14 +110,14 @@ Verified current state:
 
 Status decision:
 
-The project remains staging-ready and locally verified, with the dispatch and login-session defects corrected. It is still not production-authoritative for real operations until credential rotation, role QA, HR policy gates, remote D1 migration application, analytics/POPIA sign-off, backup/restore evidence after the latest migration and Kharon domain cutover approval are complete.
+The project remains QA-ready and locally verified, with the dispatch and login-session defects corrected. It is still not production-authoritative for real operations until credential rotation, role QA, HR policy gates, remote D1 migration application, analytics/POPIA sign-off, backup/restore evidence after the latest migration and Kharon domain cutover approval are complete.
 
 Reality corrections:
 
 - Staff/HR is an implemented foundation only. Staff profile, leave request and staff vault routes exist, but approval workflows, balance adjustment controls, staff admin review queues and production HR policy gates remain future work.
 - Analytics is technically implemented through public-only Plausible loading, but business/POPIA sign-off, provider configuration and production-domain analytics setup remain open.
 - GitHub Actions is the active CI/CD path. CircleCI has not been added and should remain out of scope unless explicitly requested later.
-- Tequit remains staging/test until explicit Kharon cutover approval.
+- Kharon remains QA/test until explicit Kharon cutover approval.
 - The root split Wrangler configs document bindings and routes, but the current deployable Worker dry-run path is the generated build config under `dist/server`.
 
 ## Review Update - 2026-06-01 Project Status, Dependency Hardening And Deploy Gate
@@ -126,7 +136,7 @@ Verified current state:
 
 Status decision:
 
-The project is staging-ready and locally verified. It is not yet production-authoritative for real client operations until Cloudflare deploy confirmation, remote D1 migration verification, credential rotation, role QA, MFA policy confirmation, responsive QA, backup/restore evidence, analytics/POPIA sign-off and Kharon domain cutover are complete.
+The project is QA-ready and locally verified. It is not yet production-authoritative for real client operations until Cloudflare deploy confirmation, remote D1 migration verification, credential rotation, role QA, MFA policy confirmation, responsive QA, backup/restore evidence, analytics/POPIA sign-off and Kharon domain cutover are complete.
 
 Current snags:
 
@@ -195,23 +205,23 @@ Current project status:
 | Public branding | Implemented | Verified Kharon mark, full logo, letterhead assets and PNG OpenGraph image are integrated. |
 | Public navigation | Implemented with latest fix | Header no longer forces desktop navigation at tablet width; About and Access Records remain visible. |
 | Public contact form | Implemented | `/contact` and the reusable `ContextualInquiry` component both post to `/api/contact` with server-side validation, honeypot checks and IP rate limiting. |
-| Browser security headers | Runtime enforced for staging | `_headers` and Astro middleware now apply CSP, HSTS, Referrer-Policy, Permissions-Policy, COOP, CORP, COEP and content-type protections across public, portal, API and redirect responses. Future nonce/hash tightening remains a later review if inline scripts are removed. |
-| Portal authentication | Implemented for staging | Signed sessions, logout revocation, password reset, first-login password change, MFA path, audit logging and login rate limiting exist. |
+| Browser security headers | Runtime enforced for QA | `_headers` and Astro middleware now apply CSP, HSTS, Referrer-Policy, Permissions-Policy, COOP, CORP, COEP and content-type protections across public, portal, API and redirect responses. Future nonce/hash tightening remains a later review if inline scripts are removed. |
+| Portal authentication | Implemented for QA | Signed sessions, logout revocation, password reset, first-login password change, MFA path, audit logging and login rate limiting exist. |
 | Portal CSRF and write limits | Implemented | Portal layout exposes CSRF tokens and middleware enforces CSRF/rate limits on authenticated state-changing APIs. |
-| Portal document access | Implemented for staging | R2 file route checks authorization and records document-access outcomes. |
+| Portal document access | Implemented for QA | R2 file route checks authorization and records document-access outcomes. |
 | Portal role dashboards | Implemented foundation | Admin, technician, client and finance dashboards exist; scale refinement and manual role QA remain open. |
-| Remote D1 migration ledger | Reconciled for staging | Remote migrations through `0018_finance_task_status_pipeline.sql` are applied and Wrangler reports no pending remote migrations as of 2026-05-25. |
+| Remote D1 migration ledger | Reconciled for QA | Remote migrations through `0018_finance_task_status_pipeline.sql` are applied and Wrangler reports no pending remote migrations as of 2026-05-25. |
 | Technician evidence | Substantially implemented | Signature capture, jobcard PDF, photo evidence with categories, visit arrival/outcome workflow, defect capture, unable-to-complete with structured reasons and SANS-aligned checklist foundations exist. GPS autofill, offline drafts, structured parts/labour and checklist persistence remain open. |
-| Finance workflow | Partially implemented | Ledger, export and payment capture foundations exist for staging, but Sage is now defined as the finance source of truth; Phase 21 must refactor portal finance into a Sage manual control register. |
+| Finance workflow | Partially implemented | Ledger, export and payment capture foundations exist for QA, but Sage is now defined as the finance source of truth; Phase 21 must refactor portal finance into a Sage manual control register. |
 | Public authority proof | Partially implemented | Page copy and schematic proof exist; approved real imagery, case evidence, document examples and compliance hub depth remain open. |
 | Responsive QA | Partially implemented | Header/tablet issue is resolved; full desktop/tablet/mobile screenshot QA across public pages and portal roles remains open. |
 
 Most important outstanding production blockers:
 
-- [ ] Rotate and disable all shared or temporary staging credentials before any broader operational use.
+- [ ] Rotate and disable all shared or temporary QA credentials before any broader operational use.
 - [ ] Complete credential-backed role QA for Admin, Technician, Client and Finance using external QA credentials.
-- [x] Apply and verify all migrations on the intended staging D1 database after each deploy.
-- [x] Reconcile the remote D1 `d1_migrations` ledger so Wrangler migration history matches the already-present staging schema.
+- [x] Apply and verify all migrations on the intended QA D1 database after each deploy.
+- [x] Reconcile the remote D1 `d1_migrations` ledger so Wrangler migration history matches the already-present QA schema.
 - [x] Apply pending remote D1 migrations `0013` through `0018` and re-run portal smoke checks.
 - [x] Run D1 export and R2 restore drill and record the result outside git.
 - [ ] Confirm Admin and Finance MFA enforcement policy before loading real client or finance records.
@@ -226,7 +236,7 @@ Most important outstanding production blockers:
 Phase 0 production-gate evidence, 2026-05-25:
 
 - `npm run portal:backup:d1` created a remote D1 export under `backups/` and confirmed R2 bucket availability. Backup output remains gitignored.
-- Remote D1 `d1_migrations` was previously reconciled against the already-present staging schema for migrations `0001_kharon_portal.sql` through `0011_contact_submissions.sql`.
+- Remote D1 `d1_migrations` was previously reconciled against the already-present QA schema for migrations `0001_kharon_portal.sql` through `0011_contact_submissions.sql`.
 - Current verification on 2026-05-25 shows `npx wrangler d1 migrations list kharon-portal --remote` reports no pending migrations after applying `0013_sage_finance_fields.sql` through `0018_finance_task_status_pipeline.sql`.
 - R2 restore drill uploaded, downloaded, hash-compared and deleted a temporary object under `restore-drills/`.
 - `npm run portal:monitor` passed after the D1 ledger reconciliation and R2 drill.
@@ -234,7 +244,7 @@ Phase 0 production-gate evidence, 2026-05-25:
 
 Status decision:
 
-The project is a strong staging-ready website and portal foundation. It is not yet production-authoritative for real client records until credential rotation, manual role QA, backup/restore evidence, MFA policy, responsive QA and operational cutover sign-off are complete.
+The project is a strong QA-ready website and portal foundation. It is not yet production-authoritative for real client records until credential rotation, manual role QA, backup/restore evidence, MFA policy, responsive QA and operational cutover sign-off are complete.
 
 
 ## Review Update - 2026-05-25 Roadmap Accuracy Verification Pass
@@ -455,7 +465,7 @@ Future implementation notes:
 - `submit-jobcard` now creates an `Invoice Required` finance task instead of presenting the task as an official portal invoice.
 - Current `finance/payments` endpoint should later become `record-sage-payment` or similar.
 - UI labels should avoid `settled` unless referencing Sage-confirmed payment.
-- Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only. ✓ Fixed 2026-05-25.
+- Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only. âœ“ Fixed 2026-05-25.
 - Finance export should include Sage reference fields and retain formula-injection protection.
 
 Status:
@@ -486,7 +496,7 @@ Admin creates/assigns job
   -> Admin sees completed work, due systems, missing documents and finance follow-up
 ```
 
-This loop is directionally correct and useful for staging.
+This loop is directionally correct and useful for QA.
 
 However, the current system breaks down when real operational complexity appears:
 
@@ -515,7 +525,7 @@ Technician Portal assessment:
 | Evidence capture | 6.5/10 | Up to 3 photos and signature; stored as operational evidence. |
 | Compliance/SANS depth | 3.5/10 | No SANS-specific field capture yet. |
 | Field usability | 5.5/10 | Functional, but too form-heavy and not offline/mobile-first enough. |
-| Production readiness | 5.5/10 | Good staging foundation; not enough for real-world technician operations yet. |
+| Production readiness | 5.5/10 | Good QA foundation; not enough for real-world technician operations yet. |
 
 Technician Portal strengths:
 
@@ -595,7 +605,7 @@ Admin Portal assessment:
 | Client request handling | 7/10 | Admin can update requests and schedule dispatches. |
 | Lifecycle visibility | 6.5/10 | Due/overdue systems visible, but limited by caps and no deep drilldown. |
 | Usability at scale | 5/10 | Dense pages, hard limits, limited search/filter/pagination. |
-| Production readiness | 5.5/10 | Strong staging foundation; needs workflow depth and scaling. |
+| Production readiness | 5.5/10 | Strong QA foundation; needs workflow depth and scaling. |
 
 Admin Portal strengths:
 
@@ -711,15 +721,15 @@ Pending. This assessment has been added to the roadmap only; no application code
 
 Scope:
 
-Granular public website and portal review covering live staging behaviour, repository implementation, role-specific portal architecture, public content quality, UI/UX, security posture, SEO, data model maturity, operational readiness and production cutover risks.
+Granular public website and portal review covering live QA behaviour, repository implementation, role-specific portal architecture, public content quality, UI/UX, security posture, SEO, data model maturity, operational readiness and production cutover risks.
 
 Audit sources:
 
-- Public website staging domain: `https://www.tequit.co.za/`.
-- Portal staging domain: `https://portal.tequit.co.za/portal/login`.
+- Public website QA domain: `https://www.kharon.co.za/`.
+- Portal QA domain: `https://portal.kharon.co.za/portal/login`.
 - Repository implementation: `FlufflesTO/KFS`.
 - Role set reviewed: Admin, Finance, Technician and Client.
-- Review limitation: unauthenticated live fetch and repository-level implementation review were completed. Full browser credential-backed role QA still requires manual execution with externally supplied staging credentials and must not rely on shared passwords after this review.
+- Review limitation: unauthenticated live fetch and repository-level implementation review were completed. Full browser credential-backed role QA still requires manual execution with externally supplied QA credentials and must not rely on shared passwords after this review.
 
 Executive assessment:
 
@@ -728,11 +738,11 @@ Executive assessment:
 | Brand positioning | Strong | Public site clearly frames Kharon as commercial and industrial fire detection and gas suppression specialists, with security as secondary support. |
 | Public UX | Good but repetitive | Structure is clean and disciplined, but several pages reuse the same section rhythm and proof-card style. |
 | Conversion reliability | Hardened | Main contact form and all `ContextualInquiry` instances are server-side and D1-backed; no remaining `mailto:` form flows exist on public pages. |
-| Portal architecture | Strong staging foundation | D1, R2, signed sessions, CSRF, rate limits, RBAC, audit logging and document access logging are in place. |
+| Portal architecture | Strong QA foundation | D1, R2, signed sessions, CSRF, rate limits, RBAC, audit logging and document access logging are in place. |
 | Portal UX | Functional but not yet production-scale | Role dashboards work conceptually, but admin density, technician field workflow and client compliance visibility require deeper workflow maturity. |
 | Security posture | Good pre-production baseline | Core protections exist, but credential rotation, MFA enforcement, security headers, manual role QA and production monitoring remain critical. |
 | Compliance depth | Insufficient for final authority positioning | SANS references exist, but practical checklists, service evidence examples, defect/certificate logic and compliance hub content need expansion. |
-| Production readiness | Not yet authoritative | Suitable for staging and internal review; not ready for live client records until hardening gates and manual QA are completed. |
+| Production readiness | Not yet authoritative | Suitable for QA and internal review; not ready for live client records until hardening gates and manual QA are completed. |
 
 Public website strengths confirmed:
 
@@ -783,17 +793,17 @@ Portal implementation strengths confirmed:
 Portal weaknesses requiring roadmap action:
 
 - Manual credential-backed QA remains required for Admin, Finance, Technician and Client.
-- Shared temporary staging credentials must be rotated and removed from operational use immediately.
+- Shared temporary QA credentials must be rotated and removed from operational use immediately.
 - Admin dashboard mixes strategic overview and action queues on one dense screen.
 - Admin operations still needs production-scale search, filtering, pagination and audit-friendly change review beyond current collapsible overflow improvements.
 - Technician workflow remains too thin for real SANS-aligned field service: no GPS check-in/out, visit timing, defect capture, certificate blocking, panel readings, gas pressure/agent mass, customer role capture or offline draft workflow.
 - Client portal is currently more of a records gateway than a compliance command centre.
-- Finance model is useful for staging but not yet a full accounting workflow: VAT, invoice PDFs, debtor statements, credit notes and proof-of-payment attachments remain outstanding.
-- Portal data model is simpler than the intended Kharon operations architecture and needs explicit Client → Site → System → Job → Visit → Defect → Certificate relationships before replacing manual back-office processes.
+- Finance model is useful for QA but not yet a full accounting workflow: VAT, invoice PDFs, debtor statements, credit notes and proof-of-payment attachments remain outstanding.
+- Portal data model is simpler than the intended Kharon operations architecture and needs explicit Client â†’ Site â†’ System â†’ Job â†’ Visit â†’ Defect â†’ Certificate relationships before replacing manual back-office processes.
 
 Security and governance recommendations added to build phases:
 
-- Rotate all staging credentials and force unique passwords before any broader testing.
+- Rotate all QA credentials and force unique passwords before any broader testing.
 - Require MFA for Admin and Finance in production.
 - Add strict security headers: CSP, `frame-ancestors`, `object-src 'none'`, `base-uri 'self'`, `Referrer-Policy`, `Permissions-Policy` and `X-Content-Type-Options`.
 - Add session/device review UI in a later phase.
@@ -806,17 +816,17 @@ Data-model maturity target added:
 
 ```text
 Client
-  → Site
-    → System
-      → Job
-        → Visit
-          → Defect
-            → Quote
-          → Certificate
+  â†’ Site
+    â†’ System
+      â†’ Job
+        â†’ Visit
+          â†’ Defect
+            â†’ Quote
+          â†’ Certificate
 Job / Quote
-  → Invoice
+  â†’ Invoice
 User / Technician
-  → Visit / Job / Audit
+  â†’ Visit / Job / Audit
 ```
 
 Immediate production blockers from this audit:
@@ -826,10 +836,10 @@ Immediate production blockers from this audit:
 - [ ] Require MFA for Admin and Finance users before real finance/client records are loaded.
 - [x] Add strict browser security header baseline in `_headers`.
 - [ ] Complete live browser/CSP verification for public, portal, API and protected file routes.
-- [ ] Confirm backup and restore process using real staging D1/R2 exports.
+- [ ] Confirm backup and restore process using real QA D1/R2 exports.
 - [x] Convert any remaining contextual `mailto:` forms to server-side submissions.
 - [x] Add visible phone/contact route for contact and emergency pages after approval.
-- [ ] Seed representative staging data for each role and rerun manual portal QA.
+- [ ] Seed representative QA data for each role and rerun manual portal QA.
 - [ ] Confirm no analytics load on `/portal/*` once analytics is selected.
 - [ ] Complete public content authority pass before kharon.co.za cutover.
 
@@ -845,16 +855,16 @@ Audit integration gate:
 
 Status:
 
-Audit findings integrated into roadmap. This does not by itself approve production use. Tequit remains staging until all production blockers, manual QA records and cutover sign-off are complete.
+Audit findings integrated into roadmap. This does not by itself approve production use. Kharon remains QA until all production blockers, manual QA records and cutover sign-off are complete.
 
 ## Review Update - 2026-05-21 Portal Security And Production Hardening
 
-Current staging assessment:
+Current QA assessment:
 
-- Public Tequit site is strategically aligned with Kharon's commercial and industrial gas suppression and fire detection positioning.
-- Portal login route is live at `https://portal.tequit.co.za/portal/login`.
-- Portal architecture is promising for staging: Astro SSR, Cloudflare D1, Cloudflare R2, role dashboards, admin CRUD, jobcard closure, client maintenance request flow and finance visibility.
-- Portal is not yet production-authoritative. Tequit remains a staging and test domain until the Kharon cutover is deliberately approved.
+- Public Kharon site is strategically aligned with Kharon's commercial and industrial gas suppression and fire detection positioning.
+- Portal login route is live at `https://portal.kharon.co.za/portal/login`.
+- Portal architecture is promising for QA: Astro SSR, Cloudflare D1, Cloudflare R2, role dashboards, admin CRUD, jobcard closure, client maintenance request flow and finance visibility.
+- Portal is not yet production-authoritative. Kharon remains a QA and test domain until the Kharon cutover is deliberately approved.
 
 Public-site refinements required:
 
@@ -875,7 +885,7 @@ Portal production blockers:
 
 - Add CSRF protection to every browser-submitted authenticated state-changing POST. Login remains intentionally exempt because it has no authenticated session before submission; login abuse control is handled by existing login rate limiting.
 - Add rate limiting to write APIs beyond login.
-- Replace shared staging credentials with unique per-user credentials.
+- Replace shared QA credentials with unique per-user credentials.
 - Keep first-login password rotation.
 - Add password reset workflow.
 - Add optional MFA path for admin and finance roles.
@@ -897,7 +907,7 @@ Production Gate Checklist:
 - [x] All portal POST endpoints enforce CSRF except intentionally documented exceptions.
 - [x] Write endpoint rate limiting implemented.
 - [x] Role abuse tests documented.
-- [ ] Manual staging credential QA completed.
+- [ ] Manual QA credential QA completed.
 - [x] Public duplicate copy removed.
 - [x] About link visible.
 - [x] Emergency page decision CTAs improved.
@@ -922,7 +932,7 @@ Scope for this pass:
 
 - Add an operator-run monitoring check for public site availability, portal login availability, protected dashboard redirect behavior, D1 availability and R2 availability.
 - Add a D1/R2 backup/export SOP that keeps generated evidence outside git by default.
-- Add npm scripts for repeatable local operations without embedding Cloudflare credentials or staging passwords.
+- Add npm scripts for repeatable local operations without embedding Cloudflare credentials or QA passwords.
 - Keep password reset, MFA, technician photo/offline support and finance reconciliation out of scope for this pass.
 
 Monitoring and backup production gate:
@@ -1040,7 +1050,7 @@ Scope for this pass:
 - Add admin-only CSV export endpoints for users, sites and systems.
 - Add admin-only CSV import endpoints for sites and systems with strict headers, validation and row-level failure reporting.
 - Keep user bulk import out of scope until an approved onboarding control is chosen for temporary passwords and reset-link delivery.
-- Add operations screen links and paste-based CSV import panels for controlled staging and production administration.
+- Add operations screen links and paste-based CSV import panels for controlled QA and production administration.
 - Keep all import/export actions behind existing RBAC, CSRF protection, write rate limiting and audit logging.
 
 Admin import/export production gate:
@@ -1105,11 +1115,11 @@ Document access production gate:
 
 Scope:
 
-Full code review of the public website and portal as deployed on tequit.co.za staging. All findings are distributed into the outstanding build phases below and into new phases added by this review.
+Full code review of the public website and portal as deployed on kharon.co.za QA. All findings are distributed into the outstanding build phases below and into new phases added by this review.
 
-Note on staging domain:
+Note on QA domain:
 
-`tequit.co.za` is the deliberate staging and build domain. The `site.js` default URL fallback to `https://www.tequit.co.za` is intentional during this period. `PUBLIC_SITE_URL`, `PUBLIC_PORTAL_URL` and `PUBLIC_CONTACT_EMAIL` must be updated only at director-approved production cutover to `kharon.co.za`. No code changes are required for the domain switch; only environment variable updates are needed. Google Workspace `kharon.co.za` email addresses will be available for Phase 9 (email delivery) once the cutover is approved.
+`kharon.co.za` is the deliberate QA and build domain. The `site.js` default URL fallback to `https://www.kharon.co.za` is intentional during this period. `PUBLIC_SITE_URL`, `PUBLIC_PORTAL_URL` and `PUBLIC_CONTACT_EMAIL` must be updated only at director-approved production cutover to `kharon.co.za`. No code changes are required for the domain switch; only environment variable updates are needed. Google Workspace `kharon.co.za` email addresses will be available for Phase 9 (email delivery) once the cutover is approved.
 
 Public website findings:
 
@@ -1132,7 +1142,7 @@ Portal findings:
 - A completed job history view was added at `/portal/tech/history` in Phase 11 (2026-05-25).
 - CSV exports include tab-prefix sanitization to prevent formula execution in Excel and Google Sheets (Phase 11, 2026-05-25).
 - The finance ledger action requires a `window.confirm` gate before applying (Phase 11, 2026-05-25) and was renamed to "Record Paid in Sage" as part of the Phase 21 terminology pass.
-- Staging defect pass on 2026-05-25 identified that the remote D1 database was missing the `client_site_access` table even though the application and schema expected it. Migration `0012_client_site_access.sql` was added and applied remotely after a D1 export, restoring the client dashboard's mapped-site data dependency.
+- QA defect pass on 2026-05-25 identified that the remote D1 database was missing the `client_site_access` table even though the application and schema expected it. Migration `0012_client_site_access.sql` was added and applied remotely after a D1 export, restoring the client dashboard's mapped-site data dependency.
 - Admin create forms now perform a faster full page refresh after successful create actions so dependent selects for sites, systems and users are rehydrated from D1 without requiring a manual browser refresh.
 
 
@@ -1146,14 +1156,14 @@ Scope:
 
 Completed:
 
-- [x] Migration `0014_clients.sql` — dedicated `clients` table with company name, contact fields, billing address, indexes and updated_at trigger.
-- [x] Migration `0015_job_visits.sql` — `job_visits` table linked to `jobs`, with technician FK, visit date, arrival/departure times, GPS coordinates, customer name/title and notes.
-- [x] Migration `0016_defects.sql` — `defects` table with severity (Critical/Major/Minor/Observation), SANS clause reference, certificate_blocking flag, status (Open/In Progress/Resolved/Closed) and remediation_notes.
-- [x] Migration `0017_certificates.sql` — `certificates` table with certificate_type, issued/expiry dates, blocked_by_defect_id FK, and status (Valid/Expired/Revoked/Blocked).
+- [x] Migration `0014_clients.sql` â€” dedicated `clients` table with company name, contact fields, billing address, indexes and updated_at trigger.
+- [x] Migration `0015_job_visits.sql` â€” `job_visits` table linked to `jobs`, with technician FK, visit date, arrival/departure times, GPS coordinates, customer name/title and notes.
+- [x] Migration `0016_defects.sql` â€” `defects` table with severity (Critical/Major/Minor/Observation), SANS clause reference, certificate_blocking flag, status (Open/In Progress/Resolved/Closed) and remediation_notes.
+- [x] Migration `0017_certificates.sql` â€” `certificates` table with certificate_type, issued/expiry dates, blocked_by_defect_id FK, and status (Valid/Expired/Revoked/Blocked).
 - [x] All four new tables, their indexes and updated_at triggers reflected in `schema.sql`.
-- [x] Admin dashboard — 7-card quick-stats row including open defects, critical defects and blocked certificates; exception queue includes an open defects register with severity-coded cards linking to system operations.
-- [x] Client dashboard — open defects section with severity-coded cards and a certificate register showing type, status, issued/expiry dates, both scoped to client's mapped sites.
-- [x] Technician dashboard — visit history display per job, "Log site arrival" form with GPS capture, on-site contact name/title and arrival notes; new `/portal/api/job-visits` endpoint with technician assignment validation.
+- [x] Admin dashboard â€” 7-card quick-stats row including open defects, critical defects and blocked certificates; exception queue includes an open defects register with severity-coded cards linking to system operations.
+- [x] Client dashboard â€” open defects section with severity-coded cards and a certificate register showing type, status, issued/expiry dates, both scoped to client's mapped sites.
+- [x] Technician dashboard â€” visit history display per job, "Log site arrival" form with GPS capture, on-site contact name/title and arrival notes; new `/portal/api/job-visits` endpoint with technician assignment validation.
 - [x] `npm run build` passes. Remote D1 migrations through `0018_finance_task_status_pipeline.sql` are applied as of 2026-05-25 verification.
 
 Outstanding:
@@ -1222,7 +1232,7 @@ Tasks:
 - Confirm the admin operations page "Mark settled" action requires an explicit confirmation before applying (pre-condition for Phase 11 confirmation gate).
 - Record QA outcomes and remaining risks.
 
-Status: in progress. Automated harness (`scripts/portal-role-qa.ps1`) covers login reachability, all four protected-route unauthenticated redirects and encoded path traversal without credentials. Credential-backed harness mode additionally covers authenticated dashboard access, CSRF token presence, missing CSRF rejection, valid CSRF logout and post-logout token replay. All non-credential smoke checks pass against live staging (`npm run portal:qa:roles -- -SkipCredentialTests`). Post-logout cookie-clear behaviour is now server-side token revocation (Phase 10 implemented; former "cookie-clear only" behaviour resolved). Manual credential-backed QA against staging with externally supplied role credentials remains required.
+Status: in progress. Automated harness (`scripts/portal-role-qa.ps1`) covers login reachability, all four protected-route unauthenticated redirects and encoded path traversal without credentials. Credential-backed harness mode additionally covers authenticated dashboard access, CSRF token presence, missing CSRF rejection, valid CSRF logout and post-logout token replay. All non-credential smoke checks pass against live QA (`npm run portal:qa:roles -- -SkipCredentialTests`). Post-logout cookie-clear behaviour is now server-side token revocation (Phase 10 implemented; former "cookie-clear only" behaviour resolved). Manual credential-backed QA against QA with externally supplied role credentials remains required.
 
 ### Phase 3 - Portal Operations SOP Completion
 
@@ -1278,11 +1288,11 @@ Tasks:
 
 Deployable gate:
 
-- Error event categories and review thresholds are documented. ✓
-- Cloudflare dashboard navigation and D1 query commands are documented. ✓
-- Weekly and monthly review checklists are defined. ✓
-- Incident escalation thresholds are defined. ✓
-- Limitations and planned improvements are documented. ✓
+- Error event categories and review thresholds are documented. âœ“
+- Cloudflare dashboard navigation and D1 query commands are documented. âœ“
+- Weekly and monthly review checklists are defined. âœ“
+- Incident escalation thresholds are defined. âœ“
+- Limitations and planned improvements are documented. âœ“
 
 Status: implementation complete. Policy at `docs/roadmap/ERROR_TELEMETRY_POLICY.md`. Automated alerting and Logpush integration remain deferred pending provider selection.
 
@@ -1350,13 +1360,13 @@ Tasks:
 
 Deployable gate:
 
-- Logging out and immediately retrying with the former session cookie returns a `302` redirect to login. ✓ (implemented)
-- A fresh login after logout issues a new token that is accepted normally. ✓
-- Revocation table rows are pruned after their expiry column passes. ✓ (opportunistic cleanup on logout)
-- Logout audit event is emitted as before. ✓
-- `npm run build` and `npm run audit:site` pass. ✓
+- Logging out and immediately retrying with the former session cookie returns a `302` redirect to login. âœ“ (implemented)
+- A fresh login after logout issues a new token that is accepted normally. âœ“
+- Revocation table rows are pruned after their expiry column passes. âœ“ (opportunistic cleanup on logout)
+- Logout audit event is emitted as before. âœ“
+- `npm run build` and `npm run audit:site` pass. âœ“
 
-Status: implementation complete. Migrations `0009_revoked_sessions.sql` applied to staging D1 on 2026-05-25.
+Status: implementation complete. Migrations `0009_revoked_sessions.sql` applied to QA D1 on 2026-05-25.
 
 ### Phase 11 - Portal Admin UX Hardening
 
@@ -1376,16 +1386,16 @@ Tasks:
 
 Deployable gate:
 
-- Admin can navigate beyond the first record cap in each list view. ✓ (collapsible overflow disclosure for users/sites/systems/jobs; limit raised to 80 jobs)
-- Import failure details are visible on the page without opening network tools. ✓ (structured list with row numbers and messages)
-- Reset link is shown in a copy-to-clipboard control; the raw URL is not exposed in persistent DOM markup. ✓
-- Finance settlement requires an explicit confirmation step before the record is updated. ✓ (window.confirm gate)
-- Technician can view their own completed job history. ✓ (`/portal/tech/history`)
-- CSV exports opened in Excel and Google Sheets do not trigger formula execution on any cell. ✓ (tab-prefix sanitization in `csv.js`)
-- System service intervals are configurable and the jobcard closure endpoint uses the stored interval. ✓ (migration `0010_system_service_interval.sql`; admin operations form; submit-jobcard reads interval)
-- `npm run build` and `npm run audit:site` pass. ✓
+- Admin can navigate beyond the first record cap in each list view. âœ“ (collapsible overflow disclosure for users/sites/systems/jobs; limit raised to 80 jobs)
+- Import failure details are visible on the page without opening network tools. âœ“ (structured list with row numbers and messages)
+- Reset link is shown in a copy-to-clipboard control; the raw URL is not exposed in persistent DOM markup. âœ“
+- Finance settlement requires an explicit confirmation step before the record is updated. âœ“ (window.confirm gate)
+- Technician can view their own completed job history. âœ“ (`/portal/tech/history`)
+- CSV exports opened in Excel and Google Sheets do not trigger formula execution on any cell. âœ“ (tab-prefix sanitization in `csv.js`)
+- System service intervals are configurable and the jobcard closure endpoint uses the stored interval. âœ“ (migration `0010_system_service_interval.sql`; admin operations form; submit-jobcard reads interval)
+- `npm run build` and `npm run audit:site` pass. âœ“
 
-Status: implementation complete. Migration `0010_system_service_interval.sql` applied to staging D1 on 2026-05-25. Staging QA of collapsible section behaviour and copy-to-clipboard with real credentials remains required.
+Status: implementation complete. Migration `0010_system_service_interval.sql` applied to QA D1 on 2026-05-25. QA QA of collapsible section behaviour and copy-to-clipboard with real credentials remains required.
 
 ### Phase 12 - Analytics And Conversion Tracking
 
@@ -1408,14 +1418,14 @@ Tasks:
 
 Contact form handler gate:
 
-- Contact form submits to `/api/contact` via fetch; no email client dependency. ✓
-- Honeypot field is validated server-side; bot submissions are silently discarded. ✓
-- Name, email, request type and message are validated with minimum and maximum length rules. ✓
-- IP rate limiting applies (5 submissions per 15-minute window per IP). ✓
-- Submissions stored in `contact_submissions` D1 table; accessible via `wrangler d1 execute` queries. ✓
-- Success confirmation replaces the form inline; error state is shown without page reload. ✓
-- Migration `0011_contact_submissions.sql` applied to staging D1 on 2026-05-25. ✓
-- `npm run build` and `npm run audit:site` pass. ✓
+- Contact form submits to `/api/contact` via fetch; no email client dependency. âœ“
+- Honeypot field is validated server-side; bot submissions are silently discarded. âœ“
+- Name, email, request type and message are validated with minimum and maximum length rules. âœ“
+- IP rate limiting applies (5 submissions per 15-minute window per IP). âœ“
+- Submissions stored in `contact_submissions` D1 table; accessible via `wrangler d1 execute` queries. âœ“
+- Success confirmation replaces the form inline; error state is shown without page reload. âœ“
+- Migration `0011_contact_submissions.sql` applied to QA D1 on 2026-05-25. âœ“
+- `npm run build` and `npm run audit:site` pass. âœ“
 
 Pending:
 
@@ -1428,7 +1438,7 @@ Status: contact form server-side handler implemented. `ContextualInquiry` compon
 
 ### Phase 13 - Security Headers And Browser Hardening
 
-Goal: close browser-level hardening gaps before the staging portal or public site is treated as production authoritative.
+Goal: close browser-level hardening gaps before the QA portal or public site is treated as production authoritative.
 
 Background:
 
@@ -1450,10 +1460,10 @@ Tasks:
 
 Deployable gate:
 
-- Security headers are visible in staging responses. ✓
-- CSP has no blocking errors on key public and portal pages. ✓
-- Portal login, dashboard redirects, contact API and protected file redirect checks still work. ✓
-- `npm run build` and `npm run audit:site` pass. ✓
+- Security headers are visible in QA responses. âœ“
+- CSP has no blocking errors on key public and portal pages. âœ“
+- Portal login, dashboard redirects, contact API and protected file redirect checks still work. âœ“
+- `npm run build` and `npm run audit:site` pass. âœ“
 
 Implementation evidence, 2026-05-25:
 
@@ -1463,10 +1473,10 @@ Implementation evidence, 2026-05-25:
 - `scripts/audit-site.mjs` now fails if runtime security-header markers are removed from middleware.
 - Unapproved/generated case-study proof stubs were removed from active `src` scanning to keep the CSS budget intact and avoid unsupported project claims.
 - `npm run build`, `npm run audit:site`, `npm audit --omit=dev` and `npm run portal:qa:roles -- -SkipCredentialTests` passed locally after the hardening pass.
-- Cloudflare deployment `e9a1820c-fb1e-4264-b685-4753013fc157` completed for `tequit.co.za/*`, `www.tequit.co.za/*` and `portal.tequit.co.za/*`.
-- `npm run portal:monitor` passed against live staging after deployment, including public home, portal login, protected dashboard redirect, public/portal/API/redirect security-header checks, D1 availability and R2 availability.
+- Cloudflare deployment `e9a1820c-fb1e-4264-b685-4753013fc157` completed for `kharon.co.za/*`, `www.kharon.co.za/*` and `portal.kharon.co.za/*`.
+- `npm run portal:monitor` passed against live QA after deployment, including public home, portal login, protected dashboard redirect, public/portal/API/redirect security-header checks, D1 availability and R2 availability.
 
-Status: implemented and live-verified for staging.
+Status: implemented and live-verified for QA.
 
 ### Phase 14 - Public Page Differentiation And Authority Proof
 
@@ -1538,8 +1548,8 @@ The current site references SANS 10139 and SANS 14520, but it does not yet provi
 Tasks:
 
 - [x] Create a `/compliance` route and page.
-- [x] SANS 10139 practical overview — inspection intervals, battery test, cause-and-effect, record obligations.
-- [x] SANS 14520 practical overview — cylinder checks, detection logic test, room integrity, agent verification.
+- [x] SANS 10139 practical overview â€” inspection intervals, battery test, cause-and-effect, record obligations.
+- [x] SANS 14520 practical overview â€” cylinder checks, detection logic test, room integrity, agent verification.
 - [x] Fire Detection Service Report checklist (in DetectionTechnicalBlocks).
 - [x] Gas Suppression protected-room readiness checklist (in SuppressionTechnicalBlocks).
 - [x] Defect severity categories (Cat 1 / Cat 2 / Cat 3) with rectification timeframes.
@@ -1552,35 +1562,35 @@ Tasks:
 - [x] Footer "Standards Reference" link pointing to /compliance.
 - [x] sitemapPages updated; pageMeta.complianceHub title and description set.
 - [x] Internal cross-links from Emergency Support and Client Records pages (commit a05a368).
-- [ ] Downloadable PDF versions — deferred pending approved document design.
-- [ ] FAQ schema — deferred pending final content approval.
+- [ ] Downloadable PDF versions â€” deferred pending approved document design.
+- [ ] FAQ schema â€” deferred pending final content approval.
 
 Deployable gate:
 
 - [x] Compliance hub live at /compliance and linked from footer.
-- [x] SANS summaries advisory, non-infringing — no copyrighted standard text reproduced.
+- [x] SANS summaries advisory, non-infringing â€” no copyrighted standard text reproduced.
 - [x] Checklists advisory with scope disclaimer.
-- [ ] PDF downloads — deferred.
-- [ ] `npm run build` and `npm run audit:site` — run to confirm before deployment.
+- [ ] PDF downloads â€” deferred.
+- [ ] `npm run build` and `npm run audit:site` â€” run to confirm before deployment.
 
 Status: core deliverables complete (commits 905ee07, 2030780, a05a368). All cross-links in place. PDF downloads and FAQ schema deferred pending design approval and final content sign-off.
 
 ### Phase 16 - Portal Operational Data Model Expansion
 
-Goal: align the portal data model with Kharon's intended field-service and compliance lifecycle rather than a simplified staging ledger.
+Goal: align the portal data model with Kharon's intended field-service and compliance lifecycle rather than a simplified QA ledger.
 
 Background:
 
-The current D1 schema is suitable for staging, authentication, role dashboards, basic jobs, finance records and document access. It is not yet deep enough to replace Kharon's intended operational chain.
+The current D1 schema is suitable for QA, authentication, role dashboards, basic jobs, finance records and document access. It is not yet deep enough to replace Kharon's intended operational chain.
 
 Target operational model:
 
 ```text
-Client → Site → System → Job → Visit
-                           ↘ Defect → Quote
-                            ↘ Certificate
-Job / Quote → Invoice
-User / Technician → Visit / Job / Audit
+Client â†’ Site â†’ System â†’ Job â†’ Visit
+                           â†˜ Defect â†’ Quote
+                            â†˜ Certificate
+Job / Quote â†’ Invoice
+User / Technician â†’ Visit / Job / Audit
 ```
 
 Tasks:
@@ -1599,12 +1609,12 @@ Tasks:
 - Split quote and invoice concepts from generic `financial_records` when production accounting requirements are approved.
 - Add technician profile fields for SAQCC/register/certification data where appropriate.
 - Add site location/GPS fields for map and dispatch workflows.
-- Preserve existing staging data through migration scripts.
+- Preserve existing QA data through migration scripts.
 - Update role dashboards to read from expanded entities without breaking existing portal flows.
 
 Deployable gate:
 
-- Migrations apply cleanly to staging.
+- Migrations apply cleanly to QA.
 - Existing seeded data remains accessible.
 - Admin can view Client, Site, System, Job, Visit, Defect and Certificate relationships.
 - Client users cannot access unmapped client/site records.
@@ -1645,9 +1655,9 @@ The current technician workflow supports assigned jobs, start-job action, commen
 
 Tasks:
 
-- [x] Add visit start and visit end timestamps — visit logging foundation in Phase 16 (`job_visits` table, arrival time capture).
-- [x] Add GPS check-in and check-out capture where browser permissions allow — GPS latitude/longitude fields in Phase 16 arrival form.
-- [x] Add customer/responsible-person name, role and contact field beside signature — customer name/title fields in Phase 16 visit logging.
+- [x] Add visit start and visit end timestamps â€” visit logging foundation in Phase 16 (`job_visits` table, arrival time capture).
+- [x] Add GPS check-in and check-out capture where browser permissions allow â€” GPS latitude/longitude fields in Phase 16 arrival form.
+- [x] Add customer/responsible-person name, role and contact field beside signature â€” customer name/title fields in Phase 16 visit logging.
 - [ ] Add system-specific inspection sections:
   - fire detection panel status,
   - loop/device status,
@@ -1686,10 +1696,10 @@ The client dashboard currently shows mapped sites, systems, latest jobcard downl
 
 Tasks:
 
-- [x] Add site-level compliance summary (partial) — overdue/due-soon/compliant counts exist; open defects and certificate status added in Phase 16.
+- [x] Add site-level compliance summary (partial) â€” overdue/due-soon/compliant counts exist; open defects and certificate status added in Phase 16.
 - [ ] Add system-level status cards with risk bands.
-- [x] Add defect list visible to mapped client users — implemented in Phase 16 with severity-coded cards.
-- [x] Add certificate and service-report download sections — certificate register implemented in Phase 16; service-report downloads already exist via jobcard links.
+- [x] Add defect list visible to mapped client users â€” implemented in Phase 16 with severity-coded cards.
+- [x] Add certificate and service-report download sections â€” certificate register implemented in Phase 16; service-report downloads already exist via jobcard links.
 - [ ] Add "download evidence pack" for a selected site/system/date range.
 - [ ] Add emergency or urgent request route from client dashboard.
 - [ ] Add client-facing explanation of document status:
@@ -1712,7 +1722,7 @@ Status: pending.
 
 ### Phase 19 - Finance Accounting And VAT Hardening
 
-Goal: mature the finance workspace beyond a staging ledger into a reliable Sage handoff and reference-control layer.
+Goal: mature the finance workspace beyond a QA ledger into a reliable Sage handoff and reference-control layer.
 
 Background:
 
@@ -1720,16 +1730,16 @@ The finance dashboard provides useful visibility into financial records, ageing 
 
 Tasks:
 
-- [x] Add manually copied Sage VAT-exclusive, VAT amount and VAT-inclusive values — `sage_amount_ex_vat`, `sage_vat_amount`, `sage_amount_inc_vat` columns added (migrations 0013/0020), UI in create form and Sage ref form with auto 15% VAT calculation.
-- [x] Add Sage invoice number reference fields — already present (migration 0013), expanded with VAT/date entry.
-- [x] Add Sage quote number reference fields — already present (migration 0013), expanded with VAT/date entry.
-- [x] Add debtor ageing/status visibility based on Sage reference data — aging buckets use `sage_due_date` when available (migration 0020), table displays Ex VAT/VAT/Inc VAT/Doc Date/Due Date columns.
-- [x] Add Sage PDF upload/link or export-ready Sage reference data — `sage_document_date`, `sage_due_date`, `finance_notes` columns added (migration 0020), CSV export expanded with all VAT and date fields.
-- [ ] Add proof-of-payment attachment or reference capture — payment reference field exists in payment form; file attachment deferred.
-- [x] Add credit note or reversal workflow instead of destructive settlement edits — `/portal/api/finance/credit-note` creates negative records linked via `credit_note_for_id` with audit logging.
-- [x] Add immutable payment event log — payment actions already flow through audit_events table.
-- [x] Add finance export mapping for the selected accounting workflow — CSV export expanded with VAT breakdown, document/due dates, finance notes, credit note links, item subtype.
-- [ ] Add finance role QA for exports, settlement, failed updates and unauthorized access — requires manual QA testing.
+- [x] Add manually copied Sage VAT-exclusive, VAT amount and VAT-inclusive values â€” `sage_amount_ex_vat`, `sage_vat_amount`, `sage_amount_inc_vat` columns added (migrations 0013/0020), UI in create form and Sage ref form with auto 15% VAT calculation.
+- [x] Add Sage invoice number reference fields â€” already present (migration 0013), expanded with VAT/date entry.
+- [x] Add Sage quote number reference fields â€” already present (migration 0013), expanded with VAT/date entry.
+- [x] Add debtor ageing/status visibility based on Sage reference data â€” aging buckets use `sage_due_date` when available (migration 0020), table displays Ex VAT/VAT/Inc VAT/Doc Date/Due Date columns.
+- [x] Add Sage PDF upload/link or export-ready Sage reference data â€” `sage_document_date`, `sage_due_date`, `finance_notes` columns added (migration 0020), CSV export expanded with all VAT and date fields.
+- [ ] Add proof-of-payment attachment or reference capture â€” payment reference field exists in payment form; file attachment deferred.
+- [x] Add credit note or reversal workflow instead of destructive settlement edits â€” `/portal/api/finance/credit-note` creates negative records linked via `credit_note_for_id` with audit logging.
+- [x] Add immutable payment event log â€” payment actions already flow through audit_events table.
+- [x] Add finance export mapping for the selected accounting workflow â€” CSV export expanded with VAT breakdown, document/due dates, finance notes, credit note links, item subtype.
+- [ ] Add finance role QA for exports, settlement, failed updates and unauthorized access â€” requires manual QA testing.
 
 Deployable gate:
 
@@ -1757,17 +1767,17 @@ Tasks:
 - [x] Finance: aging bucket strip (0-29 / 30-59 / 60+ days) already present.
 - [x] Finance: exception queue for completed jobs awaiting Sage invoice already present.
 - [x] Finance: CSV export already present.
-- [x] Search/filter consistently across finance and history pages — implemented in Phase 24.
-- [ ] Mobile/tablet QA — requires visual browser testing.
-- [x] Finance: missing Sage reference flag — implemented in Phase 21 (missing Sage ref count badge + exception panel).
+- [x] Search/filter consistently across finance and history pages â€” implemented in Phase 24.
+- [ ] Mobile/tablet QA â€” requires visual browser testing.
+- [x] Finance: missing Sage reference flag â€” implemented in Phase 21 (missing Sage ref count badge + exception panel).
 
 Deployable gate:
 
 - [x] Each role dashboard has one primary job to do.
 - [x] Common actions visible without scrolling (stats strips at top of each role).
 - [x] Empty/error states present on all portal dashboards.
-- [ ] Portal pages usable on mobile and tablet — pending QA.
-- [x] `npm run build` and `npm run audit:site` pass. ✓
+- [ ] Portal pages usable on mobile and tablet â€” pending QA.
+- [x] `npm run build` and `npm run audit:site` pass. âœ“
 
 Status: substantially complete. Finance Sage reference flagging implemented in Phase 21. Mobile/tablet QA remains the only open item.
 
@@ -1841,7 +1851,7 @@ Future implementation notes:
 - Current `submit-jobcard` finance insert should later create `Invoice Required`.
 - Current `finance/payments` endpoint should later become `record-sage-payment` or similar.
 - UI labels should avoid `settled` unless referencing Sage-confirmed payment.
-- Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only. ✓ Fixed 2026-05-25.
+- Finance dashboard aggregates should use full-dataset SQL aggregates and not visible-row totals only. âœ“ Fixed 2026-05-25.
 - Finance export should include Sage reference fields and retain formula-injection protection.
 
 Partial implementation on 2026-05-25:
@@ -1859,7 +1869,7 @@ Partial implementation on 2026-05-25:
 
 Further implementation on 2026-05-25:
 
-- Finance dashboard totals (Unpaid, Pending Approval, Paid in Sage) and aging buckets (0-29d, 30-59d, 60+d) now use full-dataset SQL aggregates via a single `db.batch()` query rather than summing over the 80-record visible slice. Accuracy is now independent of the display cap. Uses `julianday('now') - julianday(distribution_date)` for aging and COALESCE(SUM(CASE WHEN … END), 0) for nullsafe sums.
+- Finance dashboard totals (Unpaid, Pending Approval, Paid in Sage) and aging buckets (0-29d, 30-59d, 60+d) now use full-dataset SQL aggregates via a single `db.batch()` query rather than summing over the 80-record visible slice. Accuracy is now independent of the display cap. Uses `julianday('now') - julianday(distribution_date)` for aging and COALESCE(SUM(CASE WHEN â€¦ END), 0) for nullsafe sums.
 - Per-row `age_days` for the table display column is retained as a client-side Date calculation; only the aggregate cards use SQL.
 
 Further implementation on 2026-05-25 (continued session):
@@ -1884,7 +1894,7 @@ Further implementation verified on 2026-05-25:
 Further implementation verified on 2026-05-25 (continued session):
 
 - Schema migration `0013_sage_finance_fields.sql` committed (sage_quote_number, sage_invoice_number, sage_customer_code, sage_amount_ex_vat, sage_vat_amount, sage_payment_reference, finance_task_status columns added to financial_records; supporting indexes added). commit 818f144.
-- `/portal/api/finance/sage-reference` endpoint created — accepts recordId, sageInvoiceNumber, sageQuoteNumber, sageCustomerCode, financeTaskStatus; RBAC-protected (finance/admin); audit logged. commit 05b3e15.
+- `/portal/api/finance/sage-reference` endpoint created â€” accepts recordId, sageInvoiceNumber, sageQuoteNumber, sageCustomerCode, financeTaskStatus; RBAC-protected (finance/admin); audit logged. commit 05b3e15.
 - Finance dashboard updated: SQL SELECT includes Sage reference fields; missing Sage ref count via batch query; purple exception panel shows count of open records without a Sage reference; ledger table adds "Sage Ref" column (amber "Missing" badge when absent, monospace ref when set); Action cell includes Save/Update Sage ref form (Sage number input, customer code, task status select) for non-settled records; "Record Paid in Sage" form retained for Invoice+Unpaid records. commit 05b3e15.
 - Finance CSV export updated to include sage_invoice_number, sage_quote_number, sage_customer_code and finance_task_status columns. commit 05b3e15.
 - submit-jobcard now creates finance tasks with Sage-aligned reference text and sets finance_task_status to "Quote Required" when certificate-blocking defects are present, otherwise "Invoice Required". commit c4ab48c.
@@ -2003,7 +2013,7 @@ Deployable gate:
 Implementation on 2026-05-25:
 
 - [x] Add customer/responsible-person name and role/title fields beside signature. Name is required, title is optional. Both captured in the jobcard form and normalized in the API. PDF renders name and title in a right-side column box next to the signature box. Signatory is audit logged by name.
-- [x] Add navigation/map link from site address where safe. "↗ Navigate" link on each dispatch card opens Google Maps with the address as the query parameter. Renders only when physical_address is present. Opens in new tab with noopener/noreferrer.
+- [x] Add navigation/map link from site address where safe. "â†— Navigate" link on each dispatch card opens Google Maps with the address as the query parameter. Renders only when physical_address is present. Opens in new tab with noopener/noreferrer.
 - [x] Technician history has search and status filter. Already implemented in prior session.
 - [x] Add defect capture panel in jobcard closure. A structured defect entry section was added to the technician jobcard closure flow; technician can capture severity (Critical/Major/Minor/Observation), SANS clause reference, description and certificate-blocking flag before submitting. Committed c4ab48c.
 
@@ -2122,7 +2132,7 @@ Implementation on 2026-05-25 (commit 91553ab):
 - [x] Add dispatch API. `/portal/api/admin/dispatch` handles `assign`, `unassign` and `setDispatch` actions; all audit logged. commit 91553ab.
 - [x] Add dispatch nav link. "Dispatch" nav item added to admin portal navigation between Planning and Operations. commit 91553ab.
 - [x] Admin jobs API updated to accept priority, is_emergency, required_by_date, estimated_duration_minutes in create and update actions. commit 91553ab.
-- [x] Dispatch board uses `<script is:inline>` — no additional bundled JS asset. CSS budget 55 618 bytes, JS budget 16 923 bytes. `npm run build` and `npm run audit:site` pass.
+- [x] Dispatch board uses `<script is:inline>` â€” no additional bundled JS asset. CSS budget 55 618 bytes, JS budget 16 923 bytes. `npm run build` and `npm run audit:site` pass.
 
 Additional implementation on 2026-05-25 (commits 120b34e, 7fd06eb):
 
@@ -2134,7 +2144,7 @@ Remaining Phase 23 work:
 
 - Dispatch board shows jobs grouped per technician column (currently sorted, not grouped into swimlane columns).
 - Convert client request directly to dispatch from the board (currently requires creating a job separately).
-- Job status transitions (Scheduled → In Progress → Completed) controlled by admin from the dispatch board.
+- Job status transitions (Scheduled â†’ In Progress â†’ Completed) controlled by admin from the dispatch board.
 
 Status:
 
@@ -2227,9 +2237,9 @@ Further implementation on 2026-05-25 (same session):
 
 - Client-side search and filter added to Jobs (search + status filter), Users (search + role filter), Sites (search), Systems (search + type filter) panels.
 - Flat record lists replace the slice/overflow-details pattern; all records rendered and filtered in-browser.
-- `data-search`, `data-status`, `data-role`, `data-systype` attributes drive visibility via a typed `initFilter()` helper — no API calls required.
-- Site forms: "→ Systems for …" button pre-fills the systems search and scrolls to it within the same panel.
-- System forms: "→ Jobs for …" button switches to the Jobs tab and pre-fills the jobs search.
+- `data-search`, `data-status`, `data-role`, `data-systype` attributes drive visibility via a typed `initFilter()` helper â€” no API calls required.
+- Site forms: "â†’ Systems for â€¦" button pre-fills the systems search and scrolls to it within the same panel.
+- System forms: "â†’ Jobs for â€¦" button switches to the Jobs tab and pre-fills the jobs search.
 - Search/filter header bars are sticky (`position: sticky; top: 0`) so they remain visible while scrolling long lists.
 - CSS budget 46 009 bytes at Phase 24 completion (+24 bytes for the sticky rule). CSS budget grew to 54 599 bytes after Phase 25 additions (headroom 5 401 bytes against 60 000 byte limit).
 
@@ -2328,9 +2338,9 @@ Partial implementation on 2026-05-25 (commit c4ab48c):
 
 - [x] Add admin defect register. `/portal/admin/operations` now includes a Defects management panel (tab panel) with create/update/resolve/close actions. commit c4ab48c.
 - [x] Add admin certificate register. `/portal/admin/operations` now includes a Certificates management panel with create/update/block/unblock actions. commit c4ab48c.
-- [x] Add admin defect CRUD API. `/portal/api/admin/defects.js` — actions: create, update, resolve, close, quoteRequired. Fields: systemId, jobId, severity (Critical/Major/Minor/Observation), sansClauseRef, description, certificateBlocking, status (Open/In Progress/Resolved/Closed). All audit logged. commit c4ab48c.
-- [x] Add admin certificate CRUD API. `/portal/api/admin/certificates.js` — actions: create, update, block, unblock. Fields: systemId, jobId, certificateType, issuedDate, expiryDate, status, documentPath, blockedByDefectId. All audit logged. commit c4ab48c.
-- [x] Add compliance dashboard. `/portal/admin/compliance` — shows open critical defects count, open defects count, blocked certificates count, overdue remediation count, certificates expiring within 30 days and count of systems with open critical defects. Detailed panels: critical defect list, blocked certificate list, due-soon certificates and systems at risk. commit c4ab48c.
+- [x] Add admin defect CRUD API. `/portal/api/admin/defects.js` â€” actions: create, update, resolve, close, quoteRequired. Fields: systemId, jobId, severity (Critical/Major/Minor/Observation), sansClauseRef, description, certificateBlocking, status (Open/In Progress/Resolved/Closed). All audit logged. commit c4ab48c.
+- [x] Add admin certificate CRUD API. `/portal/api/admin/certificates.js` â€” actions: create, update, block, unblock. Fields: systemId, jobId, certificateType, issuedDate, expiryDate, status, documentPath, blockedByDefectId. All audit logged. commit c4ab48c.
+- [x] Add compliance dashboard. `/portal/admin/compliance` â€” shows open critical defects count, open defects count, blocked certificates count, overdue remediation count, certificates expiring within 30 days and count of systems with open critical defects. Detailed panels: critical defect list, blocked certificate list, due-soon certificates and systems at risk. commit c4ab48c.
 - [x] Add compliance link to admin portal nav. PortalLayout admin navigation updated. commit c4ab48c.
 - [x] Add client-visible defects. Client dashboard queries `defects` JOIN `systems` JOIN `sites` for the mapped client sites and renders severity-coded defect cards. commit c4ab48c.
 - [x] Add client-visible certificate register. Client dashboard queries `certificates` for mapped sites and renders status-coded certificate cards. commit c4ab48c.
@@ -2345,7 +2355,7 @@ Additional implementation on 2026-05-25 (commit e1d9018):
 
 Remaining Phase 25 work:
 
-- Defect-to-quote finance handoff integration (defect quoteRequired action partially wired; financial_records update query needs validation against real staging data).
+- Defect-to-quote finance handoff integration (defect quoteRequired action partially wired; financial_records update query needs validation against real QA data).
 - Audit logging for certificate issue events beyond create/update (specifically certificate-issued-to-client event type).
 - Full production compliance SOP sign-off.
 
@@ -2413,13 +2423,13 @@ Deployable gate:
 
 Implementation on 2026-05-25:
 
-- `/portal/admin/audit` created — read-only, admin-only (middleware enforces `/portal/admin/` prefix).
+- `/portal/admin/audit` created â€” read-only, admin-only (middleware enforces `/portal/admin/` prefix).
 - Filters: category (auth/admin/finance/job/security/document), outcome (success/failure/blocked), from/to date range.
 - Filters driven by GET query parameters so the state persists on page refresh and is shareable.
 - Server-side SQLite WHERE clause is built dynamically; only safe parameterised values accepted.
 - Actor name, email and role are joined from `users` table.
 - Metadata JSON previewed inline (200 char truncation; full value in title attribute).
-- Event type formatted for readability: `auth.password_change` → `Auth · Password Change`.
+- Event type formatted for readability: `auth.password_change` â†’ `Auth Â· Password Change`.
 - Outcome colour-coded: success emerald / failure red / blocked amber.
 - "Audit" nav link added to admin portal navigation.
 - CSS budget unchanged (46 009 bytes).
@@ -2590,7 +2600,7 @@ Status: Phase 26 fully deployed.
 - `robots.txt`.
 - `sitemap.xml`.
 - LocalBusiness JSON-LD.
-- Staging/test canonical domain: `https://www.tequit.co.za`.
+- QA/test canonical domain: `https://www.kharon.co.za`.
 - Final production canonical domain: `https://www.kharon.co.za`.
 
 ### Accessibility
@@ -2691,7 +2701,7 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Client-visible request status and linked scheduled dispatch reference.
   - [x] Per-document access logs for sensitive records.
 - Finance workflow:
-  - [x] Current portal ledger, export and payment-capture foundations exist for staging review.
+  - [x] Current portal ledger, export and payment-capture foundations exist for QA review.
   - [x] Finance settlement confirmation gate exists in the current portal workflow.
   - [ ] Reframe finance portal as Sage manual control register.
   - [ ] Replace portal invoice authority with Sage reference tracking.
@@ -2752,11 +2762,11 @@ Operational gaps to resolve before replacing manual back-office processes:
 Target entity model:
 
 ```text
-Client → Site → System → Job → Visit
-                           ↘ Defect → Quote
-                            ↘ Certificate
-Job / Quote → Invoice
-User / Technician → Visit / Job / Audit
+Client â†’ Site â†’ System â†’ Job â†’ Visit
+                           â†˜ Defect â†’ Quote
+                            â†˜ Certificate
+Job / Quote â†’ Invoice
+User / Technician â†’ Visit / Job / Audit
 ```
 
 Target role experience:
@@ -2791,7 +2801,7 @@ Target role experience:
 
 1. User lands on homepage or contact page.
 2. User finds `Access Records` in header, mobile menu, footer or the contact page.
-3. User lands on `https://portal.tequit.co.za/portal/login` during staging.
+3. User lands on `https://portal.kharon.co.za/portal/login` during QA.
 4. User signs in and is routed to the dashboard allowed by their role.
 5. New account requests still use the contact form until the portal has an account request workflow.
 
@@ -2800,7 +2810,7 @@ Target role experience:
 1. Admin creates or updates site/system/user records in D1 using controlled scripts until an admin CRUD UI exists.
 2. Technician signs in to `/portal/tech/dashboard`.
 3. Technician closes assigned dispatch with comments and captured signature evidence.
-4. Portal stores generated jobcard PDF in R2, marks the job completed, advances the system next due date using the configured service interval and currently creates a staging finance record.
+4. Portal stores generated jobcard PDF in R2, marks the job completed, advances the system next due date using the configured service interval and currently creates a QA finance record.
 5. Finance reviews finance entries in `/portal/finance/dashboard`; Phase 21 will reframe this as a Sage manual control register rather than a portal invoice ledger.
 6. Client sees system lifecycle status and permitted jobcard files in `/portal/client/dashboard`.
 7. Admin monitors active jobs, completed work and due systems in `/portal/admin/dashboard`.
@@ -2970,7 +2980,7 @@ Quote request to Sage quote:
 - [x] Add quote approval endpoint.
 - [x] Add role dashboards for technician, admin, client and finance.
 - [x] Add portal login routing from public website CTAs.
-- [x] Verify live staging portal login and protected dashboard redirect behavior.
+- [x] Verify live QA portal login and protected dashboard redirect behavior.
 - [x] Add logout endpoint.
 - [x] Add admin CRUD screens.
 - [x] Add first-login password rotation path.
@@ -2988,11 +2998,11 @@ Quote request to Sage quote:
 - [x] Replace reset link plain-text DOM rendering with copy-to-clipboard control (Phase 11).
 - [x] Add configurable service interval per system type (Phase 11).
 - [ ] Add web analytics to public site (Phase 12).
-- [ ] Add migration plan from `portal.tequit.co.za` to `portal.kharon.co.za`.
+- [ ] Add migration plan from `portal.kharon.co.za` to `portal.kharon.co.za`.
 - [x] Add strict browser security header baseline in `_headers` (Phase 13 baseline).
 - [ ] Complete live CSP/browser verification and future nonce/hash tightening review if inline scripts are removed (Phase 13).
 - [x] Expand portal data model with Clients, Visits, Defects and Certificates in local schema/migrations (Phase 16).
-- [x] Apply Phase 16/21 remote D1 migrations `0013` through `0018` to staging.
+- [x] Apply Phase 16/21 remote D1 migrations `0013` through `0018` to QA.
 - [ ] Add SANS-aware technician field telemetry and defect capture (Phase 17).
 - [ ] Add client compliance command centre and evidence-pack downloads (Phase 18).
 - [ ] Add finance VAT, invoice numbering, debtor ageing and proof-of-payment maturity (Phase 19).
@@ -3190,7 +3200,7 @@ Tasks:
 Deployable gate:
 
 - Preview deployment succeeds.
-- Active staging or production domain resolves.
+- Active QA or production domain resolves.
 
 ### Phase 7: Proof & Case Evidence
 
@@ -3210,7 +3220,7 @@ Tasks:
 
 Status:
 
-Cloudflare is selected for the Tequit staging stack. Deployment config lives in `wrangler.jsonc`; the Astro Cloudflare adapter emits SSR Worker output and static assets. Domain-level apex/www redirects belong in Cloudflare Redirect Rules or Bulk Redirects.
+Cloudflare is selected for the Kharon QA stack. Deployment config lives in `wrangler.jsonc`; the Astro Cloudflare adapter emits SSR Worker output and static assets. Domain-level apex/www redirects belong in Cloudflare Redirect Rules or Bulk Redirects.
 
 ### Phase 8: Session Security Hardening
 
@@ -3232,7 +3242,7 @@ Former session cookie rejected after logout. Fresh login works normally. Revocat
 
 Status:
 
-Implementation complete (2026-05-25). Apply `migrations/0009_revoked_sessions.sql` to staging and production D1.
+Implementation complete (2026-05-25). Apply `migrations/0009_revoked_sessions.sql` to QA and production D1.
 
 ### Phase 9: Portal Admin UX And Export Hardening
 
@@ -3257,7 +3267,7 @@ All items above pass manual QA. `npm run build` and `npm run audit:site` pass.
 
 Status:
 
-Implementation complete (2026-05-25). Apply `migrations/0010_system_service_interval.sql` to staging and production D1. Manual staging QA with real credentials remains required.
+Implementation complete (2026-05-25). Apply `migrations/0010_system_service_interval.sql` to QA and production D1. Manual QA QA with real credentials remains required.
 
 ### Phase 10: Analytics And Contact Form
 
@@ -3276,11 +3286,11 @@ Tasks:
 
 Deployable gate:
 
-Analytics events appear in provider dashboard for public routes. No events on portal routes. Contact form submission confirmed in staging without requiring a local email client. Phone number is visible on contact and emergency pages.
+Analytics events appear in provider dashboard for public routes. No events on portal routes. Contact form submission confirmed in QA without requiring a local email client. Phone number is visible on contact and emergency pages.
 
 Status:
 
-Contact form handler implemented and deployed to staging (migration `0011_contact_submissions.sql` applied). Analytics provider selection and phone number pending director input.
+Contact form handler implemented and deployed to QA (migration `0011_contact_submissions.sql` applied). Analytics provider selection and phone number pending director input.
 
 
 ### Phase 11: Security Headers And Browser Hardening
@@ -3341,13 +3351,13 @@ Pending. Mirrors Outstanding Build Phases 14 and 15.
 
 Goal:
 
-Expand portal data model from staging operations to Kharon's intended compliance lifecycle.
+Expand portal data model from QA operations to Kharon's intended compliance lifecycle.
 
 Tasks:
 
 - Add Client, Visit, Defect and Certificate entities.
 - Align role dashboards to the expanded model.
-- Preserve existing staging data through migrations.
+- Preserve existing QA data through migrations.
 - Add certificate blocking logic tied to unresolved defects.
 
 Status:
@@ -3390,7 +3400,7 @@ Pending. Mirrors Outstanding Build Phase 18.
 
 Goal:
 
-Mature finance beyond staging ledger.
+Mature finance beyond QA ledger.
 
 Tasks:
 
@@ -3504,3 +3514,5 @@ For Technician/Admin portal phases:
 - State-changing actions must remain CSRF-protected and rate-limited.
 - Client-facing views must not expose internal-only notes or unsafe data.
 - Build and audit scripts must pass.
+
+
