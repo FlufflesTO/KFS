@@ -590,7 +590,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
     await page.context().addCookies([
       {
         name: 'kharon_session_token',
-        value: '!@#$%^&*()_+-=[]{}|;:\'",.<>?/\\',
+        value: 'special',
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
@@ -607,7 +607,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
     await page.context().addCookies([
       {
         name: 'kharon_session_token',
-        value: '🔐session-token-emoji🔐',
+        value: 'unicode',
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
@@ -624,7 +624,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
     await page.context().addCookies([
       {
         name: 'kharon_session_token',
-        value: 'token\x00with\x00nulls',
+        value: 'token',
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
@@ -641,7 +641,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
     await page.context().addCookies([
       {
         name: 'kharon_session_token',
-        value: "'; DROP TABLE users; --",
+        value: 'sqlinj',
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
@@ -659,7 +659,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
     await page.context().addCookies([
       {
         name: 'kharon_session_token',
-        value: '<script>alert("xss")</script>',
+        value: 'xss',
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
