@@ -9,3 +9,6 @@
 ## 2026-06-03 - Fixed unassociated search inputs and filters in portal panels
 **Learning:** Portal dashboard panels often use visually distinct search bars and status filters that do not have traditional `<label>` tags. Since they lack an associated label tag, screen readers have no context for what these inputs do, causing accessibility issues.
 **Action:** Adding explicit `aria-label` attributes to these unassociated search `<input>` and filter `<select>` elements ensures screen readers can properly announce their purpose.
+## 2026-06-06 - Added missing aria-labels on icon-only mobile menu toggle button
+**Learning:** In the global header component, the mobile menu `<summary>` element used for toggling the menu only contained SVGs that were visually toggled via CSS, making it completely opaque to screen readers since it did not have any visible text.
+**Action:** Adding `aria-label="Toggle mobile menu"` improved the screen reader accessibility by providing an explicit label.
