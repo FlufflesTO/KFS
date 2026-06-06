@@ -132,32 +132,32 @@ try {
 
       <!-- Stat cards -->
       <div class="grid gap-4 sm:grid-cols-3 xl:grid-cols-6">
-        <article class={`border p-4 ${stats.openCriticalDefects > 0 ? "border-kharon-red bg-red-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
+        <article class={`border p-4 ${stats.openCriticalDefects > 0 ? "border-kharon-red/40 bg-kharon-red/10" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
           <p class={`text-xs font-bold uppercase ${stats.openCriticalDefects > 0 ? "text-kharon-red" : "text-white/70"}`}>Critical defects</p>
           <p class="mt-2 text-2xl font-bold">{stats.openCriticalDefects}</p>
           <a href="#critical-defects" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">View -></a>
         </article>
-        <article class={`border p-4 ${stats.openDefects > 0 ? "border-amber-300 bg-amber-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
-          <p class={`text-xs font-bold uppercase ${stats.openDefects > 0 ? "text-amber-700" : "text-white/70"}`}>Open defects</p>
+        <article class={`border p-4 ${stats.openDefects > 0 ? "border-kharon-amber/40 bg-kharon-amber/10" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.openDefects > 0 ? "text-kharon-amber" : "text-white/70"}`}>Open defects</p>
           <p class="mt-2 text-2xl font-bold">{stats.openDefects}</p>
           <a href="/portal/admin/dashboard#defects" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">Manage -></a>
         </article>
-        <article class={`border p-4 ${stats.blockedCertificates > 0 ? "border-amber-300 bg-amber-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
-          <p class={`text-xs font-bold uppercase ${stats.blockedCertificates > 0 ? "text-amber-700" : "text-white/70"}`}>Blocked certs</p>
+        <article class={`border p-4 ${stats.blockedCertificates > 0 ? "border-kharon-amber/40 bg-kharon-amber/10" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.blockedCertificates > 0 ? "text-kharon-amber" : "text-white/70"}`}>Blocked certs</p>
           <p class="mt-2 text-2xl font-bold">{stats.blockedCertificates}</p>
           <a href="#blocked-certs" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">View -></a>
         </article>
-        <article class={`border p-4 ${stats.overdueRemediation > 0 ? "border-red-300 bg-red-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
+        <article class={`border p-4 ${stats.overdueRemediation > 0 ? "border-kharon-red/40 bg-kharon-red/10" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
           <p class={`text-xs font-bold uppercase ${stats.overdueRemediation > 0 ? "text-kharon-red" : "text-white/70"}`}>Overdue remediation</p>
           <p class="mt-2 text-2xl font-bold">{stats.overdueRemediation}</p>
           <p class="mt-1 text-xs text-white/70">>30 days open</p>
         </article>
-        <article class={`border p-4 ${stats.dueSoonCertificates > 0 ? "border-blue-300 bg-blue-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
-          <p class={`text-xs font-bold uppercase ${stats.dueSoonCertificates > 0 ? "text-blue-700" : "text-white/70"}`}>Certs expiring</p>
+        <article class={`border p-4 ${stats.dueSoonCertificates > 0 ? "border-kharon-cyan/40 bg-kharon-cyan/10" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
+          <p class={`text-xs font-bold uppercase ${stats.dueSoonCertificates > 0 ? "text-kharon-cyan" : "text-white/70"}`}>Certs expiring</p>
           <p class="mt-2 text-2xl font-bold">{stats.dueSoonCertificates}</p>
           <p class="mt-1 text-xs text-white/70">within 30 days</p>
         </article>
-        <article class={`border p-4 ${stats.systemsAtRisk > 0 ? "border-kharon-red bg-red-50" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
+        <article class={`border p-4 ${stats.systemsAtRisk > 0 ? "border-kharon-red/40 bg-kharon-red/10" : "border-kharon-purple/20 bg-kharon-charcoal"}`}>
           <p class={`text-xs font-bold uppercase ${stats.systemsAtRisk > 0 ? "text-kharon-red" : "text-white/70"}`}>Systems at risk</p>
           <p class="mt-2 text-2xl font-bold">{stats.systemsAtRisk}</p>
           <a href="#systems-risk" class="mt-2 block text-xs font-semibold text-kharon-purple hover:underline">View -></a>
@@ -190,15 +190,15 @@ try {
         <div class="mt-4 grid gap-3">
           {blockedCertificates.length === 0 && <p class="text-sm text-white/70">No certificates are blocked by open defects.</p>}
           {blockedCertificates.map((item) => (
-            <article class="border-l-4 border-amber-400 bg-kharon-charcoal p-4">
+            <article class="border-l-4 border-kharon-amber bg-kharon-charcoal p-4">
               <div class="flex flex-wrap items-center gap-2">
-                <span class="rounded bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">Blocked</span>
+                <span class="rounded bg-kharon-amber/20 border border-kharon-amber/40 px-2 py-0.5 text-xs font-bold text-kharon-amber">Blocked</span>
                 <span class="font-semibold">{item.owner_company_name}</span>
                 <span class="text-sm text-white/70">{item.certificate_type}</span>
                 <span class="text-sm text-white/70">{item.system_type} / {item.coverage_area}</span>
               </div>
               {item.blocking_severity && (
-                <p class="mt-2 text-sm text-amber-800">
+                <p class="mt-2 text-sm text-kharon-amber">
                   Blocked by <span class="font-bold">{item.blocking_severity}</span> defect: {item.blocking_description}
                 </p>
               )}
@@ -213,9 +213,9 @@ try {
         <div class="mt-4 grid gap-3">
           {dueSoonCertificates.length === 0 && <p class="text-sm text-white/70">No certificates are expiring soon.</p>}
           {dueSoonCertificates.map((item) => (
-            <article class="border-l-4 border-blue-400 bg-kharon-charcoal p-4">
+            <article class="border-l-4 border-kharon-cyan bg-kharon-charcoal p-4">
               <div class="flex flex-wrap items-center gap-2">
-                <span class="rounded bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800">Expiring</span>
+                <span class="rounded bg-kharon-cyan/20 border border-kharon-cyan/40 px-2 py-0.5 text-xs font-bold text-kharon-cyan">Expiring</span>
                 <span class="font-semibold">{item.owner_company_name}</span>
                 <span class="text-sm text-white/70">{item.certificate_type}</span>
                 <span class="text-sm text-white/70">{item.system_type} / {item.coverage_area}</span>

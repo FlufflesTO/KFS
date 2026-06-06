@@ -62,20 +62,20 @@ const { certificates, systems, today } = Astro.props;
           </div>
           <div class="flex items-center gap-2">
             <span class={`rounded px-2 py-1 text-xs font-bold ${
-              item.status === "Valid"   ? "bg-emerald-100 text-emerald-800" :
-              item.status === "Blocked" ? "bg-amber-100 text-amber-800" :
-              item.status === "Revoked" ? "bg-red-100 text-red-800" :
+              item.status === "Valid"   ? "bg-kharon-green/20 border border-kharon-green/40 text-kharon-green" :
+              item.status === "Blocked" ? "bg-kharon-amber/20 border border-kharon-amber/40 text-kharon-amber" :
+              item.status === "Revoked" ? "bg-kharon-red/20 border border-kharon-red/40 text-kharon-red" :
                                           "bg-kharon-grey/20 text-white/70"
             }`}>{item.status}</span>
             {item.blocking_severity && (
-              <span class="rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">
+              <span class="rounded border border-kharon-amber/40 bg-kharon-amber/10 px-2 py-1 text-xs font-bold text-kharon-amber">
                 Blocked: {item.blocking_severity}
               </span>
             )}
           </div>
           <div class="flex flex-wrap gap-2">
             {item.status === "Valid" && (
-              <button type="button" class="revoke-cert rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-900" data-id={item.id}>Revoke</button>
+              <button type="button" class="revoke-cert rounded-md border border-kharon-red/40 bg-kharon-red/10 px-3 py-2 text-xs font-semibold text-kharon-red" data-id={item.id}>Revoke</button>
             )}
             {item.status === "Valid" && (
               <button type="button" class="expire-cert rounded-md border border-kharon-grey px-3 py-2 text-xs font-semibold text-white/70" data-id={item.id}>Expire</button>

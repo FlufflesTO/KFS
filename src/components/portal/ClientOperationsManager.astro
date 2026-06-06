@@ -46,7 +46,7 @@ const nonce = Astro.locals.nonce;
       
       const header = document.getElementById('toast-header');
       header.className = `px-4 py-2 text-xs font-bold uppercase tracking-widest text-white flex justify-between items-center ${
-        type === 'error' ? 'bg-gradient-to-r from-kharon-red to-[#a02824]' :
+        type === 'error' ? 'bg-gradient-to-r from-kharon-red to-kharon-red/80' :
         type === 'warning' ? 'bg-gradient-to-r from-kharon-amber to-orange-600' :
         'bg-gradient-to-r from-kharon-purple to-kharon-blue'
       }`;
@@ -75,6 +75,9 @@ const nonce = Astro.locals.nonce;
     window.showOperationsToast = showToast;
 
     // 2. Form UI Debouncing
+    // Store original button children as a WeakMap keyed by button element
+    const btnOriginalChildren = new WeakMap();
+
     document.querySelectorAll('form').forEach(form => {
       form.addEventListener('submit', (e) => {
         const submitBtn = form.querySelector('button[type="submit"]');
@@ -83,14 +86,18 @@ const nonce = Astro.locals.nonce;
             e.preventDefault();
             return;
           }
-          submitBtn.dataset.originalText = submitBtn.innerHTML;
+          // Store original children in a DocumentFragment (no innerHTML)
+          const fragment = document.createDocumentFragment();
+          while (submitBtn.firstChild) {
+            fragment.appendChild(submitBtn.firstChild);
+          }
+          btnOriginalChildren.set(submitBtn, fragment);
           submitBtn.dataset.submitting = 'true';
           submitBtn.disabled = true;
-          submitBtn.textContent = '';
           const submitSpan = document.createElement('span');
           submitSpan.className = 'animate-pulse';
           submitSpan.textContent = 'Submitting...';
-          submitBtn.appendChild(submitSpan);
+          submitBtn.replaceChildren(submitSpan);
           submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
 
           // Safety reset after 15s in case of silent failure
@@ -107,8 +114,11 @@ const nonce = Astro.locals.nonce;
       if (!btn) return;
       btn.dataset.submitting = 'false';
       btn.disabled = false;
-      btn.textContent = '';
-      btn.innerHTML = btn.dataset.originalText;
+      const original = btnOriginalChildren.get(btn);
+      if (original) {
+        btn.replaceChildren(original);
+        btnOriginalChildren.delete(btn);
+      }
       btn.classList.remove('opacity-80', 'cursor-not-allowed');
     };
 
@@ -164,7 +174,7 @@ const nonce = Astro.locals.nonce;
       btn.onclick = () => {
         // Save forms to IndexedDB
         saveFormsToIndexedDB();
-        btn.textContent = "Drafts Saved ✓";
+        btn.textContent = "Drafts Saved";
         btn.disabled = true;
         btn.classList.replace('bg-kharon-amber/20', 'bg-kharon-green/20');
         btn.classList.replace('border-kharon-amber', 'border-kharon-green');
