@@ -274,7 +274,7 @@ function priorityBadgeClass(priority: string): string {
     </div>
   </section>
 
-  <script is:inline>
+  <script is:inline nonce={Astro.locals.nonce}>
     // Tab switching interactivity
     (function() {
       const detailsBtn = document.getElementById("tab-details-btn");

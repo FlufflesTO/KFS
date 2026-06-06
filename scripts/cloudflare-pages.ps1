@@ -1,3 +1,8 @@
+# Project Sentinel - Cloudflare Pages Deployment Utility
+# Purpose: Manages project creation, login, domains, and environment deployment routing for Cloudflare Pages.
+# Dependencies: wrangler, Node.js
+# Structural Role: DevOps deployment script helper for environment sync.
+
 param(
   [ValidateSet("login", "whoami", "list", "create", "domains", "retry-portal", "check-portal", "preview", "production")]
   [string] $Action = "whoami"
@@ -7,10 +12,10 @@ $ErrorActionPreference = "Stop"
 
 Set-Location -LiteralPath (Resolve-Path "$PSScriptRoot\..")
 
-$ProjectName = "kfs-website"
-$PortalProjectName = "kfs-portal"
+$ProjectName = "kfs-portal"
+$WebsiteProjectName = "kfs-website"
 $PortalDomain = "portal.tequit.co.za"
-$AccountId = if ($env:CLOUDFLARE_ACCOUNT_ID) { $env:CLOUDFLARE_ACCOUNT_ID } else { "75012acd08c1e7bdccb82f3ea3fabdb8" }
+$AccountId = if ($env:CLOUDFLARE_ACCOUNT_ID) { $env:CLOUDFLARE_ACCOUNT_ID } else { "1b6ad8d0efcc066f4689065f5f24f5f9" }
 
 if ($env:CLOUDFLARE_API_TOKEN) {
   Remove-Item Env:CLOUDFLARE_API_TOKEN -ErrorAction SilentlyContinue
@@ -81,9 +86,7 @@ switch ($Action) {
     exit $LASTEXITCODE
   }
   "create" {
-    # Create both projects
     npx wrangler pages project create $ProjectName --production-branch main --compatibility-date 2026-05-18
-    npx wrangler pages project create $PortalProjectName --production-branch main --compatibility-date 2026-05-18
     exit $LASTEXITCODE
   }
   "domains" {
@@ -91,7 +94,7 @@ switch ($Action) {
     exit 0
   }
   "retry-portal" {
-    $path = "/accounts/$AccountId/pages/projects/$PortalProjectName/domains/$PortalDomain"
+    $path = "/accounts/$AccountId/pages/projects/$ProjectName/domains/$PortalDomain"
     Invoke-CloudflareApi -Method Patch -Path $path | Out-Null
     Show-PagesDomains
     exit 0
@@ -104,23 +107,24 @@ switch ($Action) {
   "preview" {
     powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" staging
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    # Try to create project if it doesn't exist
+    $oldPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    npx wrangler pages project create $ProjectName --production-branch main --compatibility-date 2026-05-18 2>$null | Out-Null
+    $ErrorActionPreference = $oldPreference
     # Remove wrangler deploy config if created to prevent deployment redirection errors
     Remove-Item -Path "$PSScriptRoot\..\.wrangler\deploy" -Recurse -Force -ErrorAction SilentlyContinue
     npx wrangler pages deploy dist --project-name $ProjectName --branch preview
     exit $LASTEXITCODE
   }
   "production" {
-    powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" staging
+    powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-site.ps1" production
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     # Remove wrangler deploy config if created to prevent deployment redirection errors
     Remove-Item -Path "$PSScriptRoot\..\.wrangler\deploy" -Recurse -Force -ErrorAction SilentlyContinue
-    
-    Write-Host "Deploying to Website Project: $ProjectName..."
-    npx wrangler pages deploy dist --project-name $ProjectName --branch main
+    npx wrangler deploy --config wrangler.website.jsonc
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    
-    Write-Host "Deploying to Portal Project: $PortalProjectName..."
-    npx wrangler pages deploy dist --project-name $PortalProjectName --branch main
+    npx wrangler deploy --config wrangler.portal.jsonc
     exit $LASTEXITCODE
   }
 }

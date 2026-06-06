@@ -19,7 +19,8 @@ const config: Linter.Config[] = [
       "node_modules/**/*",
       "public/**/*",
       "scratch/**/*",
-      "test-auth.js"
+      "test-auth.js",
+      ".claude/**/*"
     ]
   },
   {

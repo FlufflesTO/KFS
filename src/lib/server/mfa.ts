@@ -1,12 +1,11 @@
 /**
  * Project Sentinel - MFA Cryptography & TOTP Services
  * Purpose: Generates, encrypts, decrypts, and verifies TOTP MFA secrets and codes
- * Dependencies: cloudflare:workers
+ * Dependencies: ./bindings-auth.ts
  * Structural Role: MFA cryptography and validation layer
  */
 
-// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
-import { env } from "cloudflare:workers";
+import { resolveBindingsForAuth } from "./bindings-auth.js";
 
 import QRCode from "qrcode";
 const encoder = new TextEncoder();
@@ -59,8 +58,8 @@ function base64UrlDecode(input: string): Uint8Array {
 }
 
 function getMfaSecret(): string {
-  // @ts-ignore
-  const secret = String(env.MFA_SECRET || env.ENCRYPTION_SECRET || "");
+  const bindings = resolveBindingsForAuth();
+  const secret = String(bindings.MFA_SECRET || bindings.ENCRYPTION_SECRET || "");
   if (secret.length < 32) {
     throw new Error("MFA_SECRET or ENCRYPTION_SECRET must be configured with at least 32 characters.");
   }

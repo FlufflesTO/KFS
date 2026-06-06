@@ -2,7 +2,7 @@
 // All DbX types mirror D1 column names exactly (snake_case).
 // camelCase types are for session tokens and API payloads.
 
-export type UserRole = "tech" | "admin" | "client" | "finance";
+export type UserRole = "tech" | "admin" | "client" | "finance" | "manager";
 
 // ─── Database row types ─────────────────────────────────────────────────────
 
@@ -268,4 +268,34 @@ export interface CurrentUser {
   mfaRequired: boolean;
   mfaEnabled: boolean;
   expiresAt: string;
+}
+
+export type StaffEmploymentType = "Full-time" | "Part-time" | "Contractor";
+export type StaffStatus = "Active" | "Inactive" | "Terminated";
+export type StaffFileType = "ID Document" | "Contract" | "Certificate" | "Other";
+
+export interface DbStaffMember {
+  id: string;
+  full_name: string;
+  role_title: string;
+  email: string | null;
+  phone: string | null;
+  start_date: string | null;
+  employment_type: StaffEmploymentType;
+  status: StaffStatus;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface DbStaffFile {
+  id: string;
+  staff_member_id: string;
+  file_name: string;
+  file_type: StaffFileType;
+  r2_key: string;
+  uploaded_by: string;
+  uploaded_at: string;
+  deleted_at: string | null;
 }

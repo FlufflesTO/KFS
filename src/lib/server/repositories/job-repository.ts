@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Job Repository (History)
+ * Purpose: Provides data access for job history records with soft-delete filtering
+ * Dependencies: @cloudflare/workers-types
+ * Structural Role: Database Access Layer / Repository
+ */
+
 import type { D1Database } from "@cloudflare/workers-types";
 
 export interface JobHistoryRecord {
@@ -22,7 +29,7 @@ export class JobRepository {
          FROM jobs
          INNER JOIN systems ON systems.id = jobs.system_id
          INNER JOIN sites ON sites.id = systems.site_id
-         WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+         WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL
            AND jobs.status IN ('Completed', 'Invoiced')
          ORDER BY jobs.completed_at DESC
          LIMIT 200`
@@ -32,7 +39,7 @@ export class JobRepository {
          FROM jobs
          INNER JOIN systems ON systems.id = jobs.system_id
          INNER JOIN sites ON sites.id = systems.site_id
-         WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+         WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL
            AND jobs.assigned_technician_id = ?1
            AND jobs.status IN ('Completed', 'Invoiced')
          ORDER BY jobs.completed_at DESC

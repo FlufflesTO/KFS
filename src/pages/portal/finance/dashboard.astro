@@ -120,7 +120,7 @@ try {
   };
 
   // Get data for create form
-  const sitesResult = await db.prepare("SELECT id, owner_company_name FROM sites ORDER BY owner_company_name ASC").all();
+  const sitesResult = await db.prepare("SELECT id, owner_company_name FROM sites WHERE deleted_at IS NULL ORDER BY owner_company_name ASC").all();
   sites = sitesResult.results || [];
 
   const linkableJobsResult = await db.prepare(`
@@ -128,7 +128,7 @@ try {
            sys.system_type, sys.coverage_area, si.owner_company_name
     FROM jobs j
     JOIN systems sys ON sys.id = j.system_id AND sys.deleted_at IS NULL
-    JOIN sites si ON si.id = sys.site_id
+    JOIN sites si ON si.id = sys.site_id AND si.deleted_at IS NULL
     WHERE (j.status = 'Completed' OR j.status = 'In Progress') AND j.deleted_at IS NULL
     ORDER BY j.created_at DESC
   `).all();
@@ -144,7 +144,7 @@ try {
 
   {/* ── Page Header ── */}
   <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 rounded-xl border border-kharon-purple/10 mb-6 relative overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(124,93,194,0.09),transparent)]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(75,46,131,0.09),transparent)]"></div>
     <div class="relative z-10">
       <div class="flex items-center gap-3 mb-4">
         <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">

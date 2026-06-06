@@ -55,7 +55,7 @@ export const POST: APIRoute = async ({ request }) => {
                 password_reset_tokens.used_at, users.email, users.is_active
          FROM password_reset_tokens
          INNER JOIN users ON users.id = password_reset_tokens.user_id
-         WHERE password_reset_tokens.token_hash = ?1
+         WHERE password_reset_tokens.token_hash = ?1 AND users.deleted_at IS NULL
          LIMIT 1`
       )
       .bind(tokenHash)

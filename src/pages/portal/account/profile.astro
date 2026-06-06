@@ -1,7 +1,5 @@
 ---
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
-import { getDatabase } from "../../../lib/server/bindings";
-import { StaffRepository } from "../../../lib/server/db/staff-repository";
 
 export const prerender = false;
 
@@ -9,135 +7,35 @@ const { user } = Astro.locals;
 if (!user) {
   return Astro.redirect("/portal/login");
 }
-
-let profile = {
-  preferred_name: "",
-  phone: "",
-  job_title: "",
-  emergency_contact_name: "",
-  emergency_contact_phone: "",
-  notification_email: "",
-  portal_density: "comfortable"
-};
-let loadError = "";
-
-try {
-  const record = await new StaffRepository(getDatabase()).findProfile(user.id);
-  if (record) {
-    profile = {
-      preferred_name: record.preferred_name || "",
-      phone: record.phone || "",
-      job_title: record.job_title || "",
-      emergency_contact_name: record.emergency_contact_name || "",
-      emergency_contact_phone: record.emergency_contact_phone || "",
-      notification_email: record.notification_email || "",
-      portal_density: record.portal_density
-    };
-  }
-} catch (error) {
-  loadError = "Profile details could not be loaded.";
-}
 ---
 
 <PortalLayout title="Profile | Kharon Portal" active="profile" user={user}>
   <section class="grid gap-6">
     <header class="flex flex-col gap-2 border-b border-kharon-purple/15 pb-5">
-      <p class="text-xs font-black uppercase tracking-[0.18em] text-kharon-purple">Account profile</p>
-      <h1 class="text-2xl font-bold text-white">Personal Details</h1>
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-kharon-purple">Account</p>
+      <h1 class="text-2xl font-bold text-white">Profile</h1>
       <p class="max-w-3xl text-sm leading-6 text-kharon-light/70">
-        Maintain operational contact details, emergency contact information, and portal display density for your signed-in role.
+        Account details for your signed-in session. To update your password or MFA settings use the links below.
       </p>
     </header>
 
-    {loadError && (
-      <p class="rounded border border-kharon-red bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-red-200">{loadError}</p>
-    )}
-
-    <form id="profile-form" class="kharon-surface grid gap-5 p-5 md:grid-cols-2">
+    <div class="kharon-surface grid gap-5 p-5 md:grid-cols-2">
       <div class="grid gap-1.5">
-        <label for="profile-name" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Issued Name</label>
-        <input id="profile-name" class="kharon-field opacity-70" value={user.name} disabled />
+        <label class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Name</label>
+        <p class="kharon-field flex items-center opacity-80">{user.name}</p>
       </div>
-
       <div class="grid gap-1.5">
-        <label for="profile-role" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Portal Role</label>
-        <input id="profile-role" class="kharon-field opacity-70" value={user.role} disabled />
+        <label class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Email</label>
+        <p class="kharon-field flex items-center opacity-80">{user.email}</p>
       </div>
-
       <div class="grid gap-1.5">
-        <label for="preferredName" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Preferred Name</label>
-        <input id="preferredName" class="kharon-field" name="preferredName" value={profile.preferred_name} maxlength="80" autocomplete="nickname" />
+        <label class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Portal Role</label>
+        <p class="kharon-field flex items-center capitalize opacity-80">{user.role}</p>
       </div>
-
-      <div class="grid gap-1.5">
-        <label for="jobTitle" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Job Title</label>
-        <input id="jobTitle" class="kharon-field" name="jobTitle" value={profile.job_title} maxlength="120" autocomplete="organization-title" />
+      <div class="flex flex-col justify-end gap-3 md:col-span-2 sm:flex-row">
+        <a href="/portal/account/password" class="kharon-secondary-button min-h-[44px] px-5 py-2 text-xs text-center">Change Password</a>
+        <a href="/portal/account/mfa" class="kharon-command-button min-h-[44px] px-5 py-2 text-xs text-center">MFA Settings</a>
       </div>
-
-      <div class="grid gap-1.5">
-        <label for="phone" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Mobile Number</label>
-        <input id="phone" class="kharon-field" name="phone" value={profile.phone} maxlength="40" autocomplete="tel" />
-      </div>
-
-      <div class="grid gap-1.5">
-        <label for="notificationEmail" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Notification Email</label>
-        <input id="notificationEmail" class="kharon-field" name="notificationEmail" value={profile.notification_email} maxlength="160" autocomplete="email" />
-      </div>
-
-      <div class="grid gap-1.5">
-        <label for="emergencyContactName" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Emergency Contact</label>
-        <input id="emergencyContactName" class="kharon-field" name="emergencyContactName" value={profile.emergency_contact_name} maxlength="120" />
-      </div>
-
-      <div class="grid gap-1.5">
-        <label for="emergencyContactPhone" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Emergency Contact Number</label>
-        <input id="emergencyContactPhone" class="kharon-field" name="emergencyContactPhone" value={profile.emergency_contact_phone} maxlength="40" autocomplete="tel" />
-      </div>
-
-      <fieldset class="grid gap-2 md:col-span-2">
-        <legend class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Display Density</legend>
-        <div class="grid gap-2 sm:grid-cols-2">
-          <label class="flex min-h-[44px] items-center gap-3 rounded border border-kharon-purple/15 bg-kharon-black/30 px-3 py-2 text-sm font-semibold text-white">
-            <input type="radio" name="portalDensity" value="comfortable" checked={profile.portal_density !== "compact"} />
-            Comfortable
-          </label>
-          <label class="flex min-h-[44px] items-center gap-3 rounded border border-kharon-purple/15 bg-kharon-black/30 px-3 py-2 text-sm font-semibold text-white">
-            <input type="radio" name="portalDensity" value="compact" checked={profile.portal_density === "compact"} />
-            Compact
-          </label>
-        </div>
-      </fieldset>
-
-      <p id="profile-result" class="hidden rounded border px-4 py-3 text-sm font-semibold md:col-span-2" role="alert" aria-live="polite"></p>
-
-      <div class="flex justify-end md:col-span-2">
-        <button class="kharon-command-button min-h-[44px] px-5 py-2 text-xs" type="submit">Save Profile</button>
-      </div>
-    </form>
+    </div>
   </section>
-
-  <script>
-    const form = document.querySelector<HTMLFormElement>("#profile-form");
-    const result = document.querySelector<HTMLElement>("#profile-result");
-
-    function setProfileResult(message: string, ok: boolean) {
-      if (!result) return;
-      result.textContent = message;
-      result.className = ok
-        ? "rounded border border-kharon-green bg-kharon-green/10 px-4 py-3 text-sm font-semibold text-green-200 md:col-span-2"
-        : "rounded border border-kharon-red bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-red-200 md:col-span-2";
-    }
-
-    form?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const formData = new FormData(form);
-      const response = await window.kharonPortalFetch("/portal/api/profile", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(Object.fromEntries(formData.entries()))
-      });
-      const body = await response.json() as { ok?: boolean; message?: string } | null;
-      setProfileResult(body?.message || (response.ok ? "Profile saved." : "Profile could not be saved."), response.ok && Boolean(body?.ok));
-    });
-  </script>
 </PortalLayout>

@@ -1,13 +1,12 @@
 /**
  * Project Sentinel - Audit Event Logging
  * Purpose: Records security events, user actions, and system activities for compliance and monitoring
- * Dependencies: ./request.js
+ * Dependencies: ./request.js, ./bindings-auth.ts
  * Structural Role: Activity logging layer
  */
 
 import type { D1Database } from "@cloudflare/workers-types";
-// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
-import { env } from "cloudflare:workers";
+import { resolveBindingsForAuth } from "./bindings-auth.js";
 
 const textEncoder = new TextEncoder();
 
@@ -17,9 +16,9 @@ const textEncoder = new TextEncoder();
  */
 async function hashIpAddress(ip: string | null): Promise<string | null> {
   if (!ip) return null;
-  
-  // @ts-ignore - env might not be typed in standard TypeScript
-  const salt = String(env.AUDIT_IP_SALT || env.SESSION_SECRET || "default-audit-salt");
+
+  const bindings = resolveBindingsForAuth();
+  const salt = String(bindings.AUDIT_IP_SALT || bindings.SESSION_SECRET || "default-audit-salt");
   const combined = `${ip}|${salt}`;
   
   const hashBuffer = await crypto.subtle.digest("SHA-256", textEncoder.encode(combined));
@@ -46,7 +45,7 @@ export interface AuditEvent {
 export interface AuditError {
   entityType?: string;
   entityId?: string;
-  user?: any;
+  user?: AuditEvent["user"];
   metadata?: Record<string, unknown>;
 }
 
@@ -78,6 +77,13 @@ export async function auditEvent(db: D1Database, request: Request, event: AuditE
       event.metadata ? JSON.stringify(event.metadata) : null
     ).run();
   } catch (error) {
+    // For security-critical events, re-throw to prevent silent failures
+    const securityEvents = ["login", "logout", "password_change", "mfa_enrollment", "access_denied"];
+    if (securityEvents.includes(event.eventType)) {
+      console.error(`Security audit failed for event: ${event.eventType}`, error);
+      throw error; // Force failure on security audit to maintain compliance trail
+    }
+    // For non-security events, log but continue
     console.error("Audit event logging failed", error);
   }
 }

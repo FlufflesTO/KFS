@@ -2,7 +2,7 @@
 /**
  * Project Sentinel - Solutions Index
  * Purpose: Top-level routing page for all Kharon service offerings
- * Dependencies: BaseLayout, SolutionHero, SectionHeading, ServiceIcons, pageMeta, solutionLinks
+ * Dependencies: BaseLayout, SolutionHero, SectionHeading, ServiceIcons, RouteMatrix, AuthorityEvidence, Testimonials, pageMeta, solutionLinks
  * Structural Role: Solutions navigation hub
  */
 
@@ -10,13 +10,44 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import SolutionHero from "../components/sections/SolutionHero.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import ServiceIcons from "../components/sections/ServiceIcons.astro";
+import RouteMatrix from "../components/sections/RouteMatrix.astro";
+import AuthorityEvidence from "../components/sections/AuthorityEvidence.astro";
+import Testimonials from "../components/trust/Testimonials.astro";
 import { pageMeta, solutionLinks } from "../data/site.js";
+
+const solutionBullets: Record<string, string[]> = {
+  "Gas Suppression": [
+    "Clean-agent selection based on room type, asset density and discharge risk",
+    "Agent quantity calculations, cylinder weighing and room integrity testing",
+    "Scheduled 6-monthly inspection and annual discharge readiness review"
+  ],
+  "Fire Detection": [
+    "Addressable zone strategy with detector spacing to SANS 10139",
+    "Control panel programming, cause-and-effect logic and annunciation routing",
+    "Quarterly functional tests and annual full-system verification"
+  ],
+  "Integrated Security": [
+    "CCTV camera placement, coverage calculations and recording retention",
+    "Access control integration with fail-safe on fire alarm activation",
+    "Audit log requirements and commissioning handover documentation"
+  ],
+  "Critical Infrastructure": [
+    "Early-warning aspiration and beam detection for server and control rooms",
+    "Agent discharge sequencing aligned to uptime and continuity requirements",
+    "Lifecycle documentation supporting insurance and regulatory review"
+  ],
+  "Compliance & Maintenance": [
+    "Structured inspection cadence: monthly, quarterly, 6-monthly and annual",
+    "Defect classification with mandatory rectification timeframes",
+    "Inspection-ready service reports and certificate of compliance workflow"
+  ]
+};
 ---
 
 <BaseLayout title={pageMeta.services.title} description={pageMeta.services.description}>
-  <SolutionHero 
-    title="Engineered Solutions" 
-    subtitle="Protection Portfolio" 
+  <SolutionHero
+    title="Engineered Solutions"
+    subtitle="Protection Portfolio"
     description="Comprehensive fire detection, gas suppression, and integrated security systems designed for mission-critical continuity."
     icon="/brand/icons/service-engineering.svg"
   />
@@ -33,37 +64,63 @@ import { pageMeta, solutionLinks } from "../data/site.js";
     </div>
   </section>
 
-  <section class="section-padding bg-kharon-black">
-    <div class="mx-auto max-w-7xl px-6">
-      <div class="grid gap-12 lg:grid-cols-3">
-        {solutionLinks.map((solution) => (
-          <article class="group flex flex-col justify-between rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 sm:p-10 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50 overflow-hidden relative">
-            <div class="absolute top-0 right-0 h-32 w-32 bg-kharon-purple/5 rounded-bl-full pointer-events-none group-hover:bg-kharon-purple/10 transition-colors"></div>
-            
-            <div class="relative z-10 space-y-6">
-              <div class="h-16 w-16 rounded-xl bg-kharon-black/40 border border-kharon-purple/20 p-4 group-hover:bg-kharon-purple/10 transition-colors">
-                <img src={solution.icon} alt="" class="h-full w-full object-contain" />
-              </div>
-              
-              <div>
-                <h2 class="text-2xl font-black text-white tracking-tight">{solution.label}</h2>
-                <p class="mt-4 text-kharon-light/60 leading-relaxed font-medium">
-                  {solution.summary}
-                </p>
-              </div>
-            </div>
+<div class="mt-10 grid gap-12 lg:grid-cols-3">
+        {solutionLinks.map((solution) => {
+          const bullets = solutionBullets[solution.label] ?? [];
+          return (
+            <article class="group flex flex-col justify-between rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 sm:p-10 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50 overflow-hidden relative">
+              <div class="absolute top-0 right-0 h-32 w-32 bg-kharon-purple/5 rounded-bl-full pointer-events-none group-hover:bg-kharon-purple/10 transition-colors"></div>
 
-            <div class="relative z-10 mt-10 border-t border-kharon-purple/10 pt-6">
-              <a href={solution.href} class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-kharon-cyan hover:text-white transition-colors">
-                Explore Technical Spec
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
-              </a>
-            </div>
-          </article>
-        ))}
+              <div class="relative z-10 space-y-6">
+                <div class="h-16 w-16 rounded-xl bg-kharon-black/40 border border-kharon-purple/20 p-4 group-hover:bg-kharon-purple/10 transition-colors">
+                  <img loading="lazy" decoding="async" src={solution.icon} alt="" class="h-full w-full object-contain" />
+                </div>
+
+                <div>
+                  <h2 class="text-2xl font-black text-white tracking-tight">{solution.label}</h2>
+                  <p class="mt-4 text-kharon-light/60 leading-relaxed font-medium">
+                    {solution.summary}
+                  </p>
+                </div>
+
+                {bullets.length > 0 && (
+                  <ul class="space-y-2 border-t border-kharon-purple/10 pt-4">
+                    {bullets.map((b) => (
+                      <li class="flex gap-3 text-sm text-kharon-light/70 leading-relaxed">
+                        <span class="text-kharon-cyan font-black flex-none">›</span>
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {solution.sans && solution.sans.length > 0 && (
+                  <div class="flex flex-wrap gap-2 pt-2">
+                    {solution.sans.map((std) => (
+                      <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wide bg-kharon-black border border-kharon-purple/20 text-kharon-cyan">
+                        {std}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div class="relative z-10 mt-10 border-t border-kharon-purple/10 pt-6">
+                <a href={solution.href} class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-kharon-cyan hover:text-white transition-colors">
+                  Explore Technical Spec
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </div>
   </section>
+
+  <RouteMatrix />
+  <AuthorityEvidence />
+  <Testimonials />
 
   <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">

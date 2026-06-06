@@ -36,6 +36,7 @@ const roleLinks: Record<string, Array<{ label: string; href: string; key: string
     { label: "Clients", href: "/portal/admin/multi-client", key: "multi-client" },
     { label: "Reports", href: "/portal/admin/advanced-reporting", key: "advanced-reporting" },
     { label: "Feedback", href: "/portal/admin/feedback", key: "feedback" },
+    { label: "HR & Staff Files", href: "/portal/admin/hr", key: "admin-hr" },
     { label: "Technician View", href: "/portal/tech/dashboard", key: "tech" },
     { label: "Tech Schedule", href: "/portal/tech/schedule", key: "tech-schedule" },
     { label: "Job History", href: "/portal/tech/history", key: "tech-history" },
@@ -51,6 +52,15 @@ const roleLinks: Record<string, Array<{ label: string; href: string; key: string
   finance: [
     { label: "Ledger", href: "/portal/finance/dashboard", key: "finance" },
     { label: "Admin Matrix", href: "/portal/admin/dashboard", key: "admin" }
+  ],
+  manager: [
+    { label: "Overview", href: "/portal/manager/dashboard", key: "manager" },
+    { label: "Jobs Registry", href: "/portal/admin/jobs", key: "jobs" },
+    { label: "Dispatch Board", href: "/portal/admin/dispatch", key: "dispatch" },
+    { label: "Client Sites", href: "/portal/admin/sites", key: "sites" },
+    { label: "Protection Systems", href: "/portal/admin/systems", key: "systems" },
+    { label: "Advanced Reports", href: "/portal/admin/advanced-reporting", key: "advanced-reporting" },
+    { label: "SANS Compliance", href: "/portal/admin/compliance", key: "compliance" }
   ]
 };
 
@@ -120,8 +130,10 @@ function getIconPath(key: string): string {
       return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`;
     case "profile":
       return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 0112 15a9 9 0 016.879 2.804M15 10a3 3 0 11-6 0 3 3 0 016 0zM12 3a9 9 0 100 18 9 9 0 000-18z" />`;
-    case "staff-hr":
-      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 6h6m-7 4h8m-9 4h5m-7 7h14a2 2 0 002-2V7.5L15.5 2H5a2 2 0 00-2 2v15a2 2 0 002 2z" />`;
+    case "admin-hr":
+      return `<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />`;
+    case "manager":
+      return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z" />`;
     default:
       return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />`;
   }
@@ -159,6 +171,12 @@ if (user?.role === "admin") {
     ]
   });
   categories.push({
+    title: "People & Documents",
+    links: [
+      { label: "HR & Staff Files", href: "/portal/admin/hr", key: "admin-hr" }
+    ]
+  });
+  categories.push({
     title: "Support & Viewports",
     links: [
       { label: "Feedback Log", href: "/portal/admin/feedback", key: "feedback" },
@@ -174,21 +192,15 @@ if (user?.role === "admin") {
   });
 }
 
-if (["admin", "finance", "tech"].includes(user?.role || "")) {
-  categories.push({
-    title: "Staff Services",
-    links: [
-      { label: "HR Vault", href: "/portal/staff/hr", key: "staff-hr" }
-    ]
-  });
-}
+// Self-service Staff Vault (/portal/staff/hr) is not yet built — its nav entry was
+// removed to avoid a 404. Admin HR roster remains available at /portal/admin/hr.
 
 categories.push({
   title: "Account Configuration",
   links: [
     { label: "Profile", href: "/portal/account/profile", key: "profile" },
     { label: "Password Reset", href: "/portal/account/password", key: "password" },
-    ...(["admin", "finance", "tech"].includes(user?.role || "") ? [{ label: "MFA Configuration", href: "/portal/account/mfa", key: "mfa" }] : [])
+    ...(["admin", "finance", "tech", "manager"].includes(user?.role || "") ? [{ label: "MFA Configuration", href: "/portal/account/mfa", key: "mfa" }] : [])
   ]
 });
 ---
@@ -208,7 +220,7 @@ categories.push({
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="KFS Portal" />
-    <script is:inline>
+    <script is:inline nonce={Astro.locals.nonce}>
       // Register Service Worker
       if ('serviceWorker' in navigator) {
         const csrfToken = document.querySelector('meta[name="kharon-csrf-token"]')?.content || "";
@@ -246,7 +258,7 @@ categories.push({
         });
       }
     </script>
-    <script is:inline>
+    <script is:inline nonce={Astro.locals.nonce}>
       window.kharonPortalFetch = async (input, init = {}) => {
         const token = document.querySelector('meta[name="kharon-csrf-token"]')?.content || "";
         const headers = new Headers(init.headers || {});
@@ -308,7 +320,7 @@ categories.push({
     <div id="mobile-drawer-panel" class="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-kharon-charcoal border-r border-kharon-purple/20 shadow-2xl p-6 overflow-y-auto transform -translate-x-full transition-transform duration-300 ease-out pointer-events-auto flex flex-col">
       <div class="flex items-center justify-between mb-8 pb-4 border-b border-kharon-purple/10">
         <div class="flex items-center gap-3">
-          <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="28" height="28" class="h-7 w-7" />
+          <img loading="lazy" decoding="async" src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="28" height="28" class="h-7 w-7" />
           <span class="text-xs font-black uppercase tracking-[0.15em] text-white">Kharon Command</span>
         </div>
         <button id="mobile-drawer-close" aria-label="Close navigation menu" class="text-white/60 hover:text-white transition-colors text-2xl font-bold h-10 w-10 flex items-center justify-center rounded-md hover:bg-kharon-purple/10">×</button>
@@ -354,7 +366,7 @@ categories.push({
         <a href="/portal" class="group flex shrink-0 items-center gap-3 transition-transform duration-300 hover:scale-[1.02]" aria-label="Kharon Operations Portal">
           <div class="relative flex-none">
             <div class="absolute inset-0 bg-kharon-purple/20 blur-lg group-hover:bg-kharon-purple/35 transition-colors duration-500 rounded-full"></div>
-            <img src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" class="relative z-10 h-8 w-8 object-contain" />
+            <img loading="lazy" decoding="async" src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" class="relative z-10 h-8 w-8 object-contain" />
           </div>
           <div class="hidden sm:block">
             <span class="block whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-white">Kharon Command</span>
@@ -369,12 +381,12 @@ categories.push({
           <p class="mt-0.5 text-[10px] uppercase text-kharon-purple font-black tracking-widest">{user?.role}</p>
         </div>
         
-        <button id="open-feedback" class="hidden sm:flex items-center gap-2 rounded border border-kharon-purple/30 bg-kharon-charcoal/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white hover:border-kharon-cyan transition-all">
+        <button id="open-feedback" class="hidden sm:flex items-center gap-2 rounded border border-kharon-purple/30 bg-kharon-charcoal/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white hover:border-kharon-cyan transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-kharon-charcoal">
           Feedback
         </button>
-        
+
         <form id="portal-logout-form">
-          <button class="flex items-center justify-center rounded border border-kharon-red/40 bg-kharon-red/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-kharon-red hover:bg-kharon-red/10 hover:text-white transition-all" type="submit">
+          <button class="flex items-center justify-center rounded border border-kharon-red/40 bg-kharon-red/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-kharon-red hover:bg-kharon-red/10 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-kharon-charcoal" type="submit">
             Logout
           </button>
         </form>
@@ -539,7 +551,7 @@ categories.push({
       }
     });
   </script>
-  <script is:inline>
+  <script is:inline nonce={Astro.locals.nonce}>
     // Sliding mobile menu drawer interactivity
     (function() {
       const openBtn = document.getElementById("mobile-drawer-toggle");

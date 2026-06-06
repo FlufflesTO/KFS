@@ -1,19 +1,18 @@
 /**
  * Project Sentinel - Session Authentication Services
  * Purpose: Manages generation, verification, and revocation of HMAC signed session tokens
- * Dependencies: @cloudflare/workers-types
+ * Dependencies: @cloudflare/workers-types, ./bindings-auth.ts
  * Structural Role: Session cryptography and validation layer
  */
 
 import type { D1Database } from "@cloudflare/workers-types";
-// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
-import { env } from "cloudflare:workers";
+import { resolveBindingsForAuth } from "./bindings-auth.js";
 
 export interface SessionUser {
   id: string;
   name: string;
   email: string;
-  role: "tech" | "admin" | "client" | "finance";
+  role: "tech" | "admin" | "client" | "finance" | "manager";
   site_id?: string | null;
   siteId?: string | null;
   force_password_change?: boolean | number;
@@ -29,7 +28,7 @@ interface SessionPayload {
   sub: string;
   name: string;
   email: string;
-  role: "tech" | "admin" | "client" | "finance";
+  role: "tech" | "admin" | "client" | "finance" | "manager";
   siteId: string | null;
   forcePasswordChange: boolean;
   mfaRequired: boolean;
@@ -40,28 +39,27 @@ interface SessionPayload {
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
-const sessionDurationSeconds = 60 * 60 * 8;
+const sessionDurationSeconds = 60 * 60 * 8; // 8 hours absolute timeout
+const pbkdf2Iterations = 600000; // OWASP 2023 recommendation for SHA-256
 export const sessionCookieName = "kharon_session_token";
 
 /**
  * Timing-safe comparison of two Uint8Arrays to prevent timing attacks.
  * Compares all bytes regardless of where differences occur.
+ * Early-return on length mismatch is safe since length is public information.
  */
 function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
-  // Pad to same length if different
-  const maxLen = Math.max(a.length, b.length);
-  const paddedA = new Uint8Array(maxLen);
-  const paddedB = new Uint8Array(maxLen);
-  
-  paddedA.set(a, 0);
-  paddedB.set(b, 0);
-  
+  // Early return for different lengths (length is public info)
+  if (a.length !== b.length) {
+    return false;
+  }
+
   // Use XOR accumulation to avoid early exit
   let result = 0;
-  for (let i = 0; i < maxLen; i++) {
-    result |= paddedA[i] ^ paddedB[i];
+  for (let i = 0; i < a.length; i++) {
+    result |= a[i] ^ b[i];
   }
-  
+
   return result === 0;
 }
 
@@ -96,28 +94,9 @@ async function hmacKey(secret: string): Promise<CryptoKey> {
   );
 }
 
-interface AuthEnv {
-  SESSION_SECRET?: string;
-  AUTH_SECRET?: string;
-  MFA_SECRET?: string;
-  ENCRYPTION_SECRET?: string;
-  DB?: D1Database;
-  STORAGE?: unknown;
-  [key: string]: unknown;
-}
-
-function resolveBindings(): AuthEnv {
-  try {
-    const runtimeEnv = env as AuthEnv | undefined;
-    if (runtimeEnv && (runtimeEnv.SESSION_SECRET || runtimeEnv.DB || runtimeEnv.STORAGE)) {
-      return runtimeEnv;
-    }
-  } catch (e) {
-    // Ignore if module is not available
-  }
-  const globalEnv = (globalThis as Record<string, unknown>).__env__ as AuthEnv | undefined;
-  if (globalEnv) return globalEnv;
-  return globalThis as unknown as AuthEnv;
+// Use shared bindings resolver
+function resolveBindings() {
+  return resolveBindingsForAuth();
 }
 
 /**
@@ -170,8 +149,8 @@ export function getMfaSecret(): string {
   return secret;
 }
 
-function assertRole(role: string): asserts role is "tech" | "admin" | "client" | "finance" {
-  if (!["tech", "admin", "client", "finance"].includes(role)) {
+function assertRole(role: string): asserts role is "tech" | "admin" | "client" | "finance" | "manager" {
+  if (!["tech", "admin", "client", "finance", "manager"].includes(role)) {
     throw new Error("Invalid role in session payload.");
   }
 }
@@ -220,11 +199,18 @@ export async function verifySessionToken(token: string | null | undefined): Prom
   
   // Timing-safe comparison to prevent side-channel timing attacks
   const signatureValid = timingSafeEqual(providedSignature, expectedSignature);
-  
+
   // Always perform the comparison even if signatures differ to maintain constant time
   if (!signatureValid) return null;
 
-  const payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload))) as SessionPayload;
+  let payload: SessionPayload;
+  try {
+    payload = JSON.parse(textDecoder.decode(base64UrlDecode(encodedPayload))) as SessionPayload;
+  } catch {
+    // Malformed token payload - treat as invalid
+    return null;
+  }
+  
   assertRole(payload.role);
 
   if (!payload.sub || !payload.name || !payload.email || !payload.exp || !payload.iat) return null;
@@ -312,20 +298,19 @@ export async function hashPassword(password: string, salt?: string): Promise<str
     throw new Error("Password must be at least 12 characters.");
   }
 
-  const iterations = 100000;
   const keyMaterial = await crypto.subtle.importKey("raw", textEncoder.encode(password), "PBKDF2", false, ["deriveBits"]);
   const derived = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
       hash: "SHA-256",
       salt: textEncoder.encode(salt),
-      iterations
+      iterations: pbkdf2Iterations
     },
     keyMaterial,
     256
   );
 
-  return `pbkdf2_sha256$${iterations}$${base64UrlEncode(salt)}$${base64UrlEncode(new Uint8Array(derived))}`;
+  return `pbkdf2_sha256$${pbkdf2Iterations}$${base64UrlEncode(salt)}$${base64UrlEncode(new Uint8Array(derived))}`;
 }
 
 export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
@@ -335,7 +320,8 @@ export async function verifyPassword(password: string, storedHash: string): Prom
   if (scheme !== "pbkdf2_sha256" || !iterationsText || !encodedSalt || !encodedHash) return false;
 
   const iterations = Number(iterationsText);
-  if (!Number.isInteger(iterations) || iterations < 10000 || iterations > 100000) return false;
+  // Accept both old (100k) and new (600k) iteration counts during migration
+  if (!Number.isInteger(iterations) || iterations < 100000 || iterations > 1000000) return false;
 
   const salt = textDecoder.decode(base64UrlDecode(encodedSalt));
   const keyMaterial = await crypto.subtle.importKey("raw", textEncoder.encode(password), "PBKDF2", false, ["deriveBits"]);

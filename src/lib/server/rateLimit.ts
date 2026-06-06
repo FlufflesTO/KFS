@@ -30,7 +30,7 @@ export interface RateLimitResult {
  * TTL-based cleanup is handled separately by pruneRateLimits().
  */
 export async function consumeRateLimit(db: D1Database, request: Request, options: RateLimitOptions): Promise<RateLimitResult> {
-  const fingerprint = requestFingerprint(request);
+  const fingerprint = await requestFingerprint(request);
   const identifier = `${options.scope}:${options.subject}:${fingerprint}`;
 
   const now = Math.floor(Date.now() / 1000);
@@ -74,7 +74,7 @@ export async function consumeRateLimit(db: D1Database, request: Request, options
  * Used when authentication succeeds or admin manually resets.
  */
 export async function resetRateLimit(db: D1Database, request: Request, options: RateLimitOptions): Promise<void> {
-  const fingerprint = requestFingerprint(request);
+  const fingerprint = await requestFingerprint(request);
   const identifier = `${options.scope}:${options.subject}:${fingerprint}`;
 
   await db.prepare(`
@@ -114,8 +114,11 @@ export async function pruneRateLimits(db: D1Database, maxAgeHours: number = 24):
   while (true) {
     const result = await db.prepare(`
       DELETE FROM rate_limits
-      WHERE accessed_at < ?
-      LIMIT ?
+      WHERE rowid IN (
+        SELECT rowid FROM rate_limits
+        WHERE accessed_at < ?
+        LIMIT ?
+      )
     `).bind(cutoffDate, batchSize).run();
 
     const deleted = result.meta?.rows_written || 0;

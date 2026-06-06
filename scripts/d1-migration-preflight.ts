@@ -32,7 +32,7 @@ if (migrationFiles.length === 0) {
   throw new Error("No migration files found.");
 }
 
-const ledger = run(`npx wrangler d1 migrations list ${database} --remote`);
+const ledger = run(`npx wrangler d1 migrations list ${database} --remote --config wrangler.portal.jsonc`);
 console.log(ledger.trim());
 if (duplicatePrefixes.size > 0) {
   console.warn(`Historical duplicate migration prefixes detected: ${Array.from(duplicatePrefixes).join(", ")}. Keep future migration prefixes unique.`);

@@ -48,7 +48,7 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
     </a>
 
     <nav class="hidden items-center gap-8 lg:flex" aria-label="Primary navigation">
-      <a href="/" class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-purple" : "text-white/70 hover:text-white"}`}>
+      <a href="/" aria-current={isLinkActive("/") ? "page" : undefined} class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/") ? "text-kharon-purple" : "text-white/70 hover:text-white"}`}>
         Home
       </a>
 
@@ -68,6 +68,11 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
                 <span class="mt-1 text-xs text-kharon-light/50">{link.summary}</span>
               </a>
             ))}
+            <div class="mt-2 border-t border-kharon-purple/10 pt-2">
+              <a href="/solutions" class="flex items-center justify-center rounded-md bg-kharon-purple/20 py-2.5 text-[0.7rem] font-black uppercase tracking-widest text-kharon-cyan hover:bg-kharon-purple/30 transition-colors">
+                View All Solutions
+              </a>
+            </div>
           </div>
         </div>
       </details>
@@ -140,6 +145,7 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
               {solutionLinks.map(link => (
                 <a href={link.href} class="text-sm font-bold uppercase tracking-widest text-white/80">{link.label}</a>
               ))}
+              <a href="/solutions" class="text-sm font-black uppercase tracking-widest text-kharon-cyan pt-1">All Solutions</a>
             </div>
             <div class="grid gap-4">
               <p class="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Sectors</p>
@@ -178,7 +184,7 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
 
   const mobileMenu = document.querySelector("details.mobile-menu");
   if (mobileMenu instanceof HTMLDetailsElement) {
-    for (const link of mobileMenu.querySelectorAll("nav a")) {
+    for (const link of mobileMenu.querySelectorAll("a[href]")) {
       link.addEventListener("click", () => {
         mobileMenu.removeAttribute("open");
       });

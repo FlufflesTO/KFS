@@ -26,7 +26,7 @@ const { services = [] } = Astro.props;
             <div>
               <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
                 {service.icon ? (
-                  <img src={service.icon} class="w-full h-full object-contain" alt={`${service.title} icon`} />
+                  <img loading="lazy" decoding="async" src={service.icon} class="w-full h-full object-contain" alt={`${service.title} icon`} />
                 ) : (
                   <div class="w-6 h-6 bg-kharon-purple rounded"></div>
                 )}

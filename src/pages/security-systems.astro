@@ -1,6 +1,8 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SolutionHero from "../components/sections/SolutionHero.astro";
+import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
+import SecurityTechnicalBlocks from "../components/sections/SecurityTechnicalBlocks.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import { pageMeta } from "../data/site.js";
 
@@ -28,7 +30,7 @@ const securityCapabilities = [
 ];
 ---
 
-<BaseLayout title={pageMeta.securitySystems.title} description={pageMeta.securitySystems.description}>
+<BaseLayout title={pageMeta.security.title} description={pageMeta.security.description}>
   <SolutionHero 
     title="Integrated Security" 
     subtitle="Enterprise Intelligence" 
@@ -36,14 +38,22 @@ const securityCapabilities = [
     icon="/brand/icons/service-cctv.svg"
   />
 
+  <ComplianceStrip />
+
   <section class="section-padding bg-kharon-black">
     <div class="mx-auto max-w-7xl px-6">
-      <div class="grid gap-8 md:grid-cols-2">
+      <SectionHeading
+        title="Command & Control"
+        subtitle="Integrated Capability"
+        description="Enterprise security infrastructure engineered to operate in harmony with fire and life-safety systems, never against them."
+        center={true}
+      />
+      <div class="mt-10 grid gap-8 md:grid-cols-2">
         {securityCapabilities.map((capability) => (
           <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50">
             <div class="flex items-center gap-6 mb-6">
               <div class="h-14 w-14 flex-none rounded-xl bg-kharon-black/40 border border-kharon-purple/20 p-3 group-hover:bg-kharon-purple/10 transition-colors">
-                <img src={capability.icon} alt="" class="h-full w-full object-contain" />
+                <img loading="lazy" decoding="async" src={capability.icon} alt="" class="h-full w-full object-contain" />
               </div>
               <h3 class="text-xl font-bold text-white tracking-tight leading-tight">{capability.title}</h3>
             </div>
@@ -53,6 +63,8 @@ const securityCapabilities = [
       </div>
     </div>
   </section>
+
+  <SecurityTechnicalBlocks />
 
   <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">

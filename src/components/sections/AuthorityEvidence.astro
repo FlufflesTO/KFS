@@ -2,74 +2,62 @@
 import { proofSignals, supportedEcosystem } from "../../data/site.js";
 ---
 
-<section class="section-padding bg-kharon-charcoal relative overflow-hidden">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="grid gap-10 lg:gap-10 lg:grid-cols-[1fr_1.2fr] items-start">
-      <div class="sticky top-32">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="h-1 w-8 bg-kharon-purple"></div>
-          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Technical Authority</p>
+<section class="section-padding bg-kharon-black border-y border-white/5">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-12 lg:grid-cols-[1fr_1.4fr] items-start">
+      <div class="lg:sticky lg:top-32">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="h-0.5 w-6 bg-kharon-purple"></div>
+          <p class="text-[0.55rem] font-black uppercase tracking-[0.3em] text-kharon-purple">Technical Authority</p>
         </div>
 
-        <h2 class="kharon-h2 text-white">
-          Authority through <span class="text-kharon-purple">competency</span> and standards.
+        <h2 class="text-4xl font-black text-white tracking-tighter uppercase leading-[0.9]">
+          Authority Through <br/> <span class="text-kharon-purple">Competency</span> <br/> and Standards.
         </h2>
 
-        <p class="mt-8 text-lg leading-relaxed text-kharon-light/80 max-w-xl font-medium">
+        <p class="mt-6 text-[0.75rem] leading-relaxed text-white/50 max-w-md font-medium uppercase tracking-wide">
           Kharon operates across complex fire detection, gas suppression, and maintenance environments, delivering visible signals of technical proficiency and regulatory alignment.
         </p>
         
-        <div class="mt-12 grid grid-cols-2 gap-6 lg:gap-10 border-t border-kharon-border pt-12">
+        <div class="mt-10 grid grid-cols-2 gap-8 pt-8 border-t border-white/5">
           <div>
-            <p class="text-3xl font-bold text-kharon-purple">100%</p>
-            <p class="mt-2 text-[0.625rem] font-bold uppercase tracking-widest text-white/50">SANS Compliance</p>
+            <p class="text-4xl font-black text-white tracking-tighter">100%</p>
+            <p class="mt-1 text-[0.55rem] font-black uppercase tracking-widest text-white/20">SANS Compliance</p>
           </div>
           <div>
-            <p class="text-3xl font-bold text-kharon-purple">24/7</p>
-            <p class="mt-2 text-[0.625rem] font-bold uppercase tracking-widest text-white/50">Support SLA</p>
+            <p class="text-4xl font-black text-white tracking-tighter">24/7</p>
+            <p class="mt-1 text-[0.55rem] font-black uppercase tracking-widest text-white/20">Support SLA</p>
           </div>
         </div>
       </div>
 
-      <div class="grid gap-6">
+      <div class="grid gap-3">
         {proofSignals.map((item) => (
-          <article class="group rounded-xl border border-kharon-purple/20 bg-kharon-charcoal p-6 sm:p-7 transition-all hover:border-kharon-purple/40 hover:shadow-lg">
-            <div class="flex items-center justify-between mb-6">
-              <span class="rounded-full bg-kharon-purple/5 px-3 py-1 text-[0.625rem] font-bold uppercase tracking-widest text-kharon-purple">
-                {item.status}
-              </span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-kharon-purple opacity-0 transition-opacity group-hover:opacity-100"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-            </div>
-            <h3 class="text-xl font-bold tracking-tight text-white">{item.title}</h3>
-            <p class="mt-4 text-sm leading-relaxed text-kharon-light/70">{item.text}</p>
+          <article class="group rounded-lg border border-white/10 bg-kharon-charcoal/30 p-6 transition-all hover:border-kharon-purple/30">
+            <p class="text-[0.55rem] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4 opacity-50">{item.status}</p>
+            <h3 class="text-base font-black text-white uppercase tracking-tight mb-2">{item.title}</h3>
+            <p class="text-[0.65rem] leading-relaxed text-white/40 font-medium uppercase tracking-wide">{item.text}</p>
           </article>
         ))}
       </div>
     </div>
 
-    <div class="mt-20 rounded-2xl bg-kharon-black p-6 sm:p-10 text-white relative overflow-hidden">
-      <div class="absolute inset-0 opacity-10" aria-hidden="true">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,#4B2E83_0%,transparent_50%)]"></div>
-      </div>
-      
-      <div class="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-10">
-        <div class="max-w-2xl text-center lg:text-left mx-auto lg:mx-0">
-          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-kharon-purple mb-4">
-            System Ecosystem
-          </p>
-          <h3 class="text-2xl lg:text-3xl font-bold tracking-tight">
-            Supported Technologies &amp; Manufacturer Platforms
-          </h3>
+    <!-- Supported Technologies Grid -->
+    <div class="mt-16 pt-12 border-t border-white/5">
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+        <div>
+          <p class="text-[0.55rem] font-black uppercase tracking-[0.3em] text-kharon-purple mb-2">System Ecosystem</p>
+          <h3 class="text-xl font-black text-white uppercase tracking-tighter">Supported Technologies & Manufacturer Platforms</h3>
         </div>
-        <p class="max-w-sm text-[0.7rem] font-medium leading-relaxed text-white/50 uppercase tracking-wider text-center lg:text-right mx-auto lg:mx-0">
+        <p class="max-w-xs text-[0.55rem] font-bold text-white/20 uppercase tracking-[0.1em] leading-tight lg:text-right">
           Listed as ecosystem familiarity. Procurement should verify current approvals and product-specific authorisations.
         </p>
       </div>
 
-      <div class="relative z-10 mt-12 grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+      <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
         {supportedEcosystem.map((item) => (
-          <div class="flex items-center gap-3 rounded-lg border border-white/5 bg-white/5 px-4 py-4 text-xs font-bold uppercase tracking-widest text-white/80 transition-colors hover:bg-white/10 hover:text-white">
-            <div class="h-2 w-2 rounded-full bg-kharon-purple/50"></div>
+          <div class="flex items-center gap-2.5 rounded border border-white/5 bg-white/[0.02] px-4 py-3 text-[0.6rem] font-black uppercase tracking-widest text-white/40 hover:bg-white/[0.05] hover:text-white/70 transition-all group">
+            <div class="h-1.5 w-1.5 rounded-full bg-white/10 group-hover:bg-kharon-purple/60 transition-colors"></div>
             {item}
           </div>
         ))}

@@ -147,10 +147,8 @@ export class SageClient {
                         ledger_account_id: ledgerId,
                         quantity: 1,
                         unit_price: netAmount,
-                        tax_amount: taxAmount,
-                        net_amount: netAmount,
-                        // Ensure tax rate is provided if we found one
-                        ...(taxRateId ? { tax_rate_id: taxRateId } : {})
+                        // Let Sage compute net_amount and tax_amount from unit_price and tax_rate_id
+                        ...(taxRateId ? { tax_rate_id: taxRateId } : { tax_amount: taxAmount })
                     }
                 ]
             }
@@ -190,9 +188,7 @@ export class SageClient {
                         ledger_account_id: ledgerId,
                         quantity: 1,
                         unit_price: netAmount,
-                        tax_amount: taxAmount,
-                        net_amount: netAmount,
-                        ...(taxRateId ? { tax_rate_id: taxRateId } : {})
+                        ...(taxRateId ? { tax_rate_id: taxRateId } : { tax_amount: taxAmount })
                     }
                 ]
             }
@@ -215,7 +211,7 @@ export class SageClient {
         description: string,
         amountExVat: number
     ): Promise<string> {
-        const data = `${type}:${contactId}:${description}:${amountExVat}:${Date.now()}`;
+        const data = `${type}:${contactId}:${description}:${amountExVat}`;
         const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');

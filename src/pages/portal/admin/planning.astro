@@ -2,10 +2,13 @@
 import { auditError } from "../../../lib/server/audit.js";
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings.js";
+import { requireAdminOrManager } from "../../../lib/server/access.js";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
+const planningGuard = requireAdminOrManager(user);
+if (planningGuard) return planningGuard;
 const today = new Date();
 const todayIso = today.toISOString().slice(0, 10);
 const ninetyDaysFromNow = new Date(today.getTime() + 90 * 86400000).toISOString().slice(0, 10);
@@ -173,7 +176,7 @@ try {
               MIN(jobs.scheduled_date) AS next_dispatch_date
        FROM users
        LEFT JOIN jobs ON jobs.assigned_technician_id = users.id AND jobs.deleted_at IS NULL AND jobs.status IN ('Scheduled','In Progress')
-       WHERE users.role = 'tech' AND users.is_active = 1
+       WHERE users.role = 'tech' AND users.is_active = 1 AND users.deleted_at IS NULL
        GROUP BY users.id, users.name
        ORDER BY scheduled_count DESC, in_progress_count DESC, users.name ASC`
     ),

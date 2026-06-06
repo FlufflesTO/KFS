@@ -1,8 +1,8 @@
 ---
 /**
  * Project Sentinel - Homepage
- * Purpose: Top-level landing page featuring industrial command layout and branding watermarks
- * Dependencies: BaseLayout, SentinelHero, SolutionPathways, SectorRiskGrid, AuthorityEvidence
+ * Purpose: Top-level landing page featuring industrial command layout and extreme vertical density.
+ * Dependencies: BaseLayout, SentinelHero, SolutionPathways, SectorRiskGrid, AuthorityEvidence, Testimonials
  * Structural Role: Entry point for the public website
  */
 
@@ -13,7 +13,7 @@ import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
 import SectorRiskGrid from "../components/sections/SectorRiskGrid.astro";
 import AuthorityEvidence from "../components/sections/AuthorityEvidence.astro";
 import Testimonials from "../components/trust/Testimonials.astro";
-import { pageMeta } from "../data/site.js";
+import { pageMeta, solutionLinks, industries } from "../data/site.js";
 
 const localBusinessJsonLd = JSON.stringify({
   "@context": "https://schema.org",
@@ -40,12 +40,36 @@ const localBusinessJsonLd = JSON.stringify({
 ---
 
 <BaseLayout title={pageMeta.home.title} description={pageMeta.home.description}>
-  <script is:inline type="application/ld+json" set:html={localBusinessJsonLd}></script>
+  <script is:inline nonce={Astro.locals.nonce} type="application/ld+json" set:html={localBusinessJsonLd}></script>
   
   <SentinelHero />
   <ComplianceStrip />
+
+  <section class="section-padding bg-kharon-black border-b border-kharon-purple/10 pt-4">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="mb-6 text-center">
+        <p class="text-[0.55rem] font-black uppercase tracking-[0.3em] text-kharon-purple mb-1">Services Overview</p>
+        <h2 class="text-xl font-black text-white tracking-tighter uppercase">Protection Portfolio</h2>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {solutionLinks.map((solution) => (
+          <a href={solution.href} class="group rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-5 flex flex-col hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50 transition-all">
+            <div class="h-10 w-10 rounded-lg bg-kharon-black/40 border border-kharon-purple/20 p-2.5 mb-4 group-hover:bg-kharon-purple/10 transition-colors">
+              <img loading="lazy" decoding="async" src={solution.icon} alt="" class="h-full w-full object-contain" />
+            </div>
+            <h3 class="text-xs font-black text-white uppercase tracking-wider mb-2">{solution.label}</h3>
+            <p class="text-[0.65rem] text-kharon-light/50 leading-relaxed flex-1">{solution.summary}</p>
+            <span class="mt-4 text-[9px] font-black uppercase tracking-widest text-kharon-cyan group-hover:text-white transition-colors">
+              Explore &rsaquo;
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
   <SolutionPathways />
-  <SectorRiskGrid />
+  <SectorRiskGrid sectors={industries} />
   <AuthorityEvidence />
   <Testimonials />
 

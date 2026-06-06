@@ -91,7 +91,7 @@ export const POST: APIRoute = async ({ request }) => {
     return tooManyRequests("Too many submissions. Try again shortly.", limit.retryAfter);
   }
 
-  const id = `cq-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const id = `cq-${crypto.randomUUID()}`;
 
   try {
     await db

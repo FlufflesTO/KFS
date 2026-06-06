@@ -1,6 +1,6 @@
 # Kharon Portal - Master Roadmap
 
-> Current status note, 2026-06-01: use `docs/PROJECT_STATUS_2026-06-01.md` as the canonical current project status. This file remains a phase ledger; where older completed checkboxes imply production authority, the dated status document takes precedence.
+> Current status note, 2026-06-02: use `docs/PROJECT_STATUS_2026-06-02.md` as the canonical current project status. This file remains a phase ledger; where older completed checkboxes imply production authority, the dated status document takes precedence.
 
 ## Phase 0: Release Freeze & Safety Reset (CURRENT - BLOCKED BY PRODUCTION SIGN-OFF)
 - [ ] Rotate all temporary role credentials
@@ -9,6 +9,10 @@
 - [ ] Confirm D1/R2 backup procedures
 - [ ] Confirm all secrets in Cloudflare (not in code)
 - [ ] Add staging banner to portal.tequit.co.za
+- [ ] Apply and verify pending remote D1 migration `0035_staff_hr.sql` only after approval
+- [ ] Confirm deployment command shape for the split website/portal Cloudflare architecture
+- [ ] Complete HR production policy gates before staff records become authoritative
+- [ ] Complete business/POPIA sign-off for analytics before production-domain analytics use
 
 ## Phase 1: Foundation & Core Infrastructure (COMPLETED)
 - [x] Astro v6.3.3 setup with SSR output
@@ -56,7 +60,8 @@
 - [x] WebP image optimization
 - [x] SVG accessibility improvements
 - [x] Corporate trust signals in footer
-- [x] POPIA-compliant analytics
+- [x] Public-only Plausible analytics technical implementation
+- [ ] Business/POPIA sign-off for production analytics use
 
 ## Phase 6: Advanced Portal Features (COMPLETED)
 - [x] Offline PWA capabilities for field technicians
@@ -106,9 +111,21 @@
 - [x] Regular security audits (Automated in CI/CD pipeline)
 - [ ] Compliance updates for regulatory changes
 
+## Phase 12: Staff & HR Foundation (FOUNDATION IMPLEMENTED - POLICY GATES OPEN)
+- [x] Staff profile and HR foundation route
+- [x] Leave request API foundation
+- [x] Staff vault upload, download and delete foundations
+- [ ] HR approval workflows
+- [ ] Leave balance adjustment controls
+- [ ] Staff admin review queues
+- [ ] Production HR policy, privacy, retention and delegated authority sign-off
+
 ## Production Approval Gates (BLOCKERS)
 - [ ] Director sign-off for kharon.co.za cutover
 - [x] Admin UX density improvements
 - [x] Public copy corrections
 - [x] POPIA compliance documentation
 - [x] Security audit completion
+- [ ] Analytics business/POPIA sign-off
+- [ ] Staff/HR production policy sign-off
+- [x] Remote D1 migration `0035_staff_hr.sql` applied and verified where intended

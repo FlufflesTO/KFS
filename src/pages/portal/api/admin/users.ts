@@ -9,8 +9,8 @@ import { cleanBoolean, cleanChoice, cleanEmail, cleanId, cleanText, readJson, re
 
 export const prerender = false;
 
-const roles = ["tech", "admin", "client", "finance"];
-const mfaEligibleRoles = ["admin", "finance", "tech"];
+const roles = ["tech", "admin", "client", "finance", "manager"];
+const mfaEligibleRoles = ["admin", "finance", "tech", "manager"];
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const adminError = requireAdmin(locals.user);
@@ -78,7 +78,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         email: string;
         is_active: number;
       }
-      const target = await db.prepare(`SELECT id, email, is_active FROM users WHERE id = ?1 LIMIT 1`).bind(id).first() as TargetUser | null;
+      const target = await db.prepare(`SELECT id, email, is_active FROM users WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`).bind(id).first() as TargetUser | null;
       if (!target || !target.is_active) return badRequest("Only active users can receive password reset links.");
 
       const token = createResetToken();
@@ -116,7 +116,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         role: string;
         is_active: number;
       }
-      const target = await db.prepare(`SELECT id, role, is_active FROM users WHERE id = ?1 LIMIT 1`).bind(id).first() as TargetUser | null;
+      const target = await db.prepare(`SELECT id, role, is_active FROM users WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`).bind(id).first() as TargetUser | null;
       if (!target || !target.is_active) return badRequest("Only active users can have MFA reset.");
       if (!mfaEligibleRoles.includes(target.role)) return badRequest("MFA reset is limited to admin, finance and technician accounts.");
 

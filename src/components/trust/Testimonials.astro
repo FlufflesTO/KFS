@@ -1,6 +1,5 @@
 ---
 // Testimonials.astro
-import SectionHeading from "../sections/SectionHeading.astro";
 
 interface Testimonial {
   quote: string;
@@ -31,35 +30,37 @@ const testimonials: Testimonial[] = [
 ];
 ---
 
-<section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
-  <div class="mx-auto max-w-6xl px-6">
-    <SectionHeading
-      title="Client Feedback"
-      subtitle="Proven Delivery"
-      description="Trusted by leading organizations across South Africa to protect their critical infrastructure."
-      center={true}
-    />
+<section class="section-padding bg-kharon-black">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="mb-10 text-center">
+      <p class="text-[0.55rem] font-black uppercase tracking-[0.3em] text-kharon-purple mb-1">Proven Delivery</p>
+      <h2 class="text-3xl font-black text-white tracking-tighter uppercase">Client Feedback</h2>
+      <p class="mt-2 text-[0.7rem] font-medium text-white/30 uppercase tracking-widest">
+        Trusted by leading organizations across South Africa to protect their critical infrastructure.
+      </p>
+    </div>
     
-    <div class="mt-16 grid gap-8 md:grid-cols-3">
+    <div class="grid gap-3 md:grid-cols-3">
       {testimonials.map((testimonial) => (
-        <div class="rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-8 relative flex flex-col justify-between">
-          <!-- Quote Icon -->
-          <div class="absolute -top-4 left-8 bg-kharon-charcoal border border-kharon-purple/30 rounded-full p-2 text-kharon-purple">
-            <svg xmlns="http://www.w3.org/-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/>
-              <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
+        <div class="rounded-lg border border-white/10 bg-kharon-charcoal/30 p-8 relative flex flex-col justify-between transition-all hover:border-kharon-purple/20">
+          <div class="absolute top-6 left-6 text-kharon-purple opacity-20">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H15.017C14.4647 8 14.017 8.44772 14.017 9V12C14.017 12.5523 13.5693 13 13.017 13H11.017C10.4647 13 10.017 12.5523 10.017 12V9C10.017 6.79086 11.8079 5 14.017 5H15.017C15.5693 5 16.017 5.44772 16.017 6V7C16.017 7.55228 15.5693 8 15.017 8H14.017C13.4647 8 13.017 8.44772 13.017 9V11H15.017C16.1216 11 17.017 10.1046 17.017 9V6C17.017 4.34315 15.6739 3 14.017 3H13.017C11.3601 3 10.017 4.34315 10.017 6V12C10.017 14.2091 11.8079 16 14.017 16H16.017C16.5693 16 17.017 16.4477 17.017 17V21H14.017Z"/>
+              <path d="M4.017 21L4.017 18C4.017 16.8954 4.91243 16 6.01703 16H9.01703C9.56931 16 10.017 15.5523 10.017 15V9C10.017 8.44772 9.56931 8 9.01703 8H5.01703C4.46475 8 4.01703 8.44772 4.01703 9V12C4.01703 12.5523 3.56931 13 3.01703 13H1.01703C0.46475 13 -0.0170288 12.5523 -0.0170288 12V9C-0.0170288 6.79086 1.77383 5 3.98297 5H4.98297C5.53525 5 5.98297 5.44772 5.98297 6V7C5.98297 7.55228 5.53525 8 4.98297 8H4.01703C3.46475 8 3.01703 8.44772 3.01703 9V11H5.01703C6.1216 11 7.01703 10.1046 7.01703 9V6C7.01703 4.34315 5.67388 3 4.01703 3H3.01703C1.36018 3 0.0170288 4.34315 0.0170288 6V12C0.0170288 14.2091 1.80789 16 4.01703 16H6.01703C6.56931 16 7.01703 16.4477 7.01703 17V21H4.017Z"/>
             </svg>
           </div>
           
-          <p class="text-kharon-light/90 italic leading-relaxed mt-2 mb-6 text-sm">
+          <p class="text-[0.7rem] text-white/60 font-medium uppercase tracking-wide leading-relaxed mb-8 pt-4">
             "{testimonial.quote}"
           </p>
           
-          <div class="mt-auto">
-            <div class="h-px w-full bg-kharon-purple/20 mb-4"></div>
-            <p class="text-white font-semibold">{testimonial.author}</p>
-            <p class="text-kharon-purple text-xs mt-1">{testimonial.role}</p>
-            <p class="text-kharon-light/60 text-xs">{testimonial.company}</p>
+          <div class="border-t border-white/5 pt-4">
+            <p class="text-[0.65rem] font-black text-white uppercase tracking-widest">{testimonial.author}</p>
+            <div class="flex items-center gap-2 mt-1">
+              <p class="text-[0.55rem] font-bold text-kharon-purple uppercase tracking-widest">{testimonial.role}</p>
+              <span class="h-0.5 w-0.5 rounded-full bg-white/20"></span>
+              <p class="text-[0.55rem] font-bold text-white/30 uppercase tracking-widest">{testimonial.company}</p>
+            </div>
           </div>
         </div>
       ))}

@@ -5,19 +5,14 @@
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
-import { requireAdmin } from "../../../lib/server/access";
+import { requireAdminOrManager } from "../../../lib/server/access";
 
 export const prerender = false;
 
 const { user } = Astro.locals;
-const adminError = requireAdmin(user);
+const adminError = requireAdminOrManager(user);
 if (adminError) {
-  return {
-    redirect: {
-      destination: "/portal/login",
-      permanent: false
-    }
-  };
+  return adminError;
 }
 
 const db = getDatabase();
@@ -260,10 +255,10 @@ const kpis = [
           <table class="min-w-full text-left text-sm">
             <thead class="border-b border-white/10 text-xs uppercase tracking-wide text-white/40">
               <tr>
-                <th class="py-2 pr-4">Reference</th>
-                <th class="py-2 pr-4">Client</th>
-                <th class="py-2 pr-4">Date</th>
-                <th class="py-2 text-right">Amount</th>
+                <th scope="col" class="py-2 pr-4">Reference</th>
+                <th scope="col" class="py-2 pr-4">Client</th>
+                <th scope="col" class="py-2 pr-4">Date</th>
+                <th scope="col" class="py-2 text-right">Amount</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white/10 text-white/70">

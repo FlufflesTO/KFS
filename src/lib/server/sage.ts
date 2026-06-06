@@ -102,7 +102,13 @@ async function refreshSageToken(db: D1Database, env: Record<string, unknown>, re
     throw new Error(`Failed to refresh Sage OAuth token: ${response.statusText}. Details: ${errText}`);
   }
 
-  const data = await response.json() as any;
+  interface SageTokenResponse {
+    access_token: string;
+    refresh_token: string;
+    expires_in?: number;
+  }
+
+  const data = (await response.json()) as SageTokenResponse;
   const expiresAt = Math.floor(Date.now() / 1000) + Number(data.expires_in || 3600);
 
   // Encrypt tokens before storing

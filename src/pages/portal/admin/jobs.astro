@@ -7,13 +7,13 @@
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
-import { requireAdmin } from "../../../lib/server/access";
+import { requireAdminOrManager } from "../../../lib/server/access";
 import type { DbJob, DbSystem, DbUser } from "@sentinel/types";
 
 export const prerender = false;
 
 const { user } = Astro.locals;
-const adminError = requireAdmin(user);
+const adminError = requireAdminOrManager(user);
 if (adminError) {
   return adminError;
 }
@@ -85,7 +85,7 @@ try {
   ).all()).results ?? []) as unknown as DbSystem[];
 
   technicians = ((await db.prepare(
-    `SELECT id, name, email FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name`
+    `SELECT id, name, email FROM users WHERE role = 'tech' AND is_active = 1 AND deleted_at IS NULL ORDER BY name`
   ).all()).results ?? []) as unknown as DbUser[];
 
 } catch (error) {

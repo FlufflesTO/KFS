@@ -55,7 +55,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .prepare(
         `SELECT id, name, email, password_hash, role, site_id, mfa_required, mfa_enabled
          FROM users
-         WHERE id = ?1 AND is_active = 1
+         WHERE id = ?1 AND is_active = 1 AND deleted_at IS NULL
          LIMIT 1`
       )
       .bind(user.id)

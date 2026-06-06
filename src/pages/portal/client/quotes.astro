@@ -169,14 +169,14 @@ try {
           <table class="kharon-table w-full min-w-[760px]">
             <thead>
               <tr>
-                <th class="p-4">Site</th>
-                <th class="p-4">Reference</th>
-                <th class="p-4">Type</th>
-                <th class="p-4">Status</th>
-                <th class="p-4">Amount</th>
-                <th class="p-4">Date</th>
-                <th class="p-4">Job</th>
-                <th class="p-4">Action</th>
+                <th scope="col" class="p-4">Site</th>
+                <th scope="col" class="p-4">Reference</th>
+                <th scope="col" class="p-4">Type</th>
+                <th scope="col" class="p-4">Status</th>
+                <th scope="col" class="p-4">Amount</th>
+                <th scope="col" class="p-4">Date</th>
+                <th scope="col" class="p-4">Job</th>
+                <th scope="col" class="p-4">Action</th>
               </tr>
             </thead>
             <tbody id="quotes-tbody">
@@ -262,7 +262,7 @@ try {
       applyQuotesFilter();
     }
   </script>
-  <script is:inline>
+  <script is:inline nonce={Astro.locals.nonce}>
     const _inFlight = new WeakSet();
     for (const button of document.querySelectorAll("[data-quote-id]")) {
       button.addEventListener("click", async () => {

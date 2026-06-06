@@ -8,6 +8,8 @@
 
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
+import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
+import MaintenanceTechnicalBlocks from "../components/sections/MaintenanceTechnicalBlocks.astro";
 import { pageMeta } from "../data/site.js";
 
 const assuranceItems = [
@@ -44,6 +46,8 @@ const assuranceItems = [
     </div>
   </section>
 
+  <ComplianceStrip />
+
   <section class="section-padding bg-gradient-to-b from-kharon-charcoal to-kharon-black">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
@@ -59,7 +63,7 @@ const assuranceItems = [
             <div class="bg-kharon-surface-elevated rounded-xl p-6 h-full">
               <div class="w-12 h-12 rounded-lg bg-kharon-purple/10 flex items-center justify-center mb-5 overflow-hidden">
                 {item.icon ? (
-                  <img src={item.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
+                  <img loading="lazy" decoding="async" src={item.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
                 ) : (
                   <div class="w-6 h-6 bg-kharon-purple rounded"></div>
                 )}
@@ -76,6 +80,8 @@ const assuranceItems = [
     </div>
   </section>
 
+  <MaintenanceTechnicalBlocks />
+
   <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal">
     <div class="mx-auto max-w-4xl px-6 text-center">
       <SectionHeading
@@ -84,11 +90,17 @@ const assuranceItems = [
         description="All maintenance activities create verifiable records for regulatory compliance and operational review."
         center={true}
       />
-      
+
       <div class="mt-12 prose prose-invert max-w-none">
         <p class="text-kharon-light/80 text-lg leading-relaxed">
           Our maintenance approach treats inspection, testing, and reporting as integral parts of the protection system. Every service visit generates comprehensive documentation that demonstrates ongoing compliance and system integrity.
         </p>
+      </div>
+
+      <div class="mt-10 flex justify-center gap-4">
+        <a href="/contact?intent=site-assessment" class="kharon-command-button px-10 py-5 text-sm">
+          Request a Maintenance Assessment
+        </a>
       </div>
     </div>
   </section>

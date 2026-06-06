@@ -43,7 +43,7 @@ let techs: { id: string; name: string }[] = [];
 let stats = { unassigned: 0, inProgress: 0, emergency: 0, slaWarning: 0 };
 let loadError = "";
 
-const today = new Date().toISOString().slice(0, 10);
+
 
 try {
   const db = getDatabase();
@@ -62,7 +62,7 @@ try {
   unassigned = jobs.filter(j => !j.assigned_technician_id && j.status === 'Scheduled');
   dispatched = jobs.filter(j => j.assigned_technician_id && (j.status === 'Scheduled' || j.status === 'In Progress'));
   
-  const techResult = await db.prepare(`SELECT id, name FROM users WHERE role = 'tech' AND is_active = 1 ORDER BY name ASC`).all();
+  const techResult = await db.prepare(`SELECT id, name FROM users WHERE role = 'tech' AND is_active = 1 AND deleted_at IS NULL ORDER BY name ASC`).all();
   techs = (techResult.results || []) as { id: string; name: string }[];
 
   stats = {
@@ -92,7 +92,7 @@ const techGroups: TechGroup[] = Array.from(techGroupMap.values()).sort((a, b) =>
 
 <PortalLayout title="Dispatch Board | Kharon Portal" active="dispatch" user={user}>
   <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 rounded-xl border border-kharon-purple/10 mb-6 relative overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(124,93,194,0.09),transparent)]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(75,46,131,0.09),transparent)]"></div>
     <div class="relative z-10">
       <div class="flex items-center gap-3 mb-4">
         <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
@@ -144,13 +144,24 @@ const techGroups: TechGroup[] = Array.from(techGroupMap.values()).sort((a, b) =>
             <form class="dispatch-form mt-5 pt-5 border-t border-kharon-purple/10 flex flex-col gap-3" data-action="assign">
               <CsrfInput />
               <input type="hidden" name="jobId" value={job.id} />
-              <div class="flex gap-2">
-                <select name="technicianId" class="kharon-field text-xs py-2 flex-1" required>
+              <div class="grid gap-2 sm:grid-cols-2">
+                <select name="technicianId" class="kharon-field text-xs py-2" required>
                   <option value="">— Assign Technician —</option>
                   {techs.map(t => <option value={t.id}>{t.name}</option>)}
                 </select>
-                <button type="submit" class="kharon-command-button px-6 py-2 text-[10px]">Dispatch</button>
+                <select name="priority" class="kharon-field text-xs py-2" aria-label="Dispatch priority">
+                  {["Critical", "High", "Normal", "Low"].map(priority => (
+                    <option value={priority} selected={job.priority === priority}>{priority}</option>
+                  ))}
+                </select>
+                <input type="date" name="requiredByDate" value={job.required_by_date || ""} class="kharon-field text-xs py-2" aria-label="Required by date" />
+                <label class="flex min-h-[44px] items-center gap-2 rounded-md border border-kharon-purple/20 px-3 text-xs font-bold uppercase tracking-widest text-white/70">
+                  <input type="hidden" name="isEmergency" value="0" />
+                  <input type="checkbox" name="isEmergency" value="1" checked={job.isEmergency} class="h-4 w-4" />
+                  Emergency
+                </label>
               </div>
+              <button type="submit" class="kharon-command-button min-h-[44px] px-6 py-2 text-[10px]">Dispatch</button>
             </form>
           </div>
         ))}
@@ -172,6 +183,39 @@ const techGroups: TechGroup[] = Array.from(techGroupMap.values()).sort((a, b) =>
                       <a href={`/portal/tech/jobs/${job.id}`} class="text-[10px] font-black uppercase text-kharon-purple hover:text-kharon-cyan transition-colors">Details &rarr;</a>
                    </div>
                    <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest">{job.system_type} | {job.coverage_area}</p>
+                   <div class="mt-4 grid gap-3 border-t border-kharon-purple/10 pt-4">
+                     <form class="dispatch-form grid gap-2 sm:grid-cols-[1fr_auto]" data-action="assign">
+                       <CsrfInput />
+                       <input type="hidden" name="jobId" value={job.id} />
+                       <select name="technicianId" class="kharon-field text-xs py-2" required aria-label="Reassign technician">
+                         {techs.map(t => <option value={t.id} selected={t.id === job.assigned_technician_id}>{t.name}</option>)}
+                       </select>
+                       <button type="submit" class="kharon-command-button min-h-[44px] px-4 py-2 text-[10px]">Reassign</button>
+                     </form>
+
+                     <form class="dispatch-form grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]" data-action="setDispatch">
+                       <CsrfInput />
+                       <input type="hidden" name="jobId" value={job.id} />
+                       <select name="priority" class="kharon-field text-xs py-2" aria-label="Priority">
+                         {["Critical", "High", "Normal", "Low"].map(priority => (
+                           <option value={priority} selected={job.priority === priority}>{priority}</option>
+                         ))}
+                       </select>
+                       <input type="date" name="requiredByDate" value={job.required_by_date || ""} class="kharon-field text-xs py-2" aria-label="Required by date" />
+                       <label class="flex min-h-[44px] items-center gap-2 rounded-md border border-kharon-purple/20 px-3 text-xs font-bold uppercase tracking-widest text-white/70">
+                         <input type="hidden" name="isEmergency" value="0" />
+                         <input type="checkbox" name="isEmergency" value="1" checked={job.isEmergency} class="h-4 w-4" />
+                         Emergency
+                       </label>
+                       <button type="submit" class="kharon-command-button min-h-[44px] px-4 py-2 text-[10px]">Save</button>
+                     </form>
+
+                     <form class="dispatch-form" data-action="unassign">
+                       <CsrfInput />
+                       <input type="hidden" name="jobId" value={job.id} />
+                       <button type="submit" class="min-h-[44px] rounded-md border border-kharon-red/30 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-kharon-red transition hover:bg-kharon-red/10">Unassign</button>
+                     </form>
+                   </div>
                 </div>
               ))}
             </div>

@@ -7,7 +7,7 @@
  */
 import PortalLayout from "../../../layouts/portal/PortalLayout.astro";
 import { getDatabase } from "../../../lib/server/bindings";
-import { requireAdmin } from "../../../lib/server/access";
+import { requireAdminOrManager } from "../../../lib/server/access";
 import type { DbSite, DbUser } from "@sentinel/types";
 
 interface ClientSiteAccessJoin {
@@ -22,7 +22,7 @@ interface ClientSiteAccessJoin {
 export const prerender = false;
 
 const { user } = Astro.locals;
-const adminError = requireAdmin(user);
+const adminError = requireAdminOrManager(user);
 if (adminError) {
   return adminError;
 }
@@ -64,7 +64,7 @@ try {
 
   sites = ((await db.prepare(dataQuery).bind(...bindParams, perPage, offset).all()).results ?? []) as unknown as DbSite[];
 
-  clientUsers = ((await db.prepare(`SELECT id, name, email FROM users WHERE role = 'client' AND is_active = 1`).all()).results ?? []) as unknown as DbUser[];
+  clientUsers = ((await db.prepare(`SELECT id, name, email FROM users WHERE role = 'client' AND is_active = 1 AND deleted_at IS NULL`).all()).results ?? []) as unknown as DbUser[];
 
   clientSiteAccess = ((await db.prepare(
     `SELECT client_site_access.user_id, client_site_access.site_id, client_site_access.granted_at,
@@ -87,7 +87,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 <PortalLayout title="Site Management | Kharon Portal" active="sites" user={user}>
   {/* ── Page Header ── */}
   <section class="bg-gradient-to-br from-kharon-black to-kharon-charcoal px-4 py-8 text-white sm:px-6 sm:py-10 rounded-xl border border-kharon-purple/10 mb-6 relative overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_10%_50%,rgba(124,93,194,0.09),transparent)]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_10%_50%,rgba(75,46,131,0.09),transparent)]"></div>
     <div class="relative z-10">
       <div class="flex items-center gap-3 mb-4">
         <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">

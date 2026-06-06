@@ -63,6 +63,7 @@ export const JobCardSchema = z.object({
   followUpActions: z.string().max(1000).default("No follow-up actions recorded"),
   customerName: z.string().max(120).min(2),
   customerTitle: z.string().max(80).optional().default(""),
+  expectedVersion: z.number().int().nonnegative().default(0),
   evidencePhotos: z.array(z.object({
     dataUri: z.string()
       .regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/)

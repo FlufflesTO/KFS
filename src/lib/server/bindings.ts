@@ -1,15 +1,20 @@
 /**
  * Project Sentinel - Cloudflare Workers Bindings
  * Purpose: Provides type-safe access to database and storage bindings and standard fee config
- * Dependencies: @cloudflare/workers-types
+ * Dependencies: cloudflare:workers, @cloudflare/workers-types
  * Structural Role: Server-side bindings and configuration accessor
- * 
- * Note: Cloudflare Pages SSR with Astro uses cloudflare:workers module for bindings
+ *
+ * Binding access model (Astro 6 + @astrojs/cloudflare v13, Workers target):
+ *   The portal deploys as a Cloudflare Worker, so bindings (D1 `DB`, R2 `STORAGE`)
+ *   and secrets are read directly from the `cloudflare:workers` runtime `env`.
+ *   `astro dev` under v13 runs the real `workerd` runtime, so the same import
+ *   resolves locally from `.dev.vars` + `wrangler.portal.jsonc` — no Pages shims.
+ *   A `process.env` fallback covers non-worker contexts (e.g. CLI scripts).
  */
 
 import type { D1Database, R2Bucket } from "@cloudflare/workers-types";
-// @ts-ignore - cloudflare:workers is a Cloudflare runtime module
-import { env } from "cloudflare:workers";
+// @ts-ignore - cloudflare:workers is a Cloudflare runtime virtual module provided by the adapter
+import { env as workerEnv } from "cloudflare:workers";
 
 export interface WorkerBindings {
   db: D1Database;
@@ -31,27 +36,32 @@ export interface Env {
   ENVIRONMENT?: string;
   [key: string]: unknown;
 }
+
+/**
+ * Resolves Cloudflare bindings from the runtime environment.
+ *
+ * Resolution order:
+ * 1. `cloudflare:workers` runtime `env` — canonical for Workers + `astro dev` (workerd).
+ *    Property access here is I/O-free; binding *methods* are only ever called inside a
+ *    request context by callers, which Workers permits.
+ * 2. `process.env` — local tooling / CLI scripts where the workerd env is absent.
+ */
 function resolveBindings(): Env {
-  try {
-    // Use cloudflare:workers module (the correct way for Pages/Workers)
-    const runtimeEnv = env as Env | undefined;
-    if (runtimeEnv && (runtimeEnv.DB || runtimeEnv.STORAGE || runtimeEnv.SESSION_SECRET || runtimeEnv.MFA_SECRET)) {
-      return runtimeEnv;
-    }
-  } catch (e) {
-    // Module not available in this context
+  const runtime = workerEnv as Env | undefined;
+  if (runtime && (runtime.DB || runtime.STORAGE || runtime.SESSION_SECRET || runtime.MFA_SECRET)) {
+    return runtime;
   }
-  
-  // Fallback patterns for development or alternative runtimes
-  if (typeof globalThis !== "undefined") {
-    const gh = globalThis as Record<string, unknown>;
-    const astroLocals = gh.__astro_locals__ as Record<string, unknown> | undefined;
-    if (astroLocals?.db) return astroLocals as unknown as Env;
-    if (gh.DB || gh.STORAGE) return gh as unknown as Env;
-    const envObj = gh.env as Record<string, unknown> | undefined;
-    if (envObj?.DB || envObj?.STORAGE) return envObj as unknown as Env;
+
+  if (typeof process !== "undefined" && process.env) {
+    return {
+      SESSION_SECRET: process.env.SESSION_SECRET || "",
+      MFA_SECRET: process.env.MFA_SECRET || "",
+      ENCRYPTION_SECRET: process.env.ENCRYPTION_SECRET || "",
+      ENVIRONMENT: process.env.ENVIRONMENT || "local",
+      STANDARD_SERVICE_FEE: process.env.STANDARD_SERVICE_FEE || "185000"
+    } as Env;
   }
-  
+
   return {} as Env;
 }
 
@@ -96,7 +106,7 @@ export function getStorage(): R2Bucket {
 
 export function getStandardServiceFee(): number {
   const bindings = resolveBindings();
-  const raw = String(bindings.STANDARD_SERVICE_FEE || "1850.00");
+  const raw = String(bindings.STANDARD_SERVICE_FEE || "185000");
   const configured = Number(raw);
   if (Number.isFinite(configured) && configured >= 0) {
     if (raw.includes(".") || configured < 100000) {

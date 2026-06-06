@@ -28,7 +28,8 @@ const roleDestinations: Record<string, string> = {
   tech: "/portal/tech/dashboard",
   admin: "/portal/admin/dashboard",
   client: "/portal/client/dashboard",
-  finance: "/portal/finance/dashboard"
+  finance: "/portal/finance/dashboard",
+  manager: "/portal/manager/dashboard"
 };
 
 async function readCredentials(request: Request): Promise<LoginCredentials> {
@@ -78,24 +79,8 @@ export async function POST({ request }: APIContext): Promise<Response> {
       return badRequest("Email and password are required.");
     }
 
-    const rateLimit = await consumeRateLimit(db!, request, {
-      scope: "portal.login",
-      subject: email,
-      maxAttempts: 8,
-      windowSeconds: 15 * 60
-    });
-
-    if (!rateLimit.allowed) {
-      await auditEvent(db!, request, {
-        eventType: "auth.rate_limited",
-        entityType: "user",
-        entityId: email,
-        outcome: "blocked",
-        subject: email,
-        metadata: { attempts: rateLimit.attempts, retryAfter: rateLimit.retryAfter }
-      });
-      return tooManyRequests("Too many sign-in attempts. Try again later.", rateLimit.retryAfter);
-    }
+    // Rate limiting is handled by middleware (5 attempts per 15min)
+    // No duplicate check needed here to avoid confusion
 
     const userRepo = new UserRepository(db!);
     const user = await userRepo.findWithSecretsByEmail(email);
@@ -231,14 +216,29 @@ export async function POST({ request }: APIContext): Promise<Response> {
       }
     );
   } catch (error) {
-    console.error("AUTH_API_ERROR_STACK:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : "No stack trace";
+    console.error("AUTH_API_ERROR:", errorMessage);
+    console.error("AUTH_API_ERROR_STACK:", errorStack);
+    
     if (db) {
-      await auditError(db, request, error as Error, {
-        entityType: "portal_api",
-        entityId: "auth_login"
-      });
+      try {
+        await auditError(db, request, error as Error, {
+          entityType: "portal_api",
+          entityId: "auth_login"
+        });
+      } catch (auditErr) {
+        console.error("Failed to audit auth error:", auditErr);
+      }
     } else {
-      console.error("Database connection was not established for error auditing:", error);
+      console.error("Database connection was not established for error auditing");
+      // Try to get DB again to see what's wrong
+      try {
+        const testDb = getDatabase();
+        console.log("Database obtained successfully after error:", !!testDb);
+      } catch (dbErr) {
+        console.error("Database binding issue:", dbErr instanceof Error ? dbErr.message : String(dbErr));
+      }
     }
     return serverError("Authentication could not be completed.");
   }

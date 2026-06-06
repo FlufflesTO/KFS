@@ -8,12 +8,22 @@
 
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import KharonCard from "../../components/ui/KharonCard.astro";
-import { isLoggedIn } from "../../lib/server/middleware/auth";
-
-if (await isLoggedIn(Astro.request)) {
-  return Astro.redirect("/portal");
-}
+import { getDatabase } from "../../lib/server/bindings.js";
+import { expiredSessionCookie, isTokenRevoked, sessionCookieName, verifySessionToken } from "../../lib/server/auth.js";
 import CsrfInput from "../../components/ui/CsrfInput.astro";
+
+const sessionToken = Astro.cookies.get(sessionCookieName)?.value;
+if (sessionToken) {
+  try {
+    const sessionUser = await verifySessionToken(sessionToken);
+    if (sessionUser && !(await isTokenRevoked(getDatabase(), sessionToken))) {
+      return Astro.redirect("/portal");
+    }
+  } catch {
+    // Malformed cookies should not make the login page unavailable.
+  }
+  Astro.response.headers.append("Set-Cookie", expiredSessionCookie());
+}
 ---
 
 <BaseLayout title="Login - Kharon Operations Portal" description="Secure login to the Kharon operations portal">
@@ -23,7 +33,7 @@ import CsrfInput from "../../components/ui/CsrfInput.astro";
         <div class="flex justify-center mb-4">
           <div class="relative">
             <div class="absolute inset-0 bg-kharon-purple/30 blur-2xl rounded-full"></div>
-            <img src="/brand/kharon-mark.svg" alt="Kharon Logo" class="login-mark relative z-10">
+            <img loading="eager" decoding="async" src="/brand/kharon-mark.svg" alt="Kharon Logo" class="login-mark relative z-10">
           </div>
         </div>
         <h1 class="text-xl font-bold text-white">Operations Portal</h1>

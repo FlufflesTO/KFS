@@ -359,7 +359,7 @@ output = output
   .replace(/#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3/g, '#$1$2$3')
   .trim();
 
-output = output.replace(/@property [^{]+\{[^}]+\}/g, '');
+/* @property declarations are preserved — required by Tailwind v4 for typed custom properties */
 output = esbuild.transformSync(output, { loader: 'css', minify: true }).code.trim();
 
 console.log('Purged CSS size after variable pruning & minification:', output.length, 'bytes');

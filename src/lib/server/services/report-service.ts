@@ -1,3 +1,10 @@
+/**
+ * Project Sentinel - Report Service
+ * Purpose: Provides data aggregation logic for the advanced reporting dashboard
+ * Dependencies: @cloudflare/workers-types
+ * Structural Role: Service Layer
+ */
+
 import type { D1Database } from "@cloudflare/workers-types";
 
 export interface AdvancedStats {
@@ -60,7 +67,7 @@ export class ReportService {
           (SELECT COUNT(*) FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical') AS critical_defects,
           (SELECT COUNT(*) FROM financial_records WHERE payment_status = 'Unpaid') AS unpaid_invoices,
           (SELECT COALESCE(SUM(amount), 0) / 100.0 FROM financial_records WHERE payment_status = 'Unpaid') AS unpaid_amount,
-          (SELECT COUNT(*) FROM users WHERE is_active = 1 AND deleted_at IS NULL) AS active_users
+          (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL) AS active_users
       `),
       this.db.prepare(`
         SELECT
@@ -83,7 +90,6 @@ export class ReportService {
          AND jobs.deleted_at IS NULL
          AND jobs.status = 'Completed'
         WHERE users.role = 'tech'
-          AND users.is_active = 1
           AND users.deleted_at IS NULL
         GROUP BY users.id, users.name
         ORDER BY completed_jobs DESC, users.name ASC
@@ -108,7 +114,7 @@ export class ReportService {
           financial_records.payment_status
         FROM financial_records
         INNER JOIN sites ON sites.id = financial_records.site_id
-        WHERE financial_records.payment_status = 'Unpaid'
+        WHERE financial_records.payment_status = 'Unpaid' AND sites.deleted_at IS NULL
         ORDER BY financial_records.distribution_date DESC
         LIMIT 10
       `)

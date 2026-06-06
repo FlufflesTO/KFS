@@ -5,7 +5,7 @@ export class FinanceRepository {
   constructor(private db: D1Database) {}
 
   async create(task: Omit<DbFinanceTask, 'id' | 'created_at' | 'updated_at'>): Promise<DbFinanceTask> {
-    const id = `ft-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+    const id = `ft-${crypto.randomUUID()}`;
     
     await this.db.prepare(`
       INSERT INTO finance_tasks (

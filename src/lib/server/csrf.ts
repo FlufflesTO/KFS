@@ -1,12 +1,11 @@
 /**
  * Project Sentinel - CSRF Protection Utilities
  * Purpose: Generates, formats, and verifies client-side CSRF tokens and cookies
- * Dependencies: cloudflare:workers
+ * Dependencies: ./bindings-auth.ts
  * Structural Role: Cross-Site Request Forgery mitigation layer
  */
 
-// @ts-ignore - cloudflare:workers module is not available in standard TypeScript definitions
-import { env } from "cloudflare:workers";
+import { resolveBindingsForAuth } from "./bindings-auth.js";
 import type { SessionUser } from "./auth";
 
 const textEncoder = new TextEncoder();
@@ -43,8 +42,8 @@ function base64UrlDecode(input: string): Uint8Array {
 }
 
 function getSecret(): string {
-  // @ts-ignore
-  const secret = String(env.CSRF_SECRET || env.ENCRYPTION_SECRET || env.SESSION_SECRET || env.AUTH_SECRET || "");
+  const bindings = resolveBindingsForAuth();
+  const secret = String(bindings.CSRF_SECRET || bindings.ENCRYPTION_SECRET || bindings.SESSION_SECRET || bindings.AUTH_SECRET || "");
   if (secret.length < 32) {
     throw new Error("CSRF_SECRET or SESSION_SECRET must be configured with at least 32 characters.");
   }
@@ -122,13 +121,13 @@ export function csrfErrorResponse(): Response {
 }
 
 export function csrfCookie(token: string): string {
-  // @ts-ignore
-  const secure = env.ENVIRONMENT === "local" ? "" : " Secure;";
+  const bindings = resolveBindingsForAuth();
+  const secure = bindings.ENVIRONMENT === "local" ? "" : " Secure;";
   return `${csrfCookieName}=${token}; Path=/portal;${secure} SameSite=Strict; Max-Age=${csrfDurationSeconds}`;
 }
 
 export function expiredCsrfCookie(): string {
-  // @ts-ignore
-  const secure = env.ENVIRONMENT === "local" ? "" : " Secure;";
+  const bindings = resolveBindingsForAuth();
+  const secure = bindings.ENVIRONMENT === "local" ? "" : " Secure;";
   return `${csrfCookieName}=; Path=/portal;${secure} SameSite=Strict; Max-Age=0`;
 }

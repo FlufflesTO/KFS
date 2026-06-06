@@ -1,12 +1,28 @@
+/**
+ * Project Sentinel - Site Repository
+ * Purpose: Provides data access for sites and site access mapping records with soft-delete filtering
+ * Dependencies: @cloudflare/workers-types, @sentinel/types
+ * Structural Role: Database Access Layer / Repository
+ */
+
 import type { D1Database } from "@cloudflare/workers-types";
 import type { DbSite } from "@sentinel/types";
+
+export interface SiteAccessMapping {
+  user_id: string;
+  site_id: string;
+  granted_at: string;
+  user_name: string;
+  user_email: string;
+  owner_company_name: string;
+}
 
 export class SiteRepository {
   constructor(private db: D1Database) {}
 
   async listSites(searchQuery?: string, limit = 50, offset = 0): Promise<{ sites: DbSite[]; total: number }> {
     let searchCondition = "";
-    const bindParams: any[] = [];
+    const bindParams: (string | number)[] = [];
 
     if (searchQuery) {
       searchCondition += ` AND (owner_company_name LIKE ? OR site_contact_person LIKE ? OR site_contact_email LIKE ?)`;
@@ -33,16 +49,17 @@ export class SiteRepository {
     };
   }
 
-  async getSiteAccessMappings(): Promise<any[]> {
+  async getSiteAccessMappings(): Promise<SiteAccessMapping[]> {
     const { results } = await this.db.prepare(
       `SELECT client_site_access.user_id, client_site_access.site_id, client_site_access.granted_at,
               users.name AS user_name, users.email AS user_email, sites.owner_company_name
        FROM client_site_access
        INNER JOIN users ON users.id = client_site_access.user_id
        INNER JOIN sites ON sites.id = client_site_access.site_id
+       WHERE users.deleted_at IS NULL AND sites.deleted_at IS NULL
        ORDER BY users.name, sites.owner_company_name
        LIMIT 1000`
     ).all();
-    return results || [];
+    return (results || []) as unknown as SiteAccessMapping[];
   }
 }

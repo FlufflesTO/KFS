@@ -7,7 +7,7 @@
 
 // @ts-ignore - defineMiddleware is used implicitly through MiddlewareHandler type
 import { sequence } from "astro:middleware";
-import type { MiddlewareHandler } from "astro";
+import type { MiddlewareHandler, APIContext } from "astro";
 import type { SessionUser } from "./lib/server/auth.js";
 import { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } from "./lib/server/auth.js";
 import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
@@ -70,18 +70,19 @@ async function withHtmlSecurityHeaders(response: Response, nonce: string = creat
   }), nonce);
 }
 
-function redirectToLogin(context: any, nonce: string = createCspNonce()): Response {
+function redirectToLogin(context: APIContext, nonce: string = createCspNonce()): Response {
   const loginUrl = new URL(loginPath, context.url);
   loginUrl.searchParams.set("next", context.url.pathname);
   return withSecurityHeaders(context.redirect(loginUrl.toString(), 302), nonce);
 }
 
-function redirectToRoleDashboard(context: any, role: string, nonce: string = createCspNonce()): Response {
+function redirectToRoleDashboard(context: APIContext, role: string, nonce: string = createCspNonce()): Response {
   const destinations: Record<string, string> = {
     tech: "/portal/tech/dashboard",
     admin: "/portal/admin/dashboard",
     client: "/portal/client/dashboard",
-    finance: "/portal/finance/dashboard"
+    finance: "/portal/finance/dashboard",
+    manager: "/portal/manager/dashboard"
   };
 
   return withSecurityHeaders(context.redirect(destinations[role] || loginPath, 302), nonce);
@@ -92,9 +93,10 @@ function allowedForPath(pathname: string, role: string): boolean {
   
   if (pathname.startsWith("/portal/api/tech/")) return role === "tech" || role === "admin";
   if (pathname.startsWith("/portal/api/staff/")) return role === "tech" || role === "admin" || role === "finance";
-  if (pathname.startsWith("/portal/api/admin/")) return role === "admin";
+  if (pathname.startsWith("/portal/api/admin/")) return role === "admin"; // manager uses /portal/api/manager/ instead
   if (pathname.startsWith("/portal/api/finance/")) return role === "finance" || role === "admin";
   if (pathname.startsWith("/portal/api/client/")) return role === "client" || role === "admin";
+  if (pathname.startsWith("/portal/api/manager/")) return role === "manager" || role === "admin";
   if (pathname.startsWith("/portal/api/")) {
     const sharedApiPaths = new Set([
       "/portal/api/logout",
@@ -115,10 +117,27 @@ function allowedForPath(pathname: string, role: string): boolean {
   }
 
   if (pathname.startsWith("/portal/tech/")) return role === "tech" || role === "admin";
-  if (pathname.startsWith("/portal/staff/")) return role === "tech" || role === "admin" || role === "finance";
-  if (pathname.startsWith("/portal/admin/")) return role === "admin";
+  if (pathname.startsWith("/portal/staff/")) return role === "tech" || role === "admin" || role === "finance" || role === "manager";
+  if (pathname.startsWith("/portal/admin/")) {
+    if (role === "admin") return true;
+    if (role === "manager") {
+      const managerAllowedAdminPaths = [
+        "/portal/admin/dashboard",
+        "/portal/admin/jobs",
+        "/portal/admin/dispatch",
+        "/portal/admin/sites",
+        "/portal/admin/systems",
+        "/portal/admin/planning",
+        "/portal/admin/compliance",
+        "/portal/admin/advanced-reporting",
+      ];
+      return managerAllowedAdminPaths.some(p => pathname === p || pathname.startsWith(`${p}/`));
+    }
+    return false;
+  }
   if (pathname.startsWith("/portal/finance/")) return role === "finance" || role === "admin";
   if (pathname.startsWith("/portal/client/")) return role === "client" || role === "admin";
+  if (pathname.startsWith("/portal/manager/")) return role === "manager" || role === "admin";
   
   return false;
 }
@@ -180,7 +199,7 @@ interface ActiveUserRow {
   id: string;
   name: string;
   email: string;
-  role: "tech" | "admin" | "client" | "finance";
+  role: "tech" | "admin" | "client" | "finance" | "manager";
   site_id: string | null;
   is_active: number;
   deleted_at: string | null;
@@ -194,7 +213,7 @@ async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, session
     .prepare(
       `SELECT id, name, email, role, site_id, is_active, deleted_at, force_password_change, mfa_required, mfa_enabled
        FROM users
-       WHERE id = ?1
+       WHERE id = ?1 AND deleted_at IS NULL AND is_active = 1
        LIMIT 1`
     )
     .bind(sessionUser.id)
@@ -219,27 +238,14 @@ async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, session
   };
 }
 
-const portalDomain = "portal.tequit.co.za";
-const websiteDomain = "www.tequit.co.za";
-
-// 0. Domain-based routing
-const domainRouterMiddleware: MiddlewareHandler = async (context, next) => {
-  const { pathname } = context.url;
-  const host = context.request.headers.get("host") || "";
-
-  // If on portal domain, redirect non-portal/api paths to /portal
-  if (host.includes(portalDomain)) {
-    const isPortalPath = pathname.startsWith("/portal") || pathname.startsWith("/api");
-    if (!isPortalPath || pathname === "/" || pathname === "") {
-      return context.redirect("/portal", 302);
-    }
-  }
-
-  return await next();
-};
-
 // 1. Core setup and AB testing
 const setupMiddleware: MiddlewareHandler = async (context, next) => {
+  const host = context.request.headers.get("host") ?? "";
+  const pathname = context.url.pathname;
+  if (host === "portal.tequit.co.za" && (pathname === "/" || pathname === "")) {
+    return context.redirect("/portal/login", 302);
+  }
+
   const nonce = createCspNonce();
   context.locals.nonce = nonce;
 
@@ -264,9 +270,7 @@ const securityMiddleware: MiddlewareHandler = async (context, next) => {
   const response = await next();
   
   let finalResponse = response;
-  if (!finalResponse.headers.has("X-Content-Type-Options")) {
-      finalResponse = await withHtmlSecurityHeaders(finalResponse, nonce);
-  }
+  finalResponse = await withHtmlSecurityHeaders(finalResponse, nonce);
 
   if (context.locals.needsVariantCookie) {
     finalResponse.headers.append(
@@ -335,7 +339,8 @@ const mfaEnforcementMiddleware: MiddlewareHandler = async (context, next) => {
   }
 
   // Check MFA enforcement requirement
-  const mfaRequired = user.mfa_required === 1 || user.mfa_required === true;
+  const isElevatedRole = ["admin", "finance"].includes(user.role);
+  const mfaRequired = user.mfa_required === 1 || user.mfa_required === true || isElevatedRole;
   const mfaEnabled = user.mfa_enabled === 1 || user.mfa_enabled === true;
 
   if (mfaRequired && !mfaEnabled) {
@@ -424,7 +429,10 @@ const rbacMiddleware: MiddlewareHandler = async (context, next) => {
     return withSecurityHeaders(context.redirect(passwordPath, 302), nonce);
   }
 
-  if (user.mfaRequired && !user.mfaEnabled && pathname !== mfaPath && pathname !== mfaApiPath && pathname !== logoutApiPath) {
+  const isElevatedRole = ["admin", "finance"].includes(user.role);
+  const mfaRequired = user.mfaRequired || isElevatedRole;
+
+  if (mfaRequired && !user.mfaEnabled && pathname !== mfaPath && pathname !== mfaApiPath && pathname !== logoutApiPath) {
     return withSecurityHeaders(context.redirect(mfaPath, 302), nonce);
   }
 
@@ -440,7 +448,6 @@ const rbacMiddleware: MiddlewareHandler = async (context, next) => {
 };
 
 const middlewareChain = sequence(
-  domainRouterMiddleware,
   setupMiddleware,
   authMiddleware,
   mfaEnforcementMiddleware,

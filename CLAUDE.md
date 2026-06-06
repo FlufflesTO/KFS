@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Current-stack reference:** `docs/STACK_REFERENCE.md` holds the version-pinned official-docs
+> index plus **canonical patterns verified against live docs (Astro 6 / `@astrojs/cloudflare` v13,
+> Tailwind v4, Zod v4, Wrangler 4)** and the curated skill/MCP map for this stack. Read it before
+> any version-sensitive change — APIs on this stack drift fast.
+
 ---
 
 ## Commands
@@ -57,7 +62,7 @@ import { getDatabase, getStorage, getBindings } from "@server/bindings";
 
 ### Middleware chain (`src/middleware.ts`)
 
-Five sequential handlers applied to every `/portal` request:
+Six sequential handlers applied to every `/portal` request:
 
 1. **setup** — generates CSP nonce (`context.locals.nonce`) and A/B UI variant
 2. **auth** — verifies session cookie, checks revocation, loads live user from D1
@@ -70,14 +75,51 @@ Role → dashboard mappings: `admin → /portal/admin/dashboard`, `tech → /por
 
 ### Type system
 
-All D1 entity types live in `packages/types/src/domain.ts` — `DbUser`, `DbSite`, `DbSystem`, `DbJob`, `DbDefect`, `DbCertificate`, `DbFinancialRecord`, `DbLinkableJob`, and others. Import from there, never define inline types for database rows.
+- **DB entity types** live in `packages/types/src/domain.ts` — `DbUser`, `DbSite`, `DbSystem`, `DbJob`, `DbDefect`, `DbCertificate`, `DbFinancialRecord`, `DbLinkableJob`, and others. Import from there, never define inline types for database rows.
+- **Zod validation schemas** live in `packages/types/src/base.ts` — `JobSchema`, `JobCreateSchema`, `JobUpdateSchema`, etc. Use these at API boundaries.
 
 ### Repository layer (`src/lib/server/db/`)
 
 All database access goes through:
-- `user-repository.ts`, `job-repository.ts`, `system-repository.ts`, `defect-repository.ts`, `finance-repository.ts`
+- `user-repository.ts`, `job-repository.ts`, `system-repository.ts`, `defect-repository.ts`, `finance-repository.ts`, `staff-repository.ts`
 
-Direct `db.prepare()` calls are prohibited outside repositories. Every read must filter `deleted_at IS NULL` — the soft-delete pattern applies to all tables (`users` additionally uses `is_active`).
+There is a secondary `src/lib/server/repositories/` directory containing newer `job-repository.ts` and `site-repository.ts` — these follow the same conventions. Direct `db.prepare()` calls are prohibited outside repositories. Every read must filter `deleted_at IS NULL` — the soft-delete pattern applies to all tables (`users` additionally uses `is_active`).
+
+### Services layer (`src/lib/server/services/`)
+
+Higher-level business logic that orchestrates repository calls:
+- `finance-service.ts` — finance task lifecycle (quote → invoice → payment), Sage-first model
+- `job-service.ts` — job dispatch and status transitions
+- `compliance-service.ts`, `dashboard-service.ts`, `report-service.ts`, `audit-service.ts`
+- `sage-client.ts` — Sage OAuth2 client for accounting sync
+
+### Access control and input validation (`src/lib/server/access.ts`)
+
+All API endpoints use these helpers at the top of handlers:
+
+```ts
+import { requireAdmin, requireFinance, clientSiteIds, cleanText, cleanId, cleanEmail, cleanInt } from "@server/access";
+
+const guard = requireAdmin(user);      // returns Response | null
+if (guard) return guard;               // 403 if not admin
+```
+
+Input sanitisers (`cleanText`, `cleanId`, `cleanEmail`, `cleanDate`, `cleanChoice`, `cleanBoolean`, `cleanInt`) are the boundary validators — use them on all user-supplied values before writing to D1.
+
+### Error handling (`src/lib/server/http-errors.ts`)
+
+Use `withErrorHandling()` to wrap API handlers:
+
+```ts
+import { withErrorHandling, badRequest, forbidden } from "@server/http-errors";
+
+return withErrorHandling(db, request, async () => {
+  // handler body — throw AppError subclasses for structured responses
+  if (!valid) throw badRequest("Invalid field", { field: "name" });
+}, { entityType: "job", entityId: id, user });
+```
+
+Never leak internal error details — `AppError.toJSON()` sanitises stack traces, file paths, and connection strings before returning to the client.
 
 ### Client-side portal pattern (`src/lib/client/portalApi.ts`)
 
@@ -101,6 +143,13 @@ The service worker at `src/sw.ts` uses network-first for API routes, cache-first
 ### Financial data
 
 All monetary values are stored as **INTEGER cents** — never `REAL`. VAT is always 15%, calculated as `Math.round((amountCents * 15) / 100)`. Floating-point arithmetic on money is prohibited.
+
+The portal follows a **Sage-first model**: official invoices and payments live in Sage Accounting; the portal tracks operational finance tasks (`FinanceTask`) that mirror the Sage document lifecycle (`Quote Required → Quote Issued in Sage → Invoice Required → Invoice Issued in Sage → Payment Recorded in Sage`). Never duplicate accounting records in D1.
+
+### Scheduling algorithms (`src/lib/algorithms/`)
+
+- `capacity-balancing.ts` — technician workload balancing
+- `sla-algorithm.ts` — SLA scoring and prioritisation for job dispatch
 
 ---
 
@@ -154,6 +203,13 @@ Keep the exact banned-term list in `scripts/audit-site.ts` as the source of trut
 The staging domain is `tequit.co.za` — this is intentional and not an error. `PUBLIC_SITE_URL`, `PUBLIC_PORTAL_URL`, and `PUBLIC_CONTACT_EMAIL` are the only env vars to change at production cutover to `kharon.co.za`. No code changes are required for the domain switch.
 
 D1 database: `kharon-portal` (binding `DB`). R2 bucket: `kharon-portal-storage` (binding `STORAGE`). Cron trigger fires hourly (`0 * * * *`) for data retention enforcement.
+
+### Wrangler configs (split deployment)
+
+- `wrangler.portal.jsonc` — portal worker (`kfs-portal`), routes `portal.tequit.co.za/*`, holds D1 + R2 bindings
+- `wrangler.website.jsonc` — website worker (`kfs-website`), routes `tequit.co.za/*` and `www.tequit.co.za/*`, no bindings
+
+`astro.config.ts` passes `configPath: "wrangler.portal.jsonc"` to the cloudflare adapter so the generated `dist/server/wrangler.json` includes the D1/R2 bindings required by the audit script. Do not remove this. Full architecture documented in `docs/roadmap/DEPLOYMENT_ARCHITECTURE.md`.
 
 ---
 
