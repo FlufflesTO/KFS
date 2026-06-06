@@ -81,19 +81,19 @@ const { defects, systems } = Astro.props;
           </div>
           <div class="flex items-center gap-2 text-xs">
             <span class={`rounded px-2 py-1 font-bold ${
-              item.severity === "Critical" ? "bg-kharon-red text-white" :
-              item.severity === "Major"    ? "bg-amber-200 text-amber-800" :
-              item.severity === "Minor"    ? "bg-blue-100 text-blue-800" :
+              item.severity === "Critical" ? "bg-kharon-red/20 border border-kharon-red/40 text-kharon-red" :
+              item.severity === "Major"    ? "bg-kharon-amber/20 border border-kharon-amber/40 text-kharon-amber" :
+              item.severity === "Minor"    ? "bg-kharon-blue/20 border border-kharon-blue/40 text-white" :
                                             "bg-kharon-grey/10 text-white/70"
             }`}>{item.severity}</span>
             {item.certificate_blocking ? (
-              <span class="rounded border border-amber-300 bg-amber-50 px-2 py-1 font-bold text-amber-700">Blocks cert</span>
+              <span class="rounded border border-kharon-amber/40 bg-kharon-amber/10 px-2 py-1 font-bold text-kharon-amber">Blocks cert</span>
             ) : null}
           </div>
           <div class="flex flex-wrap gap-2">
             <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
             {item.status !== "Resolved" && (
-              <button type="button" class="resolve-defect rounded-md border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-700" data-id={item.id}>Resolve</button>
+              <button type="button" class="resolve-defect rounded-md border border-kharon-green/40 bg-kharon-green/10 px-4 py-2 text-sm font-semibold text-kharon-green" data-id={item.id}>Resolve</button>
             )}
             {item.status !== "Closed" && (
               <button type="button" class="close-defect rounded-md border border-kharon-grey px-4 py-2 text-sm font-semibold text-white/70" data-id={item.id}>Close</button>

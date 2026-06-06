@@ -104,11 +104,11 @@ function getStatusClass(nextDueDate: string | null): string {
 }
 
 function getStatusBgClass(nextDueDate: string | null): string {
-  if (!nextDueDate) return "bg-green-100 text-kharon-green border border-green-200";
+  if (!nextDueDate) return "bg-kharon-green/20 text-kharon-green border border-kharon-green/40";
   const diff = nextDueDate.localeCompare(today);
-  if (diff < 0) return "bg-red-100 text-kharon-red border border-red-200";
-  if (nextDueDate.localeCompare(soonDate) <= 0) return "bg-amber-100 text-kharon-amber border border-amber-200";
-  return "bg-green-100 text-kharon-green border border-green-200";
+  if (diff < 0) return "bg-kharon-red/20 text-kharon-red border border-kharon-red/40";
+  if (nextDueDate.localeCompare(soonDate) <= 0) return "bg-kharon-amber/20 text-kharon-amber border border-kharon-amber/40";
+  return "bg-kharon-green/20 text-kharon-green border border-kharon-green/40";
 }
 
 function getStatusLabel(nextDueDate: string | null): string {
@@ -238,7 +238,7 @@ try {
 ---
 
 <PortalLayout title="Compliance Command Center | Kharon Portal" active="client-compliance" user={user}>
-  <section class="bg-gradient-to-r from-[#0B0D0F] to-[#1A1F26] px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
+  <section class="bg-gradient-to-r from-kharon-black to-kharon-charcoal px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
     <div class="mx-auto max-w-7xl">
       <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Compliance Command Center</p>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">System Compliance Overview</h1>
