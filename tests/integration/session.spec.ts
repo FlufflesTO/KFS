@@ -651,7 +651,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
 
     const response = await page.request.get('/portal/admin/dashboard');
     // Should not cause server error
-    expect(response.status()).not.toBe(500);
+    expect([302, 401]).toContain(response.status());
   });
 
   test('should handle session token with XSS attempt', async ({ page }) => {
@@ -668,7 +668,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
     ]);
 
     const response = await page.request.get('/portal/admin/dashboard');
-    expect(response.status()).not.toBe(500);
+    expect([302, 401]).toContain(response.status());
   });
 
   test('should handle rapid session creation and destruction', async ({ page }) => {
