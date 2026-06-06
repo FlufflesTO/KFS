@@ -9,7 +9,7 @@ import type { APIContext } from "astro";
 import type { D1Database } from "@cloudflare/workers-types";
 import { getDatabase } from "../../../lib/server/bindings.ts";
 import { auditEvent, auditError } from "../../../lib/server/audit";
-import { createSessionToken, sessionCookie, verifyPassword } from "../../../lib/server/auth.js";
+import { createSessionToken, sessionCookie, verifyPassword, sha256Hex } from "../../../lib/server/auth.js";
 import { decryptMfaSecret, verifyTotpCode } from "../../../lib/server/mfa.ts";
 import { consumeRateLimit, resetRateLimit } from "../../../lib/server/rateLimit.js";
 import { badRequest, json, methodNotAllowed, serverError, tooManyRequests, unauthorized } from "../../../lib/server/http.ts";
@@ -72,15 +72,54 @@ export async function POST({ request }: APIContext): Promise<Response> {
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "");
     const mfaCode = String(body.mfaCode || "");
-    
+
     db = getDatabase();
 
     if (!email || !password) {
       return badRequest("Email and password are required.");
     }
 
-    // Rate limiting is handled by middleware (5 attempts per 15min)
-    // No duplicate check needed here to avoid confusion
+    // Rate limit by email (5 attempts per 15 min) to block credential stuffing.
+    // Also rate limit by IP (10 attempts per 15 min) to block password spraying.
+    // The /portal/api/auth path is exempt from middleware auth guards (user is not
+    // yet set in locals), so we must enforce rate limits here directly.
+    const emailRateLimit = await consumeRateLimit(db!, request, {
+      scope: "portal.auth.login",
+      subject: email,
+      maxAttempts: 5,
+      windowSeconds: 900
+    });
+    if (!emailRateLimit.allowed) {
+      await auditEvent(db!, request, {
+        eventType: "auth.login",
+        entityType: "user",
+        entityId: email,
+        outcome: "blocked",
+        subject: email,
+        metadata: { reason: "rate_limited_email", retryAfter: emailRateLimit.retryAfter }
+      });
+      return tooManyRequests("Too many login attempts. Try again in 15 minutes.", emailRateLimit.retryAfter);
+    }
+
+    // IP-scoped bucket to block password spraying across many email addresses
+    const ipHash = await sha256Hex(request.headers.get("cf-connecting-ip") || "unknown");
+    const ipRateLimit = await consumeRateLimit(db!, request, {
+      scope: "portal.auth.login.ip",
+      subject: ipHash,
+      maxAttempts: 10,
+      windowSeconds: 900
+    });
+    if (!ipRateLimit.allowed) {
+      await auditEvent(db!, request, {
+        eventType: "auth.login",
+        entityType: "user",
+        entityId: email,
+        outcome: "blocked",
+        subject: email,
+        metadata: { reason: "rate_limited_ip", retryAfter: ipRateLimit.retryAfter }
+      });
+      return tooManyRequests("Too many login attempts. Try again in 15 minutes.", ipRateLimit.retryAfter);
+    }
 
     const userRepo = new UserRepository(db!);
     const user = await userRepo.findWithSecretsByEmail(email);
