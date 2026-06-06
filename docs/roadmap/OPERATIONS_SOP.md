@@ -236,7 +236,7 @@ Escalation:
 - Escalate immediately if any client could view another client's records.
 - Treat any suspected legal or contractual reporting requirement as a management/legal decision, not a developer-only decision.
 
-## Production Readiness Checklist
+## Production Cutover Checklist
 
 Use this checklist before enabling broader operational use of `portal.kharon.co.za`.
 
