@@ -111,9 +111,13 @@ async function refreshSageToken(db: D1Database, env: Record<string, unknown>, re
   const data = (await response.json()) as SageTokenResponse;
   const expiresAt = Math.floor(Date.now() / 1000) + Number(data.expires_in || 3600);
 
+  // Sage may omit refresh_token on some refresh responses (token rotation not always active).
+  // Fall back to the existing refreshToken to avoid corrupting stored credentials.
+  const newRefreshToken = data.refresh_token || refreshToken;
+
   // Encrypt tokens before storing
   const encryptedAccessToken = await encryptText(data.access_token, env);
-  const encryptedRefreshToken = await encryptText(data.refresh_token, env);
+  const encryptedRefreshToken = await encryptText(newRefreshToken, env);
 
   await db.prepare(
     `INSERT INTO sage_config (id, access_token, refresh_token, expires_at, updated_at)

@@ -57,29 +57,34 @@ export class FinanceRepository {
   }
 
   async update(id: string, updates: Partial<DbFinanceTask>): Promise<void> {
-    const fields = [];
-    const values = [];
-    
+    const fields: string[] = [];
+    const values: unknown[] = [];
+
+    if (updates.task_type !== undefined) {
+      fields.push('task_type = ?');
+      values.push(updates.task_type);
+    }
+
     if (updates.status !== undefined) {
       fields.push('status = ?');
       values.push(updates.status);
     }
-    
+
     if (updates.sage_document_ref !== undefined) {
       fields.push('sage_document_ref = ?');
       values.push(updates.sage_document_ref);
     }
-    
+
     if (updates.notes !== undefined) {
       fields.push('notes = ?');
       values.push(updates.notes);
     }
-    
+
     if (fields.length === 0) return;
-    
+
     fields.push('updated_at = CURRENT_TIMESTAMP');
     values.push(id);
-    
+
     await this.db.prepare(`
       UPDATE finance_tasks SET ${fields.join(', ')} WHERE id = ?
     `).bind(...values).run();
@@ -100,12 +105,13 @@ export class FinanceRepository {
       unpaid_amount: number;
     }>();
 
-    // D1 returns integers as numbers - ensure strict integer typing
+    // D1 returns aggregates as numbers. Use Math.round rather than bitwise | 0:
+    // bitwise OR truncates to a signed 32-bit integer, which wraps negative above ~R21.47m.
     return {
-      pending_tasks: Number(result?.pending_tasks ?? 0) | 0,
-      total_pending_value: Number(result?.total_pending_value ?? 0) | 0,
-      overdue_invoices: Number(result?.overdue_invoices ?? 0) | 0,
-      unpaid_amount: Number(result?.unpaid_amount ?? 0) | 0
+      pending_tasks: Math.round(Number(result?.pending_tasks ?? 0)),
+      total_pending_value: Math.round(Number(result?.total_pending_value ?? 0)),
+      overdue_invoices: Math.round(Number(result?.overdue_invoices ?? 0)),
+      unpaid_amount: Math.round(Number(result?.unpaid_amount ?? 0))
     };
   }
 }

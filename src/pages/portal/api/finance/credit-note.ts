@@ -81,9 +81,38 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     }
 
     const creditNoteId = crypto.randomUUID();
-    const amountExVat = body.amountExVat != null ? -Math.abs(Number(body.amountExVat)) : -(original.sage_amount_ex_vat ?? original.amount);
-    const vatAmount = body.vatAmount != null ? -Math.abs(Number(body.vatAmount)) : -(original.sage_vat_amount ?? 0);
-    const amountIncVat = body.amountIncVat != null ? -Math.abs(Number(body.amountIncVat)) : (amountExVat + vatAmount);
+
+    // All monetary values are INTEGER CENTS throughout this file.
+    // If the caller supplies overrides they must also be integer cents (same contract as the
+    // underlying financial_records columns).  Non-integer or NaN inputs are rejected.
+    function requireIntCents(value: unknown, field: string): number {
+      const n = Number(value);
+      if (!Number.isFinite(n) || !Number.isInteger(n)) {
+        throw new RangeError(`${field} must be an integer number of cents`);
+      }
+      return Math.abs(n); // credit note amounts are stored as negative; sign applied below
+    }
+
+    let rawAmountExVat: number;
+    let rawVatAmount: number;
+    if (body.amountExVat != null) {
+      rawAmountExVat = requireIntCents(body.amountExVat, "amountExVat");
+    } else {
+      rawAmountExVat = Math.abs(original.sage_amount_ex_vat ?? original.amount);
+    }
+    if (body.vatAmount != null) {
+      rawVatAmount = requireIntCents(body.vatAmount, "vatAmount");
+    } else {
+      // Derive from stored ex-VAT at 15% if sage_vat_amount is absent
+      rawVatAmount = original.sage_vat_amount != null
+        ? Math.abs(original.sage_vat_amount)
+        : Math.round((rawAmountExVat * 15) / 100);
+    }
+
+    // Store as negative cents (credit note reverses the original charge)
+    const amountExVat = -rawAmountExVat;
+    const vatAmount = -rawVatAmount;
+    const amountIncVat = amountExVat + vatAmount;
 
     await db.batch([
       db.prepare(

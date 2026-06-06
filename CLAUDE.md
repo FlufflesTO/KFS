@@ -73,10 +73,13 @@ Six sequential handlers applied to every `/portal` request:
 
 Role → dashboard mappings: `admin → /portal/admin/dashboard`, `tech → /portal/tech/dashboard`, `client → /portal/client/dashboard`, `finance → /portal/finance/dashboard`.
 
+> **Astro 6 + `@astrojs/cloudflare` v13 removal**: `Astro.locals.runtime` is gone. For the `ExecutionContext` (`waitUntil()`) use `Astro.locals.cfContext`. Any remaining `locals.runtime` usage is a runtime crash.
+
 ### Type system
 
 - **DB entity types** live in `packages/types/src/domain.ts` — `DbUser`, `DbSite`, `DbSystem`, `DbJob`, `DbDefect`, `DbCertificate`, `DbFinancialRecord`, `DbLinkableJob`, and others. Import from there, never define inline types for database rows.
 - **Zod validation schemas** live in `packages/types/src/base.ts` — `JobSchema`, `JobCreateSchema`, `JobUpdateSchema`, etc. Use these at API boundaries.
+- **Zod v4 breaking change**: `safeParse()` errors are in `error.issues[]` (not `error.errors`). Each issue has `{ code, path, message }`. Switch any remaining `error.errors` reads to `error.issues`.
 
 ### Repository layer (`src/lib/server/db/`)
 

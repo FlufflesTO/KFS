@@ -91,36 +91,41 @@ export class FinanceService {
    * Update a finance task status
    */
   async updateFinanceTask(id: string, updates: Partial<FinanceTask>): Promise<void> {
-    const fields = [];
-    const values = [];
-    
+    const fields: string[] = [];
+    const values: unknown[] = [];
+
+    if (updates.taskType !== undefined) {
+      fields.push('task_type = ?');
+      values.push(updates.taskType);
+    }
+
     if (updates.status !== undefined) {
       fields.push('status = ?');
       values.push(updates.status);
     }
-    
+
     if (updates.sageDocumentRef !== undefined) {
       fields.push('sage_document_ref = ?');
       values.push(updates.sageDocumentRef);
     }
-    
+
     if (updates.sageDocumentId !== undefined) {
       fields.push('sage_document_id = ?');
       values.push(updates.sageDocumentId);
     }
-    
+
     if (updates.notes !== undefined) {
       fields.push('notes = ?');
       values.push(updates.notes);
     }
-    
+
     if (fields.length === 0) return;
-    
+
     fields.push('updated_at = CURRENT_TIMESTAMP');
     values.push(id);
-    
+
     await this.db.prepare(`
-      UPDATE finance_tasks 
+      UPDATE finance_tasks
       SET ${fields.join(', ')}
       WHERE id = ?
     `).bind(...values).run();

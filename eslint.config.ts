@@ -20,7 +20,11 @@ const config: Linter.Config[] = [
       "public/**/*",
       "scratch/**/*",
       "test-auth.js",
-      ".claude/**/*"
+      ".claude/**/*",
+      ".remember/**/*",
+      "memory/**/*",
+      "backups/**/*",
+      "conductor/**/*"
     ]
   },
   {

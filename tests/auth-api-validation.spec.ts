@@ -6,18 +6,18 @@
 
 import { test, expect } from '@playwright/test';
 
-// Test configuration
-const BASE_URL = 'http://localhost:4321';
-const AUTH_ENDPOINT = `${BASE_URL}/portal/api/auth`;
+// Test configuration — use relative path so Playwright resolves against baseURL
+const AUTH_ENDPOINT = '/portal/api/auth';
 
-// Test data
+// Test data — must match a user present in seedTestUsersSQL (tests/fixtures/test-users.ts)
+// Using tech role (non-elevated): no MFA redirect, safe for fixture login
 const VALID_TEST_USER = {
-  email: 'test.admin@kharon.co.za',
+  email: 'tech.test@kharon.co.za',
   password: 'TestPassword123!'
 };
 
 const INVALID_CREDENTIALS = {
-  email: 'test.admin@kharon.co.za',
+  email: 'tech.test@kharon.co.za',
   password: 'WrongPassword456!'
 };
 
@@ -141,7 +141,7 @@ test.describe('Auth API - Invalid Credentials', () => {
   test('should not reveal if email exists vs password wrong', async ({ request }) => {
     // Security: Both cases should return identical error messages
     const response1 = await request.post(AUTH_ENDPOINT, {
-      data: { email: 'test.admin@kharon.co.za', password: 'wrong' }
+      data: { email: 'tech.test@kharon.co.za', password: 'wrong' }
     });
 
     const response2 = await request.post(AUTH_ENDPOINT, {
@@ -215,7 +215,7 @@ test.describe('Auth API - Malformed Requests', () => {
     // Email with leading/trailing spaces should be trimmed
     const response = await request.post(AUTH_ENDPOINT, {
       data: {
-        email: '  test.admin@kharon.co.za  ',
+        email: '  tech.test@kharon.co.za  ',
         password: VALID_TEST_USER.password
       }
     });

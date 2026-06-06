@@ -61,3 +61,5 @@ Do not introduce any of the following strings in copy, pages, or comments, as th
 - **Code Linting**: Run `npm run lint` to run ESLint.
 - **Full Build & Audit**: Run `npm run validate:site` to build the app, compile the service worker, purge CSS, and run the security/compliance audit.
 - **E2E Testing**: Run `npx playwright test` to run Playwright tests.
+
+Load all plugins, skills and mcps needed for expert dev in this project

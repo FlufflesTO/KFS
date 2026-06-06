@@ -33,13 +33,23 @@ export async function POST({ request, locals }: import('astro').APIContext) {
     if (itemType === "Quote") taskType = "Quote Required";
     if (itemType === "Invoice") taskType = "Invoice Required";
 
-    // Convert amount from Rands to cents for schema validation
+    // Convert amount from Rands to cents for schema validation.
+    // amountExVat arrives as a decimal Rand value (e.g. 150.50); convert to integer cents first.
+    // VAT is always derived server-side at 15% using integer arithmetic — never from the client.
+    const rawAmountExVat = Number(body.amountExVat || 0);
+    if (!Number.isFinite(rawAmountExVat) || rawAmountExVat < 0) {
+      return badRequest("amountExVat must be a non-negative number.");
+    }
+    const amountExVatCents = Math.round(rawAmountExVat * 100);
+    // SARS VAT: per-line, integer-only arithmetic to avoid IEEE 754 drift.
+    const vatAmountCents = Math.round((amountExVatCents * 15) / 100);
+
     const payload = {
       siteId: String(body.siteId || "").trim(),
       jobId: body.jobId ? String(body.jobId).trim() : null,
       taskType,
-      amountExVat: Math.round(Number(body.amountExVat || 0) * 100), // Convert to cents
-      vatAmount: body.vatAmount ? Math.round(Number(body.vatAmount) * 100) : Math.round(Number(body.amountExVat || 0) * 100 * 0.15),
+      amountExVat: amountExVatCents,
+      vatAmount: vatAmountCents,
       reference: body.reference ? String(body.reference).trim().slice(0, 120) : null,
       financeNotes: body.financeNotes ? String(body.financeNotes).trim().slice(0, 500) : null
     };
