@@ -1,26 +1,27 @@
 import { getBindings } from "../../../lib/server/bindings";
+import { constantTimeEqual } from "../../../lib/server/crypto-utils.js";
 
 export const prerender = false;
 
 export async function POST({ request }: { request: Request }) {
   try {
     const { env, db } = getBindings();
-    
+
     // Verify webhook source using a shared secret from environment
     const authHeader = request.headers.get("Authorization");
     const webhookSecret = String(env.SAGE_WEBHOOK_SECRET || "");
-    
+
     if (!webhookSecret) {
       console.warn("SAGE_WEBHOOK_SECRET is not configured. Webhook security is degraded.");
     }
 
-    if (!authHeader || (webhookSecret && authHeader !== `Bearer ${webhookSecret}`)) {
+    if (!authHeader || (webhookSecret && !constantTimeEqual(authHeader, `Bearer ${webhookSecret}`))) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     // Verify this is from Sage
     const contentType = request.headers.get("Content-Type");
     if (!contentType?.includes("application/json")) {
@@ -29,14 +30,14 @@ export async function POST({ request }: { request: Request }) {
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     let payload: Record<string, any>;
     try {
       payload = await request.json() as Record<string, any>;
     } catch (e) {
       return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
     }
-    
+
     // Validate webhook payload
     if (!payload.event || !payload.data) {
       return new Response(
@@ -44,7 +45,7 @@ export async function POST({ request }: { request: Request }) {
         { status: 400, headers: { "Content-Type": "application/json" } }
     );
     }
-    
+
     // Process different Sage events
     switch (payload.event) {
       case 'payment_received':
@@ -60,7 +61,7 @@ export async function POST({ request }: { request: Request }) {
         console.log(`Unhandled Sage event: ${payload.event}`);
         break;
     }
-    
+
     return new Response(
       JSON.stringify({ success: true }),
       { status: 200, headers: { "Content-Type": "application/json" } }
@@ -78,8 +79,8 @@ async function handlePaymentReceived(db: import('@cloudflare/workers-types').D1D
   // Update financial records with Sage payment reference
   if (data.invoice_number && data.payment_reference) {
     await db.prepare(
-      `UPDATE financial_records 
-       SET sage_payment_reference = ?1, 
+      `UPDATE financial_records
+       SET sage_payment_reference = ?1,
            payment_status = 'Settled',
            finance_task_status = 'Paid in Sage',
            updated_at = datetime('now')
@@ -92,7 +93,7 @@ async function handleInvoicePaid(db: import('@cloudflare/workers-types').D1Datab
   // Update invoice status when paid in Sage
   if (data.invoice_number) {
     await db.prepare(
-      `UPDATE financial_records 
+      `UPDATE financial_records
        SET payment_status = 'Settled',
            finance_task_status = 'Paid in Sage',
            sage_document_date = ?1,
@@ -106,7 +107,7 @@ async function handleQuoteApproved(db: import('@cloudflare/workers-types').D1Dat
   // Update quote status when approved in Sage
   if (data.quote_number) {
     await db.prepare(
-      `UPDATE financial_records 
+      `UPDATE financial_records
        SET finance_task_status = 'Quote Approved',
            sage_document_date = ?1,
            updated_at = datetime('now')
