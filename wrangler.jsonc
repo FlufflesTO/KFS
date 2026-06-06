@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "kharon-website",
+  "name": "kfs-website",
   "compatibility_date": "2026-05-20",
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": "dist",

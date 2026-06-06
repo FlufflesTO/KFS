@@ -219,6 +219,25 @@ async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, session
   };
 }
 
+const portalDomain = "portal.tequit.co.za";
+const websiteDomain = "www.tequit.co.za";
+
+// 0. Domain-based routing
+const domainRouterMiddleware: MiddlewareHandler = async (context, next) => {
+  const { pathname } = context.url;
+  const host = context.request.headers.get("host") || "";
+
+  // If on portal domain, redirect non-portal/api paths to /portal
+  if (host.includes(portalDomain)) {
+    const isPortalPath = pathname.startsWith("/portal") || pathname.startsWith("/api");
+    if (!isPortalPath || pathname === "/" || pathname === "") {
+      return context.redirect("/portal", 302);
+    }
+  }
+
+  return await next();
+};
+
 // 1. Core setup and AB testing
 const setupMiddleware: MiddlewareHandler = async (context, next) => {
   const nonce = createCspNonce();
@@ -421,6 +440,7 @@ const rbacMiddleware: MiddlewareHandler = async (context, next) => {
 };
 
 const middlewareChain = sequence(
+  domainRouterMiddleware,
   setupMiddleware,
   authMiddleware,
   mfaEnforcementMiddleware,

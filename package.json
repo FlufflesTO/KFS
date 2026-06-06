@@ -1,5 +1,5 @@
 {
-  "name": "kharon-website",
+  "name": "kfs-website",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -48,6 +48,7 @@
     "astro": "^6.3.3",
     "claude": "^0.1.1",
     "cli": "^1.0.1",
+    "mixpanel-browser": "^2.80.0",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
     "tailwindcss": "^4.3.0",
