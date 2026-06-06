@@ -77,6 +77,7 @@ export interface ProofSignal {
 const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://www.tequit.co.za";
 const portalUrl = import.meta.env.PUBLIC_PORTAL_URL || "https://portal.tequit.co.za";
 const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || "admin@kharon.co.za";
+const portalLoginUrl = `${portalUrl.replace(/\/$/, "")}/portal/login`;
 
 export const site: SiteConfig = {
   name: "Kharon Fire and Security Solutions (Pty) Ltd",
@@ -87,7 +88,7 @@ export const site: SiteConfig = {
   url: siteUrl,
   portalUrl,
   portalStatus: "Open the secure Kharon operations portal for lifecycle records, dispatches, client systems and finance workspaces.",
-  portalLoginPath: "/portal/login",
+  portalLoginPath: portalLoginUrl,
   email: contactEmail,
   phone: "061 545 8830",
   address: "Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd, Ndabeni, Maitland, 7405",

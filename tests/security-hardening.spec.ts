@@ -117,6 +117,26 @@ test.describe('Phase 3: E2E Verification & Hardening', () => {
     expect(cspErrors).toEqual([]);
   });
 
+  test('Public navigation sends portal users to the canonical portal host', async ({ page }) => {
+    await page.goto('/');
+
+    const portalLink = page.getByRole('link', { name: /^Portal$/ }).first();
+    await expect(portalLink).toBeVisible();
+    await expect(portalLink).toHaveAttribute('href', 'https://portal.tequit.co.za/portal/login');
+  });
+
+  test('Public-host portal requests are canonicalized before portal auth or DB code runs', async () => {
+    const middleware = fs.readFileSync('src/middleware.ts', 'utf8');
+
+    expect(middleware).toContain('PUBLIC_PORTAL_URL');
+    expect(middleware).toContain('shouldRedirectToPortalHost(host, pathname)');
+    expect(middleware).toContain('return redirectToPortalHost(context, nonce);');
+    expect(middleware).toContain('context.redirect(target.toString(), status)');
+    expect(middleware).toContain('? 302 : 307');
+    expect(middleware.indexOf('shouldRedirectToPortalHost(host, pathname)'))
+      .toBeLessThan(middleware.indexOf('getDatabase()'));
+  });
+
   test('Dispatch contract: admin dispatch uses request body job IDs and explicit actions', async () => {
     const dispatchApi = fs.readFileSync('src/pages/portal/api/admin/dispatch.ts', 'utf8');
     const dispatchPage = fs.readFileSync('src/pages/portal/admin/dispatch.astro', 'utf8');

@@ -25,6 +25,15 @@ const passwordApiPath = "/portal/api/change-password";
 const mfaPath = "/portal/account/mfa";
 const mfaApiPath = "/portal/api/mfa";
 const portalRootPath = "/portal";
+const configuredPortalUrl = import.meta.env.PUBLIC_PORTAL_URL || "https://portal.tequit.co.za";
+const portalOrigin = (() => {
+  try {
+    return new URL(configuredPortalUrl).origin;
+  } catch {
+    return "https://portal.tequit.co.za";
+  }
+})();
+const portalHostname = new URL(portalOrigin).hostname.toLowerCase();
 
 function createCspNonce(): string {
   const bytes = new Uint8Array(16);
@@ -197,6 +206,34 @@ function rateLimitConfig(pathname: string) {
   return configs[pathname] || { scope: `portal.write.${pathname.replaceAll("/", ".")}`.slice(0, 80), maxAttempts: 20, windowSeconds: 900 };
 }
 
+function isLocalHost(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
+function hostnameFromHost(host: string): string {
+  const trimmed = host.trim().toLowerCase();
+  if (trimmed.startsWith("[")) {
+    const closingBracket = trimmed.indexOf("]");
+    return closingBracket > 0 ? trimmed.slice(1, closingBracket) : trimmed;
+  }
+  return trimmed.split(":")[0] || "";
+}
+
+function shouldRedirectToPortalHost(host: string, pathname: string): boolean {
+  if (!pathname.startsWith("/portal")) return false;
+
+  const hostname = hostnameFromHost(host);
+  if (!hostname || isLocalHost(hostname)) return false;
+
+  return hostname !== portalHostname;
+}
+
+function redirectToPortalHost(context: APIContext, nonce: string): Response {
+  const target = new URL(`${context.url.pathname}${context.url.search}`, portalOrigin);
+  const status = ["GET", "HEAD"].includes(context.request.method.toUpperCase()) ? 302 : 307;
+  return withSecurityHeaders(context.redirect(target.toString(), status), nonce);
+}
+
 interface ActiveUserRow {
   id: string;
   name: string;
@@ -254,12 +291,16 @@ async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, session
 const setupMiddleware: MiddlewareHandler = async (context, next) => {
   const host = context.request.headers.get("host") ?? "";
   const pathname = context.url.pathname;
-  if (host === "portal.tequit.co.za" && (pathname === "/" || pathname === "")) {
-    return context.redirect("/portal/login", 302);
-  }
-
   const nonce = createCspNonce();
   context.locals.nonce = nonce;
+
+  if (shouldRedirectToPortalHost(host, pathname)) {
+    return redirectToPortalHost(context, nonce);
+  }
+
+  if (host === "portal.tequit.co.za" && (pathname === "/" || pathname === "")) {
+    return withSecurityHeaders(context.redirect("/portal/login", 302), nonce);
+  }
 
   const variantCookie = context.cookies.get("kharon_ui_variant")?.value;
   let variant = variantCookie || (Math.random() < 0.5 ? "A" : "B");
