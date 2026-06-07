@@ -60,12 +60,14 @@ export function resolveBindingsForAuth(): AuthEnv {
   // Check if we're in a CI environment (GITHUB_ACTIONS) or running tests (NODE_ENV)
   const isCI = typeof process !== "undefined" && process.env && (process.env.GITHUB_ACTIONS === "true" || process.env.NODE_ENV === "test");
   
-  if (isCI && !env.SESSION_SECRET) {
-    env.SESSION_SECRET = "test_session_secret_at_least_32_chars_long_in_code_fallback";
-    env.CSRF_SECRET = "test_csrf_secret_at_least_32_chars_long_in_code_fallback";
-    env.MFA_SECRET = "test_mfa_secret_at_least_32_chars_long_in_code_fallback";
-    env.AUTH_SECRET = "test_auth_secret_at_least_32_chars_long_in_code_fallback";
-    env.FINGERPRINT_SECRET = "test_fingerprint_secret_at_least_32_chars_long_in_code_fallback";
+  // Provide safe fallback for tests if secrets are missing
+  if (isCI) {
+    if (!env.SESSION_SECRET) env.SESSION_SECRET = "test_session_secret_at_least_32_chars_long_in_code_fallback";
+    if (!env.CSRF_SECRET) env.CSRF_SECRET = "test_csrf_secret_at_least_32_chars_long_in_code_fallback";
+    if (!env.MFA_SECRET) env.MFA_SECRET = "test_mfa_secret_at_least_32_chars_long_in_code_fallback";
+    if (!env.AUTH_SECRET) env.AUTH_SECRET = "test_auth_secret_at_least_32_chars_long_in_code_fallback";
+    if (!env.FINGERPRINT_SECRET) env.FINGERPRINT_SECRET = "test_fingerprint_secret_at_least_32_chars_long_in_code_fallback";
+    if (!env.AUDIT_IP_SALT) env.AUDIT_IP_SALT = "test_audit_ip_salt_at_least_32_chars_long_in_code_fallback";
   }
 
   const environment = env.ENVIRONMENT || "local";
