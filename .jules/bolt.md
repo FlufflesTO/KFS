@@ -1,0 +1,3 @@
+## 2024-06-07 - Fix N+1 Query in HR Page
+**Learning:** Found an N+1 query in the Admin HR page (`src/pages/portal/admin/hr.astro`), where `listStaffFiles` was being called individually for each staff member inside `await Promise.all(members.map(async (m) => ...))`. This scales poorly with many staff members, as it creates an extra database query for every member row loaded.
+**Action:** Replace `Promise.all` loops running N queries with a single query to fetch all related records (`listAllStaffFiles`), and use JavaScript (`Array.reduce`) to construct an in-memory grouping object to map the records efficiently. This reduces the time complexity on the database from O(N) to O(1) queries.
