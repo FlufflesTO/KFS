@@ -59,22 +59,24 @@ export function resolveBindingsForAuth(): AuthEnv {
   // 3. Validation guard
   // Check if we're in a CI environment (GITHUB_ACTIONS) or running tests (NODE_ENV)
   const isCI = typeof process !== "undefined" && process.env && (process.env.GITHUB_ACTIONS === "true" || process.env.NODE_ENV === "test");
-  
+
   // Provide safe fallback for tests if secrets are missing
   if (isCI) {
-    if (!env.SESSION_SECRET || String(env.SESSION_SECRET).length < 32) env.SESSION_SECRET = "test_session_secret_at_least_32_chars_long_in_code_fallback";
-    if (!env.CSRF_SECRET || String(env.CSRF_SECRET).length < 32) env.CSRF_SECRET = "test_csrf_secret_at_least_32_chars_long_in_code_fallback";
-    if (!env.MFA_SECRET || String(env.MFA_SECRET).length < 32) env.MFA_SECRET = "test_mfa_secret_at_least_32_chars_long_in_code_fallback";
-    if (!env.AUTH_SECRET || String(env.AUTH_SECRET).length < 32) env.AUTH_SECRET = "test_auth_secret_at_least_32_chars_long_in_code_fallback";
-    if (!env.FINGERPRINT_SECRET || String(env.FINGERPRINT_SECRET).length < 32) env.FINGERPRINT_SECRET = "test_fingerprint_secret_at_least_32_chars_long_in_code_fallback";
-    if (!env.AUDIT_IP_SALT || String(env.AUDIT_IP_SALT).length < 32) env.AUDIT_IP_SALT = "test_audit_ip_salt_at_least_32_chars_long_in_code_fallback";
+    if (!env.SESSION_SECRET || String(env.SESSION_SECRET).length < 32) env.SESSION_SECRET = "CI_FALLBACK_SESSION_SECRET_32_CHARS_LONG_VER_3";
+    if (!env.CSRF_SECRET || String(env.CSRF_SECRET).length < 32) env.CSRF_SECRET = "CI_FALLBACK_CSRF_SECRET_32_CHARS_LONG_VER_3";
+    if (!env.MFA_SECRET || String(env.MFA_SECRET).length < 32) env.MFA_SECRET = "CI_FALLBACK_MFA_SECRET_32_CHARS_LONG_VER_3";
+    if (!env.AUTH_SECRET || String(env.AUTH_SECRET).length < 32) env.AUTH_SECRET = "CI_FALLBACK_AUTH_SECRET_32_CHARS_LONG_VER_3";
+    if (!env.FINGERPRINT_SECRET || String(env.FINGERPRINT_SECRET).length < 32) env.FINGERPRINT_SECRET = "CI_FALLBACK_FINGERPRINT_SECRET_32_CHARS_LONG_VER_3";
+    if (!env.AUDIT_IP_SALT || String(env.AUDIT_IP_SALT).length < 32) env.AUDIT_IP_SALT = "CI_FALLBACK_AUDIT_IP_SALT_32_CHARS_LONG_VER_3";
+    
+    // Force ENVIRONMENT to local for CI to bypass production secret strictness
+    env.ENVIRONMENT = "local";
   }
 
-  // Use local environment if in CI to bypass production secret strictness
-  const environment = isCI ? "local" : (env.ENVIRONMENT || "local");
-  
+  const environment = env.ENVIRONMENT || "local";
+
   if (environment !== "local" && (!env.SESSION_SECRET || String(env.SESSION_SECRET).length < 32)) {
-    throw new Error("SESSION_SECRET must be configured with at least 32 characters in production environment");
+    throw new Error("SESSION_SECRET must be configured with at least 32 characters in production environment"); 
   }
 
   return env;
