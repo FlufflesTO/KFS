@@ -19,6 +19,9 @@ jobs:
       PUBLIC_SITE_URL: https://www.kharon.co.za
       PUBLIC_PORTAL_URL: https://portal.kharon.co.za
       PUBLIC_CONTACT_EMAIL: admin@kharon.co.za
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET || 'test_session_secret_at_least_32_chars_long' }}
+      CSRF_SECRET: ${{ secrets.CSRF_SECRET || 'test_csrf_secret_at_least_32_chars_long' }}
+      MFA_SECRET: ${{ secrets.MFA_SECRET || 'test_mfa_secret_at_least_32_chars_long' }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -51,7 +54,11 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Run E2E Tests
-        run: npm test
+        run: |
+          npx wrangler d1 migrations apply kharon-portal --local --config wrangler.portal.jsonc
+          npm test
+        env:
+          NODE_ENV: test
 
       - name: D1 Migration Ledger Preflight
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
