@@ -70,11 +70,13 @@ export function resolveBindingsForAuth(): AuthEnv {
     if (!env.AUDIT_IP_SALT) env.AUDIT_IP_SALT = "test_audit_ip_salt_at_least_32_chars_long_in_code_fallback";
   }
 
-  // Use a loose check for environment to avoid strict production validation in CI
+  // Force environment to local if in CI to bypass production secret strictness
+  if (isCI) {
+    env.ENVIRONMENT = "local";
+  }
+
   const environment = env.ENVIRONMENT || "local";
-  const isProduction = environment === "production" && !isCI;
-  
-  if (isProduction && (!env.SESSION_SECRET || String(env.SESSION_SECRET).length < 32)) {
+  if (environment !== "local" && (!env.SESSION_SECRET || String(env.SESSION_SECRET).length < 32)) {
     throw new Error("SESSION_SECRET must be configured with at least 32 characters in production environment");
   }
 
