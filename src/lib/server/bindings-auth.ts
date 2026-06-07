@@ -35,6 +35,7 @@ export function resolveBindingsForAuth(): AuthEnv {
   const env: AuthEnv = {};
 
   // 1. Load from process.env fallback (local tooling / CLI / astro preview env inheritance)
+  // Note: Modern bundlers might tree-shake or polyfill process.env differently.
   if (typeof process !== "undefined" && process.env) {
     env.SESSION_SECRET = process.env.SESSION_SECRET;
     env.AUTH_SECRET = process.env.AUTH_SECRET;
@@ -58,16 +59,18 @@ export function resolveBindingsForAuth(): AuthEnv {
 
   // 3. Validation guard
   // Check if we're in a CI environment (GITHUB_ACTIONS) or running tests (NODE_ENV)
-  const isCI = typeof process !== "undefined" && process.env && (process.env.GITHUB_ACTIONS === "true" || process.env.NODE_ENV === "test");
-
+  // Use various detection methods since process.env might be unstable in some bundled environments
+  const isCI = (typeof process !== "undefined" && process.env && (process.env.GITHUB_ACTIONS === "true" || process.env.NODE_ENV === "test")) ||
+               (typeof import.meta !== "undefined" && (import.meta as any).env?.GITHUB_ACTIONS === "true");
+  
   // Provide safe fallback for tests if secrets are missing
   if (isCI) {
-    if (!env.SESSION_SECRET || String(env.SESSION_SECRET).length < 32) env.SESSION_SECRET = "CI_FALLBACK_SESSION_SECRET_V5_LITERAL_VALUE_32_CHARS";
-    if (!env.CSRF_SECRET || String(env.CSRF_SECRET).length < 32) env.CSRF_SECRET = "CI_FALLBACK_CSRF_SECRET_V5_LITERAL_VALUE_32_CHARS";
-    if (!env.MFA_SECRET || String(env.MFA_SECRET).length < 32) env.MFA_SECRET = "CI_FALLBACK_MFA_SECRET_V5_LITERAL_VALUE_32_CHARS";
-    if (!env.AUTH_SECRET || String(env.AUTH_SECRET).length < 32) env.AUTH_SECRET = "CI_FALLBACK_AUTH_SECRET_V5_LITERAL_VALUE_32_CHARS";
-    if (!env.FINGERPRINT_SECRET || String(env.FINGERPRINT_SECRET).length < 32) env.FINGERPRINT_SECRET = "CI_FALLBACK_FINGERPRINT_V5_LITERAL_VALUE_32_CHARS";
-    if (!env.AUDIT_IP_SALT || String(env.AUDIT_IP_SALT).length < 32) env.AUDIT_IP_SALT = "CI_FALLBACK_AUDIT_SALT_V5_LITERAL_VALUE_32_CHARS";
+    if (!env.SESSION_SECRET || String(env.SESSION_SECRET).length < 32) env.SESSION_SECRET = "CI_FALLBACK_SESSION_SECRET_V6_LITERAL_VALUE_32_CHARS";
+    if (!env.CSRF_SECRET || String(env.CSRF_SECRET).length < 32) env.CSRF_SECRET = "CI_FALLBACK_CSRF_SECRET_V6_LITERAL_VALUE_32_CHARS";
+    if (!env.MFA_SECRET || String(env.MFA_SECRET).length < 32) env.MFA_SECRET = "CI_FALLBACK_MFA_SECRET_V6_LITERAL_VALUE_32_CHARS";
+    if (!env.AUTH_SECRET || String(env.AUTH_SECRET).length < 32) env.AUTH_SECRET = "CI_FALLBACK_AUTH_SECRET_V6_LITERAL_VALUE_32_CHARS";
+    if (!env.FINGERPRINT_SECRET || String(env.FINGERPRINT_SECRET).length < 32) env.FINGERPRINT_SECRET = "CI_FALLBACK_FINGERPRINT_V6_LITERAL_VALUE_32_CHARS";
+    if (!env.AUDIT_IP_SALT || String(env.AUDIT_IP_SALT).length < 32) env.AUDIT_IP_SALT = "CI_FALLBACK_AUDIT_SALT_V6_LITERAL_VALUE_32_CHARS";
   }
 
   // Use local environment if in CI to bypass production secret strictness
