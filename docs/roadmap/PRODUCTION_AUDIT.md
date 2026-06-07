@@ -7,7 +7,7 @@
 
 # KharonOps Portal: Production Readiness Audit Report
 
-This report outlines the security posture, operational alignment, and data integrity checks completed on the KharonOps portal QA instance in preparation for the final cutover to `kharon.co.za`.
+This report outlines the security posture, operational alignment, and data integrity checks completed on the KharonOps portal QA instance in preparation for active Tequit production deployment.
 
 ---
 
@@ -16,7 +16,7 @@ This report outlines the security posture, operational alignment, and data integ
 QA validation has been executed using automated regression harnesses, site build analyzers, and direct remote database/storage integrity checks. The codebase is highly hardened and stable.
 
 > [!IMPORTANT]
-> The codebase is fully QA-hardened and passes all automated checks. However, final cutover to the production domains (`www.kharon.co.za` and `portal.kharon.co.za`) remains **GATED** by the manual administrative tasks detailed in Section 6.
+> The codebase is fully QA-hardened and passes automated checks, but production use on `www.tequit.co.za`, `tequit.co.za`, and `portal.tequit.co.za` remains **GATED** by the manual administrative tasks detailed in Section 6. `kharon.co.za` is future cutover only.
 
 ### System Verification Metrics
 * **Astro SSR QA Build:** `PASS`
@@ -195,13 +195,13 @@ Dashboard updates:
 
 ## 8. Current Production Blockers
 
-To execute the final cutover to `kharon.co.za`, complete the following steps:
+To execute the active Tequit production cutover, complete the following steps:
 
 - [ ] **MFA Policies:** Confirm Admin and Finance MFA enforcement values are set to `1` in D1 before importing operational files.
 - [ ] **Log Review:** Implement weekly manual checks of D1 `audit_events` and `document_access_logs` tables as per `ERROR_TELEMETRY_POLICY.md`.
 - [ ] **Credential Rotation:**
   - Update all passwords seeded via `seed-users.sql`.
   - Issue unique, high-entropy secrets for `SESSION_SECRET` (at least 32 characters) on the Cloudflare production environment.
-- [ ] **DNS Switchover:** Configure apex redirects in Cloudflare Rulesets (`kharon.co.za/*` -> `https://www.kharon.co.za/$1`) and map CNAMEs for `portal.kharon.co.za`.
+- [ ] **DNS Switchover:** Configure apex redirects in Cloudflare Rulesets (`tequit.co.za/*` -> `https://www.tequit.co.za/$1`) and map the portal route for `portal.tequit.co.za`.
 - [ ] **POPIA Compliance:** Ensure chosen analytics snippet is POPIA-compliant and loaded only on the public pages, never on `/portal/*` paths.
 

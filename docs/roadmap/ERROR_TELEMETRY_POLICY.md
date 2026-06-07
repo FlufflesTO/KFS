@@ -148,6 +148,6 @@ These thresholds trigger immediate action rather than scheduled review.
 
 - No automated alerting is configured. Weekly and monthly reviews are manual operator tasks until an alerting integration is approved.
 - Cloudflare Worker logs are not persistently stored beyond the real-time stream window. For long-term log retention, consider enabling Cloudflare Logpush to an R2 bucket or external SIEM.
-- `console.error` calls in Worker code are the primary server-side error signal. Structured error reporting (e.g. Sentry or Cloudflare Workers observability) would improve root-cause investigation speed and should be evaluated before production cutover at `kharon.co.za`.
+- `console.error` calls in Worker code are the primary server-side error signal. Structured error reporting (e.g. Sentry or Cloudflare Workers observability) would improve root-cause investigation speed and should be evaluated before production cutover on the active Tequit domains.
 - Contact form submissions are stored in D1 only. An email notification trigger is deferred to Phase 9 (provider-backed email delivery).
 

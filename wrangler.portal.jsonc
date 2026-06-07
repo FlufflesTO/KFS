@@ -5,8 +5,8 @@
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
-      "pattern": "portal.kharon.co.za/*",
-      "zone_name": "kharon.co.za"
+      "pattern": "portal.tequit.co.za/*",
+      "zone_name": "tequit.co.za"
     }
   ],
   "d1_databases": [
@@ -26,7 +26,10 @@
   "vars": {
     "SESSION_COOKIE_NAME": "kharon_session_token",
     "STANDARD_SERVICE_FEE": "185000",
-    "ENVIRONMENT": "production"
+    "ENVIRONMENT": "production",
+    "PUBLIC_DEPLOY_TARGET": "portal",
+    "PUBLIC_SITE_URL": "https://www.tequit.co.za",
+    "PUBLIC_PORTAL_URL": "https://portal.tequit.co.za"
   },
   "triggers": {
     "crons": ["0 * * * *"]

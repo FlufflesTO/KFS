@@ -14,7 +14,7 @@ import "../styles/global.css";
 const SITE_CONFIG = {
   title: "Kharon Fire & Security",
   description: "Specialist Fire and Security Solutions",
-  url: import.meta.env.PUBLIC_SITE_URL || "https://www.kharon.co.za"
+  url: import.meta.env.PUBLIC_SITE_URL || "https://www.tequit.co.za"
 };
 
 export interface Props {
@@ -30,7 +30,7 @@ const robotsContent = noindex ? "noindex, nofollow" : "index, follow";
 
 // Only load analytics on non-portal pages
 const shouldLoadAnalytics = !Astro.url.pathname.startsWith('/portal');
-const hasForms = Astro.url.pathname === '/contact' || Astro.url.pathname.startsWith('/portal');
+const hasForms = Astro.url.pathname === '/contact' || Astro.url.pathname.startsWith('/portal') || Boolean(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY);
 const nonce = Astro.locals.nonce;
 const organizationJsonLd = JSON.stringify({
   "@context": "https://schema.org",
@@ -42,7 +42,7 @@ const organizationJsonLd = JSON.stringify({
   "description": SITE_CONFIG.description,
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd",
+    "streetAddress": "Unit 58, M5 Freeway Park, 2B Uppercamp Road",
     "addressLocality": "Ndabeni, Maitland",
     "addressRegion": "Western Cape",
     "postalCode": "7405",
@@ -131,7 +131,7 @@ const organizationJsonLd = JSON.stringify({
     <script
       is:inline
       nonce={nonce}
-      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
       async
       defer
     ></script>

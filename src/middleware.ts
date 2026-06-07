@@ -1,7 +1,7 @@
 /**
  * Project Sentinel - Portal Middleware
  * Purpose: Enforces security headers, session verification, rate limits, and CSRF protection across all /portal paths
- * Dependencies: astro:middleware, ./lib/server/auth.js, ./lib/server/csrf.js, ./lib/server/bindings.ts, ./lib/server/rateLimit.js, ./lib/server/audit
+ * Dependencies: astro:middleware plus portal-only dynamic imports for auth, csrf, bindings, rate limits, and audit.
  * Structural Role: Central request interception and security enforcement layer
  */
 
@@ -9,11 +9,6 @@
 import { sequence } from "astro:middleware";
 import type { MiddlewareHandler, APIContext } from "astro";
 import type { SessionUser } from "./lib/server/auth.js";
-import { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } from "./lib/server/auth.js";
-import { createCsrfToken, csrfCookie, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } from "./lib/server/csrf.js";
-import { getDatabase } from "./lib/server/bindings.ts";
-import { consumeRateLimit } from "./lib/server/rateLimit.js";
-import { auditEvent } from "./lib/server/audit";
 
 const loginPath = "/portal/login";
 const authApiPath = "/portal/api/auth";
@@ -25,15 +20,19 @@ const passwordApiPath = "/portal/api/change-password";
 const mfaPath = "/portal/account/mfa";
 const mfaApiPath = "/portal/api/mfa";
 const portalRootPath = "/portal";
-const configuredPortalUrl = import.meta.env.PUBLIC_PORTAL_URL || "https://portal.kharon.co.za";
+const configuredPortalUrl = import.meta.env.PUBLIC_PORTAL_URL || "https://portal.tequit.co.za";
 const portalOrigin = (() => {
   try {
     return new URL(configuredPortalUrl).origin;
   } catch {
-    return "https://portal.kharon.co.za";
+    return "https://portal.tequit.co.za";
   }
 })();
 const portalHostname = new URL(portalOrigin).hostname.toLowerCase();
+
+// Build-time flag: set to "website" only on the website Pages deploy (kfs-website),
+// which has NO D1/R2/secret bindings. Wired in scripts/build-site.ps1 and CI.
+const isWebsiteDeploy = import.meta.env.PUBLIC_DEPLOY_TARGET === "website";
 
 function createCspNonce(): string {
   const bytes = new Uint8Array(16);
@@ -47,7 +46,7 @@ function securityHeaders(nonce: string): Record<string, string> {
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Content-Security-Policy":
-      `default-src 'none'; script-src 'strict-dynamic' 'nonce-${nonce}' https://static.cloudflareinsights.com https://challenges.cloudflare.com https://plausible.io; script-src-attr 'none'; style-src 'self' 'nonce-${nonce}'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com https://plausible.io; frame-src https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests; manifest-src 'self'`,
+      `default-src 'none'; script-src 'strict-dynamic' 'nonce-${nonce}' https://static.cloudflareinsights.com https://challenges.cloudflare.com https://plausible.io; script-src-attr 'none'; style-src 'self' 'nonce-${nonce}'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ${portalOrigin} https://cloudflareinsights.com https://plausible.io; frame-src https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' ${portalOrigin}; upgrade-insecure-requests; manifest-src 'self'`,
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Cross-Origin-Opener-Policy": "same-origin",
     "Cross-Origin-Resource-Policy": "same-origin",
@@ -248,7 +247,7 @@ interface ActiveUserRow {
   password_changed_at: string | null;
 }
 
-async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, sessionUser: SessionUser): Promise<SessionUser | null> {
+async function loadActiveSessionUser(db: D1Database, sessionUser: SessionUser): Promise<SessionUser | null> {
   const record = await db
     .prepare(
       `SELECT id, name, email, role, site_id, is_active, deleted_at, force_password_change, mfa_required, mfa_enabled, password_changed_at
@@ -287,6 +286,34 @@ async function loadActiveSessionUser(db: ReturnType<typeof getDatabase>, session
   };
 }
 
+// 0. Website-deploy guard (runs FIRST in the chain).
+// The website Pages project (kfs-website) ships the SAME built output but has NO
+// D1/R2/secret bindings. Any /portal request reaching SSR here would crash on the
+// first binding access. So on the website deploy we short-circuit every /portal
+// request to the portal host BEFORE auth/db/secret access ever runs.
+const websitePortalRedirectMiddleware: MiddlewareHandler = async (context, next) => {
+  if (!isWebsiteDeploy) return await next();
+
+  const { pathname, search } = context.url;
+  const shouldRedirectPortalPath = pathname.startsWith("/portal");
+  const shouldRedirectPublicApi =
+    pathname === "/api/contact" ||
+    pathname === "/api/data-request" ||
+    pathname.startsWith("/api/finance/");
+  if (!shouldRedirectPortalPath && !shouldRedirectPublicApi) return await next();
+
+  // Loop guard: never redirect when we're already on the portal host (target === current).
+  const currentHostname = hostnameFromHost(context.request.headers.get("host") ?? "");
+  if (currentHostname && currentHostname === portalHostname) return await next();
+
+  // Portal runtime lives on a different host than the marketing site.
+  const target = new URL(`${pathname}${search}`, portalOrigin);
+  return new Response(null, {
+    status: shouldRedirectPortalPath ? 301 : 307,
+    headers: { Location: target.toString(), "cache-control": "no-store" }
+  });
+};
+
 // 1. Core setup and AB testing
 const setupMiddleware: MiddlewareHandler = async (context, next) => {
   const host = context.request.headers.get("host") ?? "";
@@ -298,7 +325,7 @@ const setupMiddleware: MiddlewareHandler = async (context, next) => {
     return redirectToPortalHost(context, nonce);
   }
 
-  if (host === "portal.kharon.co.za" && (pathname === "/" || pathname === "")) {
+  if (hostnameFromHost(host) === portalHostname && (pathname === "/" || pathname === "")) {
     return withSecurityHeaders(context.redirect("/portal/login", 302), nonce);
   }
 
@@ -312,7 +339,11 @@ const setupMiddleware: MiddlewareHandler = async (context, next) => {
 };
 
 // 2. Base Security
-const securityMiddleware: MiddlewareHandler = async (context, next) => {
+async function applySecurityMiddleware(
+  context: APIContext,
+  next: Parameters<MiddlewareHandler>[1],
+  includePortalCsrfCookie: boolean
+): Promise<Response> {
   const { pathname } = context.url;
   const nonce = context.locals.nonce;
 
@@ -332,11 +363,20 @@ const securityMiddleware: MiddlewareHandler = async (context, next) => {
     );
   }
   
-  if (context.locals.shouldSetCsrfCookie && context.locals.csrfToken) {
+  if (includePortalCsrfCookie && context.locals.shouldSetCsrfCookie && context.locals.csrfToken) {
+     const { csrfCookie } = await import("./lib/server/csrf.js");
      finalResponse.headers.append("Set-Cookie", csrfCookie(context.locals.csrfToken));
   }
 
   return finalResponse;
+}
+
+const securityMiddleware: MiddlewareHandler = async (context, next) => {
+  return applySecurityMiddleware(context, next, false);
+};
+
+const portalSecurityMiddleware: MiddlewareHandler = async (context, next) => {
+  return applySecurityMiddleware(context, next, true);
 };
 
 // 3. Authentication
@@ -348,6 +388,9 @@ const authMiddleware: MiddlewareHandler = async (context, next) => {
   if (pathname === loginPath || pathname === authApiPath || pathname === resetPath || pathname === resetApiPath) {
     return await next();
   }
+
+  const { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } = await import("./lib/server/auth.js");
+  const { getDatabase } = await import("./lib/server/bindings.ts");
 
   const token = context.cookies.get(sessionCookieName)?.value;
   if (!token) return redirectToLogin(context, nonce);
@@ -420,6 +463,11 @@ const csrfAndRateLimitMiddleware: MiddlewareHandler = async (context, next) => {
   const nonce = context.locals.nonce;
   
   if (!user || !pathname.startsWith("/portal")) return await next();
+
+  const { createCsrfToken, csrfCookieName, csrfErrorResponse, verifyCsrfRequest, verifyCsrfToken } = await import("./lib/server/csrf.js");
+  const { getDatabase } = await import("./lib/server/bindings.ts");
+  const { consumeRateLimit } = await import("./lib/server/rateLimit.js");
+  const { auditEvent } = await import("./lib/server/audit");
 
   let csrfToken: string | undefined = context.cookies.get(csrfCookieName)?.value;
   context.locals.shouldSetCsrfCookie = false;
@@ -500,14 +548,21 @@ const rbacMiddleware: MiddlewareHandler = async (context, next) => {
   return await next();
 };
 
-const middlewareChain = sequence(
-  setupMiddleware,
-  authMiddleware,
-  mfaEnforcementMiddleware,
-  csrfAndRateLimitMiddleware,
-  rbacMiddleware,
-  securityMiddleware
-);
+const middlewareChain = isWebsiteDeploy
+  ? sequence(
+      websitePortalRedirectMiddleware,
+      setupMiddleware,
+      securityMiddleware
+    )
+  : sequence(
+      websitePortalRedirectMiddleware,
+      setupMiddleware,
+      authMiddleware,
+      mfaEnforcementMiddleware,
+      csrfAndRateLimitMiddleware,
+      rbacMiddleware,
+      portalSecurityMiddleware
+    );
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
   try {

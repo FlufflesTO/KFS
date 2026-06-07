@@ -16,17 +16,7 @@ async function sha256Text(input: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-function base64Encode(input: string | Uint8Array): string {
-  const bytes = input instanceof Uint8Array ? input : textEncoder.encode(String(input));
-  let binary = "";
-  for (let i = 0; i < bytes.length; i++) {
-    const byte = bytes[i];
-    if (byte !== undefined) {
-      binary += String.fromCharCode(byte);
-    }
-  }
-  return btoa(binary);
-}
+
 
 export function clientIp(request: Request): string | null {
   // @ts-ignore - cf object is available in Cloudflare Workers

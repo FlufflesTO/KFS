@@ -6,7 +6,7 @@
  * Prerequisite: D1 migrations must already be applied:
  *   npx wrangler d1 migrations apply kharon-portal --local --config wrangler.portal.jsonc
  *
- * Users seeded here use emails like admin.test@kharon.co.za and password TestPassword123!
+ * Users seeded here use emails like admin.test@tequit.co.za and password TestPassword123!
  * They are separate from the dev seed (seed-users.sql) so test state never pollutes dev state.
  */
 

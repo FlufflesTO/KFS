@@ -16,6 +16,9 @@ const TextSchema = z.string().min(10).max(3000);
 
 export const ALLOWED_REQUEST_TYPES = [
   "Emergency technical support",
+  "Site assessment",
+  "New system engineering",
+  "Technical specifications request",
   "Gas suppression evaluation",
   "Fire detection system review",
   "Compliance inspection",

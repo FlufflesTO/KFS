@@ -32,7 +32,7 @@ test.describe('Authentication API - POST /portal/api/auth', () => {
       expect(body.ok).toBe(true);
       expect(body.user).toBeDefined();
       expect(body.user?.role).toBe('admin');
-      expect(body.user?.email).toBe('admin.test@kharon.co.za');
+      expect(body.user?.email).toBe('admin.test@tequit.co.za');
       expect(body.redirectTo).toBe('/portal/admin/dashboard');
 
       const sessionToken = await extractSessionToken(page);
@@ -93,7 +93,7 @@ test.describe('Authentication API - POST /portal/api/auth', () => {
     test('should return 401 for invalid password', async ({ page }) => {
       const { response, body } = await loginToPortal(
         page,
-        'admin.test@kharon.co.za',
+        'admin.test@tequit.co.za',
         invalidCredentials.wrongPassword.password
       );
 
@@ -191,7 +191,7 @@ test.describe('Authentication API - POST /portal/api/auth', () => {
       // Login with lowercase first to get hash, then test uppercase
       const { response, body } = await loginToPortal(
         page,
-        'ADMIN.TEST@KHARON.CO.ZA',
+        'ADMIN.TEST@tequit.co.za',
         'TestPassword123!'
       );
 
@@ -202,7 +202,7 @@ test.describe('Authentication API - POST /portal/api/auth', () => {
     test('should handle email with leading/trailing whitespace', async ({ page }) => {
       const { response, body } = await loginToPortal(
         page,
-        '  admin.test@kharon.co.za  ',
+        '  admin.test@tequit.co.za  ',
         'TestPassword123!'
       );
 
@@ -220,14 +220,14 @@ test.describe('Authentication API - POST /portal/api/auth', () => {
 
     test('should handle empty string password', async ({ page }) => {
       const response = await page.request.post('/portal/api/auth', {
-        data: { email: 'admin.test@kharon.co.za', password: '' },
+        data: { email: 'admin.test@tequit.co.za', password: '' },
       });
 
       expect(response.status()).toBe(400);
     });
 
     test('should handle very long email addresses', async ({ page }) => {
-      const longEmail = 'a'.repeat(200) + '@kharon.co.za';
+      const longEmail = 'a'.repeat(200) + '@tequit.co.za';
       const response = await page.request.post('/portal/api/auth', {
         data: { email: longEmail, password: 'TestPassword123!' },
       });
@@ -236,7 +236,7 @@ test.describe('Authentication API - POST /portal/api/auth', () => {
     });
 
     test('should handle SQL injection attempt in email', async ({ page }) => {
-      const maliciousEmail = "admin'@kharon.co.za--";
+      const maliciousEmail = "admin'@tequit.co.za--";
       const response = await page.request.post('/portal/api/auth', {
         data: { email: maliciousEmail, password: 'TestPassword123!' },
       });
@@ -246,7 +246,7 @@ test.describe('Authentication API - POST /portal/api/auth', () => {
     });
 
     test('should handle XSS attempt in email', async ({ page }) => {
-      const xssEmail = '<script>alert("xss")</script>@kharon.co.za';
+      const xssEmail = '<script>alert("xss")</script>@tequit.co.za';
       const response = await page.request.post('/portal/api/auth', {
         data: { email: xssEmail, password: 'TestPassword123!' },
       });
@@ -469,7 +469,7 @@ test.describe('Rate Limiting - Authentication Endpoints', () => {
     for (let i = 0; i < 5; i++) {
       const response = await page.request.post('/portal/api/auth', {
         data: {
-          email: 'admin.test@kharon.co.za',
+          email: 'admin.test@tequit.co.za',
           password: 'wrong-password',
         },
       });
@@ -487,7 +487,7 @@ test.describe('Rate Limiting - Authentication Endpoints', () => {
     for (let i = 0; i < 5; i++) {
       await page.request.post('/portal/api/auth', {
         data: {
-          email: 'ratelimit-test@kharon.co.za',
+          email: 'ratelimit-test@tequit.co.za',
           password: 'wrong-password',
         },
       });
@@ -496,7 +496,7 @@ test.describe('Rate Limiting - Authentication Endpoints', () => {
     // 6th attempt should be rate limited
     const response = await page.request.post('/portal/api/auth', {
       data: {
-        email: 'ratelimit-test@kharon.co.za',
+        email: 'ratelimit-test@tequit.co.za',
         password: 'wrong-password',
       },
     });
@@ -517,12 +517,12 @@ test.describe('Rate Limiting - Authentication Endpoints', () => {
     // Exhaust rate limit
     for (let i = 0; i < 6; i++) {
       await page.request.post('/portal/api/auth', {
-        data: { email: 'retry-test@kharon.co.za', password: 'wrong' },
+        data: { email: 'retry-test@tequit.co.za', password: 'wrong' },
       });
     }
 
     const response = await page.request.post('/portal/api/auth', {
-      data: { email: 'retry-test@kharon.co.za', password: 'wrong' },
+      data: { email: 'retry-test@tequit.co.za', password: 'wrong' },
     });
 
     expect(response.status()).toBe(429);
@@ -534,13 +534,13 @@ test.describe('Rate Limiting - Authentication Endpoints', () => {
     // Exhaust rate limit for email1
     for (let i = 0; i < 6; i++) {
       await page.request.post('/portal/api/auth', {
-        data: { email: 'user1@kharon.co.za', password: 'wrong' },
+        data: { email: 'user1@tequit.co.za', password: 'wrong' },
       });
     }
 
     // email2 should still be allowed (separate rate limit bucket)
     const response = await page.request.post('/portal/api/auth', {
-      data: { email: 'user2@kharon.co.za', password: 'wrong' },
+      data: { email: 'user2@tequit.co.za', password: 'wrong' },
     });
 
     expect(response.status()).not.toBe(429);
@@ -552,13 +552,13 @@ test.describe('Rate Limiting - Authentication Endpoints', () => {
 
     for (let i = 0; i < 7; i++) {
       await page.request.post('/portal/api/auth', {
-        data: { email: 'audit-test@kharon.co.za', password: 'wrong' },
+        data: { email: 'audit-test@tequit.co.za', password: 'wrong' },
       });
     }
 
     // At least one request should be rate limited
     const response = await page.request.post('/portal/api/auth', {
-      data: { email: 'audit-test@kharon.co.za', password: 'wrong' },
+      data: { email: 'audit-test@tequit.co.za', password: 'wrong' },
     });
 
     expect([401, 429]).toContain(response.status());
@@ -569,7 +569,7 @@ test.describe('Destruction Tests - Authentication Edge Cases', () => {
   test('should handle concurrent login attempts', async ({ page }) => {
     const promises = Array.from({ length: 10 }, () =>
       page.request.post('/portal/api/auth', {
-        data: { email: 'admin.test@kharon.co.za', password: 'TestPassword123!' },
+        data: { email: 'admin.test@tequit.co.za', password: 'TestPassword123!' },
       })
     );
 
@@ -584,7 +584,7 @@ test.describe('Destruction Tests - Authentication Edge Cases', () => {
   test('should handle very large request body', async ({ page }) => {
     const response = await page.request.post('/portal/api/auth', {
       data: {
-        email: 'admin.test@kharon.co.za',
+        email: 'admin.test@tequit.co.za',
         password: 'TestPassword123!',
         extraField: 'a'.repeat(10000),
       },
@@ -611,7 +611,7 @@ test.describe('Destruction Tests - Authentication Edge Cases', () => {
 
   test('should handle unicode characters in credentials', async ({ page }) => {
     const response = await page.request.post('/portal/api/auth', {
-      data: { email: 'test@kharon.co.za', password: '🔐TestPassword!' },
+      data: { email: 'test@tequit.co.za', password: '🔐TestPassword!' },
     });
 
     expect(response.status()).toBeLessThan(500);
@@ -619,7 +619,7 @@ test.describe('Destruction Tests - Authentication Edge Cases', () => {
 
   test('should handle null byte injection attempt', async ({ page }) => {
     const response = await page.request.post('/portal/api/auth', {
-      data: { email: 'admin\x00test@kharon.co.za', password: 'TestPassword123!' },
+      data: { email: 'admin\x00test@tequit.co.za', password: 'TestPassword123!' },
     });
 
     expect(response.status()).toBeLessThan(500);
@@ -627,7 +627,7 @@ test.describe('Destruction Tests - Authentication Edge Cases', () => {
 
   test('should handle path traversal in email', async ({ page }) => {
     const response = await page.request.post('/portal/api/auth', {
-      data: { email: '../../../etc/passwd@kharon.co.za', password: 'TestPassword123!' },
+      data: { email: '../../../etc/passwd@tequit.co.za', password: 'TestPassword123!' },
     });
 
     expect(response.status()).toBeLessThan(500);

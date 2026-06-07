@@ -202,14 +202,14 @@ Keep the exact banned-term list in `scripts/audit-site.ts` as the source of trut
 
 ## Domain & deployment context
 
-The production domains are `kharon.co.za`, `www.kharon.co.za`, and `portal.kharon.co.za`. Active build defaults and CI use production URLs only.
+The active production domains are `tequit.co.za`, `www.tequit.co.za`, and `portal.tequit.co.za`. `kharon.co.za` is reserved for a future cutover only and is not an active deploy target.
 
 D1 database: `kharon-portal` (binding `DB`). R2 bucket: `kharon-portal-storage` (binding `STORAGE`). Cron trigger fires hourly (`0 * * * *`) for data retention enforcement.
 
 ### Wrangler configs (split deployment)
 
-- `wrangler.portal.jsonc` â€” portal worker (`kfs-portal`), routes `portal.kharon.co.za/*`, holds D1 + R2 bindings
-- `wrangler.website.jsonc` â€” website worker (`kfs-website`), routes `kharon.co.za/*` and `www.kharon.co.za/*`, no bindings
+- `wrangler.portal.jsonc` - portal worker (`kfs-portal`), routes `portal.tequit.co.za/*`, holds D1 + R2 bindings
+- `wrangler.website.jsonc` - website worker (`kfs-website`), routes `tequit.co.za/*` and `www.tequit.co.za/*`, no D1/R2 bindings
 
 `astro.config.ts` passes `configPath: "wrangler.portal.jsonc"` to the cloudflare adapter so the generated `dist/server/wrangler.json` includes the D1/R2 bindings required by the audit script. Do not remove this. Full architecture documented in `docs/roadmap/DEPLOYMENT_ARCHITECTURE.md`.
 

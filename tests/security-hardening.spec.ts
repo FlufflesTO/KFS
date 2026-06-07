@@ -122,13 +122,15 @@ test.describe('Phase 3: E2E Verification & Hardening', () => {
 
     const portalLink = page.getByRole('link', { name: /^Portal$/ }).first();
     await expect(portalLink).toBeVisible();
-    await expect(portalLink).toHaveAttribute('href', 'https://portal.kharon.co.za/portal/login');
+    await expect(portalLink).toHaveAttribute('href', 'https://portal.tequit.co.za/portal/login');
   });
 
   test('Public-host portal requests are canonicalized before portal auth or DB code runs', async () => {
     const middleware = fs.readFileSync('src/middleware.ts', 'utf8');
 
     expect(middleware).toContain('PUBLIC_PORTAL_URL');
+    expect(middleware).toContain('PUBLIC_DEPLOY_TARGET');
+    expect(middleware).toContain('/api/contact');
     expect(middleware).toContain('shouldRedirectToPortalHost(host, pathname)');
     expect(middleware).toContain('return redirectToPortalHost(context, nonce);');
     expect(middleware).toContain('context.redirect(target.toString(), status)');
@@ -174,5 +176,55 @@ test.describe('Phase 3: E2E Verification & Hardening', () => {
     const sessionCookie = (await context.cookies('http://localhost:4321/portal/login'))
       .find(cookie => cookie.name === 'kharon_session_token');
     expect(sessionCookie).toBeUndefined();
+  });
+
+  test('Critical public APIs are not exposed anonymously', async () => {
+    expect(fs.existsSync('src/pages/api/inventory/parts.ts')).toBe(false);
+    expect(fs.existsSync('src/pages/api/certificates/generate-pdf.ts')).toBe(false);
+    expect(fs.existsSync('src/pages/api/routes/optimize.ts')).toBe(false);
+    expect(fs.existsSync('src/pages/portal/api/admin/certificates/[id]/pdf.ts')).toBe(true);
+  });
+
+  test('Sage webhook fails closed and uses constant-time bearer comparison', async () => {
+    const webhook = fs.readFileSync('src/pages/api/finance/sage-webhook.ts', 'utf8');
+
+    expect(webhook).toContain('SAGE_WEBHOOK_SECRET');
+    expect(webhook).toContain('constantTimeEqual');
+    expect(webhook).toContain('!webhookSecret');
+    expect(webhook).not.toContain('security is degraded');
+    expect(webhook).not.toContain('webhookSecret &&');
+  });
+
+  test('Public contact forms include consent and bot-protection fields', async () => {
+    const contactPage = fs.readFileSync('src/pages/contact.astro', 'utf8');
+    const contextualInquiry = fs.readFileSync('src/components/sections/ContextualInquiry.astro', 'utf8');
+    const contactApi = fs.readFileSync('src/pages/api/contact.ts', 'utf8');
+
+    for (const source of [contactPage, contextualInquiry]) {
+      expect(source).toContain('formStartedAt');
+      expect(source).toContain('cf-turnstile');
+    }
+    expect(contactPage).toContain('popiaConsent');
+    expect(contextualInquiry).toContain('popia_consent');
+    expect(contactApi).toContain('verifyTurnstile');
+    expect(contactApi).toContain('consumeRateLimit');
+    expect(contactApi).toContain('sha256Text(ip)');
+  });
+
+  test('Cloudflare deploys use separate portal and website artifacts', async () => {
+    const packageJson = fs.readFileSync('package.json', 'utf8');
+    const artifactScript = fs.readFileSync('scripts/build-deploy-artifacts.ps1', 'utf8');
+    const websiteConfig = fs.readFileSync('wrangler.website.jsonc', 'utf8');
+    const portalConfig = fs.readFileSync('wrangler.portal.jsonc', 'utf8');
+
+    expect(packageJson).toContain('.deploy/portal/server/wrangler.json');
+    expect(packageJson).toContain('.deploy/website');
+    expect(artifactScript).toContain('$env:BUILD_TARGET = $BuildTarget');
+    expect(artifactScript).toContain('Build-PortalArtifact');
+    expect(artifactScript).toContain('Build-WebsiteArtifact');
+    expect(websiteConfig).not.toContain('d1_databases');
+    expect(websiteConfig).not.toContain('r2_buckets');
+    expect(portalConfig).toContain('portal.tequit.co.za/*');
+    expect(websiteConfig).toContain('www.tequit.co.za/*');
   });
 });

@@ -6,67 +6,180 @@
  * Structural Role: Reusable compliance UI component
  */
 
+const RED = "text-kharon-red border-red-500/20 bg-red-500/5";
+const PURPLE = "text-kharon-purple border-kharon-purple/20 bg-kharon-purple/5";
+const BLUE = "text-kharon-blue border-kharon-blue/20 bg-kharon-blue/5";
+
 const categories = [
   {
-    title: "Fire Protection Standards",
-    color: "text-kharon-red border-red-500/20 bg-red-500/5",
+    title: "Fire Detection & Alarm",
+    color: RED,
     standards: [
       {
         code: "SANS 10139",
-        name: "Fire Detection Systems",
-        governs: "Design, installation, commissioning, and maintenance of fire detection and alarm systems in buildings."
+        name: "Detection & Alarm Systems",
+        governs: "System design, installation, commissioning and servicing of fire detection and alarm systems in buildings."
       },
+      {
+        code: "SANS 322",
+        name: "Healthcare Detection",
+        governs: "Fire detection and alarm systems for hospitals, including healthcare evacuation strategy requirements."
+      },
+      {
+        code: "SANS 246",
+        name: "Electronic Equipment Protection",
+        governs: "Fire protection for electronic equipment installations such as server rooms and data centres."
+      },
+      {
+        code: "SANS 54 (EN 54)",
+        name: "Component Standards",
+        governs: "Product standards for detectors, manual call points and control and indicating equipment."
+      }
+    ]
+  },
+  {
+    title: "Fire Suppression",
+    color: RED,
+    standards: [
       {
         code: "SANS 14520",
-        name: "Gas Suppression Systems",
-        governs: "Gaseous fire-extinguishing systems — design, installation, commissioning, and room integrity requirements."
+        name: "Gaseous Suppression",
+        governs: "Clean-agent gaseous fire-extinguishing systems (e.g. FM-200, Novec 1230, Inergen) — design and room integrity."
       },
       {
-        code: "SANS 369",
-        name: "Emergency Lighting",
-        governs: "Operation and maintenance of emergency evacuation lighting and exit routing systems."
+        code: "SANS 15779",
+        name: "Condensed Aerosol",
+        governs: "Condensed aerosol fire-extinguishing systems."
+      },
+      {
+        code: "SANS 13565",
+        name: "Foam Systems",
+        governs: "Fixed firefighting foam systems."
+      },
+      {
+        code: "SANS 306-4",
+        name: "CO₂ Systems",
+        governs: "Fixed carbon-dioxide fire-extinguishing installations."
+      },
+      {
+        code: "SANS 10108",
+        name: "Hazardous Locations",
+        governs: "Classification of hazardous locations and selection of apparatus for explosion-risk environments."
+      }
+    ]
+  },
+  {
+    title: "Fire Doors & Ironmongery",
+    color: PURPLE,
+    standards: [
+      {
+        code: "SANS 1253",
+        name: "Fire Doors & Shutters",
+        governs: "Manufacturing and performance requirements for fire doors and fire shutters."
+      },
+      {
+        code: "SANS 51155 (EN 1155)",
+        name: "Hold-Open Devices",
+        governs: "Electrically powered hold-open devices for swing doors integrating with fire detection."
       },
       {
         code: "SANS 10400-T",
         name: "Building Fire Regulations",
-        governs: "National Building Regulations requirements for fire protection and safety facilities."
-      },
-      {
-        code: "SANS 1475",
-        name: "Point Detector Performance",
-        governs: "Performance, testing, and maintenance specifications for point-type detectors and fire equipment."
+        governs: "Where fire doors are required and how fail-safe locks and hold-open devices must operate on alarm."
       }
     ]
   },
   {
-    title: "Security Standards",
-    color: "text-kharon-purple border-kharon-purple/20 bg-kharon-purple/5",
+    title: "Signage & Evacuation",
+    color: PURPLE,
     standards: [
       {
-        code: "SANS 10222",
-        name: "CCTV Surveillance Systems",
-        governs: "Closed-circuit television (CCTV) surveillance systems — design, installation, commissioning, and operation."
+        code: "SANS 1186-1",
+        name: "Symbolic Safety Signs",
+        governs: "Standard symbolic safety signs and general requirements."
+      },
+      {
+        code: "SANS 1186-3",
+        name: "Illuminated Signs",
+        governs: "Internally illuminated symbolic safety signs."
+      },
+      {
+        code: "SANS 1186-5",
+        name: "Photoluminescent Signs",
+        governs: "Photoluminescent symbolic safety signs."
+      },
+      {
+        code: "SANS 10114-2",
+        name: "Emergency Lighting",
+        governs: "Emergency escape and standby lighting for safe evacuation of buildings."
+      }
+    ]
+  },
+  {
+    title: "Public Address & Voice Evacuation",
+    color: BLUE,
+    standards: [
+      {
+        code: "SANS 60849",
+        name: "Voice Evacuation",
+        governs: "Sound systems for emergency purposes — voice evacuation."
+      },
+      {
+        code: "SANS 54-16",
+        name: "Voice Alarm Control (VACIE)",
+        governs: "Voice alarm control and indicating equipment."
+      },
+      {
+        code: "SANS 54-24",
+        name: "Voice Alarm Components",
+        governs: "Components of voice alarm systems, including loudspeakers."
+      }
+    ]
+  },
+  {
+    title: "Electronic Security",
+    color: PURPLE,
+    standards: [
+      {
+        code: "SANS 60839-11-1",
+        name: "Access Control",
+        governs: "Electronic access control systems — system and component requirements."
+      },
+      {
+        code: "SANS 62676",
+        name: "Video Surveillance (CCTV)",
+        governs: "Video surveillance systems for security — requirements, transmission and installation."
+      },
+      {
+        code: "SANS 50131",
+        name: "Intrusion Detection",
+        governs: "Intrusion and hold-up alarm systems — security grading and system requirements."
+      }
+    ]
+  },
+  {
+    title: "Building & Electrical Integration",
+    color: BLUE,
+    standards: [
+      {
+        code: "SANS 10400-T",
+        name: "National Building Regulations",
+        governs: "Part T fire protection — how all fire detection, suppression and evacuation systems interact with the building."
+      },
+      {
+        code: "SANS 10142-1",
+        name: "Electrical Wiring of Premises",
+        governs: "Low-voltage installations feeding panels, access control and CCTV equipment (Certificate of Compliance required)."
       },
       {
         code: "SANS 10198",
-        name: "Access Control Systems",
-        governs: "Management and implementation of access control systems (Parts 1-4) — design, operation, and maintenance."
-      }
-    ]
-  },
-  {
-    title: "Supporting Standards",
-    color: "text-kharon-blue border-kharon-blue/20 bg-kharon-blue/5",
-    standards: [
-      {
-        code: "SANS 10142",
-        name: "Electrical Wiring Premise",
-        governs: "The wiring of premises, ensuring electrical safety and supply integration for active systems."
+        name: "Power Cabling",
+        governs: "Selection, handling and installation of electric power cables."
       },
       {
-        code: "SANS 10090",
-        name: "Community Fire Protection",
-        governs: "Community protection against fire and integration with emergency response plans."
+        code: "SANS 10147",
+        name: "HVAC Integration",
+        governs: "Refrigeration and air-conditioning — HVAC shutdown interfacing with fire systems to limit smoke spread."
       }
     ]
   }

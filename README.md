@@ -176,7 +176,7 @@ npm run build
 
 ### Configuration
 The site is configured for a hybrid Cloudflare deployment with the following setup:
-- **Domains**: www.kharon.co.za, kharon.co.za, portal.kharon.co.za
+- **Domains**: www.tequit.co.za, tequit.co.za, portal.tequit.co.za
 - **Public Site Runtime**: Cloudflare Pages SSR upload from `dist`
 - **Portal Runtime**: Cloudflare Worker deploy from `dist/server/wrangler.json`
 - **Database**: Cloudflare D1 with existing schema

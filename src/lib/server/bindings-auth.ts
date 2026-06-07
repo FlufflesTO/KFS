@@ -65,16 +65,6 @@ export function resolveBindingsForAuth(): AuthEnv {
     (runtime && (runtime.ENVIRONMENT === "local" || runtime.CI === "true" || (runtime as any).GITHUB_ACTIONS === "true"))
   );
 
-  // Provide safe fallback for tests if secrets are missing
-  if (isCI) {
-    if (!env.SESSION_SECRET || String(env.SESSION_SECRET).length < 32) env.SESSION_SECRET = "CI_FALLBACK_SESSION_SECRET_V9_LITERAL_VALUE_32_CHARS";
-    if (!env.CSRF_SECRET || String(env.CSRF_SECRET).length < 32) env.CSRF_SECRET = "CI_FALLBACK_CSRF_SECRET_V9_LITERAL_VALUE_32_CHARS";
-    if (!env.MFA_SECRET || String(env.MFA_SECRET).length < 32) env.MFA_SECRET = "CI_FALLBACK_MFA_SECRET_V9_LITERAL_VALUE_32_CHARS";
-    if (!env.AUTH_SECRET || String(env.AUTH_SECRET).length < 32) env.AUTH_SECRET = "CI_FALLBACK_AUTH_SECRET_V9_LITERAL_VALUE_32_CHARS";
-    if (!env.FINGERPRINT_SECRET || String(env.FINGERPRINT_SECRET).length < 32) env.FINGERPRINT_SECRET = "CI_FALLBACK_FINGERPRINT_V9_LITERAL_VALUE_32_CHARS";
-    if (!env.AUDIT_IP_SALT || String(env.AUDIT_IP_SALT).length < 32) env.AUDIT_IP_SALT = "CI_FALLBACK_AUDIT_SALT_V9_LITERAL_VALUE_32_CHARS";
-  }
-
   // Definitively force local environment if in CI to bypass production secret strictness
   const environment = isCI ? "local" : (env.ENVIRONMENT || "local");
 

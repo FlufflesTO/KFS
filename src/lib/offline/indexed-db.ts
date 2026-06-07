@@ -58,7 +58,7 @@ export class KharonDB {
         resolve(this.db);
       };
 
-      request.onupgradeneeded = (event) => {
+      request.onupgradeneeded = (_event) => {
         const db = request.result;
         configs.forEach((config) => {
           if (!db.objectStoreNames.contains(config.name)) {

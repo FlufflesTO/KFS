@@ -43,8 +43,8 @@ Implemented:
 - Secure dependency baseline with current installed stack.
 - Cloudflare resources: D1 binding `DB`, R2 binding `STORAGE`, `SESSION_SECRET`, and `kharon_session_token` session cookie.
 - Production-only domain defaults now target:
-  - `https://www.kharon.co.za/`
-  - `https://portal.kharon.co.za/portal/login`
+  - `https://www.tequit.co.za/`
+  - `https://portal.tequit.co.za/portal/login`
 
 Open constraints:
 
@@ -59,10 +59,10 @@ Review date: 2026-05-20.
 
 Verified live status:
 
-- Production-domain deployment should be verified on `https://www.kharon.co.za/` after release.
+- Production-domain deployment should be verified on `https://www.tequit.co.za/` after release.
 - Contact page: `200 OK`.
 - Sitemap: `200 OK` with XML content type.
-- Portal login should be verified on `https://portal.kharon.co.za/portal/login` after release.
+- Portal login should be verified on `https://portal.tequit.co.za/portal/login` after release.
 - Protected portal dashboard: unauthenticated `/portal/tech/dashboard` returns `302` to login.
 - Authenticated technician dashboard smoke check returns `200` with a valid session cookie.
 - Public `Access Records` links now route to the portal login instead of the contact flow.
@@ -80,15 +80,17 @@ Immediate refinements recommended:
 - Authenticated portal write APIs now require a signed CSRF token and inherit central write-rate limiting from middleware.
 - Seed representative QA sites, systems, jobs and finance records so each role dashboard can be reviewed with representative data.
 
-## Review Update - 2026-06-06 Production-Only Routing
+## Review Update - 2026-06-07 Tequit Split Deployment Recovery
 
 Decision:
 
-- The active deployment model is production-only. Kharon QA routes, build scripts and CI branch conditions have been removed from active configuration.
-- Public defaults now use `PUBLIC_SITE_URL=https://www.kharon.co.za`.
-- Portal defaults now use `PUBLIC_PORTAL_URL=https://portal.kharon.co.za`.
-- The public site routes are `kharon.co.za/*` and `www.kharon.co.za/*`; the portal route is `portal.kharon.co.za/*`.
-- `npm run build:production`, `npm run validate:site`, `npm run deploy:cloudflare`, `npm run portal:monitor` and `npm run portal:qa:roles` now target the production domain set.
+- The active deployment model is production-only on Tequit domains.
+- Public defaults now use `PUBLIC_SITE_URL=https://www.tequit.co.za`.
+- Portal defaults now use `PUBLIC_PORTAL_URL=https://portal.tequit.co.za`.
+- The public site routes are `tequit.co.za/*` and `www.tequit.co.za/*`; the portal route is `portal.tequit.co.za/*`.
+- Portal and website deploys now build separate artifacts under `.deploy/portal` and `.deploy/website`.
+- `kharon.co.za` is future cutover only and remains approval-gated.
+- `npm run build:production`, `npm run validate:site`, `npm run deploy:cloudflare`, `npm run portal:monitor` and `npm run portal:qa:roles` now target the active Tequit domain set.
 - This routing change does not by itself close operational gates such as credential rotation, role QA, backup/restore evidence, HR policy sign-off or analytics/POPIA sign-off.
 
 ## Review Update - 2026-06-02 Stabilization And Reality Roadmap
@@ -230,7 +232,7 @@ Most important outstanding production blockers:
 - [ ] Complete full responsive screenshot QA across desktop, laptop, tablet portrait/landscape and mobile for public and portal views.
 - [ ] Complete public authority evidence: approved imagery, document examples, compliance hub and non-invented case proof.
 - [ ] Select POPIA-aware analytics and confirm analytics do not load on `/portal/*`.
-- [ ] Prepare Kharon production-domain migration plan for `www.kharon.co.za` and `portal.kharon.co.za`.
+- [ ] Prepare future Kharon-domain migration plan for `www.kharon.co.za` and `portal.kharon.co.za` after explicit completion approval.
 - [ ] Refactor finance portal language and workflow so Sage remains the only formal quote, invoice, VAT and payment-reconciliation source of truth.
 
 Phase 0 production-gate evidence, 2026-05-25:
@@ -725,8 +727,8 @@ Granular public website and portal review covering live QA behaviour, repository
 
 Audit sources:
 
-- Public website QA domain: `https://www.kharon.co.za/`.
-- Portal QA domain: `https://portal.kharon.co.za/portal/login`.
+- Public website QA domain: `https://www.tequit.co.za/`.
+- Portal QA domain: `https://portal.tequit.co.za/portal/login`.
 - Repository implementation: `FlufflesTO/KFS`.
 - Role set reviewed: Admin, Finance, Technician and Client.
 - Review limitation: unauthenticated live fetch and repository-level implementation review were completed. Full browser credential-backed role QA still requires manual execution with externally supplied QA credentials and must not rely on shared passwords after this review.
@@ -841,7 +843,7 @@ Immediate production blockers from this audit:
 - [x] Add visible phone/contact route for contact and emergency pages after approval.
 - [ ] Seed representative QA data for each role and rerun manual portal QA.
 - [ ] Confirm no analytics load on `/portal/*` once analytics is selected.
-- [ ] Complete public content authority pass before kharon.co.za cutover.
+- [ ] Complete public content authority pass before any future Kharon-domain cutover.
 
 Audit integration gate:
 
@@ -862,7 +864,7 @@ Audit findings integrated into roadmap. This does not by itself approve producti
 Current QA assessment:
 
 - Public Kharon site is strategically aligned with Kharon's commercial and industrial gas suppression and fire detection positioning.
-- Portal login route is live at `https://portal.kharon.co.za/portal/login`.
+- Portal login route is live at `https://portal.tequit.co.za/portal/login`.
 - Portal architecture is promising for QA: Astro SSR, Cloudflare D1, Cloudflare R2, role dashboards, admin CRUD, jobcard closure, client maintenance request flow and finance visibility.
 - Portal is not yet production-authoritative. Kharon remains a QA and test domain until the Kharon cutover is deliberately approved.
 
@@ -1119,7 +1121,7 @@ Full code review of the public website and portal as deployed on kharon.co.za QA
 
 Note on QA domain:
 
-`kharon.co.za` is the deliberate QA and build domain. The `site.js` default URL fallback to `https://www.kharon.co.za` is intentional during this period. `PUBLIC_SITE_URL`, `PUBLIC_PORTAL_URL` and `PUBLIC_CONTACT_EMAIL` must be updated only at director-approved production cutover to `kharon.co.za`. No code changes are required for the domain switch; only environment variable updates are needed. Google Workspace `kharon.co.za` email addresses will be available for Phase 9 (email delivery) once the cutover is approved.
+Superseded by the 2026-06-07 recovery decision: Tequit is the active production domain set (`www.tequit.co.za`, `tequit.co.za`, `portal.tequit.co.za`). `kharon.co.za` is future cutover only and must not receive DNS, route, deploy, or email-DNS changes before explicit completion approval.
 
 Public website findings:
 
@@ -1243,7 +1245,7 @@ Tasks:
 - Write onboarding SOP for creating users, assigning roles, setting MFA requirements, issuing reset links and mapping clients to sites.
 - Write dispatch SOP for assigning jobs, technician closure, evidence capture and admin exception handling.
 - Write incident response procedure for portal access issues.
-- Finalize production cutover checklist for `portal.kharon.co.za`.
+- Finalize production cutover checklist for `portal.tequit.co.za`.
 
 Status: implementation complete. `OPERATIONS_SOP.md` now covers onboarding, dispatch/jobcard closure, access incident response and production cutover gates. Staff dry-run and production sign-off remain required.
 
@@ -1399,7 +1401,7 @@ Status: implementation complete. Migration `0010_system_service_interval.sql` ap
 
 ### Phase 12 - Analytics And Conversion Tracking
 
-Goal: add visibility into public site traffic, lead generation paths and CTA conversion so the site can be evaluated before and after the kharon.co.za cutover.
+Goal: add visibility into public site traffic, lead generation paths and CTA conversion so the site can be evaluated before and after the Tequit production cutover.
 
 Background:
 
@@ -2600,8 +2602,8 @@ Status: Phase 26 fully deployed.
 - `robots.txt`.
 - `sitemap.xml`.
 - LocalBusiness JSON-LD.
-- QA/test canonical domain: `https://www.kharon.co.za`.
-- Final production canonical domain: `https://www.kharon.co.za`.
+- QA/test canonical domain: `https://www.tequit.co.za`.
+- Final production canonical domain: `https://www.tequit.co.za`.
 
 ### Accessibility
 
@@ -2728,7 +2730,7 @@ Operational gaps to resolve before replacing manual back-office processes:
   - [x] Written SOP for onboarding users, assigning jobs and closing jobcards.
   - [x] Incident response procedure for portal access issues.
   - [x] Backup/export process for D1 and R2 evidence.
-  - [x] Production cutover checklist for `portal.kharon.co.za`.
+  - [x] Production cutover checklist for `portal.tequit.co.za`.
   - [x] Monitoring checks for login, dashboard redirect and D1/R2 availability.
 
 
@@ -2801,7 +2803,7 @@ Target role experience:
 
 1. User lands on homepage or contact page.
 2. User finds `Access Records` in header, mobile menu, footer or the contact page.
-3. User lands on `https://portal.kharon.co.za/portal/login` during QA.
+3. User lands on `https://portal.tequit.co.za/portal/login` during QA.
 4. User signs in and is routed to the dashboard allowed by their role.
 5. New account requests still use the contact form until the portal has an account request workflow.
 
@@ -2998,7 +3000,7 @@ Quote request to Sage quote:
 - [x] Replace reset link plain-text DOM rendering with copy-to-clipboard control (Phase 11).
 - [x] Add configurable service interval per system type (Phase 11).
 - [ ] Add web analytics to public site (Phase 12).
-- [ ] Add migration plan from `portal.kharon.co.za` to `portal.kharon.co.za`.
+- [ ] Keep Kharon-domain migration planning gated until explicit completion approval.
 - [x] Add strict browser security header baseline in `_headers` (Phase 13 baseline).
 - [ ] Complete live CSP/browser verification and future nonce/hash tightening review if inline scripts are removed (Phase 13).
 - [x] Expand portal data model with Clients, Visits, Defects and Certificates in local schema/migrations (Phase 16).

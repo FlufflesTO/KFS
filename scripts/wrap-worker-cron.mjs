@@ -27,6 +27,11 @@ const entryPath = join(serverDir, "entry.mjs");
 const astroEntryPath = join(serverDir, "entry.astro.mjs");
 const cronOutPath = join(serverDir, "_cron.mjs");
 
+if (process.env.BUILD_TARGET === "website") {
+  console.log("[wrap-worker-cron] Website target detected; skipping portal cron wrapper.");
+  process.exit(0);
+}
+
 if (!existsSync(entryPath)) {
   console.error(`[wrap-worker-cron] ${entryPath} not found - did 'astro build' run first?`);
   process.exit(1);

@@ -2,10 +2,10 @@
 
 ## Overview
 
-The repository deploys as a hybrid Astro SSR application:
+The repository deploys as a hybrid Astro SSR application with separate generated artifacts:
 
-- the public site uploads to Cloudflare Pages from a flattened `dist` output
-- the portal deploys as a Cloudflare Worker from the generated `dist/server/wrangler.json`
+- the public site uploads to Cloudflare Pages from `.deploy/website`
+- the portal deploys as a Cloudflare Worker from `.deploy/portal/server/wrangler.json`
 
 D1 backs portal data, and R2 stores portal documents.
 
@@ -14,10 +14,10 @@ D1 backs portal data, and R2 stores portal documents.
 - Runtime: Astro `output: "server"` with `@astrojs/cloudflare`
 - Public site Pages project: `kfs-website`
 - Portal base config: `wrangler.portal.jsonc`
-- Generated portal Worker config: `dist/server/wrangler.json`
-- Production domains: `www.kharon.co.za`, `kharon.co.za`, `portal.kharon.co.za`
+- Generated portal Worker config: `.deploy/portal/server/wrangler.json`
+- Production domains: `www.tequit.co.za`, `tequit.co.za`, `portal.tequit.co.za`
 
-The Astro adapter is configured with `configPath: "wrangler.portal.jsonc"`, so the generated `dist/server/wrangler.json` carries the portal bindings needed by the server bundle. `scripts/build-site.ps1` then reshapes the build output into the flat `dist` structure expected by Cloudflare Pages SSR uploads.
+`BUILD_TARGET=portal` uses `wrangler.portal.jsonc` and produces the portal Worker artifact with D1, R2, secrets, and cron. `BUILD_TARGET=website` uses `wrangler.website.jsonc` and produces the website Pages artifact without D1/R2 bindings. The website artifact redirects `/portal/**` and binding-backed public API posts to `https://portal.tequit.co.za` before portal code touches bindings.
 
 ## Commands
 
@@ -32,10 +32,12 @@ npm run cloudflare:whoami
 
 ```bash
 npm run build
+npm run build:portal
+npm run build:website
 npm run build:production
 ```
 
-`build:production` produces the flattened production-domain output for the active Cloudflare Pages deployment.
+`build:production` builds both targets and writes `.deploy/portal` plus `.deploy/website`.
 
 ### Deploy
 
@@ -45,12 +47,11 @@ npm run deploy:cloudflare
 npm run deploy:cloudflare:ps
 ```
 
-`deploy:cloudflare` runs the repo's current hybrid path:
+`deploy:cloudflare` runs the repo's split artifact path:
 
-- `npm run build`
-- portal deploy from `dist/server/wrangler.json`
-- production rebuild via `scripts/build-site.ps1`
-- Pages deploy for the public site
+- `npm run build:production`
+- portal deploy from `.deploy/portal/server/wrangler.json`
+- Pages deploy from `.deploy/website`
 
 `deploy:cloudflare:ps` uses the PowerShell helper for the same production-only path.
 
@@ -61,13 +62,13 @@ npm run deploy:cloudflare:ps
 - `npm ci`
 - `npm run lint`
 - `npm run check`
-- `npm run build`
+- `npm run build:production`
 - `npm run audit:site`
 - `npm audit --omit=dev`
 - remote D1 preflight and schema smoke checks on push to `main`
 - D1 backup and migrations on push to `main`
-- `wrangler deploy --config dist/server/wrangler.json` for the portal on push to `main`
-- `wrangler pages deploy dist --project-name kfs-website --branch main` for the public site on push to `main`
+- `wrangler deploy --config .deploy/portal/server/wrangler.json` for the portal on push to `main`
+- `wrangler pages deploy .deploy/website --project-name kfs-website --branch main` for the public site on push to `main`
 
 Required repository secrets:
 
@@ -79,15 +80,16 @@ Required repository secrets:
 ### Public Site Pages Project
 
 - Project name: `kfs-website`
-- Deploy command: `wrangler pages deploy dist --project-name kfs-website --branch main`
-- Build helper: `scripts/build-site.ps1`
-- Purpose: public site routing for `www.kharon.co.za` and `kharon.co.za`
+- Deploy command: `wrangler pages deploy .deploy/website --project-name kfs-website --branch main`
+- Build helper: `scripts/build-deploy-artifacts.ps1 website`
+- Purpose: public site routing for `www.tequit.co.za` and `tequit.co.za`
+- Bindings: none
 
 ### `wrangler.portal.jsonc`
 
 - Portal Worker name: `kfs-portal`
 - Route:
-  - `portal.kharon.co.za/*`
+  - `portal.tequit.co.za/*`
 - D1 binding: `DB`
 - R2 binding: `STORAGE`
 - Cron: `0 * * * *`
@@ -95,7 +97,9 @@ Required repository secrets:
 ## Operational Notes
 
 - Direct local deployment remains blocked until Wrangler auth is valid.
-- The generated `dist/server/wrangler.json` should exist after build and include both `DB` and `STORAGE`.
-- Dry-run verification showed `wrangler.website.jsonc` and `wrangler.portal.jsonc` are not directly deployable by themselves because they do not define a `main` script or assets directory. Use the generated or flattened outputs above instead.
+- The generated `.deploy/portal/server/wrangler.json` should exist after build and include both `DB` and `STORAGE`.
+- The generated `.deploy/website` Pages artifact must not include D1/R2 bindings.
+- Dry-run portal deploys should use `.deploy/portal/server/wrangler.json`; direct root configs are base configs, not deploy artifacts.
 - Domain-level apex-to-www redirects should stay in Cloudflare zone rules, not `_redirects`.
-- Canonical URLs, metadata and portal links are production-only and should resolve to the Kharon domains above.
+- Canonical URLs, metadata and portal links are production-only and should resolve to the Tequit domains above.
+- `kharon.co.za` remains a future cutover domain only. Do not configure DNS, routes, or deploys for it before explicit completion approval.

@@ -67,7 +67,7 @@ The authentication API is **functionally operational** with core login flow work
   "user": {
     "id": "18b664a0-c592-4625-9f70-db6b8da07c0b",
     "name": "Test Admin",
-    "email": "test.admin@kharon.co.za",
+    "email": "test.admin@tequit.co.za",
     "role": "admin",
     "siteId": null,
     "forcePasswordChange": false,
@@ -300,7 +300,7 @@ The original concern was 500 errors on login. Testing reveals:
    SET mfa_required = 1, 
        mfa_enabled = 1,
        mfa_secret_encrypted = '<encrypted_secret>'
-   WHERE email = 'test.admin@kharon.co.za';
+   WHERE email = 'test.admin@tequit.co.za';
    ```
 
 ### Low Priority
@@ -321,7 +321,7 @@ The original concern was 500 errors on login. Testing reveals:
 ### Test User Credentials
 
 ```
-Email: test.admin@kharon.co.za
+Email: test.admin@tequit.co.za
 Password: TestPassword123!
 Role: admin
 ```
@@ -333,7 +333,7 @@ To reproduce test environment:
 ```bash
 # 1. Create test user
 npx wrangler d1 execute kharon-portal --local --config wrangler.portal.jsonc \
-  --command "INSERT OR REPLACE INTO users (id, name, email, password_hash, role, is_active) VALUES ('<uuid>', 'Test Admin', 'test.admin@kharon.co.za', '<hash>', 'admin', 1);"
+  --command "INSERT OR REPLACE INTO users (id, name, email, password_hash, role, is_active) VALUES ('<uuid>', 'Test Admin', 'test.admin@tequit.co.za', '<hash>', 'admin', 1);"
 
 # 2. Build project
 npm run build

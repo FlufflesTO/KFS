@@ -73,7 +73,7 @@ Records under legal hold must not be deleted, anonymised or overwritten.
 
 ## Production Requirement
 
-Before broad production use on `portal.kharon.co.za`, run and save:
+Before broad production use on `portal.tequit.co.za`, run and save:
 
 - `npm run portal:backup:d1`
 - R2 evidence backup/mirror check

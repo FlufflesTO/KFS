@@ -1,6 +1,6 @@
 # Kharon Portal Operations SOP
 
-This SOP covers production checks for `portal.kharon.co.za`. Do not store passwords, session cookies, API tokens or exported evidence in git.
+This SOP covers production checks for `portal.tequit.co.za`. Do not store passwords, session cookies, API tokens or exported evidence in git.
 
 ## Monitoring Check
 
@@ -238,15 +238,15 @@ Escalation:
 
 ## Production Cutover Checklist
 
-Use this checklist before enabling broader operational use of `portal.kharon.co.za`.
+Use this checklist before enabling broader operational use of `portal.tequit.co.za`.
 
 DNS and routing:
 
-- [ ] `portal.kharon.co.za` is added as a custom domain on the Cloudflare Worker/Pages target.
+- [ ] `portal.tequit.co.za` is added as a custom domain on the Cloudflare Worker target.
 - [ ] DNS is proxied through Cloudflare.
 - [ ] SSL certificate is active.
-- [ ] `https://portal.kharon.co.za/portal/login` returns HTTP 200.
-- [ ] `https://portal.kharon.co.za/portal/admin/dashboard` redirects unauthenticated users to login.
+- [ ] `https://portal.tequit.co.za/portal/login` returns HTTP 200.
+- [ ] `https://portal.tequit.co.za/portal/admin/dashboard` redirects unauthenticated users to login.
 
 Configuration:
 
@@ -271,7 +271,7 @@ Validation:
 - [ ] `npm run build` passes.
 - [ ] `npm run audit:site` passes.
 - [ ] `npm run portal:monitor` passes against the production base URL.
-- [ ] `npm run portal:qa:roles -- -BaseUrl "https://portal.kharon.co.za"` is executed with external QA credentials.
+- [ ] `npm run portal:qa:roles -- -BaseUrl "https://portal.tequit.co.za"` is executed with external QA credentials.
 - [ ] Manual `docs/qa/PORTAL_ROLE_QA_CHECKLIST.md` is completed.
 - [ ] Document download and document access logging are verified.
 

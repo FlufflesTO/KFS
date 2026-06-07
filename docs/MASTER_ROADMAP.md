@@ -1,7 +1,7 @@
 ﻿# Kharon Portal - Master Roadmap
 
 > Current status note, 2026-06-02: use `docs/PROJECT_STATUS_2026-06-02.md` as the canonical current project status. This file remains a phase ledger; where older completed checkboxes imply production authority, the dated status document takes precedence.
-> Production-only update, 2026-06-06: QA deployment paths have been removed from active config, scripts and CI. Runtime defaults, Wrangler routes, monitoring and QA commands now target `www.kharon.co.za`, `kharon.co.za` and `portal.kharon.co.za`.
+> Production-only update, 2026-06-07: active config, scripts and CI now target `www.tequit.co.za`, `tequit.co.za` and `portal.tequit.co.za`. `kharon.co.za` is future cutover only and remains approval-gated.
 
 ## Phase 0: Release Freeze & Safety Reset (CURRENT - BLOCKED BY PRODUCTION SIGN-OFF)
 - [ ] Rotate all temporary role credentials

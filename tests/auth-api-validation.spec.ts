@@ -12,12 +12,12 @@ const AUTH_ENDPOINT = '/portal/api/auth';
 // Test data — must match a user present in seedTestUsersSQL (tests/fixtures/test-users.ts)
 // Using tech role (non-elevated): no MFA redirect, safe for fixture login
 const VALID_TEST_USER = {
-  email: 'tech.test@kharon.co.za',
+  email: 'tech.test@tequit.co.za',
   password: 'TestPassword123!'
 };
 
 const INVALID_CREDENTIALS = {
-  email: 'tech.test@kharon.co.za',
+  email: 'tech.test@tequit.co.za',
   password: 'WrongPassword456!'
 };
 
@@ -126,7 +126,7 @@ test.describe('Auth API - Invalid Credentials', () => {
   test('should reject non-existent user with 401', async ({ request }) => {
     const response = await request.post(AUTH_ENDPOINT, {
       data: {
-        email: 'nonexistent@kharon.co.za',
+        email: 'nonexistent@tequit.co.za',
         password: 'SomePassword123!'
       }
     });
@@ -141,11 +141,11 @@ test.describe('Auth API - Invalid Credentials', () => {
   test('should not reveal if email exists vs password wrong', async ({ request }) => {
     // Security: Both cases should return identical error messages
     const response1 = await request.post(AUTH_ENDPOINT, {
-      data: { email: 'tech.test@kharon.co.za', password: 'wrong' }
+      data: { email: 'tech.test@tequit.co.za', password: 'wrong' }
     });
 
     const response2 = await request.post(AUTH_ENDPOINT, {
-      data: { email: 'doesnotexist@kharon.co.za', password: 'wrong' }
+      data: { email: 'doesnotexist@tequit.co.za', password: 'wrong' }
     });
 
     const body1 = await response1.json();
@@ -215,7 +215,7 @@ test.describe('Auth API - Malformed Requests', () => {
     // Email with leading/trailing spaces should be trimmed
     const response = await request.post(AUTH_ENDPOINT, {
       data: {
-        email: '  tech.test@kharon.co.za  ',
+        email: '  tech.test@tequit.co.za  ',
         password: VALID_TEST_USER.password
       }
     });
@@ -237,7 +237,7 @@ test.describe('Auth API - Rate Limiting', () => {
     
     for (let i = 0; i < 5; i++) {
       const response = await request.post(AUTH_ENDPOINT, {
-        data: { email: `test${i}@kharon.co.za`, password: 'wrong' }
+        data: { email: `test${i}@tequit.co.za`, password: 'wrong' }
       });
       attempts.push(response.status());
     }
@@ -253,13 +253,13 @@ test.describe('Auth API - Rate Limiting', () => {
     // Make 5 attempts first
     for (let i = 0; i < 5; i++) {
       await request.post(AUTH_ENDPOINT, {
-        data: { email: 'ratelimit-test@kharon.co.za', password: 'wrong' }
+        data: { email: 'ratelimit-test@tequit.co.za', password: 'wrong' }
       });
     }
 
     // 6th attempt should be rate limited
     const response = await request.post(AUTH_ENDPOINT, {
-      data: { email: 'ratelimit-test@kharon.co.za', password: 'wrong' }
+      data: { email: 'ratelimit-test@tequit.co.za', password: 'wrong' }
     });
 
     expect(response.status()).toBe(429);
@@ -279,12 +279,12 @@ test.describe('Auth API - Rate Limiting', () => {
     // Exhaust rate limit
     for (let i = 0; i < 6; i++) {
       await request.post(AUTH_ENDPOINT, {
-        data: { email: 'ratelimit-info@kharon.co.za', password: 'wrong' }
+        data: { email: 'ratelimit-info@tequit.co.za', password: 'wrong' }
       });
     }
 
     const response = await request.post(AUTH_ENDPOINT, {
-      data: { email: 'ratelimit-info@kharon.co.za', password: 'wrong' }
+      data: { email: 'ratelimit-info@tequit.co.za', password: 'wrong' }
     });
 
     const body = await response.json();
@@ -314,7 +314,7 @@ test.describe('Auth API - Security Headers', () => {
 
   test('should not expose sensitive data in error messages', async ({ request }) => {
     const response = await request.post(AUTH_ENDPOINT, {
-      data: { email: 'test@kharon.co.za', password: 'wrong' }
+      data: { email: 'test@tequit.co.za', password: 'wrong' }
     });
 
     const body = await response.json();
@@ -356,7 +356,7 @@ test.describe('Auth API - MFA', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   const MFA_TEST_USER = {
-    email: 'mfa.test@kharon.co.za',
+    email: 'mfa.test@tequit.co.za',
     password: 'TestPassword123!'
   };
 

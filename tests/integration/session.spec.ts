@@ -537,11 +537,11 @@ test.describe('Concurrent Session Handling', () => {
 
     // Login with same user in both contexts
     await page1.request.post('/portal/api/auth', {
-      data: { email: 'admin.test@kharon.co.za', password: 'TestPassword123!' },
+      data: { email: 'admin.test@tequit.co.za', password: 'TestPassword123!' },
     });
 
     await page2.request.post('/portal/api/auth', {
-      data: { email: 'admin.test@kharon.co.za', password: 'TestPassword123!' },
+      data: { email: 'admin.test@tequit.co.za', password: 'TestPassword123!' },
     });
 
     // Both sessions should be valid

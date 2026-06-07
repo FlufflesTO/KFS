@@ -13,7 +13,7 @@ INSERT OR REPLACE INTO users (
 ) VALUES (
   'test-admin-001',
   'Test Admin User',
-  'admin.test@kharon.co.za',
+  'admin.test@tequit.co.za',
   'pbkdf2_sha256$600000$NzMxZTVlMTdhM2ViYTUwZjhhOWU4YWNiZTQ5MDc2ZjY$ilF6KpEL6QvzvB-s4Zim0aLfMPrVfuYy-T-rl5DDBOM',
   'admin',
   1,
@@ -32,7 +32,7 @@ INSERT OR REPLACE INTO users (
 ) VALUES (
   'test-finance-001',
   'Test Finance User',
-  'finance.test@kharon.co.za',
+  'finance.test@tequit.co.za',
   'pbkdf2_sha256$600000$NzMxZTVlMTdhM2ViYTUwZjhhOWU4YWNiZTQ5MDc2ZjY$ilF6KpEL6QvzvB-s4Zim0aLfMPrVfuYy-T-rl5DDBOM',
   'finance',
   1,
@@ -51,7 +51,7 @@ INSERT OR REPLACE INTO users (
 ) VALUES (
   'test-tech-001',
   'Test Technician',
-  'tech.test@kharon.co.za',
+  'tech.test@tequit.co.za',
   'pbkdf2_sha256$600000$NzMxZTVlMTdhM2ViYTUwZjhhOWU4YWNiZTQ5MDc2ZjY$ilF6KpEL6QvzvB-s4Zim0aLfMPrVfuYy-T-rl5DDBOM',
   'tech',
   1,
@@ -89,7 +89,7 @@ INSERT OR REPLACE INTO users (
 ) VALUES (
   'test-inactive-001',
   'Test Inactive User',
-  'inactive.test@kharon.co.za',
+  'inactive.test@tequit.co.za',
   'pbkdf2_sha256$600000$NzMxZTVlMTdhM2ViYTUwZjhhOWU4YWNiZTQ5MDc2ZjY$ilF6KpEL6QvzvB-s4Zim0aLfMPrVfuYy-T-rl5DDBOM',
   'client',
   0,

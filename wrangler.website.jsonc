@@ -5,15 +5,18 @@
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
-      "pattern": "kharon.co.za/*",
-      "zone_name": "kharon.co.za"
+      "pattern": "tequit.co.za/*",
+      "zone_name": "tequit.co.za"
     },
     {
-      "pattern": "www.kharon.co.za/*",
-      "zone_name": "kharon.co.za"
+      "pattern": "www.tequit.co.za/*",
+      "zone_name": "tequit.co.za"
     }
   ],
   "vars": {
-    "ENVIRONMENT": "production"
+    "ENVIRONMENT": "production",
+    "PUBLIC_DEPLOY_TARGET": "website",
+    "PUBLIC_SITE_URL": "https://www.tequit.co.za",
+    "PUBLIC_PORTAL_URL": "https://portal.tequit.co.za"
   }
 }

@@ -4,6 +4,8 @@ packages/*/node_modules/
 
 # Build outputs
 dist/
+.deploy/
+.website-build-excluded/
 .output/
 .svelte-kit/
 .vercel/

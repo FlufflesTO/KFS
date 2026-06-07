@@ -6,7 +6,6 @@
  */
 
 const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder();
 
 /**
  * Encodes input to base64url format (URL-safe base64 without padding).

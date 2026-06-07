@@ -256,8 +256,8 @@ export async function buildJobcardPdf(params: JobcardPdfParams): Promise<Jobcard
     "0.04 0.05 0.06 rg",
     "0 0 595 52 re f",
     ...textLine("Kharon Fire and Security Solutions (Pty) Ltd  |  Reg: 2016/313076/07", 44, 36, 8, "1 1 1 rg"),
-    ...textLine("Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd, Ndabeni, Maitland, 7405", 44, 22, 7, "1 1 1 rg"),
-    ...textLine("T: 061 545 8830   E: admin@kharon.co.za   W: www.kharon.co.za", 44, 10, 7, "1 1 1 rg")
+    ...textLine("Unit 58, M5 Freeway Park, 2B Uppercamp Road, Ndabeni, Maitland, 7405", 44, 22, 7, "1 1 1 rg"),
+    ...textLine("T: 061 545 8830   E: admin@kharon.co.za   W: www.tequit.co.za", 44, 10, 7, "1 1 1 rg")
   ].join("\n");
 
   const objects = [

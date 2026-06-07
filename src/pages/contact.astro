@@ -10,6 +10,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import SolutionHero from "../components/sections/SolutionHero.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import { site } from "../data/site.js";
+
+const contactApiUrl = `${site.portalUrl.replace(/\/$/, "")}/api/contact`;
+const formStartedAt = Date.now();
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "";
 ---
 
 <BaseLayout title="Contact Kharon Risk Specialists | Fire Protection Experts" description="Get in touch with industrial fire protection specialists. Request a site assessment, system consultation, or emergency support for mission-critical fire protection systems.">
@@ -31,7 +35,18 @@ import { site } from "../data/site.js";
             description="Initialize a formal inquiry for site audit or technical consultation."
           />
           
-          <form method="post" action="/api/contact" class="mt-10 space-y-8">
+          <form method="post" action={contactApiUrl} class="mt-10 space-y-8">
+            <input type="hidden" name="formStartedAt" value={formStartedAt} />
+            <label class="sr-only" for="intake-website">Website</label>
+            <input
+              id="intake-website"
+              type="text"
+              name="website"
+              autocomplete="off"
+              class="honeypot"
+              tabindex="-1"
+              aria-hidden="true"
+            />
             <div class="grid md:grid-cols-2 gap-6">
               <div class="grid gap-2">
                 <label for="intake-name" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Full Name</label>
@@ -90,13 +105,13 @@ import { site } from "../data/site.js";
                 required
                 class="kharon-field py-3"
               >
-                <option value="">— Select Intent —</option>
-                <option value="site-assessment">Site Assessment & Audit</option>
-                <option value="system-consultation">New System Engineering</option>
-                <option value="maintenance">Maintenance Contract Inquiry</option>
-                <option value="emergency-support">Emergency Technical Support</option>
-                <option value="compliance">Compliance & Regulatory Query</option>
-                <option value="technical-specs">Technical Specifications Request</option>
+                <option value="">Select intent</option>
+                <option value="Site assessment">Site Assessment & Audit</option>
+                <option value="New system engineering">New System Engineering</option>
+                <option value="Maintenance assessment">Maintenance Contract Inquiry</option>
+                <option value="Emergency technical support">Emergency Technical Support</option>
+                <option value="Compliance inspection">Compliance & Regulatory Query</option>
+                <option value="Technical specifications request">Technical Specifications Request</option>
               </select>
             </div>
             
@@ -111,6 +126,27 @@ import { site } from "../data/site.js";
                 class="kharon-field leading-relaxed"
               ></textarea>
             </div>
+
+            <div class="flex items-start">
+              <div class="flex h-5 items-center">
+                <input
+                  id="intake-consent"
+                  name="popiaConsent"
+                  type="checkbox"
+                  required
+                  class="h-4 w-4 rounded border-kharon-purple/20 bg-kharon-charcoal text-kharon-purple focus:ring-kharon-purple"
+                />
+              </div>
+              <div class="ml-3 text-sm">
+                <label for="intake-consent" class="font-medium text-kharon-light/80">
+                  I consent to the collection and processing of my data in accordance with POPIA so Kharon can respond to this inquiry.
+                </label>
+              </div>
+            </div>
+
+            {turnstileSiteKey && (
+              <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>
+            )}
             
             <button 
               type="submit"

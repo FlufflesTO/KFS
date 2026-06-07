@@ -20,6 +20,9 @@ const baseFields = [
 ];
 
 const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+const contactApiUrl = `${(import.meta.env.PUBLIC_PORTAL_URL || "https://portal.tequit.co.za").replace(/\/$/, "")}/api/contact`;
+const formStartedAt = Date.now();
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "";
 ---
 
 <section class="section-padding bg-gradient-to-b from-kharon-black to-kharon-charcoal text-white border-t border-kharon-purple/10">
@@ -34,9 +37,10 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
       </div>
     </div>
 
-    <form id={formId} class="grid gap-5 rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-6 kharon-surface">
+    <form id={formId} data-endpoint={contactApiUrl} class="grid gap-5 rounded-lg border border-kharon-purple/20 bg-kharon-surface-elevated p-6 kharon-surface">
       <label class="sr-only" for={`${formId}-website`}>Website</label>
       <input id={`${formId}-website`} class="honeypot" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <input type="hidden" name="formStartedAt" value={formStartedAt} />
       <input type="hidden" name="request_type" value={requestType} />
 
       {[...baseFields, ...fields].map((field) => (
@@ -82,6 +86,10 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
         </div>
       </div>
 
+      {turnstileSiteKey && (
+        <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>
+      )}
+
       <p class="hidden text-sm font-semibold" aria-live="polite"></p>
 
       <button class="w-full kharon-command-button py-4 mt-2">
@@ -106,7 +114,7 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
       const siteValue = String(data.get("site") || "").trim();
       if (siteValue) parts.push(`Company / Site: ${siteValue}`);
 
-      const skip = new Set(["name", "email", "site", "website", "request_type", "operational_notes"]);
+      const skip = new Set(["name", "email", "site", "website", "request_type", "operational_notes", "formStartedAt", "cf-turnstile-response"]);
       for (const [key, value] of data.entries()) {
         if (skip.has(key) || !value) continue;
         const label = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -122,11 +130,13 @@ const formId = `ci-${requestType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
         email: String(data.get("email") || ""),
         requestType: String(data.get("request_type") || ""),
         popiaConsent: data.get("popia_consent") === "on",
-        message: parts.join("\n")
+        message: parts.join("\n"),
+        formStartedAt: String(data.get("formStartedAt") || ""),
+        turnstileToken: String(data.get("cf-turnstile-response") || "")
       };
 
       try {
-        const response = await fetch("/api/contact", {
+        const response = await fetch((form as HTMLFormElement).dataset.endpoint || "/api/contact", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(payload)

@@ -11,7 +11,7 @@ import { randomUUID } from 'crypto';
 const TEST_USER = {
   id: randomUUID(),
   name: 'Test Admin',
-  email: 'test.admin@kharon.co.za',
+  email: 'test.admin@tequit.co.za',
   password: 'TestPassword123!',
   role: 'admin',
   is_active: 1,
@@ -92,7 +92,7 @@ INSERT OR REPLACE INTO users (
   const TECH_USER = {
     id: randomUUID(),
     name: 'Test Technician',
-    email: 'test.tech@kharon.co.za',
+    email: 'test.tech@tequit.co.za',
     password: 'TestPassword123!',
     role: 'tech',
     is_active: 1,

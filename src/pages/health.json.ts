@@ -1,10 +1,30 @@
-import { getDatabase } from "../lib/server/bindings";
-
 export async function GET() {
+  if (import.meta.env.PUBLIC_DEPLOY_TARGET === "website") {
+    return new Response(JSON.stringify({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      services: {
+        database: "not_applicable",
+        cache: "not_implemented",
+        storage: "not_applicable"
+      },
+      version: import.meta.env?.npm_package_version || "development",
+      uptime: "N/A (Cloudflare Pages website artifact)"
+    }, null, 2), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Content-Type-Options': 'nosniff',
+        'Cache-Control': 'no-cache'
+      }
+    });
+  }
+
   let dbStatus = 'disconnected';
   let dbError = '';
   
   try {
+    const { getDatabase } = await import("../lib/server/bindings");
     const db = getDatabase();
     // Test database connection with a simple query
     await db.prepare('SELECT 1 as test').first();

@@ -3,11 +3,16 @@ import path from "node:path";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
+const deployRoot = path.join(root, ".deploy");
+const portalArtifactServer = path.join(deployRoot, "portal", "server");
+const websiteArtifact = path.join(deployRoot, "website");
+const hasDeployArtifacts = fs.existsSync(path.join(portalArtifactServer, "wrangler.json")) && fs.existsSync(path.join(websiteArtifact, "_worker.js"));
+const outputRoot = hasDeployArtifacts ? websiteArtifact : dist;
 const src = path.join(root, "src");
 const publicDir = path.join(root, "public");
 const clientDist = path.join(dist, "client");
 const serverDist = path.join(dist, "server");
-const assetRoot = fs.existsSync(clientDist) ? clientDist : dist;
+const assetRoot = hasDeployArtifacts ? websiteArtifact : (fs.existsSync(clientDist) ? clientDist : dist);
 
 const failures: string[] = [];
 const warnings: string[] = [];
@@ -32,39 +37,58 @@ function fail(message: string): void {
   failures.push(message);
 }
 
-if (!fs.existsSync(dist)) {
-  fail("dist directory is missing. Run npm run build:production first.");
+if (!fs.existsSync(outputRoot)) {
+  fail("Build output is missing. Run npm run build:production first.");
 }
 
-// Cloudflare SSR build output structure varies by adapter version. 
+// Cloudflare SSR build output structure varies by adapter version.
 // If dist/client and dist/server are missing, but dist/_worker.js and dist/wrangler.json exist,
 // it is likely a flat output structure.
-const isFlatOutput = !fs.existsSync(clientDist) && !fs.existsSync(serverDist) && fs.existsSync(path.join(dist, "_worker.js"));
+const isFlatOutput = !hasDeployArtifacts && !fs.existsSync(clientDist) && !fs.existsSync(serverDist) && fs.existsSync(path.join(dist, "_worker.js"));
 
-if (!isFlatOutput && (!fs.existsSync(clientDist) || !fs.existsSync(serverDist))) {
+if (!hasDeployArtifacts && !isFlatOutput && (!fs.existsSync(clientDist) || !fs.existsSync(serverDist))) {
   fail("Cloudflare SSR build should emit dist/client and dist/server.");
 }
 
-if (!isFlatOutput && !fs.existsSync(path.join(serverDist, "entry.mjs"))) {
+if (!hasDeployArtifacts && !isFlatOutput && !fs.existsSync(path.join(serverDist, "entry.mjs"))) {
   fail("Cloudflare SSR server entry is missing.");
 }
 
-const serverWrangler = isFlatOutput ? path.join(dist, "wrangler.json") : path.join(serverDist, "wrangler.json");
+const serverWrangler = hasDeployArtifacts ? path.join(portalArtifactServer, "wrangler.json") : (isFlatOutput ? path.join(dist, "wrangler.json") : path.join(serverDist, "wrangler.json"));
 if (!fs.existsSync(serverWrangler)) {
-  fail("Generated server wrangler.json is missing.");
+  fail("Generated portal wrangler.json is missing.");
 } else {
   const wrangler = read(serverWrangler);
   for (const binding of ['"binding":"DB"', '"binding":"STORAGE"']) {
     if (!wrangler.replace(/\s/g, "").includes(binding)) {
-      fail(`Generated wrangler config missing ${binding}`);
+      fail(`Generated portal wrangler config missing ${binding}`);
     }
   }
 }
 
+if (hasDeployArtifacts) {
+  const websiteWrangler = path.join(websiteArtifact, "wrangler.json");
+  if (fs.existsSync(websiteWrangler)) {
+    const wranglerText = read(websiteWrangler);
+    const wrangler = wranglerText.replace(/\s/g, "");
+    for (const binding of ['"binding":"DB"', '"binding":"STORAGE"']) {
+      if (wrangler.includes(binding)) {
+        fail(`Website artifact wrangler config must not include portal binding marker ${binding}`);
+      }
+    }
+    try {
+      const parsed = JSON.parse(wranglerText) as { d1_databases?: unknown[]; r2_buckets?: unknown[] };
+      if ((parsed.d1_databases || []).length > 0) fail("Website artifact wrangler config must not include D1 databases.");
+      if ((parsed.r2_buckets || []).length > 0) fail("Website artifact wrangler config must not include R2 buckets.");
+    } catch {
+      fail("Website artifact wrangler config is not valid JSON.");
+    }
+  }
+}
 
 const sourceFiles = walk(src).filter((file) => /\.(astro|js|ts|css)$/.test(file));
 const publicSourceFiles = walk(publicDir).filter((file) => /\.(html|js|css)$/.test(file));
-const distFiles = walk(dist);
+const distFiles = walk(outputRoot);
 const textDistFiles = distFiles.filter((file) => /\.(html|mjs|js|css|txt|xml|json)$/.test(file));
 const repoTextFiles = walk(root).filter((file) => {
   const relative = rel(file);
@@ -72,6 +96,7 @@ const repoTextFiles = walk(root).filter((file) => {
   if (
     relative.startsWith("node_modules/") ||
     relative.startsWith("dist/") ||
+    relative.startsWith(".deploy/") ||
     relative.startsWith(".wrangler/") ||
     relative.startsWith(".git/") ||
     relative.startsWith(".claude/") ||
@@ -109,7 +134,7 @@ for (const file of textDistFiles) {
   const text = read(file);
   for (const term of forbiddenOutput) {
     if (text.toLowerCase().includes(term.toLowerCase())) {
-      fail(`forbidden output term "${term}" in ${path.relative(dist, file).replaceAll("\\", "/")}`);
+      fail(`forbidden output term "${term}" in ${path.relative(outputRoot, file).replaceAll("\\", "/")}`);
     }
   }
 

@@ -31,7 +31,10 @@ if (!fs.existsSync(distDir)) {
 }
 
 const files = fs.readdirSync(distDir);
-const cssFile = files.find(f => f.startsWith('global.') && f.endsWith('.css'));
+const cssFile = files.find(f => f.startsWith('global.') && f.endsWith('.css'))
+  || files
+    .filter(f => f.endsWith('.css'))
+    .sort((a, b) => fs.statSync(path.join(distDir, b)).size - fs.statSync(path.join(distDir, a)).size)[0];
 if (!cssFile) {
   console.log('CSS file not found. Skipping CSS purge.');
   process.exit(0);

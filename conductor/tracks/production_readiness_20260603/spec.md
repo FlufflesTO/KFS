@@ -1,7 +1,7 @@
 ﻿# Specification: Production Readiness (Phase 0)
 
 ## Background
-The project is approaching production cutover to `kharon.co.za`. A "Safety Reset" is required to ensure that temporary development credentials, shared accounts, and non-authoritative data indicators are addressed before the system goes live.
+The project is approaching production cutover on the active Tequit domains (`www.tequit.co.za`, `tequit.co.za`, and `portal.tequit.co.za`). A "Safety Reset" is required to ensure that temporary development credentials, shared accounts, and non-authoritative data indicators are addressed before the system goes live. `kharon.co.za` remains future cutover only.
 
 ## Objectives
 - Secure all elevated role accounts with mandatory MFA.

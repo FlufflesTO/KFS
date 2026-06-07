@@ -4,7 +4,7 @@ info:
   description: Internal API specification for Kharon Fire and Security FSM operations.
   version: 1.0.0
 servers:
-  - url: https://portal.kharon.co.za
+  - url: https://portal.tequit.co.za
     description: Production Environment
 security:
   - SessionCookie: []

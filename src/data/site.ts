@@ -74,8 +74,8 @@ export interface ProofSignal {
   status: string;
 }
 
-const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://www.kharon.co.za";
-const portalUrl = import.meta.env.PUBLIC_PORTAL_URL || "https://portal.kharon.co.za";
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://www.tequit.co.za";
+const portalUrl = import.meta.env.PUBLIC_PORTAL_URL || "https://portal.tequit.co.za";
 const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || "admin@kharon.co.za";
 const portalLoginUrl = `${portalUrl.replace(/\/$/, "")}/portal/login`;
 
@@ -91,7 +91,7 @@ export const site: SiteConfig = {
   portalLoginPath: portalLoginUrl,
   email: contactEmail,
   phone: "061 545 8830",
-  address: "Unit 58, M5 Freeway Park, Cnr Uppercamp & Berkley Rd, Ndabeni, Maitland, 7405",
+  address: "Unit 58, M5 Freeway Park, 2B Uppercamp Road, Ndabeni, Maitland, 7405",
   registration: "2016/313076/07",
   ogImage: "/og/kharon-og.png"
 };
@@ -172,14 +172,14 @@ export const solutionLinks: SolutionLink[] = [
     href: "/fire-detection",
     summary: "Addressable detection and response systems for commercial sites.",
     icon: "/brand/icons/service-fire-detection.svg",
-    sans: ["SANS 10139", "SANS 1475-1"]
+    sans: ["SANS 10139", "SANS 246"]
   },
   {
     label: "Integrated Security",
     href: "/security-systems",
     summary: "CCTV and access control integrated with fire protection priorities.",
     icon: "/brand/icons/service-cctv.svg",
-    sans: ["SANS 10222", "SANS 10198"]
+    sans: ["SANS 62676", "SANS 60839-11-1"]
   },
   {
     label: "Critical Infrastructure",
@@ -219,7 +219,7 @@ export const mainLinks: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "Solutions", href: "/solutions" },
   { label: "Sectors", href: "/industries" },
-  { label: "Resources", href: "/resources" }
+  { label: "Resources", href: "/compliance" }
 ];
 
 export const sitemapPages: string[] = [
@@ -252,7 +252,7 @@ export const industries: IndustryItem[] = [
     priority: "Signal integrity",
     riskLevel: 88,
     icon: "/brand/icons/sector-radio-tower.svg",
-    sans: ["SANS 10139", "SANS 14520", "SANS 10198"]
+    sans: ["SANS 10139", "SANS 246", "SANS 60839-11-1"]
   },
   {
     title: "Electrical rooms and switchgear spaces",
@@ -268,7 +268,7 @@ export const industries: IndustryItem[] = [
     priority: "Coverage",
     riskLevel: 65,
     icon: "/brand/icons/sector-warehouse.svg",
-    sans: ["SANS 10139", "SANS 1475"]
+    sans: ["SANS 10139", "SANS 10400-T"]
   },
   {
     title: "Industrial and process facilities",
@@ -276,7 +276,7 @@ export const industries: IndustryItem[] = [
     priority: "Process risk",
     riskLevel: 82,
     icon: "/brand/icons/sector-factory.svg",
-    sans: ["SANS 10139", "SANS 1475", "SANS 10400-T"]
+    sans: ["SANS 10139", "SANS 10108", "SANS 10400-T"]
   },
   {
     title: "Utilities and critical infrastructure",
@@ -300,7 +300,7 @@ export const industries: IndustryItem[] = [
     priority: "Operational command",
     riskLevel: 85,
     icon: "/brand/icons/sector-control-room.svg",
-    sans: ["SANS 10139", "SANS 10222", "SANS 10198"]
+    sans: ["SANS 10139", "SANS 62676", "SANS 60839-11-1"]
   }
 ];
 

@@ -338,7 +338,7 @@ html {
 
 ```javascript
 export default defineConfig({
-  site: siteUrl,  // https://www.kharon.co.za
+  site: siteUrl,  // https://www.tequit.co.za
   output: "server",  // SSR mode
   adapter: cloudflare({
     configPath: "wrangler.jsonc",
@@ -368,12 +368,12 @@ export default defineConfig({
 ### 4.4 Site URL Strategy
 
 ```javascript
-const siteUrl = process.env.PUBLIC_SITE_URL || "https://www.kharon.co.za";
+const siteUrl = process.env.PUBLIC_SITE_URL || "https://www.tequit.co.za";
 ```
 
-**Domains:**
-- Production: `www.kharon.co.za`
-- Portal: `portal.kharon.co.za`
+**Active Domains:**
+- Website: `www.tequit.co.za`
+- Portal: `portal.tequit.co.za`
 
 ---
 
@@ -1244,7 +1244,7 @@ const isLinkActive = (href: string): boolean =>
 
 **Public APIs:**
 - `/api/contact` - Contact form submission
-- `/api/certificates/generate-pdf` - PDF generation
+- `/portal/api/admin/certificates/[id]/pdf` - authenticated certificate PDF generation from stored records
 - `/api/data-request` - POPIA data request
 - `/api/finance/sage-webhook` - Sage webhook
 - `/health` - Health check

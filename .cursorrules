@@ -40,7 +40,7 @@ Follow these rules strictly when modifying any code in this codebase.
 
 ## 3. Performance & Size Budgets
 
-- **CSS Size Limit**: The global stylesheet must be under **100KB** (warning threshold 95KB). Raised from 95KB on 2026-05-31 for the technical-depth content expansion.
+- **CSS Size Limit**: The global stylesheet must be under **120KB** (warning threshold 115KB). Budget raised from 100KB on 2026-06-01 for correct Tailwind v4 nested-layer output.
   - All Tailwind classes must be declared statically where possible.
   - Post-build, `scripts/purge-css.ts` automatically runs to prune unused classes and CSS variables. Make sure your styling complies with `DESIGN_CONSTITUTION.md`.
 - **Public JS Size Limit**: Publicly served client-side JavaScript assets must be under **20KB**. Keep client script footprints minimal.

@@ -52,11 +52,11 @@ Tests role-based access control for all user roles.
 Standardized test user credentials and SQL seed data.
 
 **Test Users:**
-- `admin` - admin.test@kharon.co.za / TestPassword123!
-- `finance` - finance.test@kharon.co.za / TestPassword123!
-- `tech` - tech.test@kharon.co.za / TestPassword123!
+- `admin` - admin.test@tequit.co.za / TestPassword123!
+- `finance` - finance.test@tequit.co.za / TestPassword123!
+- `tech` - tech.test@tequit.co.za / TestPassword123!
 - `client` - client.test@example.com / TestPassword123!
-- `inactive` - inactive.test@kharon.co.za / TestPassword123!
+- `inactive` - inactive.test@tequit.co.za / TestPassword123!
 
 ### 5. `tests/helpers/api.ts` - API Test Helpers
 Reusable utilities for API testing.
@@ -273,5 +273,5 @@ When API endpoints change, update:
 ## Contact
 
 For questions or issues with the test suite:
-- Technical: admin@kharon.co.za
+- Technical: admin@tequit.co.za
 - Test Documentation: See `docs/` directory

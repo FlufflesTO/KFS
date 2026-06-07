@@ -15,6 +15,8 @@ const config: Linter.Config[] = [
   {
     ignores: [
       "dist/**/*",
+      ".deploy/**/*",
+      ".wrangler/**/*",
       ".astro/**/*",
       "node_modules/**/*",
       "public/**/*",

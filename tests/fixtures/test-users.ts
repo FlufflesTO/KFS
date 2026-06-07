@@ -25,7 +25,7 @@ export interface TestUser {
 export const testUsers: Record<string, TestUser> = {
   admin: {
     id: 'test-admin-001',
-    email: 'admin.test@kharon.co.za',
+    email: 'admin.test@tequit.co.za',
     password: 'TestPassword123!',
     name: 'Test Admin User',
     role: 'admin',
@@ -34,7 +34,7 @@ export const testUsers: Record<string, TestUser> = {
   },
   finance: {
     id: 'test-finance-001',
-    email: 'finance.test@kharon.co.za',
+    email: 'finance.test@tequit.co.za',
     password: 'TestPassword123!',
     name: 'Test Finance User',
     role: 'finance',
@@ -43,7 +43,7 @@ export const testUsers: Record<string, TestUser> = {
   },
   tech: {
     id: 'test-tech-001',
-    email: 'tech.test@kharon.co.za',
+    email: 'tech.test@tequit.co.za',
     password: 'TestPassword123!',
     name: 'Test Technician',
     role: 'tech',
@@ -61,7 +61,7 @@ export const testUsers: Record<string, TestUser> = {
   },
   inactive: {
     id: 'test-inactive-001',
-    email: 'inactive.test@kharon.co.za',
+    email: 'inactive.test@tequit.co.za',
     password: 'TestPassword123!',
     name: 'Test Inactive User',
     role: 'client',
@@ -70,7 +70,7 @@ export const testUsers: Record<string, TestUser> = {
   },
   mfa: {
     id: 'test-mfa-001',
-    email: 'mfa.test@kharon.co.za',
+    email: 'mfa.test@tequit.co.za',
     password: 'TestPassword123!',
     name: 'Test MFA User',
     role: 'tech',
@@ -84,18 +84,18 @@ export const testUsers: Record<string, TestUser> = {
  */
 export const invalidCredentials = {
   wrongPassword: {
-    email: 'admin.test@kharon.co.za',
+    email: 'admin.test@tequit.co.za',
     password: 'WrongPassword456!',
   },
   nonExistentUser: {
-    email: 'doesnotexist@kharon.co.za',
+    email: 'doesnotexist@tequit.co.za',
     password: 'TestPassword123!',
   },
   missingEmail: {
     password: 'TestPassword123!',
   },
   missingPassword: {
-    email: 'admin.test@kharon.co.za',
+    email: 'admin.test@tequit.co.za',
   },
   emptyBody: {},
 };
@@ -106,7 +106,7 @@ export const invalidCredentials = {
 export function generateUniqueEmail(prefix: string = 'test'): string {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 8);
-  return `${prefix}.${timestamp}.${random}@kharon.co.za`;
+  return `${prefix}.${timestamp}.${random}@tequit.co.za`;
 }
 
 /**
@@ -137,7 +137,7 @@ INSERT OR REPLACE INTO users (
   (
     'test-admin-001',
     'Test Admin User',
-    'admin.test@kharon.co.za',
+    'admin.test@tequit.co.za',
     'pbkdf2_sha256$600000$NzMxZTVlMTdhM2ViYTUwZjhhOWU4YWNiZTQ5MDc2ZjY$ilF6KpEL6QvzvB-s4Zim0aLfMPrVfuYy-T-rl5DDBOM',
     'admin',
     1,
@@ -150,7 +150,7 @@ INSERT OR REPLACE INTO users (
   (
     'test-finance-001',
     'Test Finance User',
-    'finance.test@kharon.co.za',
+    'finance.test@tequit.co.za',
     'pbkdf2_sha256$600000$NzMxZTVlMTdhM2ViYTUwZjhhOWU4YWNiZTQ5MDc2ZjY$ilF6KpEL6QvzvB-s4Zim0aLfMPrVfuYy-T-rl5DDBOM',
     'finance',
     1,
@@ -163,7 +163,7 @@ INSERT OR REPLACE INTO users (
   (
     'test-tech-001',
     'Test Technician',
-    'tech.test@kharon.co.za',
+    'tech.test@tequit.co.za',
     'pbkdf2_sha256$600000$NzMxZTVlMTdhM2ViYTUwZjhhOWU4YWNiZTQ5MDc2ZjY$ilF6KpEL6QvzvB-s4Zim0aLfMPrVfuYy-T-rl5DDBOM',
     'tech',
     1,
@@ -189,7 +189,7 @@ INSERT OR REPLACE INTO users (
   (
     'test-inactive-001',
     'Test Inactive User',
-    'inactive.test@kharon.co.za',
+    'inactive.test@tequit.co.za',
     'pbkdf2_sha256$600000$NzMxZTVlMTdhM2ViYTUwZjhhOWU4YWNiZTQ5MDc2ZjY$ilF6KpEL6QvzvB-s4Zim0aLfMPrVfuYy-T-rl5DDBOM',
     'client',
     0,
@@ -202,7 +202,7 @@ INSERT OR REPLACE INTO users (
   (
     'test-mfa-001',
     'Test MFA User',
-    'mfa.test@kharon.co.za',
+    'mfa.test@tequit.co.za',
     'pbkdf2_sha256$600000$NzMxZTVlMTdhM2ViYTUwZjhhOWU4YWNiZTQ5MDc2ZjY$ilF6KpEL6QvzvB-s4Zim0aLfMPrVfuYy-T-rl5DDBOM',
     'tech',
     1,

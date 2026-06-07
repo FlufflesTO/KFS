@@ -1,20 +1,30 @@
-import { getBindings } from "../../../lib/server/bindings";
+import type { D1Database } from "@cloudflare/workers-types";
+// @ts-ignore - cloudflare:workers is a Cloudflare runtime virtual module provided by the adapter
+import { env as workerEnv } from "cloudflare:workers";
+import { getDatabase } from "../../../lib/server/bindings";
+import { constantTimeEqual } from "../../../lib/server/crypto-utils";
 
 export const prerender = false;
 
 export async function POST({ request }: { request: Request }) {
   try {
-    const { env, db } = getBindings();
-    
+    const db = getDatabase();
+
     // Verify webhook source using a shared secret from environment
     const authHeader = request.headers.get("Authorization");
-    const webhookSecret = String(env.SAGE_WEBHOOK_SECRET || "");
-    
+    const runtime = workerEnv as { SAGE_WEBHOOK_SECRET?: string } | undefined;
+    const processSecret = typeof process !== "undefined" && process.env ? process.env.SAGE_WEBHOOK_SECRET : "";
+    const webhookSecret = String(runtime?.SAGE_WEBHOOK_SECRET || processSecret || "");
+    const bearerToken = authHeader?.match(/^Bearer\s+(.+)$/i)?.[1] || "";
+
     if (!webhookSecret) {
-      console.warn("SAGE_WEBHOOK_SECRET is not configured. Webhook security is degraded.");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    if (!authHeader || (webhookSecret && authHeader !== `Bearer ${webhookSecret}`)) {
+    if (!bearerToken || !constantTimeEqual(bearerToken, webhookSecret)) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json" } }
@@ -74,7 +84,7 @@ export async function POST({ request }: { request: Request }) {
   }
 }
 
-async function handlePaymentReceived(db: import('@cloudflare/workers-types').D1Database, data: any) {
+async function handlePaymentReceived(db: D1Database, data: any) {
   // Update financial records with Sage payment reference
   if (data.invoice_number && data.payment_reference) {
     await db.prepare(
@@ -88,7 +98,7 @@ async function handlePaymentReceived(db: import('@cloudflare/workers-types').D1D
   }
 }
 
-async function handleInvoicePaid(db: import('@cloudflare/workers-types').D1Database, data: any) {
+async function handleInvoicePaid(db: D1Database, data: any) {
   // Update invoice status when paid in Sage
   if (data.invoice_number) {
     await db.prepare(
@@ -102,7 +112,7 @@ async function handleInvoicePaid(db: import('@cloudflare/workers-types').D1Datab
   }
 }
 
-async function handleQuoteApproved(db: import('@cloudflare/workers-types').D1Database, data: any) {
+async function handleQuoteApproved(db: D1Database, data: any) {
   // Update quote status when approved in Sage
   if (data.quote_number) {
     await db.prepare(

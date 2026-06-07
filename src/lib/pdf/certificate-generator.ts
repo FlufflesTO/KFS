@@ -202,7 +202,7 @@ export async function generateCertificatePDF(certificateData: CertificateData): 
     color: rgb(0.4, 0.4, 0.4),
   });
   
-  page.drawText('For verification, visit: www.kharon.co.za/certificate-verification', {
+  page.drawText('For verification, visit: www.tequit.co.za/certificate-verification', {
     x: 50,
     y: 35,
     size: 9,

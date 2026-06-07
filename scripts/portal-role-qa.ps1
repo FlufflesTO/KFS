@@ -1,5 +1,5 @@
 param(
-  [string]$BaseUrl = "https://portal.kharon.co.za",
+  [string]$BaseUrl = "https://portal.tequit.co.za",
   [switch]$SkipCredentialTests,
   [string]$OutputPath = ""
 )

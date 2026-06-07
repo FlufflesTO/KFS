@@ -4,22 +4,25 @@
 
 Deploy the Astro website and SSR portal to Cloudflare's serverless runtime. The active environment is production only.
 
-- Production canonical domain: `https://www.kharon.co.za`
-- Production redirect domain: `https://kharon.co.za`
-- Production portal host: `https://portal.kharon.co.za`
-- Cloudflare Worker/Pages application: `kharon-website`
+- Production canonical domain: `https://www.tequit.co.za`
+- Production redirect domain: `https://tequit.co.za`
+- Production portal host: `https://portal.tequit.co.za`
+- Cloudflare Pages application: `kfs-website`
+- Cloudflare Worker application: `kfs-portal`
 - Node version: `>=22.12.0`
-- Build output directory: `dist`
-- Contact email: `admin@kharon.co.za` by default, with `connor@kharon.co.za` available in Google Workspace.
+- Build output directories: `.deploy/website` and `.deploy/portal`
+- Contact email: `admin@tequit.co.za` by default.
+
+`kharon.co.za` is a future cutover domain only. Do not configure Kharon DNS, routes, or deploy targets before explicit completion approval.
 
 ## Build Variables
 
 Set these in the Cloudflare deployment environment, or in PowerShell before a manual build:
 
 ```powershell
-$env:PUBLIC_SITE_URL="https://www.kharon.co.za"
-$env:PUBLIC_PORTAL_URL="https://portal.kharon.co.za"
-$env:PUBLIC_CONTACT_EMAIL="admin@kharon.co.za"
+$env:PUBLIC_SITE_URL="https://www.tequit.co.za"
+$env:PUBLIC_PORTAL_URL="https://portal.tequit.co.za"
+$env:PUBLIC_CONTACT_EMAIL="admin@tequit.co.za"
 ```
 
 ## Pre-Deploy Gate
@@ -32,7 +35,7 @@ $env:NODE_OPTIONS="--max-old-space-size=4096"
 npm install
 npm run lint
 npm run check
-npm run build
+npm run build:production
 npm run audit:site
 npm run test
 npm audit
@@ -50,9 +53,9 @@ Gate requirements:
 - Audit reports `0 vulnerabilities`.
 - `robots.txt` and `sitemap.xml` are present in build output.
 - `404.html` is present and contains `noindex, nofollow`.
-- Contact page shows form with Name, Email, Request Type and Message fields and a Submit button. Form uses `/api/contact` POST (not `mailto:`).
+- Contact page shows form with Name, Email, Request Type, Message, POPIA consent and a Submit button. Form posts to `https://portal.tequit.co.za/api/contact` (not `mailto:`).
 - Header and footer include `Access Records` CTAs pointing to the active portal login.
-- `dist/_headers` and `dist/_redirects` are present.
+- `.deploy/website/_headers` and `.deploy/website/_redirects` are present.
 - Domain-level apex/www redirects are configured through Cloudflare Redirect Rules or Bulk Redirects, not Pages `_redirects`.
 
 ## Cloudflare Deployment
@@ -60,9 +63,11 @@ Gate requirements:
 ### Project Settings
 
 - Framework/runtime: Astro with `@astrojs/cloudflare`
-- Project name: `kharon-website`
-- Build command: `npm run build`
-- Build output directory: `dist`
+- Pages project name: `kfs-website`
+- Worker name: `kfs-portal`
+- Build command: `npm run build:production`
+- Website output directory: `.deploy/website`
+- Portal deploy config: `.deploy/portal/server/wrangler.json`
 - Root directory: repository root
 - Production branch: main release branch
 - Node version: `22.22.1` or any version satisfying `>=22.12.0`
@@ -81,9 +86,9 @@ Gate requirements:
    ```
 5. Validate security headers and path-level redirects. Cloudflare `_redirects` does not replace zone-level apex/www redirect rules.
 6. Attach production domains:
-   - `www.kharon.co.za`
-   - `kharon.co.za`
-   - `portal.kharon.co.za`
+   - `www.tequit.co.za`
+   - `tequit.co.za`
+   - `portal.tequit.co.za`
 7. Deploy production:
    ```powershell
    npm run build:production
@@ -95,7 +100,7 @@ Gate requirements:
 
 Cloudflare Pages `_redirects` does not support host/domain-level redirects. Configure canonical forwarding in Cloudflare:
 
-- Production: redirect `kharon.co.za/*` to `https://www.kharon.co.za/$1`, preserving path and query string.
+- Production: redirect `tequit.co.za/*` to `https://www.tequit.co.za/$1`, preserving path and query string.
 
 Use Cloudflare Redirect Rules or Bulk Redirects for this. Do not add full-domain rules to `public/_redirects`; they will not be enforced by Pages.
 
@@ -103,40 +108,40 @@ Use Cloudflare Redirect Rules or Bulk Redirects for this. Do not add full-domain
 
 The portal uses a nonce-based CSP with `strict-dynamic`. Do not run Cloudflare features that inject un-nonced scripts on portal HTML.
 
-- Disable Rocket Loader for `portal.kharon.co.za/*` and any public-host `/portal/*` route.
+- Disable Rocket Loader for `portal.tequit.co.za/*` and any public-host `/portal/*` route.
 - Disable Email Obfuscation for the same portal routes, or disable it zone-wide if route-level rules are not available.
 - Re-check the browser console after deployment; `cdn-cgi/scripts/.../rocket-loader.min.js` and `cdn-cgi/scripts/.../email-decode.min.js` should not be injected on `/portal/login`.
 
 ### Portal DNS And Routing
 
-`portal.kharon.co.za`, `www.kharon.co.za` and `kharon.co.za` are attached to the production deployment. Do not leave public traffic on an old static Pages deployment, otherwise public navigation can drift from the portal-backed SSR build.
+`portal.tequit.co.za`, `www.tequit.co.za` and `tequit.co.za` are attached to the production deployment. Do not leave public traffic on an old static Pages deployment, otherwise public navigation can drift from the portal-backed SSR build.
 
 Current production Worker routes:
 
-- `kharon.co.za/*`
-- `www.kharon.co.za/*`
-- `portal.kharon.co.za/*`
+- `tequit.co.za/*`
+- `www.tequit.co.za/*`
+- `portal.tequit.co.za/*`
 
 Expected checks:
 
 ```powershell
-curl.exe -I https://www.kharon.co.za/contact/
-curl.exe -I https://portal.kharon.co.za/portal/login
-curl.exe -I https://portal.kharon.co.za/portal/tech/dashboard
+curl.exe -I https://www.tequit.co.za/contact/
+curl.exe -I https://portal.tequit.co.za/portal/login
+curl.exe -I https://portal.tequit.co.za/portal/tech/dashboard
 ```
 
 Expected results:
 
 - `/portal/login` returns `200`.
 - Protected dashboards return `302` to `/portal/login?...` when unauthenticated.
-- Public `Access Records` links render `https://portal.kharon.co.za/portal/login`.
+- Public `Access Records` links render `https://portal.tequit.co.za/portal/login`.
 
-If `www.kharon.co.za` or `portal.kharon.co.za` serves stale Pages output, it is attached to the wrong Cloudflare application. Remove the affected custom domain from the stale Pages/static app or add a Worker route/custom domain on the Worker deployment.
+If `www.tequit.co.za` or `portal.tequit.co.za` serves stale output, it is attached to the wrong Cloudflare application. Remove the affected custom domain from the stale app or attach the correct Worker/Pages target.
 
 After the DNS/custom domain is saved, re-check routing:
 
 ```powershell
-curl.exe -I https://portal.kharon.co.za/portal/login
+curl.exe -I https://portal.tequit.co.za/portal/login
 ```
 
 If direct `npx wrangler login` fails with `You are logged in with an API Token`, the shell has `CLOUDFLARE_API_TOKEN` set. Either use the npm scripts above or clear it for the current PowerShell session:
@@ -162,15 +167,15 @@ To ensure GitHub Actions CI/CD can deploy to Cloudflare, you must define the `CL
    - **Zone** -> **Zone** -> **Read** (Required to read custom zone metadata)
    - **Account** -> **D1** -> **Edit** (Required to bind D1 databases)
    - **Account** -> **R2** -> **Edit** (Required to bind R2 buckets)
-7. Set the token's **Zone Resources** to **All zones** or explicitly add `kharon.co.za`.
+7. Set the token's **Zone Resources** to **All zones** or explicitly add `tequit.co.za`.
 8. Trigger the workflow (e.g., by pushing a commit or manually re-running a failed job) to redeploy.
 
 ### Production DNS
 
-Add the Kharon custom domains to Cloudflare and create DNS records in the `kharon.co.za` zone:
+Add the active Tequit custom domains to Cloudflare and create DNS records in the `tequit.co.za` zone:
 
 - `www` -> `kharon-website.pages.dev`
-- apex `kharon.co.za` -> Pages apex/custom-domain target shown by Cloudflare
+- apex `tequit.co.za` -> Pages apex/custom-domain target shown by Cloudflare
 - `portal` -> the Worker/SSR portal target
 
 Production build and deploy:
@@ -267,16 +272,16 @@ Admin operations route:
 Live smoke checks:
 
 ```powershell
-curl.exe -I https://portal.kharon.co.za/portal/login
-curl.exe -I https://portal.kharon.co.za/portal/tech/dashboard
+curl.exe -I https://portal.tequit.co.za/portal/login
+curl.exe -I https://portal.tequit.co.za/portal/tech/dashboard
 ```
 
 Authenticated dashboard smoke check:
 
 ```powershell
-Set-Content -Path .\auth-test.json -Value '{"email":"tech@kharon.co.za","password":"<enter QA password supplied outside the repo>"}'
-curl.exe -s -c .\portal-cookies.txt -X POST https://portal.kharon.co.za/portal/api/auth -H "Content-Type: application/json" --data-binary "@auth-test.json"
-curl.exe -I -b .\portal-cookies.txt https://portal.kharon.co.za/portal/tech/dashboard
+Set-Content -Path .\auth-test.json -Value '{"email":"tech@tequit.co.za","password":"<enter QA password supplied outside the repo>"}'
+curl.exe -s -c .\portal-cookies.txt -X POST https://portal.tequit.co.za/portal/api/auth -H "Content-Type: application/json" --data-binary "@auth-test.json"
+curl.exe -I -b .\portal-cookies.txt https://portal.tequit.co.za/portal/tech/dashboard
 Remove-Item .\auth-test.json,.\portal-cookies.txt -ErrorAction SilentlyContinue
 ```
 
@@ -285,8 +290,8 @@ Expected authenticated result: `/portal/tech/dashboard` returns `200`.
 Logout smoke check:
 
 ```powershell
-curl.exe -i -b .\portal-cookies.txt -c .\portal-cookies-after.txt -X POST https://portal.kharon.co.za/portal/api/logout -H "Origin: https://portal.kharon.co.za"
-curl.exe -I -b .\portal-cookies-after.txt https://portal.kharon.co.za/portal/tech/dashboard
+curl.exe -i -b .\portal-cookies.txt -c .\portal-cookies-after.txt -X POST https://portal.tequit.co.za/portal/api/logout -H "Origin: https://portal.tequit.co.za"
+curl.exe -I -b .\portal-cookies-after.txt https://portal.tequit.co.za/portal/tech/dashboard
 ```
 
 Expected result: logout returns `200` and the next dashboard request returns `302` to login.
@@ -300,7 +305,7 @@ npx wrangler d1 execute kharon-portal --remote --command "SELECT scope, COUNT(*)
 
 ### Google Workspace Email DNS
 
-Because Kharon uses Google Workspace for `admin@kharon.co.za` and `connor@kharon.co.za`, email DNS belongs on the `kharon.co.za` zone.
+Future cutover note: Kharon-domain Google Workspace DNS belongs on the `kharon.co.za` zone only after the Kharon cutover is explicitly approved.
 
 Add Google Workspace's current required records:
 

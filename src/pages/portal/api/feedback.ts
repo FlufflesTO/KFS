@@ -1,7 +1,7 @@
 
 import { getDatabase } from "../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../lib/server/audit";
-import { badRequest, json, methodNotAllowed, serverError } from "../../../lib/server/http.ts";
+import { json, methodNotAllowed, serverError } from "../../../lib/server/http.ts";
 import { cleanChoice, cleanText } from "../../../lib/server/access";
 
 export const prerender = false;

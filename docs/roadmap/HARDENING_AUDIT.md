@@ -4,14 +4,14 @@ Date: 2026-05-18
 
 ## Result
 
-The public site is static-first, deployable on Cloudflare Pages, and hardened for the current Kharon QA domain and future Kharon production cutover.
+The public site is static-first, deployable on Cloudflare Pages, and hardened for the active Tequit domain set. Kharon-domain work is future cutover only.
 
 ## Pass 1: Build And Deployment
 
 - Verified Astro static build emits 11 HTML pages.
 - Verified no public app JavaScript bundle is emitted.
-- Verified QA canonical output uses `https://www.kharon.co.za`.
-- Verified production Kharon build output uses `https://www.kharon.co.za`.
+- Verified QA canonical output uses `https://www.tequit.co.za`.
+- Verified production Tequit build output uses `https://www.tequit.co.za`.
 - Corrected Pages redirect assumptions: Cloudflare Pages `_redirects` is not used for apex/www domain forwarding.
 
 ## Pass 2: Security
@@ -50,14 +50,14 @@ The public site is static-first, deployable on Cloudflare Pages, and hardened fo
 ## Operational Notes
 
 - Configure apex/www canonical forwarding in Cloudflare Redirect Rules or Bulk Redirects:
-  - `kharon.co.za/*` -> `https://www.kharon.co.za/$1`
-  - `kharon.co.za/*` -> `https://www.kharon.co.za/$1`
+  - `tequit.co.za/*` -> `https://www.tequit.co.za/$1`
+  - `www.tequit.co.za/*` remains on the website Pages target
 - Keep real project photography and case evidence as the next authority phase once approved assets are available.
 
 ## Residual External Control
 
-- `https://kharon.co.za/` currently serves the same hardened site instead of redirecting to `https://www.kharon.co.za/`.
-- The current Wrangler OAuth token can read the `kharon.co.za` zone but returned an authentication error for zone Rulesets API access.
+- `https://tequit.co.za/` must redirect to `https://www.tequit.co.za/` at the Cloudflare zone layer.
+- The current Wrangler OAuth token must have zone Rulesets permissions before DNS-level redirects can be changed.
 - This cannot be resolved inside the Pages bundle because Cloudflare Pages `_redirects` does not support domain-level redirects. Add the Redirect Rule in the Cloudflare dashboard or with a token that has Dynamic URL Redirects Write / Zone Rulesets permissions.
 
 ---
@@ -163,7 +163,7 @@ Scope: browser-side DOM safety, portal/public form success states, finance selec
 - `npm run portal:qa:roles -- -SkipCredentialTests` passes.
 - `npm run portal:monitor` passes.
 - [ ] Full responsive screenshot QA across desktop, tablet and mobile.
-- [ ] Production domain migration plan for `www.kharon.co.za` and `portal.kharon.co.za`.
+- [ ] Future Kharon-domain migration plan, gated until explicit completion approval.
 - [ ] Approved public imagery to replace schematic visuals.
 
 ---

@@ -68,7 +68,7 @@ The portal meets all requirements for production deployment with the following n
 - All critical security measures are in place
 - Compliance requirements for South African regulations are satisfied
 - Performance optimizations have been implemented
-- The system is ready for migration from kharon.co.za to kharon.co.za
+- Active production-domain work now targets `www.tequit.co.za`, `tequit.co.za`, and `portal.tequit.co.za`; `kharon.co.za` remains future cutover only.
 
 ## Post-Deployment Tasks
 - [ ] Monitor system performance and user feedback
