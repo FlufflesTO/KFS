@@ -57,18 +57,18 @@ export function resolveBindingsForAuth(): AuthEnv {
   }
 
   // 3. Validation guard
-  const environment = env.ENVIRONMENT || "local";
+  // Check if we're in a CI test environment first to allow safe fallback
   const isTest = typeof process !== "undefined" && process.env && process.env.NODE_ENV === "test";
   
-  if (environment !== "local" && !isTest && !env.SESSION_SECRET) {
-    throw new Error("SESSION_SECRET must be configured in production environment");
-  }
-
-  // Provide safe fallback for tests if secrets are missing
   if (isTest && !env.SESSION_SECRET) {
     env.SESSION_SECRET = "test_session_secret_at_least_32_chars_long_in_code_fallback";
     env.CSRF_SECRET = "test_csrf_secret_at_least_32_chars_long_in_code_fallback";
     env.MFA_SECRET = "test_mfa_secret_at_least_32_chars_long_in_code_fallback";
+  }
+
+  const environment = env.ENVIRONMENT || "local";
+  if (environment !== "local" && !env.SESSION_SECRET) {
+    throw new Error("SESSION_SECRET must be configured in production environment");
   }
 
   return env;
