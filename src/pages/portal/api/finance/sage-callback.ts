@@ -5,11 +5,12 @@
  * Structural Role: API Endpoint Handler
  */
 
-import { getBindings } from "../../../../lib/server/bindings.ts";
+import { getBindings, type Env } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
 import { badRequest, forbidden, unauthorized } from "../../../../lib/server/http.ts";
 import { encryptText } from "../../../../lib/server/crypto.ts";
 import type { APIContext } from "astro";
+import type { D1Database } from "@cloudflare/workers-types";
 
 export const prerender = false;
 
@@ -27,6 +28,55 @@ function redirectToFinance(location: string) {
   });
 }
 
+type TokenData = { access_token: string; refresh_token: string; expires_in?: number };
+
+async function exchangeAuthCode(clientId: string, clientSecret: string, code: string, redirectUri: string): Promise<TokenData> {
+  const tokenResponse = await fetch("https://oauth.accounting.sageone.com/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json"
+    },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: redirectUri
+    })
+  });
+
+  if (!tokenResponse.ok) {
+    const errText = await tokenResponse.text();
+    throw new Error(`Token exchange failed: ${tokenResponse.statusText}. Details: ${errText}`);
+  }
+
+  return await tokenResponse.json() as TokenData;
+}
+
+async function persistTokens(db: D1Database, env: Env, tokenData: TokenData): Promise<number> {
+  const expiresAt = Math.floor(Date.now() / 1000) + Number(tokenData.expires_in || 3600);
+
+  // Encrypt tokens before storing
+  const encryptedAccessToken = await encryptText(tokenData.access_token, env);
+  const encryptedRefreshToken = await encryptText(tokenData.refresh_token, env);
+
+  // Save tokens in database (upsert on ID 1)
+  await db.prepare(
+    `INSERT INTO sage_config (id, access_token, refresh_token, expires_at, updated_at)
+     VALUES (1, ?1, ?2, ?3, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+     ON CONFLICT(id) DO UPDATE SET
+       access_token = excluded.access_token,
+       refresh_token = excluded.refresh_token,
+       expires_at = excluded.expires_at,
+       updated_at = excluded.updated_at`
+  )
+  .bind(encryptedAccessToken, encryptedRefreshToken, expiresAt)
+  .run();
+
+  return expiresAt;
+}
+
 export async function GET({ request, locals, url, cookies }: APIContext) {
   const user = locals.user;
   if (!user) return unauthorized();
@@ -34,7 +84,7 @@ export async function GET({ request, locals, url, cookies }: APIContext) {
     return forbidden("Only finance or admin accounts can complete Sage integration.");
   }
 
-  let db, env;
+  let db: D1Database, env: Env;
   try {
     const bindings = getBindings();
     db = bindings.db;
@@ -85,46 +135,8 @@ export async function GET({ request, locals, url, cookies }: APIContext) {
   const redirectUri = String(env.SAGE_REDIRECT_URI || `${url.origin}/portal/api/finance/sage-callback`);
 
   try {
-    // Exchange Auth Code for Access Token
-    const tokenResponse = await fetch("https://oauth.accounting.sageone.com/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Accept": "application/json"
-      },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        grant_type: "authorization_code",
-        code,
-        redirect_uri: redirectUri
-      })
-    });
-
-    if (!tokenResponse.ok) {
-      const errText = await tokenResponse.text();
-      throw new Error(`Token exchange failed: ${tokenResponse.statusText}. Details: ${errText}`);
-    }
-
-    const tokenData = await tokenResponse.json() as { access_token: string; refresh_token: string; expires_in?: number };
-    const expiresAt = Math.floor(Date.now() / 1000) + Number(tokenData.expires_in || 3600);
-
-    // Encrypt tokens before storing
-    const encryptedAccessToken = await encryptText(tokenData.access_token, env);
-    const encryptedRefreshToken = await encryptText(tokenData.refresh_token, env);
-
-    // Save tokens in database (upsert on ID 1)
-    await db.prepare(
-      `INSERT INTO sage_config (id, access_token, refresh_token, expires_at, updated_at)
-       VALUES (1, ?1, ?2, ?3, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-       ON CONFLICT(id) DO UPDATE SET
-         access_token = excluded.access_token,
-         refresh_token = excluded.refresh_token,
-         expires_at = excluded.expires_at,
-         updated_at = excluded.updated_at`
-    )
-    .bind(encryptedAccessToken, encryptedRefreshToken, expiresAt)
-    .run();
+    const tokenData = await exchangeAuthCode(clientId, clientSecret, code, redirectUri);
+    const expiresAt = await persistTokens(db, env, tokenData);
 
     await auditEvent(db, request, {
       eventType: "finance.sage_connect",
@@ -137,7 +149,7 @@ export async function GET({ request, locals, url, cookies }: APIContext) {
 
     return redirectToFinance("/portal/finance/dashboard?success=sage_connected");
 
-  } catch (err) {
+  } catch (err: any) {
     await auditEvent(db, request, {
       eventType: "finance.sage_connect",
       entityType: "integration",
