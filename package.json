@@ -44,7 +44,8 @@
     "deploy:portal": "npm run build:portal && npm run deploy:portal:artifact",
     "deploy:cloudflare": "npm run build:production && npm run deploy:portal:artifact && npm run deploy:website:artifact",
     "deploy:cloudflare:ps": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 production",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:unit": "vitest run"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.6.0",
@@ -74,6 +75,7 @@
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.0",
+    "vitest": "^4.1.8",
     "wrangler": "^4.92.0"
   },
   "overrides": {
