@@ -1,0 +1,18 @@
+---
+import type { LeadMagnet } from "../../data/leadMagnets.js";
+
+export interface Props {
+  magnet: LeadMagnet;
+}
+
+const { magnet } = Astro.props;
+---
+<div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+  <div>
+    <h3 class="text-lg font-bold text-white">{magnet.title}</h3>
+    <p class="mt-2 text-sm text-kharon-light/70">{magnet.description}</p>
+  </div>
+  <a href={magnet.href} class="kharon-command-button whitespace-nowrap px-6 py-3 text-sm">
+    {magnet.buttonText}
+  </a>
+</div>
