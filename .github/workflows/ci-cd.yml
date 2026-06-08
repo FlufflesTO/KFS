@@ -63,7 +63,9 @@ jobs:
         run: npm run check
 
       - name: Build Deployment Artifacts
-        run: npm run build:production
+        run: |
+          sudo apt-get install -y powershell || (wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" && sudo dpkg -i packages-microsoft-prod.deb && sudo apt-get update && sudo apt-get install -y powershell)
+          npm run build:production
 
       - name: Site Audit (Security & Performance)
         run: npm run audit:site
