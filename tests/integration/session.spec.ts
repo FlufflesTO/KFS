@@ -625,7 +625,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
     await page.context().addCookies([
       {
         name: 'kharon_session_token',
-        value: 'token\x00with\x00nulls',
+        value: encodeURIComponent('token\x00with\x00nulls'),
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
@@ -642,7 +642,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
     await page.context().addCookies([
       {
         name: 'kharon_session_token',
-        value: "'; DROP TABLE users; --",
+        value: encodeURIComponent("'; DROP TABLE users; --"),
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
