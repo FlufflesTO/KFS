@@ -1,0 +1,61 @@
+---
+/**
+ * Project Sentinel - Commercial Hero Component
+ * Purpose: Clear buyer-led hero with primary/secondary CTA
+ * Dependencies: KharonButton
+ * Structural Role: Reusable block
+ */
+
+import KharonButton from '../ui/KharonButton.astro';
+
+export interface Props {
+  headline: string;
+  subheadline: string;
+  primaryCtaText: string;
+  primaryCtaLink: string;
+  secondaryCtaText?: string;
+  secondaryCtaLink?: string;
+  backgroundImage?: string;
+}
+
+const {
+  headline,
+  subheadline,
+  primaryCtaText,
+  primaryCtaLink,
+  secondaryCtaText,
+  secondaryCtaLink,
+  backgroundImage = '/images/hero-bg.jpg'
+} = Astro.props;
+---
+
+<section class="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-kharon-surface-charcoal">
+  {/* Background image / overlay */}
+  <div class="absolute inset-0 z-0">
+    <div class="absolute inset-0 bg-kharon-surface-charcoal/80 bg-gradient-to-t from-kharon-surface-charcoal via-kharon-surface-charcoal/70 to-transparent mix-blend-multiply z-10"></div>
+    {backgroundImage && (
+      <img src={backgroundImage} alt="" class="w-full h-full object-cover opacity-40" />
+    )}
+  </div>
+
+  <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 max-w-4xl">
+      {headline}
+    </h1>
+    <p class="text-lg md:text-xl text-kharon-light/90 max-w-2xl mb-10 leading-relaxed">
+      {subheadline}
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto">
+      <KharonButton href={primaryCtaLink} variant="primary" size="lg" className="w-full sm:w-auto min-h-[44px] min-w-[44px]">
+        {primaryCtaText}
+      </KharonButton>
+
+      {secondaryCtaText && secondaryCtaLink && (
+        <KharonButton href={secondaryCtaLink} variant="secondary" size="lg" className="w-full sm:w-auto min-h-[44px] min-w-[44px]">
+          {secondaryCtaText}
+        </KharonButton>
+      )}
+    </div>
+  </div>
+</section>
