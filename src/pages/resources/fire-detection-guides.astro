@@ -1,0 +1,72 @@
+---
+import GuidePage from "../../layouts/GuidePage.astro";
+---
+<GuidePage
+  meta={{
+    title: "Fire Detection Guides | SANS 10139 | Kharon",
+    description:
+      "A buyer's guide to commercial fire detection: addressable vs conventional panels, detector selection, zoning, cause-and-effect, and what SANS 10139 expects for design, commissioning and maintenance."
+  }}
+  hero={{
+    subtitle: "Resources",
+    title: "Fire Detection Guides",
+    description:
+      "How addressable fire detection is designed, zoned, commissioned and maintained for commercial and industrial sites — and what SANS 10139 requires of each stage.",
+    icon: "/brand/icons/service-fire-detection.svg"
+  }}
+  intro="A fire detection system is judged on two things: whether it detects a real fire early enough to act, and whether it avoids false alarms that erode confidence. Both come down to design decisions — detector type, placement, zoning and the cause-and-effect logic that links detection to alarms, suppression and shutdowns. This guide explains the choices a buyer should understand before specifying or upgrading a system, framed around SANS 10139 (the South African code of practice for fire detection and alarm systems) and the related component and application standards."
+  sections={[
+    {
+      heading: "Addressable vs conventional systems",
+      body:
+        "Conventional systems group devices into zones — the panel tells you a fire is in a zone, but not which device triggered it. Addressable systems give every detector and call point a unique address, so the panel reports the exact device and location. For anything beyond a small, simple building, addressable is the practical choice: faster location of the event, granular fault reporting, and the flexible cause-and-effect needed when detection has to drive suppression, dampers or evacuation."
+    },
+    {
+      heading: "Choosing the right detector",
+      body:
+        "Detector selection follows the risk and the environment, not habit. Matching the sensing technology to the expected fire and the ambient conditions is what keeps a system both sensitive and false-alarm resistant.",
+      list: [
+        "Optical (photoelectric) smoke detectors: best for smouldering fires and general commercial areas.",
+        "Heat detectors: for kitchens, plant rooms and dusty or fumy spaces where smoke detectors would false-alarm.",
+        "Multi-sensor detectors: combine smoke and heat sensing to improve discrimination in mixed environments.",
+        "Aspirating smoke detection: very early warning for data halls, high-bay warehousing and clean technical spaces.",
+        "Beam detectors: large open volumes such as warehouses and atria where point detectors are impractical.",
+        "Flame detectors: fast-developing, high-energy fire risks in industrial and process areas."
+      ]
+    },
+    {
+      heading: "Zoning and addressing",
+      body:
+        "Zoning controls how quickly responders can locate a fire and how the building is divided for evacuation. A coherent zoning scheme keeps search areas small, aligns detection zones with the building's compartments and escape strategy, and is documented on a clear zone plan kept at the panel. On loop-based addressable systems, sensible loop loading and structured addressing also make future fault-finding and expansion far simpler."
+    },
+    {
+      heading: "Cause-and-effect: linking detection to action",
+      body:
+        "Cause-and-effect is the matrix that defines what happens when a given input activates — which sounders operate, which doors release, whether suppression is armed, and which plant shuts down. It is the heart of an integrated system and must be designed, documented and verified at commissioning, then re-checked at every annual service. A detection system that cannot demonstrably trigger the right outputs is incomplete, regardless of how many detectors it has."
+    },
+    {
+      heading: "Commissioning and handover",
+      body:
+        "Commissioning proves the installed system behaves as designed. A complete handover gives the responsible person the evidence they need to operate and maintain the system and to satisfy an insurer or auditor.",
+      list: [
+        "Device-by-device test results across every loop",
+        "Verified cause-and-effect matrix with interlocks demonstrated",
+        "As-built zone plans and panel documentation",
+        "Commissioning certificate and operator instructions",
+        "Recommended maintenance schedule and spares list"
+      ]
+    },
+    {
+      heading: "Keeping a system compliant",
+      body:
+        "After handover, SANS 10139 expects ongoing inspection and servicing: routine in-house checks of panel status and alarm devices, plus competent-person servicing that tests devices and outputs on a defined cadence. Our maintenance checklist sets out the monthly, quarterly and annual tasks in detail."
+    }
+  ]}
+  related={[
+    { label: "Fire Detection", href: "/fire-detection" },
+    { label: "PA / PE Systems", href: "/pa-pe-systems" },
+    { label: "Maintenance Checklists", href: "/resources/maintenance-checklists" },
+    { label: "SANS Compliance", href: "/compliance" }
+  ]}
+  intent="fire-detection"
+/>

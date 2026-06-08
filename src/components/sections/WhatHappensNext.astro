@@ -1,0 +1,45 @@
+---
+/**
+ * WhatHappensNext - reusable post-form / conversion block.
+ * Sets buyer expectations after an enquiry and routes to the solution-aware contact form.
+ */
+export interface Props {
+  intent?: string;
+  ctaLabel?: string;
+  heading?: string;
+}
+
+const {
+  intent = "site-assessment",
+  ctaLabel = "Request Site Assessment",
+  heading = "What happens next?"
+} = Astro.props;
+
+const steps = [
+  { n: "1", title: "Share your requirement", text: "Tell us the site, systems and any compliance deadline. No obligation." },
+  { n: "2", title: "Site assessment", text: "We survey the installation, zones and current compliance status against the relevant SANS standards." },
+  { n: "3", title: "Scope & fixed pricing", text: "You receive a clear scope of work, standards mapping and transparent pricing." },
+  { n: "4", title: "Delivery & documentation", text: "We install or service the system and hand over signed compliance records for your file." }
+];
+
+const contactHref = `/contact?intent=${intent}`;
+---
+
+<section class="section-padding bg-kharon-charcoal/30 border-t border-kharon-purple/10">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">{heading}</p>
+    <h2 class="kharon-h2 mt-3 text-white">A clear, no-pressure process</h2>
+    <ol class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {steps.map((step) => (
+        <li class="rounded-xl border border-kharon-purple/15 bg-kharon-black/40 p-6">
+          <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-kharon-purple/15 text-sm font-black text-kharon-cyan">{step.n}</span>
+          <h3 class="mt-4 text-base font-bold text-white">{step.title}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-kharon-light/70">{step.text}</p>
+        </li>
+      ))}
+    </ol>
+    <div class="mt-10">
+      <a href={contactHref} class="kharon-command-button inline-flex min-h-[44px] px-8 py-4 text-sm">{ctaLabel}</a>
+    </div>
+  </div>
+</section>

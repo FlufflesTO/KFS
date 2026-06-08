@@ -1,0 +1,63 @@
+---
+import GuidePage from "../../layouts/GuidePage.astro";
+---
+<GuidePage
+  meta={{
+    title: "CCTV & Security Guides | SANS 62676, 50131 & 60839 | Kharon",
+    description:
+      "A buyer's guide to commercial CCTV and electronic security: camera and coverage planning, footage retention, intrusion grading, access control and integrated systems under SANS 62676, SANS 50131 and SANS 60839-11-1."
+  }}
+  hero={{
+    subtitle: "Resources",
+    title: "CCTV & Security Guides",
+    description:
+      "How commercial CCTV, intrusion detection and access control are specified, graded and integrated — under SANS 62676, SANS 50131 and SANS 60839-11-1.",
+    icon: "/brand/icons/service-cctv.svg"
+  }}
+  intro="Electronic security earns its place when it is specified around a clear objective: deter, detect, verify and record. CCTV that cannot identify a person, an intrusion system graded below the actual risk, or access control that conflicts with the building's escape strategy all fail quietly until they are needed. This guide explains the decisions behind commercial CCTV, intrusion detection and access control, and how they integrate with fire and life-safety — framed around SANS 62676 (CCTV), SANS 50131 (intrusion) and SANS 60839-11-1 (access control)."
+  sections={[
+    {
+      heading: "CCTV: define the purpose first",
+      body:
+        "Every camera should answer a stated operational requirement — what you need to see and why. Pixel density on the target determines whether footage can monitor, detect, recognise or identify a person, and that drives lens choice, resolution and placement. A camera that delivers a wide overview cannot also identify a face at the far end of a yard; specifying coverage around the objective avoids paying for cameras that produce unusable evidence."
+    },
+    {
+      heading: "Coverage planning and image quality",
+      list: [
+        "Map fields of view to the objective (monitor / detect / recognise / identify) for each location",
+        "Plan for low-light and night performance, glare and back-lighting at entrances",
+        "Position cameras to limit blind spots, tampering and obstruction",
+        "Confirm network bandwidth and storage support the chosen resolution and frame rate",
+        "Verify on-site that recorded image quality meets the requirement, not just the live view"
+      ]
+    },
+    {
+      heading: "Footage retention and lawful handling",
+      body:
+        "Retention period should be set deliberately against operational need and any sector or insurer requirement, and storage sized accordingly. Recorded footage is personal information: under South Africa's POPIA it must be handled lawfully — purpose-limited, access-controlled, retained no longer than needed and protected against misuse. Signage notifying people that the area is monitored is part of doing this properly."
+    },
+    {
+      heading: "Intrusion detection and grading",
+      body:
+        "Intrusion systems under SANS 50131 are graded 1 to 4 by the risk and the likely attacker's capability. The grade dictates the detection technology, tamper resistance, signalling and the alarm-transmission path. Matching the grade to the real risk matters in both directions: under-grading leaves a gap, over-grading wastes spend. Detection should be layered — perimeter, volumetric and point protection — with reliable, monitored signalling so an alarm is actually acted on."
+    },
+    {
+      heading: "Access control",
+      body:
+        "Access control under SANS 60839-11-1 governs who can enter where, and when, with an auditable record of events. The critical design rule is that access control must never compromise escape: on a fire alarm, doors on escape routes must fail to a safe state so people can always get out, while security objectives are preserved everywhere else. Credential type, anti-passback, door monitoring and integration with the fire system are all part of a coherent specification."
+    },
+    {
+      heading: "Integrated security",
+      body:
+        "The strongest result comes from systems that work together rather than as silos. CCTV verifying an intrusion or access event, access control releasing on fire alarm, and a single point of monitoring all reduce response time and false dispatches. Integration must respect life-safety priorities — fire and egress always take precedence — and the cabling and infrastructure that tie systems together follow the relevant installation standards (for example SANS 10142-1 for electrical work and structured cabling practice)."
+    }
+  ]}
+  related={[
+    { label: "CCTV", href: "/cctv" },
+    { label: "Intrusion Detection", href: "/intrusion-detection" },
+    { label: "Access Control", href: "/access-control" },
+    { label: "Integrated Security", href: "/security-systems" },
+    { label: "Control Rooms", href: "/sectors/control-rooms" }
+  ]}
+  intent="cctv"
+/>

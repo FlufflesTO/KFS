@@ -7,6 +7,7 @@ import { consumeRateLimit } from "../../lib/server/rateLimit";
 import { sha256Text } from "../../lib/server/request";
 import { ContactSubmissionSchema, ALLOWED_REQUEST_TYPES } from "../../lib/validation/schemas";
 import { json, badRequest, tooManyRequests, serverError } from "../../lib/server/http";
+import { resolveRequestType } from "../../data/forms";
 
 export const prerender = false;
 
@@ -131,10 +132,19 @@ export const POST: APIRoute = async ({ request }) => {
   const dataToValidate = {
     name: rawBody.name,
     email: rawBody.email,
-    requestType: rawBody.requestType || rawBody.subject,
+    requestType: rawBody.requestType || rawBody.subject || resolveRequestType(rawBody.intent),
     message: rawBody.message,
     popiaConsent: rawBody.popiaConsent || rawBody.popia_consent || rawBody.consent,
-    website: rawBody.website
+    website: rawBody.website,
+    serviceInterest: rawBody.serviceInterest,
+    urgency: rawBody.urgency,
+    siteType: rawBody.siteType,
+    clientType: rawBody.clientType,
+    sourcePage: rawBody.sourcePage,
+    ctaClicked: rawBody.ctaClicked,
+    serviceSlug: rawBody.serviceSlug,
+    sectorSlug: rawBody.sectorSlug,
+    intent: rawBody.intent
   };
 
   const parsed = ContactSubmissionSchema.safeParse(dataToValidate);
@@ -143,9 +153,26 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   let { name, email, requestType, message } = parsed.data;
+  const { serviceInterest, urgency, siteType, clientType, sourcePage, ctaClicked, serviceSlug, sectorSlug, intent } = parsed.data;
 
   if (!ALLOWED_REQUEST_TYPES.includes(requestType)) {
     return finish(json({ ok: false, message: "Invalid request type." }, { status: 422 }));
+  }
+
+  // Capture submission context by appending a structured block to the stored message.
+  const contextLines = [
+    serviceInterest ? `Service interest: ${serviceInterest}` : "",
+    urgency ? `Urgency: ${urgency}` : "",
+    siteType ? `Site type: ${siteType}` : "",
+    clientType ? `Client: ${clientType}` : "",
+    intent ? `Intent: ${intent}` : "",
+    serviceSlug ? `Service page: ${serviceSlug}` : "",
+    sectorSlug ? `Sector page: ${sectorSlug}` : "",
+    ctaClicked ? `CTA: ${ctaClicked}` : "",
+    sourcePage ? `Source: ${sourcePage}` : ""
+  ].filter(Boolean);
+  if (contextLines.length > 0) {
+    message = `${message}\n\n--- Context ---\n${contextLines.join("\n")}`;
   }
 
   name = sanitizeForCsvInjection(name);

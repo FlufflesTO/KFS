@@ -1,0 +1,90 @@
+---
+/**
+ * SectorPage - reusable sector page template.
+ * Routes a sector audience to the right systems, with risk framing and proof.
+ */
+import BaseLayout from "./BaseLayout.astro";
+import SolutionHero from "../components/sections/SolutionHero.astro";
+import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
+import SectionHeading from "../components/sections/SectionHeading.astro";
+import WhatHappensNext from "../components/sections/WhatHappensNext.astro";
+import CaseStudyCard from "../components/sections/CaseStudyCard.astro";
+import { getCaseStudy } from "../data/case-studies.js";
+
+export interface Props {
+  meta: { title: string; description: string };
+  hero: { subtitle: string; title: string; description: string; icon: string };
+  overview: string;
+  /** sector-specific risks / pressures */
+  risks: { title: string; text: string }[];
+  /** recommended systems — link to service pages */
+  systems: { label: string; href: string; text: string }[];
+  standards: string[];
+  caseStudySlug?: string;
+  intent: string;
+}
+
+const { meta, hero, overview, risks, systems, standards, caseStudySlug, intent } = Astro.props;
+const study = caseStudySlug ? getCaseStudy(caseStudySlug) : undefined;
+---
+
+<BaseLayout title={meta.title} description={meta.description}>
+  <SolutionHero subtitle={hero.subtitle} title={hero.title} description={hero.description} icon={hero.icon} />
+  <ComplianceStrip />
+
+  <section class="section-padding bg-kharon-black">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">Overview</p>
+      <p class="mt-4 text-lg leading-relaxed text-kharon-light/80">{overview}</p>
+    </div>
+  </section>
+
+  <section class="section-padding bg-kharon-charcoal/30 border-y border-kharon-purple/10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <SectionHeading title="Sector risk profile" subtitle="What's at stake" />
+      <div class="mt-4 grid gap-6 md:grid-cols-3">
+        {risks.map((r) => (
+          <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-black/40 p-6">
+            <h3 class="text-base font-bold text-white">{r.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-kharon-light/70">{r.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-padding bg-kharon-black">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <SectionHeading title="Recommended systems" subtitle="How we protect this sector" />
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        {systems.map((s) => (
+          <a href={s.href} class="group flex flex-col rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-6 transition-all hover:border-kharon-cyan/40 hover:bg-kharon-charcoal/50">
+            <span class="text-lg font-bold text-white group-hover:text-kharon-cyan">{s.label}</span>
+            <span class="mt-2 text-sm leading-relaxed text-kharon-light/70">{s.text}</span>
+            <span class="mt-4 text-xs font-bold uppercase tracking-widest text-kharon-cyan">Explore →</span>
+          </a>
+        ))}
+      </div>
+
+      {standards.length > 0 && (
+        <div class="mt-10 flex flex-wrap items-center gap-3">
+          <span class="text-xs font-bold uppercase tracking-widest text-kharon-light/50">Aligned to</span>
+          {standards.map((s) => (
+            <span class="rounded border border-kharon-purple/20 bg-kharon-purple/5 px-3 py-1 text-xs font-black uppercase tracking-wider text-kharon-purple">{s}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+
+  {study && (
+    <section class="section-padding bg-kharon-charcoal/30 border-t border-kharon-purple/10">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6">
+        <SectionHeading title="Proof in practice" subtitle="Case study" />
+        <CaseStudyCard study={study} variant="preview" />
+      </div>
+    </section>
+  )}
+
+  <WhatHappensNext intent={intent} ctaLabel="Request Site Assessment" />
+</BaseLayout>

@@ -1,0 +1,97 @@
+---
+import GuidePage from "../../layouts/GuidePage.astro";
+---
+<GuidePage
+  meta={{
+    title: "Fire & Security Maintenance Checklists | Kharon",
+    description:
+      "Practical inspection and servicing checklists for fire detection, gas suppression, emergency lighting and fire doors — with monthly, quarterly and annual cadences aligned to SANS 10139, SANS 14520, SANS 10114-2 and SANS 1253."
+  }}
+  hero={{
+    subtitle: "Resources",
+    title: "Maintenance Checklists",
+    description:
+      "Structured inspection and servicing checklists for commercial and industrial fire and life-safety systems, organised by the cadence each standard expects.",
+    icon: "/brand/icons/service-engineering.svg"
+  }}
+  intro="Compliant maintenance is a documented, recurring process — not a once-a-year visit. The checklists below set out the routine inspection and servicing tasks for the four systems facilities managers ask about most: fire detection, gas suppression, emergency lighting and fire doors. They are written to mirror the cadence each governing standard expects, so a responsible person can plan in-house monthly checks and schedule competent-person servicing without gaps. Use them as a planning reference; the formal service records that satisfy an insurer or auditor must be produced by a competent, registered technician."
+  sections={[
+    {
+      heading: "Who is responsible for maintenance?",
+      body:
+        "The building owner or appointed responsible person carries the duty to keep life-safety systems in working order and to retain evidence of it. That duty splits into two streams: simple visual checks an on-site person can perform (panel status, signage, escape routes) and competent-person servicing that must be carried out by a registered technician (detector testing, suppression weighing, fire-door rating verification). Both streams need a date, a result and a signature on file."
+    },
+    {
+      heading: "How to use these checklists",
+      list: [
+        "Run the monthly checks as a quick site walk and log the result, even when nothing is wrong — the record is the point.",
+        "Book quarterly and annual servicing with a registered, competent technician well before the due date so a defect can be corrected without lapsing compliance.",
+        "Record every defect with a severity and a target rectification date, then close it out with evidence.",
+        "Keep the full history available for insurers, the responsible person and audit — a missing record is treated as a missing service."
+      ]
+    },
+    {
+      heading: "What a defect record should contain",
+      list: [
+        "System, zone or device affected and the date observed",
+        "Severity classification (for example: critical / impairment / minor)",
+        "Whether the system is left in a degraded or impaired state, and any interim watch arrangements",
+        "Target rectification date and the responsible party",
+        "Close-out evidence: re-test result and technician signature"
+      ]
+    }
+  ]}
+  checklists={[
+    {
+      title: "Fire detection — SANS 10139",
+      items: [
+        "Monthly: confirm the panel shows normal (no fault, disablement or fire condition) and the standby supply is healthy.",
+        "Monthly: operate a different manual call point in rotation and confirm the alarm sounds and the panel registers the zone.",
+        "Monthly: check sounders and visual alarm devices are audible and visible across occupied areas.",
+        "Quarterly: review the event log, check battery condition and confirm any disablements have been restored.",
+        "Annually: have a competent technician test every detector and call point, verify cause-and-effect outputs and interlocks, and issue a service certificate.",
+        "Annually: review zone plans and the as-built documentation against the current layout and occupancy."
+      ]
+    },
+    {
+      title: "Gas suppression — SANS 14520",
+      items: [
+        "Monthly: confirm cylinder pressure gauges read within the acceptable band and the release panel shows normal.",
+        "Monthly: check the protected room for breaches — new penetrations, propped doors or altered ducting that affect integrity.",
+        "Quarterly: inspect hoses, actuators, manifolds and pipework for corrosion, damage or loose fixings.",
+        "Quarterly: confirm warning signage, manual release and abort stations are present, legible and unobstructed.",
+        "Annually: have a competent technician weigh or pressure-check the agent containers, test detection and release logic, and verify HVAC and damper interlocks.",
+        "Periodically: repeat room-integrity (fan) testing to confirm the enclosure still holds design concentration for the required hold time."
+      ]
+    },
+    {
+      title: "Emergency lighting — SANS 10114-2",
+      items: [
+        "Monthly: carry out a short functional test — simulate mains failure and confirm every luminaire and exit sign illuminates.",
+        "Monthly: walk the escape routes and confirm signage, fittings and final exits are clean, lit and unobstructed.",
+        "Quarterly: check for damaged diffusers, failed lamps and luminaires showing charge faults, and replace as needed.",
+        "Annually: perform the full rated-duration discharge test (typically the system's full autonomy period) and confirm each fitting lasts the required time.",
+        "Annually: record battery replacement dates and log the duration-test result against each circuit."
+      ]
+    },
+    {
+      title: "Fire doors — SANS 1253 / SANS 10400-T",
+      items: [
+        "Monthly: confirm doors are not wedged or propped open and that hold-open devices release on alarm.",
+        "Quarterly: check gaps around the leaf (head, jambs and threshold) are within tolerance and intumescent and smoke seals are intact and continuous.",
+        "Quarterly: test self-closing devices — the door should close fully and latch from any open position.",
+        "Quarterly: confirm hinges, latches, locks and exit hardware are secure, undamaged and correctly rated.",
+        "Annually: have a competent inspector verify each assembly against its certification, log defects and certify remedial work.",
+        "Always: confirm the certification label or evidence of rating is present and legible."
+      ]
+    }
+  ]}
+  related={[
+    { label: "SANS Compliance", href: "/compliance" },
+    { label: "Compliance & Maintenance", href: "/compliance-maintenance" },
+    { label: "Fire Detection Guides", href: "/resources/fire-detection-guides" },
+    { label: "Gas Suppression Guides", href: "/resources/gas-suppression-guides" },
+    { label: "Fire Door Guides", href: "/resources/fire-door-guides" }
+  ]}
+  intent="compliance"
+/>

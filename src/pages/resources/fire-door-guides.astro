@@ -1,0 +1,68 @@
+---
+import GuidePage from "../../layouts/GuidePage.astro";
+---
+<GuidePage
+  meta={{
+    title: "Fire Door Guides | SANS 1253 & SANS 10400-T | Kharon",
+    description:
+      "A buyer's guide to fire doors: ratings, what makes a complete certified assembly, the most common inspection failures, fire-door ironmongery and remedial certification under SANS 1253 and SANS 10400-T."
+  }}
+  hero={{
+    subtitle: "Resources",
+    title: "Fire Door Guides",
+    description:
+      "What makes a fire door compliant — ratings, the certified assembly, inspection failures and remedial work — under SANS 1253 and SANS 10400-T.",
+    icon: "/brand/icons/service-engineering.svg"
+  }}
+  intro="A fire door is a passive life-safety device: its job is to hold back fire and smoke for a rated period so people can escape and compartments stay contained. But a door only performs as tested when the whole assembly — leaf, frame, seals and hardware — is correct and undamaged, and it stays compliant only if it is inspected and maintained. This guide explains how fire doors are rated, what a complete assembly includes, the failures inspectors find most often, and what remediation involves under SANS 1253 and SANS 10400-T."
+  sections={[
+    {
+      heading: "How fire doors are rated",
+      body:
+        "Fire doors are classified by the period, in minutes, that the assembly resists fire under test — commonly 30, 60 or 120 minutes (often written FD30, FD60, FD120). The required rating comes from the building's compartmentation strategy and the role of the wall the door sits in. Specifying a rating is a building-design decision; the installed door must then carry evidence that it meets it."
+    },
+    {
+      heading: "A fire door is a complete assembly",
+      body:
+        "The rating belongs to the tested assembly, not the leaf alone. Swapping any component for a non-rated equivalent can void the entire performance.",
+      list: [
+        "The door leaf, with its certification label or documented evidence of rating",
+        "A compatible, correctly fixed frame",
+        "Intumescent seals that expand under heat to close the gaps, plus smoke seals where required",
+        "Rated hinges, latch or lock, and a self-closing device that closes and latches the door from any position",
+        "Any vision panels or glazing rated to match the door",
+        "Correct gaps around the leaf — within the manufacturer's tested tolerances"
+      ]
+    },
+    {
+      heading: "Fire-door ironmongery",
+      body:
+        "Hardware is part of the rated assembly and must be compatible with it. Self-closing devices have to be CE/standard-rated and capable of fully closing the door — controlled door-closer and hold-open standards such as SANS 51155 (EN 1155) apply to electromagnetic hold-opens that release on alarm. Hinges, latches and exit devices must be rated and correctly installed. Propping a fire door open or fitting an uncertified closer is one of the most common ways a compliant door is quietly defeated."
+    },
+    {
+      heading: "The most common inspection failures",
+      list: [
+        "Doors wedged or propped open, defeating the self-closing function",
+        "Gaps around the leaf outside tolerance — usually too wide at the threshold or jambs",
+        "Damaged, painted-over or missing intumescent and smoke seals",
+        "Self-closing devices that do not fully close and latch the door",
+        "Non-rated or damaged hinges, latches or hardware substituted over time",
+        "Damage to the leaf or frame, or unsealed penetrations through the door",
+        "Missing certification label or no evidence of the door's rating"
+      ]
+    },
+    {
+      heading: "Inspection cadence and remedial certification",
+      body:
+        "Fire doors need routine visual checks (that they are not propped, that seals and closers work) and a periodic competent-person inspection that verifies each assembly against its certification. Where a door fails, remediation ranges from replacing seals and re-adjusting closers to refitting rated hardware or replacing the assembly. The work should close out with a record and, where appropriate, remedial certification — the same standard of evidence an insurer or auditor expects. Our maintenance checklist sets out the routine fire-door tasks by cadence."
+    }
+  ]}
+  related={[
+    { label: "Fire Doors", href: "/fire-doors" },
+    { label: "Architectural Ironmongery", href: "/architectural-ironmongery" },
+    { label: "Fire Safety Signage", href: "/fire-safety-signage" },
+    { label: "Maintenance Checklists", href: "/resources/maintenance-checklists" },
+    { label: "SANS Compliance", href: "/compliance" }
+  ]}
+  intent="fire-doors"
+/>

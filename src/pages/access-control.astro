@@ -1,0 +1,71 @@
+---
+import ServicePage from "../layouts/ServicePage.astro";
+---
+<ServicePage
+  meta={{
+    title: "Access Control Systems | Kharon Fire & Security",
+    description:
+      "Electronic access control design, installation and maintenance aligned to SANS 60839-11-1. Readers, controllers, doors and audit trails — with fire-alarm release and fail-safe egress built in."
+  }}
+  hero={{
+    subtitle: "Security",
+    title: "Access Control",
+    description:
+      "Control who goes where, keep an audit trail, and never trap anyone in a fire — electronic access control designed, installed and maintained to SANS 60839-11-1.",
+    icon: "/brand/icons/service-access-control.svg"
+  }}
+  overview="We design, install and maintain electronic access control for commercial, industrial and critical-infrastructure sites — readers, controllers, locking hardware, software and audit trails. Every design is built around safe egress, with fire-alarm release and fail-safe behaviour so security never compromises life safety. Our access control team currently also handles fire doors and architectural ironmongery operationally; see our dedicated Fire Doors and Architectural Ironmongery pages for those disciplines."
+  problem={{
+    heading: "Access control must restrict entry without blocking escape",
+    body:
+      "A door that keeps intruders out can also trap people in an emergency if it is not designed correctly. Add lost keys, no record of who went where, and locking hardware that fails the wrong way, and a security measure becomes a liability.",
+    points: [
+      "Locked egress doors that do not release on fire alarm, creating a life-safety and code risk.",
+      "No audit trail, so there is no record of who accessed a controlled area and when.",
+      "Lost keys and shared credentials that cannot be revoked, undermining the whole system.",
+      "Locking hardware that fails in the wrong state — fail-locked where it should fail-safe."
+    ]
+  }}
+  capabilities={[
+    {
+      title: "Credentials and readers",
+      text: "Card, fob, PIN, mobile and biometric credentials with readers chosen for the environment and security level, so access is convenient for users and simple to revoke when needed."
+    },
+    {
+      title: "Controllers and software",
+      text: "Door controllers and management software for access rules by person, group, door and schedule, with multi-site administration and clear, exportable reporting."
+    },
+    {
+      title: "Locking hardware and egress",
+      text: "Electric strikes, maglocks and electric locks specified with the correct fail-safe or fail-secure behaviour, request-to-exit devices and manual override, so escape is always possible."
+    },
+    {
+      title: "Fire-alarm integration and safe release",
+      text: "Controlled doors interface with the fire detection system to release on alarm, holding egress open along escape routes — security and life safety designed to work together, not against each other."
+    },
+    {
+      title: "Audit trails and reporting",
+      text: "Time-stamped records of every access event, with reporting for investigations, compliance and operational review — so you can always answer who went where and when."
+    },
+    {
+      title: "Maintenance and access reviews",
+      text: "Scheduled servicing of readers, controllers and locking hardware, fire-release testing, and support to keep credential lists and access rights current as people and roles change."
+    }
+  ]}
+  standards={["SANS 60839-11-1"]}
+  intent="access-control"
+  faqs={[
+    {
+      q: "Will the doors still open in a fire?",
+      a: "Yes — that is non-negotiable. Controlled doors on escape routes are integrated with the fire detection system and specified with fail-safe behaviour so they release on alarm. Manual override and request-to-exit devices ensure people can always get out."
+    },
+    {
+      q: "Do you handle fire doors and ironmongery too?",
+      a: "Our access control team currently handles fire doors and architectural ironmongery operationally alongside access control. The technical detail for each lives on our Fire Doors and Architectural Ironmongery pages."
+    },
+    {
+      q: "Can access control integrate with CCTV and alarms?",
+      a: "Yes. Access events can trigger CCTV recording and tie into intrusion detection for a single operating picture. See our Integrated Security page for how the systems combine."
+    }
+  ]}
+/>

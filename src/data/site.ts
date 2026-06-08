@@ -39,6 +39,11 @@ export interface NavLink {
   href: string;
 }
 
+export interface NavGroup {
+  label: string;
+  items: NavLink[];
+}
+
 export interface IndustryItem {
   title: string;
   risk: string;
@@ -160,76 +165,114 @@ export const pageMeta: Record<string, PageMeta> = {
 };
 
 export const solutionLinks: SolutionLink[] = [
+  { label: "Fire Detection", href: "/fire-detection", summary: "Addressable detection and alarm systems for commercial and industrial sites.", icon: "/brand/icons/service-fire-detection.svg", sans: ["SANS 10139", "SANS 246"] },
+  { label: "Gas Suppression", href: "/gas-suppression", summary: "Clean-agent and engineered suppression for high-value technical assets.", icon: "/brand/icons/service-fire-suppression.svg", sans: ["SANS 14520", "SANS 10108"] },
+  { label: "PA / PE Systems", href: "/pa-pe-systems", summary: "Public address and voice evacuation for clear, controlled egress.", icon: "/brand/icons/service-fire-detection.svg", sans: ["SANS 60849", "SANS 54-16"] },
+  { label: "Fire Safety Signage", href: "/fire-safety-signage", summary: "Photoluminescent and illuminated escape signage to SANS 1186.", icon: "/brand/icons/service-engineering.svg", sans: ["SANS 1186-1", "SANS 10400-T"] },
+  { label: "Fire Doors", href: "/fire-doors", summary: "Rated fire door assemblies, inspection and remedial certification.", icon: "/brand/icons/service-engineering.svg", sans: ["SANS 1253", "SANS 10400-T"] },
+  { label: "CCTV", href: "/cctv", summary: "Surveillance design, coverage planning and retention to SANS 62676.", icon: "/brand/icons/service-cctv.svg", sans: ["SANS 62676"] },
+  { label: "Intrusion Detection", href: "/intrusion-detection", summary: "Graded intrusion and hold-up alarm systems.", icon: "/brand/icons/service-cctv.svg", sans: ["SANS 50131"] },
+  { label: "Access Control", href: "/access-control", summary: "Electronic access control integrated with fire and egress.", icon: "/brand/icons/service-access-control.svg", sans: ["SANS 60839-11-1"] },
+  { label: "Integrated Security", href: "/security-systems", summary: "CCTV, access and intrusion unified with fire-safety priorities.", icon: "/brand/icons/service-cctv.svg", sans: ["SANS 62676", "SANS 60839-11-1"] },
+  { label: "Architectural Ironmongery", href: "/architectural-ironmongery", summary: "Compliant door hardware, hold-opens and exit devices.", icon: "/brand/icons/service-engineering.svg", sans: ["SANS 1253", "SANS 51155"] },
+  { label: "Compliance & Maintenance", href: "/compliance-maintenance", summary: "Lifecycle maintenance, inspection schedules and SANS documentation.", icon: "/brand/icons/service-engineering.svg", sans: ["SANS 10139", "SANS 14520"] },
+  { label: "Emergency Support", href: "/emergency-support", summary: "Rapid response and fault rectification for protection systems.", icon: "/brand/icons/service-engineering.svg", sans: [] }
+];
+
+export const solutionGroups: NavGroup[] = [
   {
-    label: "Gas Suppression",
-    href: "/gas-suppression",
-    summary: "Clean-agent and engineered suppression systems for technical assets.",
-    icon: "/brand/icons/service-fire-suppression.svg",
-    sans: ["SANS 14520", "SANS 10400-T"]
+    label: "Fire Protection",
+    items: [
+      { label: "Fire Detection", href: "/fire-detection" },
+      { label: "Gas Suppression", href: "/gas-suppression" },
+      { label: "PA / PE Systems", href: "/pa-pe-systems" },
+      { label: "Fire Safety Signage", href: "/fire-safety-signage" },
+      { label: "Fire Doors", href: "/fire-doors" }
+    ]
   },
   {
-    label: "Fire Detection",
-    href: "/fire-detection",
-    summary: "Addressable detection and response systems for commercial sites.",
-    icon: "/brand/icons/service-fire-detection.svg",
-    sans: ["SANS 10139", "SANS 246"]
+    label: "Security",
+    items: [
+      { label: "CCTV", href: "/cctv" },
+      { label: "Intrusion Detection", href: "/intrusion-detection" },
+      { label: "Access Control", href: "/access-control" },
+      { label: "Integrated Security", href: "/security-systems" },
+      { label: "Architectural Ironmongery", href: "/architectural-ironmongery" }
+    ]
   },
   {
-    label: "Integrated Security",
-    href: "/security-systems",
-    summary: "CCTV and access control integrated with fire protection priorities.",
-    icon: "/brand/icons/service-cctv.svg",
-    sans: ["SANS 62676", "SANS 60839-11-1"]
-  },
-  {
-    label: "Critical Infrastructure",
-    href: "/critical-infrastructure",
-    summary: "Protection systems for data centres, control rooms and switchgear.",
-    icon: "/brand/icons/sector-server-rack.svg",
-    sans: ["SANS 10139", "SANS 14520"]
-  },
-  {
-    label: "Compliance & Maintenance",
-    href: "/compliance-maintenance",
-    summary: "Lifecycle maintenance, inspection schedules and SANS documentation.",
-    icon: "/brand/icons/service-engineering.svg",
-    sans: ["SANS 10139", "SANS 14520"]
+    label: "Compliance & Support",
+    items: [
+      { label: "Compliance & Maintenance", href: "/compliance-maintenance" },
+      { label: "Emergency Support", href: "/emergency-support" },
+      { label: "Client Portal", href: "/portal/login" }
+    ]
   }
 ];
 
 export const sectorLinks: NavLink[] = [
-  { label: "Data Centres", href: "/industries#data-centres" },
-  { label: "Telecoms & Control Rooms", href: "/industries#telecoms" },
-  { label: "Electrical & Switchgear", href: "/industries#electrical" },
-  { label: "Logistics & Warehousing", href: "/industries#warehousing" },
-  { label: "Industrial Facilities", href: "/industries#industrial" },
-  { label: "Critical Utilities", href: "/industries#utilities" },
-  { label: "Healthcare", href: "/industries#healthcare" },
-  { label: "Control Rooms", href: "/industries#control-rooms" }
+  { label: "Data Centres", href: "/sectors/data-centres" },
+  { label: "Electrical Rooms", href: "/sectors/electrical-rooms" },
+  { label: "Warehousing & Logistics", href: "/sectors/warehousing-logistics" },
+  { label: "Industrial Facilities", href: "/sectors/industrial-facilities" },
+  { label: "Control Rooms", href: "/sectors/control-rooms" },
+  { label: "Healthcare & Commercial", href: "/sectors/healthcare-commercial" },
+  { label: "Critical Infrastructure", href: "/critical-infrastructure" }
 ];
 
 export const resourceLinks: NavLink[] = [
-  { label: "Compliance Hub", href: "/compliance" },
-  { label: "Emergency Support", href: "/emergency-support" },
-  { label: "About Kharon", href: "/about" },
-  { label: "Request Assessment", href: "/contact?intent=site-assessment" }
+  { label: "SANS Compliance", href: "/compliance" },
+  { label: "Maintenance Checklists", href: "/resources/maintenance-checklists" },
+  { label: "Fire Detection Guides", href: "/resources/fire-detection-guides" },
+  { label: "Gas Suppression Guides", href: "/resources/gas-suppression-guides" },
+  { label: "Fire Door Guides", href: "/resources/fire-door-guides" },
+  { label: "CCTV & Security Guides", href: "/resources/cctv-security-guides" },
+  { label: "FAQs", href: "/resources/faqs" },
+  { label: "Case Studies", href: "/resources/case-studies" }
 ];
 
 export const mainLinks: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "Solutions", href: "/solutions" },
-  { label: "Sectors", href: "/industries" },
-  { label: "Resources", href: "/compliance" }
+  { label: "Sectors", href: "/sectors" },
+  { label: "Resources", href: "/resources" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+  { label: "Portal", href: "/portal/login" },
+  { label: "Emergency", href: "/emergency-support" }
 ];
 
 export const sitemapPages: string[] = [
   "",
-  "gas-suppression",
+  "solutions",
+  "sectors",
+  "resources",
   "fire-detection",
+  "gas-suppression",
+  "pa-pe-systems",
+  "fire-safety-signage",
+  "fire-doors",
+  "cctv",
+  "intrusion-detection",
+  "access-control",
+  "security-systems",
+  "architectural-ironmongery",
   "compliance-maintenance",
   "critical-infrastructure",
   "emergency-support",
-  "security-systems",
+  "sectors/data-centres",
+  "sectors/electrical-rooms",
+  "sectors/warehousing-logistics",
+  "sectors/industrial-facilities",
+  "sectors/control-rooms",
+  "sectors/healthcare-commercial",
+  "resources/maintenance-checklists",
+  "resources/fire-detection-guides",
+  "resources/gas-suppression-guides",
+  "resources/fire-door-guides",
+  "resources/cctv-security-guides",
+  "resources/faqs",
+  "resources/case-studies",
   "industries",
   "about",
   "contact",

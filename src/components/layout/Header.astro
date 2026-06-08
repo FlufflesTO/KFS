@@ -5,7 +5,7 @@
  * Dependencies: data/site.js
  * Structural Role: Global header in frontend pages
  */
-import { site, solutionLinks, sectorLinks, resourceLinks } from "../../data/site.js";
+import { site, solutionGroups, sectorLinks, resourceLinks } from "../../data/site.js";
 
 const { currentPath = "/" } = Astro.props;
 
@@ -60,19 +60,21 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
             <path d="m6 9 6 6 6-6"></path>
           </svg>
         </summary>
-        <div class="absolute left-1/2 -translate-x-1/2 top-11 w-96 rounded-lg border border-kharon-purple/30 bg-kharon-charcoal/95 p-3 shadow-2xl backdrop-blur-xl">
-          <div class="grid gap-1">
-            {solutionLinks.map((link) => (
-              <a href={link.href} class="group/item flex flex-col rounded-md p-3 transition-colors hover:bg-kharon-purple/10">
-                <span class="text-sm font-bold uppercase tracking-wider text-white group-hover/item:text-kharon-cyan">{link.label}</span>
-                <span class="mt-1 text-xs text-kharon-light/50">{link.summary}</span>
-              </a>
+        <div class="absolute left-1/2 -translate-x-1/2 top-11 w-[44rem] rounded-lg border border-kharon-purple/30 bg-kharon-charcoal/95 p-4 shadow-2xl backdrop-blur-xl">
+          <div class="grid grid-cols-3 gap-4">
+            {solutionGroups.map((group) => (
+              <div>
+                <p class="px-2 pb-2 text-[0.6rem] font-black uppercase tracking-[0.2em] text-kharon-purple">{group.label}</p>
+                <div class="grid gap-0.5">
+                  {group.items.map((item) => (
+                    <a href={item.href} class="rounded-md px-2 py-2 text-xs font-bold uppercase tracking-wider text-white/70 hover:bg-kharon-purple/10 hover:text-kharon-cyan transition-colors">{item.label}</a>
+                  ))}
+                </div>
+              </div>
             ))}
-            <div class="mt-2 border-t border-kharon-purple/10 pt-2">
-              <a href="/solutions" class="flex items-center justify-center rounded-md bg-kharon-purple/20 py-2.5 text-[0.7rem] font-black uppercase tracking-widest text-kharon-cyan hover:bg-kharon-purple/30 transition-colors">
-                View All Solutions
-              </a>
-            </div>
+          </div>
+          <div class="mt-3 border-t border-kharon-purple/10 pt-3">
+            <a href="/solutions" class="flex items-center justify-center rounded-md bg-kharon-purple/20 py-2.5 text-[0.7rem] font-black uppercase tracking-widest text-kharon-cyan hover:bg-kharon-purple/30 transition-colors">View All Solutions</a>
           </div>
         </div>
       </details>
@@ -114,23 +116,27 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
           </div>
         </div>
       </details>
+
+      <a href="/about" aria-current={isLinkActive("/about") ? "page" : undefined} class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/about") ? "text-kharon-purple" : "text-white/70 hover:text-white"}`}>About</a>
+      <a href="/contact" aria-current={isLinkActive("/contact") ? "page" : undefined} class={`whitespace-nowrap text-[0.8125rem] font-bold uppercase tracking-widest transition-colors ${isLinkActive("/contact") ? "text-kharon-purple" : "text-white/70 hover:text-white"}`}>Contact</a>
     </nav>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3">
       <a
         href={site.portalLoginPath}
+        data-analytics="portal_click"
         class="hidden sm:flex items-center gap-2 rounded-md border border-kharon-purple/40 px-4 py-2 text-[0.75rem] font-bold uppercase tracking-widest text-white/90 hover:border-kharon-cyan hover:text-white transition-all bg-kharon-charcoal/50"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-kharon-purple"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
         Portal
       </a>
-      <a href="/contact?intent=site-assessment" class="rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue px-6 py-2.5 text-[0.75rem] font-bold uppercase tracking-widest text-white shadow-lg shadow-kharon-purple/20 hover:scale-[1.02] active:scale-95 transition-all">
-        Inquiry
+      <a href="/emergency-support" data-analytics="emergency_click" class="rounded-md bg-kharon-red px-5 py-2.5 text-[0.75rem] font-bold uppercase tracking-widest text-white shadow-lg shadow-kharon-red/20 hover:bg-kharon-red/90 active:scale-95 transition-all">
+        Emergency
       </a>
 
       <!-- Mobile Menu Toggle -->
       <details class="mobile-menu lg:hidden">
-        <summary class="inline-flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-lg border border-kharon-purple/30 text-white marker:hidden">
+        <summary class="inline-flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-lg border border-kharon-purple/30 text-white marker:hidden">
           <svg aria-hidden="true" viewBox="0 0 24 24" class="h-6 w-6 mobile-menu__open" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
@@ -142,8 +148,13 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
           <div class="flex flex-col gap-8 py-4">
             <div class="grid gap-4">
               <p class="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Solutions</p>
-              {solutionLinks.map(link => (
-                <a href={link.href} class="text-sm font-bold uppercase tracking-widest text-white/80">{link.label}</a>
+              {solutionGroups.map(group => (
+                <div class="grid gap-2">
+                  <p class="text-[0.55rem] font-bold uppercase tracking-[0.2em] text-kharon-light/40">{group.label}</p>
+                  {group.items.map(item => (
+                    <a href={item.href} class="text-sm font-bold uppercase tracking-widest text-white/80">{item.label}</a>
+                  ))}
+                </div>
               ))}
               <a href="/solutions" class="text-sm font-black uppercase tracking-widest text-kharon-cyan pt-1">All Solutions</a>
             </div>
@@ -159,7 +170,13 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
                 <a href={link.href} class="text-sm font-bold uppercase tracking-widest text-white/80">{link.label}</a>
               ))}
             </div>
-            <a href={site.portalLoginPath} class="mt-4 rounded-md border border-kharon-purple/30 py-4 text-center text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan bg-kharon-charcoal/30">Secure Portal</a>
+            <div class="grid gap-4">
+              <p class="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Company</p>
+              <a href="/about" class="text-sm font-bold uppercase tracking-widest text-white/80">About</a>
+              <a href="/contact" class="text-sm font-bold uppercase tracking-widest text-white/80">Contact</a>
+            </div>
+            <a href="/emergency-support" data-analytics="emergency_click" class="rounded-md bg-kharon-red py-4 text-center text-xs font-bold uppercase tracking-[0.2em] text-white">Emergency Support</a>
+            <a href={site.portalLoginPath} data-analytics="portal_click" class="rounded-md border border-kharon-purple/30 py-4 text-center text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan bg-kharon-charcoal/30">Secure Portal</a>
           </div>
         </div>
       </details>
@@ -179,6 +196,17 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       dropdowns.forEach(d => d.removeAttribute("open"));
+    }
+  });
+
+  // Lightweight analytics dispatch for elements tagged with data-analytics.
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement | null;
+    const el = target?.closest("[data-analytics]");
+    if (el) {
+      const name = el.getAttribute("data-analytics");
+      const plausible = (window as unknown as { plausible?: (n: string) => void }).plausible;
+      if (name && typeof plausible === "function") plausible(name);
     }
   });
 

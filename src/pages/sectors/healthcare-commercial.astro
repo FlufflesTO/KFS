@@ -1,0 +1,56 @@
+---
+import SectorPage from "../../layouts/SectorPage.astro";
+---
+<SectorPage
+  meta={{
+    title: "Healthcare & Commercial Fire Protection | Kharon",
+    description:
+      "Occupancy-aware detection, phased evacuation and documented servicing for hospitals, clinics and commercial buildings — designed to SANS 10139, SANS 322 and SANS 14520."
+  }}
+  hero={{
+    subtitle: "Sectors",
+    title: "Healthcare & Commercial",
+    description:
+      "Fire protection for hospitals, clinics and commercial buildings, where occupants may be unable to self-evacuate and continuity of care or business cannot stop for the wrong alarm.",
+    icon: "/brand/icons/sector-healthcare.svg"
+  }}
+  overview="Healthcare and commercial buildings carry mixed occupancy — patients who can't self-evacuate, visitors unfamiliar with the building and staff who must keep services running. A blanket evacuation can be as harmful as the fire, so detection and alarm strategy have to support phased, defend-in-place response in clinical areas while protecting server rooms and plant. We design occupancy-aware detection, dependable evacuation signalling and a documented servicing regime that keeps the responsible person, insurers and health authorities satisfied."
+  risks={[
+    {
+      title: "Occupants who can't self-evacuate",
+      text: "Patients in wards, theatres and high-dependency areas can't be moved quickly. Detection and alarm strategy must support phased evacuation and defend-in-place rather than forcing a single full-building clearance."
+    },
+    {
+      title: "Continuity of care and business",
+      text: "False alarms and unnecessary evacuations disrupt clinical care and trading. Reliable, cross-zoned detection reduces nuisance trips while still catching genuine events early."
+    },
+    {
+      title: "Documented compliance for responsible persons",
+      text: "Hospitals and commercial landlords carry a clear duty of care and recurring audits. Servicing, testing and defect records have to be complete and current to satisfy insurers and health authorities."
+    }
+  ]}
+  systems={[
+    {
+      label: "Fire Detection",
+      href: "/fire-detection",
+      text: "Addressable, occupancy-aware detection supporting phased evacuation and defend-in-place strategies in clinical and mixed-use buildings."
+    },
+    {
+      label: "PA / PE Systems",
+      href: "/pa-pe-systems",
+      text: "Voice evacuation with phased, intelligible messaging that directs staff and visitors without triggering unnecessary full-building clearance."
+    },
+    {
+      label: "Gas Suppression",
+      href: "/gas-suppression",
+      text: "Clean-agent suppression to SANS 14520 for server rooms, records stores and critical plant within healthcare and commercial sites."
+    },
+    {
+      label: "Compliance & Maintenance",
+      href: "/compliance-maintenance",
+      text: "Structured servicing, testing and defect records that keep the responsible person audit-ready throughout the system lifecycle."
+    }
+  ]}
+  standards={["SANS 10139", "SANS 322", "SANS 14520"]}
+  intent="healthcare"
+/>

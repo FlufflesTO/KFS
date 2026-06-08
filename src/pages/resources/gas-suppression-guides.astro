@@ -1,0 +1,71 @@
+---
+import GuidePage from "../../layouts/GuidePage.astro";
+---
+<GuidePage
+  meta={{
+    title: "Gas Suppression Guides | SANS 14520 | Kharon",
+    description:
+      "A buyer's guide to clean-agent and engineered gas suppression: agent selection, room integrity, design concentration, detection and release logic, and what SANS 14520 requires for safe, compliant systems."
+  }}
+  hero={{
+    subtitle: "Resources",
+    title: "Gas Suppression Guides",
+    description:
+      "How clean-agent and engineered gas suppression systems are selected, designed and maintained to protect high-value technical spaces — and what SANS 14520 expects.",
+    icon: "/brand/icons/service-fire-suppression.svg"
+  }}
+  intro="Gas suppression protects spaces where water would cause unacceptable damage — server rooms, electrical rooms, control rooms and archives. Instead of wetting the fire, a gaseous agent floods the enclosure and extinguishes by removing heat or displacing oxygen. That makes two factors decisive: the right agent for the people and assets in the room, and an enclosure that can actually hold the agent at design concentration for long enough to work. This guide explains both, framed around SANS 14520 and its related application standards."
+  sections={[
+    {
+      heading: "When gas suppression is the right choice",
+      body:
+        "Gaseous suppression suits enclosed, high-value spaces where downtime or water damage is the real loss — not just the fire itself. Typical candidates are data halls and server rooms, electrical and switchgear rooms, telecoms and control rooms, and document or media stores. The space must be a sealable enclosure: gas suppression only works in a room that can be held closed long enough to retain the agent."
+    },
+    {
+      heading: "Agent families and how they differ",
+      body:
+        "Agents fall into two broad groups, and the choice affects safety, footprint and how the room must be sealed.",
+      list: [
+        "Chemical clean agents (for example HFC-227ea / FM-200 and fluoroketone / Novec 1230): extinguish mainly by heat absorption, act in seconds and leave no residue; stored as liquid so they need less cylinder space.",
+        "Inert gas systems (for example argon, nitrogen and blends such as IG-541): extinguish by reducing oxygen to a level that will not support combustion; people-safe by design but require more cylinder storage.",
+        "Carbon dioxide (CO₂): effective but used only where occupancy can be excluded, because design concentrations are not life-safe — governed by the CO₂ application standard (SANS 306-4).",
+        "Condensed aerosol systems: compact units suited to smaller enclosures and cabinets, covered by the aerosol application standard (SANS 15779)."
+      ]
+    },
+    {
+      heading: "Design concentration and hold time",
+      body:
+        "Every agent has a design concentration that must be achieved across the protected volume to extinguish the fire, and a hold time during which that concentration must be retained while the fire is brought under control. Both are calculated for the specific room volume, temperature and agent. Getting the concentration right is a calculation; keeping it there is a sealing problem — which is why room integrity is non-negotiable."
+    },
+    {
+      heading: "Room integrity testing",
+      body:
+        "A room-integrity (door-fan) test measures how leaky the enclosure is and predicts whether it will hold design concentration for the required time. New penetrations, propped doors, altered ducting or failed dampers all defeat an otherwise correct system. Integrity should be confirmed at commissioning and re-tested periodically, because buildings change after handover — a cable tray added later can quietly invalidate the protection."
+    },
+    {
+      heading: "Detection, release and interlocks",
+      body:
+        "Suppression is only as reliable as the detection and release logic that arms it. The cause-and-effect must be designed, documented and verified so the system acts correctly and safely.",
+      list: [
+        "Cross-zoned detection (two independent detections) before automatic release to avoid accidental discharge",
+        "Pre-discharge warning, time delay and clearly marked manual release and abort stations",
+        "HVAC shutdown and damper closure interlocks to preserve enclosure integrity on activation",
+        "Pressure-relief venting sized to protect the room structure during discharge",
+        "Status, fault and disablement signalling routed to the responsible person"
+      ]
+    },
+    {
+      heading: "Maintaining a suppression system",
+      body:
+        "SANS 14520 expects ongoing inspection and competent-person servicing: monthly status and pressure checks, periodic inspection of release hardware and signage, annual weighing or pressure verification of agent containers, and repeat integrity testing. Our maintenance checklist breaks these tasks down by cadence."
+    }
+  ]}
+  related={[
+    { label: "Gas Suppression", href: "/gas-suppression" },
+    { label: "Fire Detection", href: "/fire-detection" },
+    { label: "Electrical Rooms", href: "/sectors/electrical-rooms" },
+    { label: "Data Centres", href: "/sectors/data-centres" },
+    { label: "Maintenance Checklists", href: "/resources/maintenance-checklists" }
+  ]}
+  intent="gas-suppression"
+/>

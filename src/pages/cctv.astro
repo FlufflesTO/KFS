@@ -1,0 +1,71 @@
+---
+import ServicePage from "../layouts/ServicePage.astro";
+---
+<ServicePage
+  meta={{
+    title: "CCTV & Video Surveillance | Kharon Fire & Security",
+    description:
+      "IP CCTV and video surveillance design, installation and maintenance aligned to SANS 62676. HD cameras, recording, remote viewing and analytics for commercial, industrial and critical sites."
+  }}
+  hero={{
+    subtitle: "Security",
+    title: "CCTV & Video Surveillance",
+    description:
+      "IP video surveillance designed for real coverage, clear recordings and evidence you can rely on — specified, installed and maintained to SANS 62676.",
+    icon: "/brand/icons/service-cctv.svg"
+  }}
+  overview="We design, install and maintain IP CCTV systems for commercial, industrial and critical-infrastructure sites. That covers camera selection and placement, network and storage design, recording retention, remote and mobile viewing, and ongoing maintenance — built to give usable images day and night, not just cameras on a wall."
+  problem={{
+    heading: "Most CCTV fails when you actually need the footage",
+    body:
+      "Cameras get installed, but coverage has blind spots, night images are unusable, storage overwrites the clip you needed, or the recorder has been offline for weeks without anyone noticing. The result is an investment that does not stand up at the moment it matters.",
+    points: [
+      "Blind spots and poor camera placement leaving entries, yards and high-value areas uncovered.",
+      "Insufficient resolution or low-light performance, producing footage that cannot identify a person or plate.",
+      "Recording retention too short, or storage not sized for the camera count and frame rate.",
+      "No health monitoring, so failed cameras or a stopped recorder go unnoticed until footage is needed."
+    ]
+  }}
+  capabilities={[
+    {
+      title: "Site survey and coverage design",
+      text: "We survey the site, map field-of-view against the areas and detail you need (detect, recognise or identify), and design camera placement to remove blind spots across perimeters, entrances and internal zones."
+    },
+    {
+      title: "IP cameras and lenses",
+      text: "Fixed, varifocal, dome, bullet and PTZ cameras selected for the scene — including low-light and infrared models for night coverage, and wide-dynamic-range cameras for high-contrast entrances and loading bays."
+    },
+    {
+      title: "Recording, storage and retention",
+      text: "Network video recorders and storage sized for your camera count, resolution, frame rate and required retention period, with RAID and redundancy options where continuity matters."
+    },
+    {
+      title: "Remote and mobile viewing",
+      text: "Secure live and recorded access from desktop and mobile, with role-based user accounts so the right people see the right cameras, and controlled export of evidence clips."
+    },
+    {
+      title: "Video analytics",
+      text: "Where it adds value: line-crossing, intrusion zones, loitering and people or vehicle classification to cut nuisance alerts and surface events that need attention, rather than hours of footage to review."
+    },
+    {
+      title: "Maintenance and health monitoring",
+      text: "Scheduled servicing, firmware updates, lens cleaning and recording verification, with health monitoring that flags offline cameras or a stopped recorder before you need the footage."
+    }
+  ]}
+  standards={["SANS 62676"]}
+  intent="cctv"
+  faqs={[
+    {
+      q: "How long is footage kept?",
+      a: "Retention is a design decision driven by camera count, resolution, frame rate and your operational or insurance requirements. We size storage to your target retention period — typically measured in weeks — and confirm it in the system design."
+    },
+    {
+      q: "Can CCTV integrate with our access control and alarms?",
+      a: "Yes. CCTV is most effective as part of an integrated platform, where camera events link to access control and intrusion detection. See our Integrated Security page for how the systems work together."
+    },
+    {
+      q: "Do you maintain existing CCTV installations?",
+      a: "We do. We can assess an existing system, identify coverage gaps and recording issues, and put a maintenance schedule in place — or plan a phased upgrade where the current equipment no longer meets requirements."
+    }
+  ]}
+/>

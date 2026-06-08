@@ -1,0 +1,63 @@
+---
+/**
+ * Sectors hub — routes each audience to the right sector page.
+ * Sector descriptions are hub-only copy; routes come from src/data/site.ts sectorLinks.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SolutionHero from "../../components/sections/SolutionHero.astro";
+import WhatHappensNext from "../../components/sections/WhatHappensNext.astro";
+import { sectorLinks } from "../../data/site.js";
+
+const sectorDescriptions: Record<string, string> = {
+  "/sectors/data-centres":
+    "Clean-agent suppression and early-warning detection for data halls and server rooms — personnel-safe and audit-ready.",
+  "/sectors/electrical-rooms":
+    "Early detection and residue-free suppression for switchrooms and distribution that limit collateral damage and downtime.",
+  "/sectors/warehousing-logistics":
+    "Large-volume detection coverage and intelligible voice evacuation for high-bay storage and distribution centres.",
+  "/sectors/industrial-facilities":
+    "Risk-segmented detection and rugged hardware for manufacturing and process environments with mixed hazards.",
+  "/sectors/control-rooms":
+    "Detection, clean-agent suppression and integrated security for operations centres that must keep running through an incident.",
+  "/sectors/healthcare-commercial":
+    "Occupancy-aware detection and phased evacuation for hospitals, clinics and commercial buildings.",
+  "/critical-infrastructure":
+    "Fire detection, suppression and lifecycle support for continuity-sensitive utilities and high-consequence assets."
+};
+
+const meta = {
+  title: "Sectors We Protect | Kharon",
+  description:
+    "Fire detection, gas suppression and integrated security tailored to data centres, electrical rooms, warehousing, industrial facilities, control rooms, healthcare and critical infrastructure."
+};
+---
+
+<BaseLayout title={meta.title} description={meta.description}>
+  <SolutionHero
+    subtitle="Sectors"
+    title="Sectors We Protect"
+    description="Every environment carries a different fire and security risk. Choose your sector to see the systems, standards and approach we recommend."
+    icon="/brand/icons/sector-server-rack.svg"
+  />
+
+  <section class="section-padding bg-kharon-black">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {sectorLinks.map((sector) => (
+          <a
+            href={sector.href}
+            class="group flex min-h-[44px] flex-col rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-6 transition-all hover:border-kharon-cyan/40 hover:bg-kharon-charcoal/50"
+          >
+            <span class="text-lg font-bold text-white group-hover:text-kharon-cyan">{sector.label}</span>
+            <span class="mt-2 flex-1 text-sm leading-relaxed text-kharon-light/70">
+              {sectorDescriptions[sector.href] ?? ""}
+            </span>
+            <span class="mt-4 text-xs font-bold uppercase tracking-widest text-kharon-cyan">Explore →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <WhatHappensNext intent="site-assessment" ctaLabel="Request Site Assessment" />
+</BaseLayout>

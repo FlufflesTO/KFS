@@ -1,0 +1,71 @@
+---
+import ServicePage from "../layouts/ServicePage.astro";
+---
+<ServicePage
+  meta={{
+    title: "Intrusion Detection Systems | Kharon Fire & Security",
+    description:
+      "Intrusion detection and alarm systems designed, installed and maintained to SANS 50131. Perimeter and internal detection, zoning, monitoring and signalling for commercial, industrial and critical sites."
+  }}
+  hero={{
+    subtitle: "Security",
+    title: "Intrusion Detection",
+    description:
+      "Alarm systems that detect entry reliably and signal it without delay — designed, installed and maintained to SANS 50131, with detection chosen for the way your site is actually used.",
+    icon: "/brand/icons/service-cctv.svg"
+  }}
+  overview="We design, install and maintain intrusion detection and alarm systems for commercial, industrial and critical-infrastructure sites. That includes perimeter and internal detection, control panels and zoning, tamper protection, and monitoring and signalling — engineered to catch genuine intrusion while keeping false alarms low."
+  problem={{
+    heading: "An alarm only protects you if it detects, and is trusted",
+    body:
+      "Systems that cry wolf get ignored, and partial coverage leaves an obvious way in. Frequent false activations erode response, while gaps in detection or a signalling path that can be cut quietly mean a real break-in goes unanswered.",
+    points: [
+      "False alarms from poor detector choice or placement, leading to ignored activations and lost response.",
+      "Coverage gaps at perimeters, roof access, service doors or internal high-value areas.",
+      "No zoning, so an alarm tells you the site is breached but not where to look.",
+      "Single, unmonitored signalling path that can fail or be defeated without anyone knowing."
+    ]
+  }}
+  capabilities={[
+    {
+      title: "Risk-based detection design",
+      text: "We assess the site, its layout and how it is used, then design detection to match — so coverage follows the real risk and detector choice suits each space, keeping false activations low."
+    },
+    {
+      title: "Perimeter and internal detection",
+      text: "Door and window contacts, passive infrared and dual-technology motion detectors, beam and external detection, and vibration or shock sensors for walls, safes and high-value assets."
+    },
+    {
+      title: "Control panels and zoning",
+      text: "Grade-appropriate control panels with clear zoning, part-set options for occupied and out-of-hours use, and tamper protection across devices and wiring."
+    },
+    {
+      title: "Monitoring and signalling",
+      text: "Connection to a monitoring centre with dual-path signalling (network and cellular) so a single failure or cut line does not silence the system, with verified alarm handling to support response."
+    },
+    {
+      title: "Integration with CCTV and access control",
+      text: "Alarm events can trigger camera recording and bookmarks and tie into access control, so an activation comes with visual verification and context. See our Integrated Security page."
+    },
+    {
+      title: "Maintenance and testing",
+      text: "Scheduled servicing, battery and detector testing, walk-tests and signalling verification, with records kept so the system stays reliable and demonstrably maintained."
+    }
+  ]}
+  standards={["SANS 50131"]}
+  intent="intrusion"
+  faqs={[
+    {
+      q: "How do you reduce false alarms?",
+      a: "False alarms usually come from the wrong detector in the wrong place. We match detector technology to each space, position devices to avoid common triggers, use dual-technology detectors where appropriate, and commission with walk-tests before handover."
+    },
+    {
+      q: "Can the alarm be monitored off-site?",
+      a: "Yes. We connect the system to a monitoring centre with dual-path signalling over network and cellular, so an activation is reported even if one path fails, supporting a timely response."
+    },
+    {
+      q: "Can it work with our CCTV?",
+      a: "It can. Linking intrusion detection to CCTV gives visual verification of an activation — cameras record and bookmark the event so responders see what triggered the alarm and where."
+    }
+  ]}
+/>

@@ -443,7 +443,7 @@ if (!footerText.includes('href="/about"') && !headerText.includes('href="/about"
 const emergencyText = fs.existsSync(path.join(root, "src", "pages", "emergency-support.astro"))
   ? read(path.join(root, "src", "pages", "emergency-support.astro"))
   : "";
-for (const term of ["Critical system fault", "Access Records", "Urgent technical request", "Compliance intervention"]) {
+for (const term of ["Critical system fault", "Access Client Portal", "Urgent technical request", "Compliance intervention"]) {
   if (!emergencyText.includes(term)) fail(`emergency-support page missing decision CTA language: ${term}`);
 }
 

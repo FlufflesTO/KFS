@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SolutionHero from "../../components/sections/SolutionHero.astro";
+import WhatHappensNext from "../../components/sections/WhatHappensNext.astro";
+import CaseStudyCard from "../../components/sections/CaseStudyCard.astro";
+import { caseStudies } from "../../data/case-studies.js";
+---
+
+<BaseLayout
+  title="Case Studies | Kharon"
+  description="Representative engagements across data centres, electrical rooms, healthcare, control rooms and warehousing — showing the problem, system, intervention, documentation and outcome for fire and security projects."
+>
+  <SolutionHero
+    subtitle="Resources"
+    title="Case Studies"
+    description="Representative examples of how Kharon scopes, delivers and documents fire and security projects across different sectors and systems."
+    icon="/brand/icons/service-engineering.svg"
+  />
+
+  <section class="section-padding bg-kharon-black">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
+      <div class="grid gap-10">
+        {caseStudies.map((study) => (
+          <section id={study.slug} class="scroll-mt-32">
+            <CaseStudyCard study={study} variant="full" />
+          </section>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <WhatHappensNext intent="site-assessment" ctaLabel="Request Site Assessment" />
+</BaseLayout>

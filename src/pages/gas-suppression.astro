@@ -1,68 +1,69 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import SolutionHero from "../components/sections/SolutionHero.astro";
-import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
-import SuppressionTechnicalBlocks from "../components/sections/SuppressionTechnicalBlocks.astro";
-import SectionHeading from "../components/sections/SectionHeading.astro";
-import { pageMeta } from "../data/site.js";
-
-/**
- * Project Sentinel - Gas Suppression Specialized View
- * Purpose: Provides a deep dive into clean-agent suppression systems.
- */
+import ServicePage from "../layouts/ServicePage.astro";
 ---
-
-<BaseLayout title={pageMeta.gasSuppression.title} description={pageMeta.gasSuppression.description}>
-  <SolutionHero 
-    title="Gas Suppression" 
-    subtitle="Engineered Protection" 
-    description="Mission-critical protection using clean agents (FM-200, Novec 1230) for high-value technical assets and sensitive electronics."
-    icon="/brand/icons/service-fire-suppression.svg"
-  />
-
-  <ComplianceStrip />
-
-  <section class="section-padding bg-kharon-black">
-    <div class="mx-auto max-w-7xl px-6">
-      <SectionHeading
-        title="Command & Control"
-        subtitle="Specialist Systems"
-        description="We design and maintain engineered suppression systems that provide rapid response without residue, ensuring business continuity."
-        center={true}
-      />
-      
-      <div class="mt-10 grid gap-8 md:grid-cols-2">
-        <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50">
-          <h3 class="text-xl font-bold text-white mb-4">Total Flooding Systems</h3>
-          <p class="text-kharon-light/60 leading-relaxed">
-            Engineered volume-protection for server rooms, control centres and archives. These systems reach design concentration within 10 seconds to suppress fire at the molecular level.
-          </p>
-        </div>
-        <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50">
-          <h3 class="text-xl font-bold text-white mb-4">In-Cabinet Protection</h3>
-          <p class="text-kharon-light/60 leading-relaxed">
-            Localised protection for high-value electrical switchgear and server racks. Detects and suppresses fires within the cabinet before they escalate to the wider environment.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <SuppressionTechnicalBlocks />
-
-  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
-    <div class="mx-auto max-w-4xl px-6 text-center">
-      <SectionHeading
-        title="Protect your mission-critical assets."
-        subtitle="Consultation"
-        description="Get an engineered assessment of your site's suppression requirements and SANS 14520 compliance status."
-        center={true}
-      />
-      <div class="mt-10 flex justify-center gap-4">
-        <a href="/contact?intent=site-assessment" class="kharon-command-button px-10 py-5 text-sm">
-          Request Site Audit
-        </a>
-      </div>
-    </div>
-  </section>
-</BaseLayout>
+<ServicePage
+  meta={{
+    title: "Gas Suppression: Clean-Agent & Gaseous Systems | Kharon",
+    description: "Engineered clean-agent and gaseous fire suppression for server rooms, switchrooms and archives. Designed, integrity-tested and maintained to SANS 14520."
+  }}
+  hero={{
+    subtitle: "Fire Protection",
+    title: "Gas Suppression",
+    description: "Clean-agent and gaseous suppression engineered to put out a fire fast, without water or residue, in spaces where downtime and damage are unacceptable.",
+    icon: "/brand/icons/service-fire-suppression.svg"
+  }}
+  overview="We design, install and maintain gaseous fire-suppression systems for spaces where water would cause as much harm as the fire — server rooms, switchrooms, control centres and archives. The work covers agent selection, design-concentration calculation, room-integrity testing and integration with detection, so the system reaches and holds the concentration needed to extinguish a fire safely."
+  problem={{
+    heading: "Water-based suppression protects the building. It can destroy what's inside it.",
+    body: "In a data hall, switchroom or archive, the assets at risk are the electronics and records themselves. A sprinkler discharge — or an older CO₂ system that is unsafe around people — can mean the fire is out but the room is a write-off, or staff cannot safely be present. Gaseous suppression extinguishes the fire without residue, but only works if the agent reaches design concentration and the room holds it long enough. That depends on accurate design and a sealed enclosure, both of which must be proven, not assumed.",
+    points: [
+      "Sprinkler or mist discharge in a server room damages the very assets it protects.",
+      "Legacy CO₂ systems create a personnel-safety hazard in occupied spaces.",
+      "An under-sized or wrongly calculated system never reaches the concentration needed to extinguish.",
+      "A leaky enclosure lets the agent escape before it can hold, so the fire reignites."
+    ]
+  }}
+  capabilities={[
+    {
+      title: "Total-flooding clean-agent systems",
+      text: "Volume protection for server rooms, control centres and archives using clean agents that suppress fire without residue and reach design concentration quickly, designed to SANS 14520."
+    },
+    {
+      title: "In-cabinet and localised protection",
+      text: "Targeted suppression for high-value switchgear and individual racks, detecting and suppressing within the enclosure before a fire spreads to the wider room."
+    },
+    {
+      title: "Design-concentration calculation",
+      text: "Agent quantity and discharge calculated for the protected volume and hazard, so the system reaches and holds the concentration required to extinguish the fire."
+    },
+    {
+      title: "Room-integrity (fan) testing",
+      text: "Enclosure integrity testing to confirm the room holds the agent for the required retention time, with results documented as part of the handover."
+    },
+    {
+      title: "Detection and interlock integration",
+      text: "Cross-zoned detection, HVAC shutdown and damper interlocks programmed into a cause-and-effect matrix so discharge happens only on a confirmed event, in the right sequence."
+    },
+    {
+      title: "Commissioning, certification and maintenance",
+      text: "Design calculations, integrity certificates and as-built drawings handed over, with scheduled servicing that keeps the system compliant and defensible."
+    }
+  ]}
+  standards={["SANS 14520", "SANS 15779", "SANS 13565", "SANS 306-4", "SANS 10108"]}
+  intent="gas-suppression"
+  faqs={[
+    {
+      q: "Is gaseous suppression safe to use in occupied rooms?",
+      a: "Clean-agent systems are designed to extinguish fire at concentrations that are safe for people, which is why they have largely replaced older CO₂ systems in occupied spaces. Design concentration, room exhaust and warning signals are all set so the space can be protected without endangering occupants."
+    },
+    {
+      q: "Why does the room have to be integrity-tested?",
+      a: "A gaseous system only works if the enclosure holds the agent at design concentration for the required retention time. A fan (room-integrity) test measures how well the room seals and identifies leakage paths to fix. Without it, the agent can escape before the fire is fully out."
+    },
+    {
+      q: "Can we replace an old CO₂ system without taking the room offline?",
+      a: "Often, yes. A phased cut-over to a clean-agent system can be planned around a live environment, with detection and interlocks staged so protection is maintained throughout. We assess the room and set out a cut-over sequence before any work begins."
+    }
+  ]}
+  caseStudySlug="data-centre-clean-agent-upgrade"
+/>

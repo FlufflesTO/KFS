@@ -1,0 +1,57 @@
+---
+import SectorPage from "../../layouts/SectorPage.astro";
+---
+<SectorPage
+  meta={{
+    title: "Data Centre Fire Protection | Kharon",
+    description:
+      "Clean-agent gas suppression, very-early-warning detection and HVAC interlocks for data halls, server rooms and colocation facilities — designed for uptime and SANS 14520 compliance."
+  }}
+  hero={{
+    subtitle: "Sectors",
+    title: "Data Centres",
+    description:
+      "Fire protection for data halls and server rooms that keeps suppression personnel-safe, avoids water near live IT load and holds up under tenant and insurer audits.",
+    icon: "/brand/icons/sector-server-rack.svg"
+  }}
+  overview="Data centres protect concentrated, high-value IT load where a fire — or the wrong suppression method — means lost data, breached SLAs and failed tenant audits. We design clean-agent gaseous suppression with early-warning detection so a fault is caught and contained before it disrupts the hall. Detection, suppression release and HVAC are interlocked, and every system is handed over with the documentation a colocation operator needs for tenant and insurer review."
+  risks={[
+    {
+      title: "Continuity and SLA exposure",
+      text: "Concentrated server load means a single incident can take down a hall and breach uptime commitments. Suppression has to act fast and leave equipment recoverable — water-based systems are unacceptable near live IT."
+    },
+    {
+      title: "Personnel safety in occupied halls",
+      text: "Legacy CO₂ systems pose a lethal risk to staff working in the room. Clean agents discharge at design concentrations that are safe for occupied spaces, with the discharge timing and integrity verified by test."
+    },
+    {
+      title: "Audit and tenant compliance",
+      text: "Colocation tenants and insurers demand evidence: room-integrity results, design-concentration calculations and as-built drawings. Missing documentation fails audits regardless of how well the hardware performs."
+    }
+  ]}
+  systems={[
+    {
+      label: "Gas Suppression",
+      href: "/gas-suppression",
+      text: "Clean-agent suppression (FM-200, Novec, inert gas) sized to SANS 14520 design concentrations, with room-integrity fan testing and a personnel-safe discharge profile."
+    },
+    {
+      label: "Fire Detection",
+      href: "/fire-detection",
+      text: "Addressable and very-early-warning aspirating detection with cross-zoning to confirm a genuine event before suppression release."
+    },
+    {
+      label: "Compliance & Maintenance",
+      href: "/compliance-maintenance",
+      text: "Scheduled servicing, agent-weight checks and integrity re-testing that keep the system audit-ready across its lifecycle."
+    },
+    {
+      label: "Access Control",
+      href: "/access-control",
+      text: "Controlled entry to data halls and suppression zones, integrated so egress and door release remain safe during an alarm."
+    }
+  ]}
+  standards={["SANS 10139", "SANS 246", "SANS 14520"]}
+  intent="data-centre"
+  caseStudySlug="data-centre-clean-agent-upgrade"
+/>

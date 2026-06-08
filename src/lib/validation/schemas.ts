@@ -36,7 +36,21 @@ export const ALLOWED_REQUEST_TYPES = [
   "Emergency / SLA support",
   "Capability discussion",
   "Sector protection assessment",
-  "Integrated infrastructure security review"
+  "Integrated infrastructure security review",
+  "General enquiry",
+  "PA / PE Systems",
+  "Fire Safety Signage",
+  "Fire Doors",
+  "CCTV",
+  "Intrusion Detection",
+  "Access Control",
+  "Architectural Ironmongery",
+  "Data Centres",
+  "Electrical Rooms",
+  "Warehousing & Logistics",
+  "Industrial Facilities",
+  "Control Rooms",
+  "Healthcare & Commercial"
 ] as const;
 
 export const ContactSubmissionSchema = z.object({
@@ -45,7 +59,17 @@ export const ContactSubmissionSchema = z.object({
   requestType: z.enum(ALLOWED_REQUEST_TYPES), // Remove fallback to prevent invalid types
   message: TextSchema,
   popiaConsent: z.boolean().or(z.literal("true")).or(z.literal("on")),
-  website: z.string().optional() // Honeypot
+  website: z.string().optional(), // Honeypot
+  // Optional captured context (appended to the stored message server-side)
+  serviceInterest: z.string().max(120).optional(),
+  urgency: z.string().max(120).optional(),
+  siteType: z.string().max(120).optional(),
+  clientType: z.string().max(40).optional(),
+  sourcePage: z.string().max(300).optional(),
+  ctaClicked: z.string().max(120).optional(),
+  serviceSlug: z.string().max(120).optional(),
+  sectorSlug: z.string().max(120).optional(),
+  intent: z.string().max(80).optional()
 }).transform(data => {
   // Normalize variations of consent and requestType
   if (typeof data.popiaConsent !== "boolean") {

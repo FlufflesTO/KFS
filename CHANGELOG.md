@@ -1,10 +1,19 @@
-﻿# Changelog
+# Changelog
 # Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] - 2026-06-08
+
+### Phase 2, 3 & 4: Content Store, Reusable Components & Proof Layer
+
+#### [Added]
+- **Content Models & Data**: Created centralized TypeScript content models (`ServiceContentModel`, `SectorContentModel`, `ProofModel`, etc.) in `packages/types/src/content.ts`. Instantiated data files in `src/data/` for `navigation.ts`, `services.ts`, `caseStudies.ts`, etc.
+- **Reusable Astro Components**: Built 15 new UI components in `src/components/blocks/` including `CommercialHero.astro`, `AudienceStrip.astro`, `ProofStrip.astro`, `WhatWeDoGrid.astro`, and `CaseStudyPreviewGrid.astro`, adhering to strict CSS budgets, touch target sizing, and standard SVG iconography.
+- **Proof & Credibility Content**: Instantiated proof structures for Accreditations, Teams, Portals, and Case Studies, enforcing strict "Placeholder case study" warning labels on mock scenarios.
 
 ## [Unreleased] - 2026-06-06
 

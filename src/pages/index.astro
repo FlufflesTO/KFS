@@ -1,19 +1,16 @@
 ---
 /**
- * Project Sentinel - Homepage
- * Purpose: Top-level landing page featuring industrial command layout and extreme vertical density.
- * Dependencies: BaseLayout, SentinelHero, SolutionPathways, SectorRiskGrid, AuthorityEvidence, Testimonials
- * Structural Role: Entry point for the public website
+ * Homepage — concise, routing-focused entry point.
+ * Purpose: state what Kharon does, route buyers to sectors/solutions, show credentials and proof.
+ * Structure: Hero → Sector strip → Compliance proof → What we do → Problem → Case study → WhatHappensNext.
  */
 
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SentinelHero from "../components/sections/SentinelHero.astro";
-import SolutionPathways from "../components/sections/SolutionPathways.astro";
 import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
-import SectorRiskGrid from "../components/sections/SectorRiskGrid.astro";
-import AuthorityEvidence from "../components/sections/AuthorityEvidence.astro";
-import Testimonials from "../components/trust/Testimonials.astro";
-import { pageMeta, solutionLinks, industries } from "../data/site.js";
+import WhatHappensNext from "../components/sections/WhatHappensNext.astro";
+import CaseStudyCard from "../components/sections/CaseStudyCard.astro";
+import { pageMeta, sectorLinks, solutionGroups } from "../data/site.js";
+import { caseStudies } from "../data/case-studies.js";
 
 const localBusinessJsonLd = JSON.stringify({
   "@context": "https://schema.org",
@@ -37,56 +34,170 @@ const localBusinessJsonLd = JSON.stringify({
     "longitude": 18.47915963914358
   }
 });
+
+// "What we do" cards mapped from the three solution groups.
+const groupSummaries: Record<string, string> = {
+  "Fire Protection":
+    "Fire detection, gas suppression, voice evacuation, signage and rated fire doors — designed and installed to the relevant SANS standards.",
+  "Security":
+    "CCTV, intrusion detection, access control and integrated security, configured to fail safe on fire alarm and protect egress.",
+  "Compliance & Support":
+    "Scheduled inspection, maintenance and documented service records, plus rapid fault rectification for live systems."
+};
+const groupIcons: Record<string, string> = {
+  "Fire Protection": "/brand/icons/service-fire-detection.svg",
+  "Security": "/brand/icons/service-cctv.svg",
+  "Compliance & Support": "/brand/icons/service-engineering.svg"
+};
+
+const previewStudies = caseStudies.slice(0, 2);
 ---
 
 <BaseLayout title={pageMeta.home.title} description={pageMeta.home.description}>
   <script is:inline nonce={Astro.locals.nonce} type="application/ld+json" set:html={localBusinessJsonLd}></script>
-  
-  <SentinelHero />
+
+  <!-- 1. Hero -->
+  <section class="relative isolate overflow-hidden bg-kharon-black text-white">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(75,46,131,0.4),transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.85),rgba(11,13,15,0.96))]"></div>
+    <div class="relative z-10 mx-auto max-w-5xl px-6 py-20 sm:py-28 text-center">
+      <p class="text-xs font-bold uppercase tracking-[0.25em] text-kharon-purple">
+        Commercial & Industrial Fire Protection and Security
+      </p>
+      <h1 class="kharon-h1 mt-5 text-white">
+        SANS-compliant fire protection and security for commercial and industrial sites.
+      </h1>
+      <p class="mx-auto mt-6 max-w-2xl text-base leading-7 text-white/70 md:text-lg md:leading-8">
+        Kharon designs, installs, services and maintains fire detection, gas suppression and
+        integrated security systems — with the documented compliance records your responsible
+        person, insurer and auditor need.
+      </p>
+      <div class="mt-10 flex flex-wrap justify-center gap-4">
+        <a href="/contact?intent=site-assessment" class="kharon-command-button inline-flex min-h-[44px] px-8 py-4 text-sm">
+          Request Site Assessment
+        </a>
+        <a href="/contact?intent=general" class="kharon-secondary-button inline-flex min-h-[44px] px-8 py-4 text-sm">
+          Speak to an Engineer
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Sector strip -->
+  <section class="bg-kharon-charcoal border-y border-white/5 py-5" aria-label="Sectors served">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="flex flex-wrap items-center gap-2">
+        <p class="mr-3 text-[0.6rem] font-black uppercase tracking-[0.2em] text-kharon-purple">
+          Sectors we serve
+        </p>
+        {sectorLinks.map((sector) => (
+          <a
+            href={sector.href}
+            class="inline-flex min-h-[44px] items-center rounded-md border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-bold uppercase tracking-wide text-white/60 transition-all hover:border-kharon-purple/40 hover:bg-kharon-purple/15 hover:text-white"
+          >
+            {sector.label}
+          </a>
+        ))}
+        <a href="/sectors" class="ml-auto inline-flex min-h-[44px] items-center text-xs font-bold uppercase tracking-widest text-kharon-cyan hover:text-white">
+          All sectors →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Proof strip (credentials only) -->
   <ComplianceStrip />
 
-  <section class="section-padding bg-kharon-black border-b border-kharon-purple/10 pt-4">
+  <!-- 4. What we do -->
+  <section class="section-padding bg-kharon-black border-b border-kharon-purple/10">
     <div class="mx-auto max-w-7xl px-6">
-      <div class="mb-6 text-center">
-        <p class="text-[0.55rem] font-black uppercase tracking-[0.3em] text-kharon-purple mb-1">Services Overview</p>
-        <h2 class="text-xl font-black text-white tracking-tighter uppercase">Protection Portfolio</h2>
+      <div class="max-w-2xl">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">What we do</p>
+        <h2 class="kharon-h2 mt-3 text-white">Three disciplines, one accountable provider</h2>
+        <p class="mt-4 text-kharon-light/70 leading-relaxed">
+          From a single point of contact, we cover fire protection, security and the ongoing
+          compliance that keeps both signed off.
+        </p>
       </div>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {solutionLinks.map((solution) => (
-          <a href={solution.href} class="group rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-5 flex flex-col hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50 transition-all">
-            <div class="h-10 w-10 rounded-lg bg-kharon-black/40 border border-kharon-purple/20 p-2.5 mb-4 group-hover:bg-kharon-purple/10 transition-colors">
-              <img loading="lazy" decoding="async" src={solution.icon} alt="" class="h-full w-full object-contain" />
+
+      <div class="mt-10 grid gap-6 lg:grid-cols-3">
+        {solutionGroups.map((group) => (
+          <article class="flex flex-col rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-7 transition-all hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50">
+            <div class="h-12 w-12 rounded-xl border border-kharon-purple/20 bg-kharon-black/40 p-3">
+              <img loading="lazy" decoding="async" src={groupIcons[group.label]} alt="" class="h-full w-full object-contain" />
             </div>
-            <h3 class="text-xs font-black text-white uppercase tracking-wider mb-2">{solution.label}</h3>
-            <p class="text-[0.65rem] text-kharon-light/50 leading-relaxed flex-1">{solution.summary}</p>
-            <span class="mt-4 text-[9px] font-black uppercase tracking-widest text-kharon-cyan group-hover:text-white transition-colors">
-              Explore &rsaquo;
-            </span>
-          </a>
+            <h3 class="mt-5 text-lg font-black text-white">{group.label}</h3>
+            <p class="mt-3 text-sm leading-relaxed text-kharon-light/70">{groupSummaries[group.label]}</p>
+            <ul class="mt-5 flex flex-col gap-2 border-t border-kharon-purple/10 pt-4">
+              {group.items.map((item) => (
+                <li>
+                  <a href={item.href} class="inline-flex min-h-[44px] items-center text-sm font-bold text-kharon-light/80 transition-colors hover:text-kharon-cyan">
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+
+      <div class="mt-8">
+        <a href="/solutions" class="inline-flex min-h-[44px] items-center gap-2 text-sm font-black uppercase tracking-widest text-kharon-cyan hover:text-white">
+          View all solutions
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Problem-led section -->
+  <section class="section-padding bg-kharon-charcoal/30 border-b border-kharon-purple/10">
+    <div class="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-2 lg:items-center">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">The problem</p>
+        <h2 class="kharon-h2 mt-3 text-white">Non-compliant systems are a continuity and liability risk</h2>
+        <p class="mt-5 text-kharon-light/70 leading-relaxed">
+          Failed inspections, undocumented works and ageing detection or suppression leave you
+          exposed — to a stopped operation, a voided insurance claim or a responsible person who
+          cannot sign off. The gap is rarely the equipment; it is the design, the standards mapping
+          and the maintained evidence trail.
+        </p>
+      </div>
+      <ul class="grid gap-4">
+        {[
+          "Site assessment against the relevant SANS standards for your room type and risk.",
+          "Engineered design, installation and commissioning with cause-and-effect documentation.",
+          "Scheduled maintenance and inspection-ready records for audits, insurers and your file."
+        ].map((point) => (
+          <li class="flex items-start gap-3 rounded-xl border border-kharon-purple/15 bg-kharon-black/40 p-5">
+            <span class="mt-1.5 h-2 w-2 flex-none rounded-full bg-kharon-cyan"></span>
+            <span class="text-sm leading-relaxed text-kharon-light/80">{point}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6. Case study preview -->
+  <section class="section-padding bg-kharon-black border-b border-kharon-purple/10">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="max-w-2xl">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">Selected work</p>
+          <h2 class="kharon-h2 mt-3 text-white">Representative engagements</h2>
+        </div>
+        <a href="/resources/case-studies" class="inline-flex min-h-[44px] items-center gap-2 text-sm font-black uppercase tracking-widest text-kharon-cyan hover:text-white">
+          All case studies
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+      </div>
+      <div class="mt-10 grid gap-6 lg:grid-cols-2">
+        {previewStudies.map((study) => (
+          <CaseStudyCard study={study} variant="preview" />
         ))}
       </div>
     </div>
   </section>
 
-  <SolutionPathways />
-  <SectorRiskGrid sectors={industries} />
-  <AuthorityEvidence />
-  <Testimonials />
-
-  <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
-    <div class="container mx-auto max-w-4xl px-6 text-center">
-      <h2 class="kharon-h2 text-white">Ready to secure your mission-critical space?</h2>
-      <p class="mt-6 text-kharon-light/60 text-lg">
-        Join the organizations trusting Kharon for engineered protection and compliance discipline.
-      </p>
-      <div class="mt-10 flex flex-wrap justify-center gap-4">
-        <a href="/contact?intent=site-assessment" class="kharon-command-button px-10 py-5 text-sm">
-          Book Site Assessment
-        </a>
-        <a href="/about" class="kharon-secondary-button px-10 py-5 text-sm">
-          Learn Our Ethos
-        </a>
-      </div>
-    </div>
-  </section>
+  <!-- 7. WhatHappensNext -->
+  <WhatHappensNext intent="site-assessment" />
 </BaseLayout>

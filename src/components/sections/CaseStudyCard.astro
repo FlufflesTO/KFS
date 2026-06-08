@@ -1,0 +1,73 @@
+---
+/**
+ * CaseStudyCard - renders a single case study in the agreed format.
+ * variant="preview" shows a compact card; variant="full" shows the full structure.
+ */
+import type { CaseStudy } from "../../data/case-studies.js";
+
+export interface Props {
+  study: CaseStudy;
+  variant?: "preview" | "full";
+}
+
+const { study, variant = "full" } = Astro.props;
+const contactHref = `/contact?intent=${study.intent}`;
+
+const rows = [
+  { label: "Sector", value: study.sector },
+  { label: "Problem", value: study.problem },
+  { label: "System involved", value: study.system },
+  { label: "Intervention", value: study.intervention },
+  { label: "Outcome", value: study.outcome }
+];
+---
+
+<article class="overflow-hidden rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30">
+  {study.image && (
+    <img src={study.image} alt={study.imageAlt ?? ""} loading="lazy" decoding="async" class="h-48 w-full object-cover" />
+  )}
+  <div class="p-6 sm:p-8">
+    <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">{study.sector}</p>
+    <h3 class="kharon-h3 mt-2 text-white">{study.title}</h3>
+
+    {study.metrics && study.metrics.length > 0 && (
+      <dl class="mt-5 grid grid-cols-3 gap-3">
+        {study.metrics.map((m) => (
+          <div class="rounded-lg border border-kharon-purple/10 bg-kharon-black/40 p-3 text-center">
+            <dt class="text-[0.6rem] font-bold uppercase tracking-widest text-kharon-light/50">{m.label}</dt>
+            <dd class="mt-1 text-lg font-black text-white">{m.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
+
+    {variant === "preview" ? (
+      <p class="mt-5 text-sm leading-relaxed text-kharon-light/70">{study.problem}</p>
+    ) : (
+      <div class="mt-6 grid gap-4">
+        {rows.map((r) => (
+          <div class="grid gap-1 sm:grid-cols-[160px_1fr] sm:gap-4">
+            <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple">{r.label}</p>
+            <p class="text-sm leading-relaxed text-kharon-light/80">{r.value}</p>
+          </div>
+        ))}
+        <div class="grid gap-1 sm:grid-cols-[160px_1fr] sm:gap-4">
+          <p class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Documentation</p>
+          <ul class="grid gap-1 text-sm text-kharon-light/80">
+            {study.documentation.map((d) => (
+              <li class="flex items-start gap-2"><span class="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-kharon-cyan"></span>{d}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    )}
+
+    <p class="mt-6 text-[0.7rem] uppercase tracking-widest text-kharon-light/40">Representative example — illustrative of a typical engagement, not a named client.</p>
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+      <a href={contactHref} class="kharon-command-button inline-flex min-h-[44px] px-6 py-3 text-sm">Discuss a similar project</a>
+      {variant === "preview" && (
+        <a href={`/resources/case-studies#${study.slug}`} class="text-sm font-bold uppercase tracking-widest text-kharon-cyan hover:text-white">Read case study →</a>
+      )}
+    </div>
+  </div>
+</article>

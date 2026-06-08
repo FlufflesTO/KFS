@@ -1,0 +1,128 @@
+---
+/**
+ * ServicePage - reusable solution/service page template.
+ * Page files pass structured data; this enforces consistent structure, tone hooks,
+ * SANS proof, conversion (WhatHappensNext) and an optional related case study.
+ */
+import BaseLayout from "./BaseLayout.astro";
+import SolutionHero from "../components/sections/SolutionHero.astro";
+import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
+import SectionHeading from "../components/sections/SectionHeading.astro";
+import WhatHappensNext from "../components/sections/WhatHappensNext.astro";
+import CaseStudyCard from "../components/sections/CaseStudyCard.astro";
+import { getCaseStudy } from "../data/case-studies.js";
+
+export interface Capability {
+  title: string;
+  text: string;
+}
+
+export interface Props {
+  meta: { title: string; description: string };
+  hero: { subtitle: string; title: string; description: string; icon: string };
+  /** one-paragraph "what we do" */
+  overview: string;
+  /** problem-led framing */
+  problem: { heading: string; body: string; points: string[] };
+  /** systems / what's involved */
+  capabilitiesHeading?: string;
+  capabilities: Capability[];
+  /** SANS / standards badges */
+  standards: string[];
+  /** optional FAQ */
+  faqs?: { q: string; a: string }[];
+  /** related case study slug (from case-studies.ts) */
+  caseStudySlug?: string;
+  /** contact form routing intent */
+  intent: string;
+  cta?: { title: string; description: string; label?: string };
+}
+
+const {
+  meta, hero, overview, problem,
+  capabilitiesHeading = "What's involved",
+  capabilities, standards, faqs, caseStudySlug, intent, cta
+} = Astro.props;
+
+const study = caseStudySlug ? getCaseStudy(caseStudySlug) : undefined;
+---
+
+<BaseLayout title={meta.title} description={meta.description}>
+  <SolutionHero subtitle={hero.subtitle} title={hero.title} description={hero.description} icon={hero.icon} />
+  <ComplianceStrip />
+
+  <!-- What we do -->
+  <section class="section-padding bg-kharon-black">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">What we do</p>
+      <p class="mt-4 text-lg leading-relaxed text-kharon-light/80">{overview}</p>
+    </div>
+  </section>
+
+  <!-- Problem-led -->
+  <section class="section-padding bg-kharon-charcoal/30 border-y border-kharon-purple/10">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6">
+      <SectionHeading title={problem.heading} subtitle="The problem" />
+      <p class="max-w-3xl text-kharon-light/70 leading-relaxed">{problem.body}</p>
+      <ul class="mt-8 grid gap-4 sm:grid-cols-2">
+        {problem.points.map((p) => (
+          <li class="flex items-start gap-3 rounded-lg border border-kharon-purple/15 bg-kharon-black/40 p-4">
+            <span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-kharon-red"></span>
+            <span class="text-sm leading-relaxed text-kharon-light/80">{p}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- Capabilities / systems -->
+  <section class="section-padding bg-kharon-black">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <SectionHeading title={capabilitiesHeading} subtitle="Our approach" />
+      <div class="mt-4 grid gap-6 md:grid-cols-2">
+        {capabilities.map((c) => (
+          <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 transition-all hover:border-kharon-purple/40">
+            <h3 class="text-lg font-bold text-white">{c.title}</h3>
+            <p class="mt-3 leading-relaxed text-kharon-light/70">{c.text}</p>
+          </div>
+        ))}
+      </div>
+
+      {standards.length > 0 && (
+        <div class="mt-10 flex flex-wrap items-center gap-3">
+          <span class="text-xs font-bold uppercase tracking-widest text-kharon-light/50">Aligned to</span>
+          {standards.map((s) => (
+            <span class="rounded border border-kharon-purple/20 bg-kharon-purple/5 px-3 py-1 text-xs font-black uppercase tracking-wider text-kharon-purple">{s}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+
+  {study && (
+    <section class="section-padding bg-kharon-charcoal/30 border-t border-kharon-purple/10">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6">
+        <SectionHeading title="Proof in practice" subtitle="Case study" />
+        <CaseStudyCard study={study} variant="preview" />
+      </div>
+    </section>
+  )}
+
+  {faqs && faqs.length > 0 && (
+    <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6">
+        <SectionHeading title="Frequently asked" subtitle="FAQ" />
+        <div class="grid gap-4">
+          {faqs.map((f) => (
+            <details class="group rounded-lg border border-kharon-purple/15 bg-kharon-charcoal/30 p-5">
+              <summary class="cursor-pointer list-none text-sm font-bold text-white marker:hidden">{f.q}</summary>
+              <p class="mt-3 text-sm leading-relaxed text-kharon-light/70">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <WhatHappensNext intent={intent} ctaLabel={cta?.label ?? "Request Site Assessment"} />
+</BaseLayout>
