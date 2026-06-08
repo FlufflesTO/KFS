@@ -209,12 +209,49 @@ try {
     }
 
     // Calculate compliance statistics
-    const overdueSystems = systems.filter(s => s.next_due_date !== null && s.next_due_date.localeCompare(today) < 0).length;
-    const dueSoonSystems = systems.filter(s => s.next_due_date !== null && s.next_due_date.localeCompare(today) >= 0 && s.next_due_date.localeCompare(soonDate) <= 0).length;
-    const compliantSystems = systems.filter(s => s.next_due_date === null || s.next_due_date.localeCompare(soonDate) > 0).length;
-    const criticalDefects = openDefects.filter(d => d.severity === 'Critical').length;
-    const blockedCertificates = certificates.filter(c => c.status === 'Blocked').length;
-    const validCertificates = certificates.filter(c => c.status === 'Valid').length;
+    // ⚡ Bolt: Replaced multiple array `.filter()` passes with single `for` loops
+    // Reduces O(3N) to O(N) for systems, O(3N) to O(N) for defects, and O(3N) to O(N) for certificates
+
+    let overdueSystems = 0;
+    let dueSoonSystems = 0;
+    let compliantSystems = 0;
+
+    for (let i = 0; i < systems.length; i++) {
+      const s = systems[i];
+      if (s.next_due_date !== null) {
+        if (s.next_due_date.localeCompare(today) < 0) {
+          overdueSystems++;
+        } else if (s.next_due_date.localeCompare(soonDate) <= 0) {
+          dueSoonSystems++;
+        } else {
+          compliantSystems++;
+        }
+      } else {
+        compliantSystems++;
+      }
+    }
+
+    let criticalDefects = 0;
+    let majorDefects = 0;
+    let minorDefects = 0;
+
+    for (let i = 0; i < openDefects.length; i++) {
+      const d = openDefects[i];
+      if (d.severity === 'Critical') criticalDefects++;
+      else if (d.severity === 'Major') majorDefects++;
+      else if (d.severity === 'Minor') minorDefects++;
+    }
+
+    let blockedCertificates = 0;
+    let validCertificates = 0;
+    let expiredCertificates = 0;
+
+    for (let i = 0; i < certificates.length; i++) {
+      const c = certificates[i];
+      if (c.status === 'Blocked') blockedCertificates++;
+      else if (c.status === 'Valid') validCertificates++;
+      else if (c.status === 'Expired') expiredCertificates++;
+    }
 
     complianceStats = {
       totalSystems: systems.length,
@@ -223,12 +260,12 @@ try {
       compliantSystems,
       totalDefects: openDefects.length,
       criticalDefects,
-      majorDefects: openDefects.filter(d => d.severity === 'Major').length,
-      minorDefects: openDefects.filter(d => d.severity === 'Minor').length,
+      majorDefects,
+      minorDefects,
       totalCertificates: certificates.length,
       blockedCertificates,
       validCertificates,
-      expiredCertificates: certificates.filter(c => c.status === 'Expired').length
+      expiredCertificates
     };
   }
 } catch (error) {
