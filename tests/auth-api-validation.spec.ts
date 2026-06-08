@@ -141,7 +141,7 @@ test.describe('Auth API - Invalid Credentials', () => {
   test('should not reveal if email exists vs password wrong', async ({ request }) => {
     // Security: Both cases should return identical error messages
     const response1 = await request.post(AUTH_ENDPOINT, {
-      data: { email: 'tech.test@tequit.co.za', password: 'wrong' }
+      data: { email: 'admin.test@tequit.co.za', password: 'wrong' }
     });
 
     const response2 = await request.post(AUTH_ENDPOINT, {
