@@ -27,8 +27,10 @@ function Assert-RepoChild {
   param([Parameter(Mandatory = $true)][string] $Path)
 
   $full = [System.IO.Path]::GetFullPath($Path)
-  $rootWithSlash = $Root.TrimEnd('\') + '\'
-  if (-not ($full -eq $Root -or $full.StartsWith($rootWithSlash, [System.StringComparison]::OrdinalIgnoreCase))) {
+  $fullNormalized = $full.Replace('\', '/')
+  $rootNormalized = $Root.Replace('\', '/').TrimEnd('/') + '/'
+
+  if (-not ($fullNormalized -eq $rootNormalized.TrimEnd('/') -or $fullNormalized.StartsWith($rootNormalized, [System.StringComparison]::OrdinalIgnoreCase))) {
     throw "Refusing to operate outside repository root: $full"
   }
   return $full
