@@ -11,9 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Phase 2, 3 & 4: Content Store, Reusable Components & Proof Layer
 
 #### [Added]
-- **Content Models & Data**: Created centralized TypeScript content models (`ServiceContentModel`, `SectorContentModel`, `ProofModel`, etc.) in `packages/types/src/content.ts`. Instantiated data files in `src/data/` for `navigation.ts`, `services.ts`, `caseStudies.ts`, etc.
-- **Reusable Astro Components**: Built 15 new UI components in `src/components/blocks/` including `CommercialHero.astro`, `AudienceStrip.astro`, `ProofStrip.astro`, `WhatWeDoGrid.astro`, and `CaseStudyPreviewGrid.astro`, adhering to strict CSS budgets, touch target sizing, and standard SVG iconography.
-- **Proof & Credibility Content**: Instantiated proof structures for Accreditations, Teams, Portals, and Case Studies, enforcing strict "Placeholder case study" warning labels on mock scenarios.
+- **Proof & Credibility Content**: Finalized Phase 4 by engineering strongly typed proof structures (`ProofGridItem`, `TrustModuleItem`) within `src/data/proof.ts`. Correctly populated Accreditation, Portal, Documentation, and Testimonial proof models, avoiding fabricated ISO/SAQCC claims to ensure compliance.
+- **Type Safety on Proof UI**: Applied explicit strict typings to `ProofGrid.astro` and `TrustModules.astro` props and mapping loops, eradicating the use of the `any` type.
+
+#### [Changed]
+- **Architecture Refactoring**: Executed an audit cleaning up redundant Phase 2 and Phase 3 component/data files that were superseded by the Phase 1 thin-page layout architecture (e.g. `src/data/services.ts`, `src/components/blocks/`).
 
 ## [Unreleased] - 2026-06-06
 
