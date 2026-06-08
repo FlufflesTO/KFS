@@ -27,8 +27,9 @@ function Assert-RepoChild {
   param([Parameter(Mandatory = $true)][string] $Path)
 
   $full = [System.IO.Path]::GetFullPath($Path)
-  $rootWithSlash = $Root.TrimEnd('\') + '\'
-  if (-not ($full -eq $Root -or $full.StartsWith($rootWithSlash, [System.StringComparison]::OrdinalIgnoreCase))) {
+  $rootWithSlash = $Root.TrimEnd('\').TrimEnd('/') + [System.IO.Path]::DirectorySeparatorChar
+  # Normalize paths for proper comparison in Unix/Linux
+  if (-not ($full -eq $Root -or $full.StartsWith($rootWithSlash))) {
     throw "Refusing to operate outside repository root: $full"
   }
   return $full
@@ -115,7 +116,7 @@ function Remove-DevVars {
 }
 
 function Remove-WranglerDeployRedirect {
-  $deployRedirect = Join-Path $Root ".wrangler\deploy"
+  $deployRedirect = Join-Path $Root ".wrangler" "deploy"
   if (Test-Path -LiteralPath $deployRedirect) {
     Remove-Item -LiteralPath (Assert-RepoChild $deployRedirect) -Recurse -Force
   }
@@ -173,7 +174,7 @@ function Build-PortalArtifact {
   Copy-DirectoryContents (Join-Path $DistRoot "server") (Join-Path $portalRoot "server")
   Remove-DevVars $portalRoot
 
-  if (-not (Test-Path -LiteralPath (Join-Path $portalRoot "server\wrangler.json"))) {
+  if (-not (Test-Path -LiteralPath (Join-Path $portalRoot "server/wrangler.json"))) {
     throw "Portal artifact is missing server\wrangler.json."
   }
 }

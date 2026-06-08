@@ -1,0 +1,12 @@
+--- scripts/build-deploy-artifacts.ps1	2024-05-15
++++ scripts/build-deploy-artifacts.ps1	2024-05-15
+@@ -102,7 +102,7 @@
+ }
+
+ function Remove-WranglerDeployRedirect {
+-  $deployRedirect = Join-Path $Root ".wrangler\deploy"
++  $deployRedirect = Join-Path $Root ".wrangler"
++  $deployRedirect = Join-Path $deployRedirect "deploy"
+   if (Test-Path -LiteralPath $deployRedirect) {
+     Remove-Item -LiteralPath (Assert-RepoChild $deployRedirect) -Recurse -Force
+   }
