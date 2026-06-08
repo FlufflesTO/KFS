@@ -53,8 +53,8 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
 <BaseLayout title="Contact Kharon Risk Specialists | Fire Protection Experts" description="Get in touch with industrial fire protection specialists. Request a site assessment, system consultation, or emergency support for mission-critical fire protection systems.">
 
   <SolutionHero
-    title="Intake Command"
-    subtitle="Strategic Engagement"
+    title="Contact Kharon"
+    subtitle="Site Assessment"
     description="Connect with our industrial command specialists for mission-critical fire protection consultation and site assessment."
     icon="/brand/icons/severity-urgent.svg"
   />
@@ -104,7 +104,7 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
         <div class="grid lg:grid-cols-12 gap-16">
           <div class="lg:col-span-7">
             <SectionHeading
-              title="Secure Request Protocol"
+              title="Request a Site Assessment"
               subtitle="Assessment Intake"
               description="Initialize a formal inquiry for site audit or technical consultation. For active faults, use the emergency panel above."
             />
@@ -145,7 +145,7 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
                 </div>
 
                 <div class="grid gap-2">
-                  <label for="intake-email" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Email Infrastructure</label>
+                  <label for="intake-email" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Email address</label>
                   <input
                     id="intake-email"
                     type="email"
@@ -159,7 +159,7 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
 
               <div class="grid md:grid-cols-2 gap-6">
                 <div class="grid gap-2">
-                  <label for="intake-phone" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Phone Link</label>
+                  <label for="intake-phone" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Phone number</label>
                   <input
                     id="intake-phone"
                     type="tel"
@@ -170,7 +170,7 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
                 </div>
 
                 <div class="grid gap-2">
-                  <label for="intake-company" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Registered Company</label>
+                  <label for="intake-company" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Company</label>
                   <input
                     id="intake-company"
                     type="text"
@@ -242,7 +242,7 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
               </div>
 
               <div class="grid gap-2">
-                <label for="intake-message" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Operational Requirements</label>
+                <label for="intake-message" class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-1">Tell us what you need</label>
                 <textarea
                   id="intake-message"
                   name="message"
@@ -278,7 +278,7 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
                 type="submit"
                 class="kharon-command-button w-full py-5 text-sm font-black tracking-[0.2em]"
               >
-                Initialize Secure Intake
+                Submit Request
               </button>
 
               <!-- Inline confirmation / error region -->
@@ -293,14 +293,14 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
 
           <div class="lg:col-span-5 space-y-8">
             <SectionHeading
-              title="Command Center"
-              subtitle="Contact Nodes"
+              title="Contact details"
+              subtitle="How to reach us"
             />
 
             <div class="space-y-6 pt-2">
               <div class="p-8 rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/40 backdrop-blur-xl relative overflow-hidden group hover:border-kharon-purple/40 transition-all">
                 <div class="absolute top-0 right-0 h-20 w-20 bg-kharon-purple/5 rounded-bl-full pointer-events-none"></div>
-                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Operational HQ</h3>
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Office address</h3>
                 <p class="text-white/80 font-medium leading-relaxed">{site.address}</p>
               </div>
 
@@ -323,7 +323,7 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
 
                 <a href={`mailto:${site.email}`} class="p-6 rounded-xl border border-kharon-purple/10 bg-kharon-charcoal/20 hover:border-kharon-cyan/40 transition-all flex items-center justify-between group min-h-[44px]">
                   <div>
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-kharon-purple group-hover:text-kharon-cyan transition-colors">Data Intake</h3>
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-kharon-purple group-hover:text-kharon-cyan transition-colors">Email us</h3>
                     <p class="text-white font-bold mt-1">{site.email}</p>
                   </div>
                   <div class="h-10 w-10 rounded-lg bg-kharon-purple/10 flex items-center justify-center border border-kharon-purple/20 group-hover:bg-kharon-cyan/10 group-hover:border-kharon-cyan/30 transition-all">
@@ -335,7 +335,7 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
               </div>
 
               <div class="p-8 rounded-2xl border border-kharon-purple/20 bg-kharon-black/60 backdrop-blur-sm">
-                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple mb-6 border-b border-kharon-purple/10 pb-4">Response Protocol</h3>
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple mb-6 border-b border-kharon-purple/10 pb-4">Expected Response</h3>
                 <ul class="space-y-4">
                   <li class="flex items-center gap-3 text-xs font-bold text-white/60">
                     <span class="h-1.5 w-1.5 rounded-full bg-kharon-cyan"></span>
@@ -343,7 +343,7 @@ const formSubmitEvent = ANALYTICS_EVENTS.formSubmit;
                   </li>
                   <li class="flex items-center gap-3 text-xs font-bold text-white/60">
                     <span class="h-1.5 w-1.5 rounded-full bg-kharon-red animate-pulse"></span>
-                    Emergency Support: Immediate Response
+                    Emergency Support: Emergency fault triage
                   </li>
                   <li class="flex items-center gap-3 text-xs font-bold text-white/60">
                     <span class="h-1.5 w-1.5 rounded-full bg-kharon-amber"></span>

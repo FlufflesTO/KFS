@@ -10,14 +10,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import SolutionHero from "../components/sections/SolutionHero.astro";
 import EmergencyResponse from "../components/sections/EmergencyResponse.astro";
+import DisclaimerNote from "../components/sections/DisclaimerNote.astro";
 import { pageMeta, site } from "../data/site.js";
 
 const severityLevels = [
   {
     label: "Critical",
     description: "Fire panel fault, suppression impaired, system offline",
-    telephone: "2-hr telephone response",
-    onsite: "4-hr on-site response",
+    telephone: "Urgent telephone triage for active faults",
+    onsite: "Priority dispatch subject to site location, access and support agreement",
     borderClass: "border-kharon-red/40",
     bgClass: "bg-kharon-red/5",
     labelClass: "text-kharon-red",
@@ -26,8 +27,8 @@ const severityLevels = [
   {
     label: "Urgent",
     description: "Detector fault, isolated zone, maintenance overrun",
-    telephone: "Same-day telephone response",
-    onsite: "Next business day on-site",
+    telephone: "Same-day technical review where available",
+    onsite: "Next available technician visit, subject to scheduling and access",
     borderClass: "border-kharon-amber/40",
     bgClass: "bg-kharon-amber/5",
     labelClass: "text-kharon-amber",
@@ -49,7 +50,7 @@ const escalationSteps = [
   { step: "1", title: "Fault detected or alarm raised", text: "System fault indicator or triggered alarm signals a protection condition requiring assessment." },
   { step: "2", title: "Contact Kharon on 061 545 8830", text: "Call our direct line to initiate the response process. Available for critical faults." },
   { step: "3", title: "Triage: severity classification within 30 min", text: "Kharon classifies the reported condition as Critical, Urgent or Planned within 30 minutes of contact." },
-  { step: "4", title: "Technician dispatch per severity timeline", text: "Technician dispatched according to the classification: 4-hour on-site for Critical, next business day for Urgent." },
+  { step: "4", title: "Technician dispatch per severity timeline", text: "Technician dispatched according to the classification: priority dispatch for Critical, next available for Urgent." },
   { step: "5", title: "On-site assessment and remediation", text: "Technician arrives, assesses the fault, and carries out remediation or temporary protection measures." },
   { step: "6", title: "Documentation and close-out report issued", text: "All work is documented. A close-out report is issued and linked to the client's service record." }
 ];
@@ -74,14 +75,14 @@ const emergencyRoutes = [
     title: "Urgent technical request",
     text: "Route urgent assessment requests where a technician review or system diagnosis is required.",
     action: "Speak to an Engineer",
-    href: "/contact?intent=urgent-technical-request",
+    href: "/contact?intent=emergency",
     icon: "/brand/icons/severity-urgent.svg"
   },
   {
     title: "Compliance intervention",
     text: "Overdue inspections, missing documentation, insurer queries or audit-sensitive system concerns.",
     action: "Book a Compliance Inspection",
-    href: "/contact?intent=compliance-intervention",
+    href: "/contact?intent=compliance",
     icon: "/brand/icons/severity-planned.svg"
   }
 ];
@@ -90,7 +91,7 @@ const emergencyRoutes = [
 <BaseLayout title={pageMeta.emergencySupport.title} description={pageMeta.emergencySupport.description}>
   <SolutionHero
     title="Emergency Support"
-    subtitle="Operational Response"
+    subtitle="Emergency Support"
     description="Direct response pathways for protection-system faults, compliance interventions, and urgent escalations on critical sites."
     icon="/brand/icons/severity-critical.svg"
   />
@@ -142,6 +143,8 @@ const emergencyRoutes = [
           Report a Fault
         </a>
       </div>
+      
+      <DisclaimerNote variant="sla" />
     </div>
   </section>
 
@@ -173,7 +176,7 @@ const emergencyRoutes = [
   <section class="section-padding bg-kharon-black">
     <div class="mx-auto max-w-7xl px-6">
       <SectionHeading
-        title="Operational Response Pathways"
+        title="Emergency Support Pathways"
         subtitle="Emergency Protocols"
         description="Structured response procedures for protection system emergencies and critical incidents."
         center={true}
@@ -220,7 +223,7 @@ const emergencyRoutes = [
   <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
     <div class="mx-auto max-w-4xl px-6 text-center">
       <SectionHeading
-        title="Controlled Incident Management"
+        title="Documented Fault Response"
         subtitle="Reliability Discipline"
         description="Our protocols are designed to maintain operational control during critical incidents, prioritizing safety while minimizing disruption."
         center={true}

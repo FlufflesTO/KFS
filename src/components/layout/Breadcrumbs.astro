@@ -1,0 +1,32 @@
+---
+export interface Props {
+  items: { name: string; url: string }[];
+}
+
+const { items } = Astro.props;
+import { generateBreadcrumbSchema } from "../../lib/seo/schema.ts";
+
+const schema = generateBreadcrumbSchema(items);
+---
+
+<nav aria-label="Breadcrumb" class="mb-6">
+  <ol class="flex items-center space-x-2 text-xs font-medium text-white/50">
+    <li>
+      <a href="/" class="hover:text-kharon-cyan transition-colors">Home</a>
+    </li>
+    {items.map((item, index) => (
+      <li class="flex items-center space-x-2">
+        <svg class="h-3 w-3 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+        {index === items.length - 1 ? (
+          <span class="text-white/80" aria-current="page">{item.name}</span>
+        ) : (
+          <a href={item.url} class="hover:text-kharon-cyan transition-colors">{item.name}</a>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

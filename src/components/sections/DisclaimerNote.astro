@@ -1,0 +1,38 @@
+---
+export interface Props {
+  variant: "sans" | "privacy" | "sla" | "case-study" | "product-suitability" | "fire-door";
+}
+
+const { variant } = Astro.props;
+
+let content = "";
+switch (variant) {
+  case "sans":
+    content = "This guidance is general and does not replace a site-specific inspection, design review or authority requirement. Final compliance depends on the system type, occupancy, documentation and installation condition.";
+    break;
+  case "privacy":
+    content = "CCTV and monitoring systems must be designed and operated with appropriate privacy, signage, access-control and retention controls. POPIA and site-specific policy requirements should be reviewed before deployment.";
+    break;
+  case "sla":
+    content = "Emergency response availability depends on site location, access, technician availability and support agreement. Published response categories are guidance unless confirmed in a written SLA.";
+    break;
+  case "case-study":
+    content = "Representative scenario — not a named client or measured project result. Replace with approved project evidence before using as a real case study.";
+    break;
+  case "product-suitability":
+    content = "Product suitability depends on site risk profile, occupancy and environmental factors. Always consult a qualified fire engineer for system selection.";
+    break;
+  case "fire-door":
+    content = "Fire-door compliance requires holistic assessment of the door set, frame, hardware, signage and intumescent seals. Individual component replacement does not guarantee a compliant assembly.";
+    break;
+  default:
+    content = "Information provided is for general guidance only.";
+}
+---
+
+<div class="mt-8 rounded-lg border border-kharon-purple/20 bg-kharon-charcoal/30 p-4 text-xs font-medium leading-relaxed text-white/50 flex gap-3">
+  <svg class="h-4 w-4 shrink-0 text-kharon-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  <p>{content}</p>
+</div>

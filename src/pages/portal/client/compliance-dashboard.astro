@@ -1,7 +1,7 @@
 ---
 import { auditError } from "../../../lib/server/audit";
 /**
- * Project Sentinel - Client Compliance Command Center
+ * Project Sentinel - Client Compliance Dashboard
  * Purpose: Provides comprehensive compliance dashboard for clients to track certificates, defects, and maintenance schedules
  * Dependencies: PortalLayout, bindings, clientAccess
  * Structural Role: Client compliance overview and management
@@ -274,10 +274,10 @@ try {
 }
 ---
 
-<PortalLayout title="Compliance Command Center | Kharon Portal" active="client-compliance" user={user}>
+<PortalLayout title="Compliance Dashboard | Kharon Portal" active="client-compliance" user={user}>
   <section class="bg-gradient-to-r from-kharon-black to-kharon-charcoal px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
     <div class="mx-auto max-w-7xl">
-      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Compliance Command Center</p>
+      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Compliance Dashboard</p>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">System Compliance Overview</h1>
       <p class="mt-3 max-w-3xl text-sm text-white/60">Comprehensive view of system compliance status, certificates, and defect management.</p>
     </div>
