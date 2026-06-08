@@ -5,6 +5,9 @@ import { csvObjects } from "../../../../lib/server/csv";
 import type { CsvObjectResult } from "../../../../lib/server/csv";
 import { badRequest, json, methodNotAllowed, serverError } from "../../../../lib/server/http.ts";
 import { cleanChoice, cleanDate, cleanEmail, cleanId, cleanText, readJson, requireAdmin } from "../../../../lib/server/access";
+export function inClause(values: unknown[], startIndex: number = 1): string {
+  return values.map((_, index) => `?${startIndex + index}`).join(", ");
+}
 
 export const prerender = false;
 
