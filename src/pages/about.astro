@@ -177,7 +177,7 @@ const standardsWorkedTo = [
         {capabilityProof.map((item) => (
           <div class="group relative rounded-2xl border border-kharon-purple/20 bg-kharon-black/40 p-8 transition-all hover:border-kharon-purple/40 hover:bg-kharon-black/60 shadow-lg">
             <div class="h-14 w-14 mb-6 rounded-xl bg-kharon-charcoal border border-kharon-purple/20 p-3 group-hover:bg-kharon-purple/10 transition-colors">
-              <img src={item.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
+              <img src={item.icon} loading="lazy" decoding="async" class="w-full h-full object-contain" alt="" aria-hidden="true" />
             </div>
             <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">{item.title}</h3>
             <p class="text-kharon-light/60 text-sm leading-relaxed">{item.text}</p>

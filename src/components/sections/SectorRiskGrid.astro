@@ -38,7 +38,7 @@ const widthClasses: Record<number, string> = {
             <div class="flex items-center gap-3">
               {sector.icon && (
                 <div class="w-10 h-10 rounded-lg bg-kharon-purple/10 flex items-center justify-center overflow-hidden flex-none">
-                  <img src={sector.icon} class="w-full h-full object-contain" alt={`${sector.title} icon`} />
+                  <img src={sector.icon} loading="lazy" decoding="async" class="w-full h-full object-contain" alt={`${sector.title} icon`} />
                 </div>
               )}
               <h3 class="text-lg font-semibold text-white">{sector.title}</h3>

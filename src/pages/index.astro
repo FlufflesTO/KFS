@@ -55,7 +55,7 @@ const localBusinessJsonLd = JSON.stringify({
         {solutionLinks.map((solution) => (
           <a href={solution.href} class="group rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-6 flex flex-col hover:border-kharon-purple/40 hover:bg-kharon-charcoal/50 transition-all">
             <div class="h-12 w-12 rounded-lg bg-kharon-black/40 border border-kharon-purple/20 p-3 mb-4 group-hover:bg-kharon-purple/10 transition-colors">
-              <img src={solution.icon} alt="" class="h-full w-full object-contain" />
+              <img src={solution.icon} alt="" loading="lazy" decoding="async" class="h-full w-full object-contain" />
             </div>
             <h3 class="text-sm font-black text-white uppercase tracking-wide mb-2">{solution.label}</h3>
             <p class="text-xs text-kharon-light/60 leading-relaxed flex-1">{solution.summary}</p>
