@@ -7,10 +7,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Root = (Resolve-Path "$PSScriptRoot\..").Path
+$Root = (Resolve-Path "$PSScriptRoot/..").Path
 Set-Location -LiteralPath $Root
 
-$deployRedirect = Join-Path $Root ".wrangler\deploy"
+$deployRedirect = Join-Path $Root ".wrangler/deploy"
 if (Test-Path -LiteralPath $deployRedirect) {
   Remove-Item -LiteralPath $deployRedirect -Recurse -Force
 }

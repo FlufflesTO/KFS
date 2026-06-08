@@ -7,7 +7,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-Set-Location -LiteralPath (Resolve-Path "$PSScriptRoot\..")
+Set-Location -LiteralPath (Resolve-Path "$PSScriptRoot/..")
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\build-deploy-artifacts.ps1" website
+pwsh -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot/build-deploy-artifacts.ps1" website
 exit $LASTEXITCODE

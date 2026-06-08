@@ -10,7 +10,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Set-Location -LiteralPath (Resolve-Path "$PSScriptRoot\..")
+Set-Location -LiteralPath (Resolve-Path "$PSScriptRoot/..")
 
 $ProjectName = "kfs-website"
 $WebsiteProjectName = $ProjectName
@@ -23,7 +23,7 @@ if ($env:CLOUDFLARE_API_TOKEN) {
 }
 
 function Get-WranglerOAuthToken {
-  $configPath = Join-Path $env:USERPROFILE ".wrangler\config\default.toml"
+  $configPath = Join-Path $env:USERPROFILE ".wrangler/config/default.toml"
   if (-not (Test-Path -LiteralPath $configPath)) {
     throw "Wrangler OAuth config was not found. Run npm run auth:cloudflare first."
   }
@@ -110,7 +110,7 @@ switch ($Action) {
     npx wrangler deploy --config .deploy/portal/server/wrangler.json
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     # Remove wrangler deploy config if created to prevent deployment redirection errors
-    Remove-Item -Path "$PSScriptRoot\..\.wrangler\deploy" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -Path "$PSScriptRoot/../.wrangler/deploy" -Recurse -Force -ErrorAction SilentlyContinue
     npx wrangler pages deploy .deploy/website --project-name $WebsiteProjectName --branch main
     exit $LASTEXITCODE
   }
