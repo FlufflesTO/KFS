@@ -8,7 +8,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Root = (Resolve-Path "$PSScriptRoot\..").Path
+$Root = (Resolve-Path "$PSScriptRoot/..").Path
 Set-Location -LiteralPath $Root
 
 $DeployRoot = Join-Path $Root ".deploy"
@@ -27,8 +27,8 @@ function Assert-RepoChild {
   param([Parameter(Mandatory = $true)][string] $Path)
 
   $full = [System.IO.Path]::GetFullPath($Path)
-  $rootWithSlash = $Root.TrimEnd('\') + '\'
-  if (-not ($full -eq $Root -or $full.StartsWith($rootWithSlash, [System.StringComparison]::OrdinalIgnoreCase))) {
+  $rootWithSlash = $Root.TrimEnd([System.IO.Path]::DirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+  if (-not ($full.Replace("\", "/") -eq $Root.Replace("\", "/") -or $full.Replace("\", "/").StartsWith($rootWithSlash.Replace("\", "/"), [System.StringComparison]::OrdinalIgnoreCase))) {
     throw "Refusing to operate outside repository root: $full"
   }
   return $full
