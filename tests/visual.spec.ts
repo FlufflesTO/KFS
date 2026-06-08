@@ -8,6 +8,7 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
 
     // 2. Verify that the main landing page content is visible
     const mainHeading = page.locator('h1.kharon-h1');
+    await mainHeading.waitFor({ state: 'visible', timeout: 15000 });
     await expect(mainHeading).toBeVisible();
     await expect(mainHeading).toContainText(/Precision Engineering|Critical Assets/i);
 
@@ -46,6 +47,7 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
 
     // 2. Verify login card and input fields
     const loginHeading = page.locator('h1', { hasText: 'Operations Portal' });
+    await loginHeading.waitFor({ state: 'visible', timeout: 15000 });
     await expect(loginHeading).toBeVisible();
 
     const emailInput = page.locator('input[name="email"]');
@@ -69,8 +71,9 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
     ];
 
     for (const p of pagesToTest) {
-      await page.goto(p.path);
+      await page.goto(p.path, { waitUntil: 'networkidle' });
       const h1 = page.locator('h1').first();
+      await h1.waitFor({ state: 'visible', timeout: 15000 });
       await expect(h1).toBeVisible();
       await expect(h1).toContainText(new RegExp(p.heading, 'i'));
       

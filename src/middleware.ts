@@ -329,7 +329,12 @@ const setupMiddleware: MiddlewareHandler = async (context, next) => {
     return withSecurityHeaders(context.redirect("/portal/login", 302), nonce);
   }
 
-  const variantCookie = context.cookies.get("kharon_ui_variant")?.value;
+  let variantCookie: string | undefined;
+  try {
+    variantCookie = context.cookies.get("kharon_ui_variant")?.value;
+  } catch (error) {
+    console.error("Variant cookie decode error:", error);
+  }
   let variant = variantCookie || (Math.random() < 0.5 ? "A" : "B");
   context.locals.variant = variant;
 
@@ -392,7 +397,13 @@ const authMiddleware: MiddlewareHandler = async (context, next) => {
   const { sessionCookieName, verifySessionToken, isTokenRevoked, expiredSessionCookie } = await import("./lib/server/auth.js");
   const { getDatabase } = await import("./lib/server/bindings.ts");
 
-  const token = context.cookies.get(sessionCookieName)?.value;
+  let token: string | undefined;
+  try {
+    token = context.cookies.get(sessionCookieName)?.value;
+  } catch (error) {
+    // Prevent server crash from decodeURIComponent on malformed tokens
+    console.error("Session cookie decode error:", error);
+  }
   if (!token) return redirectToLogin(context, nonce);
 
   const user = await verifySessionToken(token);
@@ -469,7 +480,12 @@ const csrfAndRateLimitMiddleware: MiddlewareHandler = async (context, next) => {
   const { consumeRateLimit } = await import("./lib/server/rateLimit.js");
   const { auditEvent } = await import("./lib/server/audit");
 
-  let csrfToken: string | undefined = context.cookies.get(csrfCookieName)?.value;
+  let csrfToken: string | undefined;
+  try {
+    csrfToken = context.cookies.get(csrfCookieName)?.value;
+  } catch (error) {
+    console.error("CSRF cookie decode error:", error);
+  }
   context.locals.shouldSetCsrfCookie = false;
   if (!(await verifyCsrfToken(csrfToken, user))) {
     csrfToken = await createCsrfToken(user);
