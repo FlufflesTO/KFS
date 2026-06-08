@@ -1,3 +1,3 @@
-1. **Verify**: Use `run_in_bash_session` to execute the full test suite and verification commands (e.g., `npm run build`, `npm run lint`, `npm run check`, and the test runner) to verify the system's integrity.
+1. **Verify Integrity**: Use `run_in_bash_session` to execute the full test suite and verification commands (`npm run build`, `npm run lint`, `npm run check`, `npx vitest run`) to verify system integrity before submitting the already-completed refactor.
 2. **Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.**
-3. **Submit PR**: Use `submit` to create the final PR with the appropriate branch name, commit message, title, and description.
+3. **Submit**: Use `submit` to submit the PR with required arguments.
