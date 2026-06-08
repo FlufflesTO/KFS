@@ -52,7 +52,7 @@
     "@openrouter/sdk": "^0.12.79",
     "@sentinel/types": "file:packages/types",
     "@tailwindcss/vite": "^4.3.0",
-    "astro": "^6.3.3",
+    "astro": "^6.4.4",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
     "tailwindcss": "^4.3.0",
