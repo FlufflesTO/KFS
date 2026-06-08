@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2026-06-08
 
+### Audit & Review
+- **Frontend Audit & Compliance Review**: Conducted a multi-perspective audit of the website's frontend codebase with specialized subagents covering Marketing, Branding, UI/UX Design, SANS Compliance, WCAG AA Accessibility, and Component Architecture. Generated a detailed findings report and a step-by-step remediation plan in [website_frontend_audit_report.md](file:///C:/Users/User/.gemini/antigravity-cli/brain/59002815-a93e-4824-a3c5-db84485b6d36/website_frontend_audit_report.md).
+
 ### Phase 2, 3 & 4: Content Store, Reusable Components & Proof Layer
 
 #### [Added]

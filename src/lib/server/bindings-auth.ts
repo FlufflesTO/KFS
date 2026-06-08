@@ -69,8 +69,51 @@ export function resolveBindingsForAuth(): AuthEnv {
   const environment = isCI ? "local" : (env.ENVIRONMENT || "local");
 
   if (environment !== "local" && (!env.SESSION_SECRET || String(env.SESSION_SECRET).length < 32)) {
-    throw new Error(`SESSION_SECRET must be configured with at least 32 characters in production environment (Current: ${environment}, CI: ${isCI})`); 
+    throw new Error(`SESSION_SECRET must be configured with at least 32 characters in production environment (Current: ${environment}, CI: ${isCI})`);
   }
 
   return env;
+}
+
+/**
+ * Whether rate limiting should be relaxed for the current environment.
+ *
+ * Returns true for local development AND for CI / E2E test runs. The Playwright
+ * suite issues hundreds of cumulative login/API requests from a single client
+ * fingerprint; production-strength per-IP/per-user limits would trip mid-suite and
+ * cascade into hundreds of spurious 429 failures. Relaxing here keeps the suite
+ * deterministic while leaving production limits fully intact (no flag is ever set
+ * on the deployed Worker). Rate-limit-specific tests use dedicated email subjects
+ * and remain enforced via `isRateLimitTestEmail` in the auth endpoint.
+ *
+ * Detection prefers the Worker runtime env (populated from `.dev.vars` in CI, which
+ * is the only signal that reliably reaches workerd under `astro preview`), with a
+ * `process.env` fallback for non-worker contexts.
+ */
+export function isRateLimitRelaxedEnv(): boolean {
+  const truthy = (v: unknown): boolean => v === "true" || v === true || v === "1";
+
+  const env = resolveBindingsForAuth();
+  if (env.ENVIRONMENT === "local") return true;
+  if (
+    truthy((env as Record<string, unknown>).CI) ||
+    truthy((env as Record<string, unknown>).GITHUB_ACTIONS) ||
+    truthy((env as Record<string, unknown>).E2E_TEST_MODE) ||
+    (env as Record<string, unknown>).NODE_ENV === "test"
+  ) {
+    return true;
+  }
+
+  if (typeof process !== "undefined" && process.env) {
+    if (
+      truthy(process.env.CI) ||
+      truthy(process.env.GITHUB_ACTIONS) ||
+      truthy(process.env.E2E_TEST_MODE) ||
+      process.env.NODE_ENV === "test"
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 }

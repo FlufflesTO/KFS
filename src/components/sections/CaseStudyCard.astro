@@ -64,9 +64,9 @@ const rows = [
 
     <p class="mt-6 text-[0.7rem] uppercase tracking-widest text-kharon-light/40">Representative scenario — not a named client or measured project result. Replace with approved project evidence before using as a real case study.</p>
     <div class="mt-4 flex flex-wrap items-center gap-3">
-      <a href={contactHref} class="kharon-command-button inline-flex min-h-[44px] px-6 py-3 text-base">Discuss a similar project</a>
+      <a href={contactHref} data-analytics="case_study_click" data-case-study={study.slug} class="kharon-command-button inline-flex min-h-[44px] px-6 py-3 text-base">Discuss a similar project</a>
       {variant === "preview" && (
-        <a href={`/resources/case-studies#${study.slug}`} class="text-base font-bold uppercase tracking-widest text-kharon-cyan hover:text-white">Read case study →</a>
+        <a href={`/resources/case-studies#${study.slug}`} data-analytics="case_study_click" data-case-study={study.slug} class="text-base font-bold uppercase tracking-widest text-kharon-cyan hover:text-white">Read case study →</a>
       )}
     </div>
   </div>

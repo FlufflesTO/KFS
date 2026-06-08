@@ -1,0 +1,60 @@
+---
+/**
+ * MobileTableCards - responsive tabular data.
+ * Renders a standard <table> at the `md:` breakpoint and stacked <article> cards
+ * below it, so reference/compliance tables stay readable on small screens.
+ */
+export interface Props {
+  headers: string[];
+  rows: string[][];
+  /** which column (0-based) becomes the card title on mobile; defaults to 0 */
+  cardTitleIndex?: number;
+  /** optional caption / accessible label for the table */
+  caption?: string;
+}
+
+const { headers, rows, cardTitleIndex = 0, caption } = Astro.props;
+const titleIndex = cardTitleIndex >= 0 && cardTitleIndex < headers.length ? cardTitleIndex : 0;
+---
+
+<!-- Desktop / tablet: standard table -->
+<div class="hidden overflow-x-auto md:block">
+  <table class="w-full border-collapse text-left text-base">
+    {caption && <caption class="sr-only">{caption}</caption>}
+    <thead>
+      <tr class="border-b border-kharon-purple/20">
+        {headers.map((h) => (
+          <th scope="col" class="px-4 py-3 text-base font-black uppercase tracking-widest text-kharon-cyan">{h}</th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => (
+        <tr class="border-b border-kharon-purple/10">
+          {row.map((cell, i) => (
+            <td class={`px-4 py-3 align-top leading-relaxed ${i === titleIndex ? "font-bold text-white" : "text-kharon-light/70"}`}>{cell}</td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<!-- Mobile: stacked cards -->
+<div class="grid gap-4 md:hidden">
+  {rows.map((row) => (
+    <article class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-5">
+      <h3 class="text-base font-bold text-white">{row[titleIndex]}</h3>
+      <dl class="mt-3 grid gap-2">
+        {row.map((cell, i) => (
+          i !== titleIndex && (
+            <div class="grid grid-cols-[40%_1fr] gap-3">
+              <dt class="text-base font-bold uppercase tracking-widest text-kharon-light/50">{headers[i]}</dt>
+              <dd class="text-base leading-relaxed text-kharon-light/80">{cell}</dd>
+            </div>
+          )
+        ))}
+      </dl>
+    </article>
+  ))}
+</div>

@@ -20,7 +20,7 @@ import { site, solutionLinks } from "../../data/site.js";
           <img loading="lazy" decoding="async" src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="28" height="28" class="transition-transform duration-300 group-hover:scale-110 flex-none h-7 w-7 object-contain"/>
           <div>
             <span class="block text-base font-black uppercase tracking-[0.18em] text-white">Kharon</span>
-            <span class="block text-[0.625rem] font-bold uppercase tracking-[0.25em] text-kharon-purple/80">Fire &amp; Security</span>
+            <span class="block text-[0.625rem] font-bold uppercase tracking-[0.25em] text-white/50">Fire &amp; Security</span>
           </div>
         </a>
         <p class="text-[0.75rem] leading-relaxed text-white/40">
@@ -30,7 +30,7 @@ import { site, solutionLinks } from "../../data/site.js";
 
       <!-- Services -->
       <div>
-        <h3 class="text-base font-black uppercase tracking-[0.25em] text-kharon-purple mb-3">Solutions</h3>
+        <h3 class="text-base font-black uppercase tracking-[0.25em] text-kharon-cyan mb-3">Solutions</h3>
         <ul class="space-y-1">
           {solutionLinks.map((link) => (
             <li><a href={link.href} class="text-base font-bold uppercase tracking-widest text-white/40 hover:text-kharon-cyan transition-colors">{link.label}</a></li>
@@ -45,7 +45,7 @@ import { site, solutionLinks } from "../../data/site.js";
 
       <!-- Contact -->
       <div>
-        <h3 class="text-base font-black uppercase tracking-[0.25em] text-kharon-purple mb-3">Contact</h3>
+        <h3 class="text-base font-black uppercase tracking-[0.25em] text-kharon-cyan mb-3">Contact</h3>
         <ul class="space-y-1">
           <li><a href="tel:+27615458830" class="text-base font-black uppercase tracking-widest text-white/60 hover:text-kharon-cyan transition-colors">{site.phone}</a></li>
           <li><a href={`mailto:${site.email}`} class="text-base font-bold uppercase tracking-widest text-white/40 hover:text-kharon-cyan transition-colors">{site.email}</a></li>
@@ -55,7 +55,7 @@ import { site, solutionLinks } from "../../data/site.js";
 
       <!-- Corporate -->
       <div>
-        <h3 class="text-base font-black uppercase tracking-[0.25em] text-kharon-purple mb-3">Corporate</h3>
+        <h3 class="text-base font-black uppercase tracking-[0.25em] text-kharon-cyan mb-3">Corporate</h3>
         <ul class="space-y-1 text-base text-white/40 uppercase tracking-widest font-bold">
           <li>Reg. {site.registration}</li>
           <li>B-BBEE Level 4 Contributor</li>
@@ -66,16 +66,16 @@ import { site, solutionLinks } from "../../data/site.js";
 
     <!-- Bottom bar -->
     <div class="mt-6 pt-5 border-t border-kharon-purple/10 flex flex-col sm:flex-row justify-between items-center gap-3">
-      <p class="text-base font-bold uppercase tracking-widest text-white/40">
+      <p class="text-base font-bold uppercase tracking-widest text-white/60">
         &copy; {new Date().getFullYear()} {site.name}.
       </p>
       <div class="flex gap-4">
-        <a href="/" class="text-base font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors">Home</a>
-        <a href="/about" class="text-base font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors">About</a>
-        <a href="/compliance" class="text-base font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors">SANS</a>
-        <a href="/privacy" class="text-base font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors">Privacy</a>
-        <a href="/legal/paia-manual.pdf" class="text-base font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors" target="_blank" rel="noopener noreferrer">PAIA</a>
-        <a href={site.portalLoginPath} class="text-base font-bold uppercase tracking-widest text-white/30 hover:text-kharon-purple transition-colors">Portal</a>
+        <a href="/" class="text-base font-bold uppercase tracking-widest text-white/60 hover:text-kharon-cyan transition-colors">Home</a>
+        <a href="/about" class="text-base font-bold uppercase tracking-widest text-white/60 hover:text-kharon-cyan transition-colors">About</a>
+        <a href="/compliance" class="text-base font-bold uppercase tracking-widest text-white/60 hover:text-kharon-cyan transition-colors">SANS</a>
+        <a href="/privacy" class="text-base font-bold uppercase tracking-widest text-white/60 hover:text-kharon-cyan transition-colors">Privacy</a>
+        <a href="/legal/paia-manual.pdf" class="text-base font-bold uppercase tracking-widest text-white/60 hover:text-kharon-cyan transition-colors" target="_blank" rel="noopener noreferrer">PAIA</a>
+        <a href={site.portalLoginPath} class="text-base font-bold uppercase tracking-widest text-white/60 hover:text-kharon-cyan transition-colors">Portal</a>
       </div>
     </div>
   </div>

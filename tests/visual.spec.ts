@@ -10,7 +10,7 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
     const mainHeading = page.locator('h1.kharon-h1');
     await mainHeading.waitFor({ state: 'visible', timeout: 15000 });
     await expect(mainHeading).toBeVisible();
-    await expect(mainHeading).toContainText(/Precision Engineering|Critical Assets/i);
+    await expect(mainHeading).toContainText(/SANS-compliant fire protection/i);
 
     // 3. Programmatically inspect the computed styling of the logo watermark pseudo-element
     const watermarkStyles = await page.evaluate(() => {
@@ -36,7 +36,7 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
     }
 
     // 4. Verify that the main CTA button is clickable and not obstructed
-    const assessmentCTA = page.getByRole('link', { name: /Request Compliance Support|Assessment Intake|Inquiry/ }).first();
+    const assessmentCTA = page.getByRole('link', { name: /Request Site Assessment|Speak to an Engineer/ }).first();
     await expect(assessmentCTA).toBeVisible();
     await expect(assessmentCTA).toBeEnabled();
   });
@@ -63,9 +63,9 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
   test('should load public secondary pages and verify key layout elements', async ({ page }) => {
     const pagesToTest = [
       { path: '/about', heading: 'About Kharon' },
-      { path: '/solutions', heading: 'Engineered Solutions' },
-      { path: '/compliance', heading: 'Protection Compliance' },
-      { path: '/contact', heading: 'Intake Command' },
+      { path: '/solutions', heading: 'Our Solutions' },
+      { path: '/compliance', heading: 'SANS Compliance' },
+      { path: '/contact', heading: 'Contact Kharon' },
       { path: '/emergency-support', heading: 'Emergency Support' },
       { path: '/industries', heading: 'Industries Served' }
     ];

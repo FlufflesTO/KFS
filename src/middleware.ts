@@ -507,11 +507,13 @@ const csrfAndRateLimitMiddleware: MiddlewareHandler = async (context, next) => {
       return withSecurityHeaders(csrfErrorResponse(), nonce);
     }
 
+    const { isRateLimitRelaxedEnv } = await import("./lib/server/bindings-auth.ts");
     const config = rateLimitConfig(pathname);
     const limit = await consumeRateLimit(db, context.request, {
       scope: config.scope,
       subject: user.id,
-      maxAttempts: config.maxAttempts,
+      // E2E suites issue many same-user writes cumulatively; relax in CI/local only.
+      maxAttempts: isRateLimitRelaxedEnv() ? 100000 : config.maxAttempts,
       windowSeconds: config.windowSeconds
     });
     if (!limit.allowed) {

@@ -99,7 +99,12 @@ export const ANALYTICS_EVENTS = {
   formSubmit: "form_submit",
   portalClick: "portal_click",
   emergencyClick: "emergency_click",
-  downloadClick: "download_click"
+  downloadClick: "download_click",
+  formSubmitSuccess: "form_submit_success",
+  formSubmitError: "form_submit_error",
+  caseStudyClick: "case_study_click",
+  resourceClick: "resource_click",
+  leadMagnetDownload: "lead_magnet_download"
 } as const;
 
 /** Canonical phone for tel: links. */

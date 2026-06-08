@@ -1,5 +1,13 @@
 ---
+/**
+ * Project Kharon - Fire Detection Page
+ * Purpose: Renders the Fire Detection service details page with detailed technical blocks.
+ * Dependencies: ServicePage layout, DetectionTechnicalBlocks component, services data.
+ * Structural Role: Solution details route.
+ */
+
 import ServicePage from "../layouts/ServicePage.astro";
+import DetectionTechnicalBlocks from "../components/sections/DetectionTechnicalBlocks.astro";
 import { services } from "../data/services.js";
 const s = services["fire-detection"];
 ---
@@ -14,4 +22,6 @@ const s = services["fire-detection"];
   faqs={s.faqs}
   caseStudySlug={s.caseStudySlug}
   disclaimerVariant={s.disclaimerVariant}
-/>
+>
+  <DetectionTechnicalBlocks />
+</ServicePage>

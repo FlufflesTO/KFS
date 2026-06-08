@@ -119,12 +119,14 @@ const faqSchema = faqs && faqs.length > 0 ? generateFAQSchema(faqs.map(f => ({ q
         <div class="mt-10 flex flex-wrap items-center gap-3">
           <span class="text-base font-bold uppercase tracking-widest text-kharon-light/50">Aligned to</span>
           {standards.map((s) => (
-            <span class="rounded border border-kharon-purple/20 bg-kharon-purple/5 px-3 py-1 text-base font-black uppercase tracking-wider text-kharon-purple">{s}</span>
+            <span class="rounded border border-kharon-purple/40 bg-kharon-purple/10 px-3 py-1 text-base font-black uppercase tracking-wider text-white">{s}</span>
           ))}
         </div>
       )}
     </div>
   </section>
+
+  <slot />
 
   {study && (
     <section class="section-padding bg-kharon-charcoal/30 border-t border-kharon-purple/10">

@@ -24,7 +24,7 @@ const widthClasses: Record<number, string> = {
 <section class="section-padding bg-kharon-black border-y border-white/5">
   <div class="mx-auto max-w-7xl px-6">
     <div class="mb-10 text-center">
-      <p class="text-base font-black uppercase tracking-[0.3em] text-kharon-purple mb-1">Sector Analysis</p>
+      <p class="text-base font-black uppercase tracking-[0.3em] text-kharon-cyan mb-1">Sector Analysis</p>
       <h2 class="text-3xl font-black text-white tracking-tighter uppercase">Infrastructure Risk Profile Grid</h2>
       <p class="mt-2 text-[0.7rem] font-medium text-white/30 uppercase tracking-widest">
         Comprehensive risk analysis for critical infrastructure sectors and operational environments.
@@ -32,34 +32,40 @@ const widthClasses: Record<number, string> = {
     </div>
 
     <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-      {sectors.map((sector: any) => (
-        <div class="rounded-lg border border-white/10 bg-kharon-charcoal/40 p-5 flex flex-col justify-between transition-all hover:border-kharon-purple/30">
-          <div>
-            <div class="flex items-center gap-3">
-              {sector.icon && (
-                <div class="w-8 h-8 rounded bg-kharon-black/60 border border-white/5 flex items-center justify-center p-1.5 flex-none opacity-60">
-                  <img loading="lazy" decoding="async" src={sector.icon} class="w-full h-full object-contain" alt="" />
-                </div>
-              )}
-              <h3 class="text-[0.65rem] font-black text-white uppercase tracking-wider leading-tight">{sector.title}</h3>
+      {sectors.map((sector: any) => {
+        const CardElement = sector.href ? "a" : "div";
+        return (
+          <CardElement
+            href={sector.href}
+            class="rounded-lg border border-white/10 bg-kharon-charcoal/40 p-5 flex flex-col justify-between transition-all hover:border-kharon-cyan/40 hover:bg-kharon-charcoal/50 group block min-h-[44px]"
+          >
+            <div>
+              <div class="flex items-center gap-3">
+                {sector.icon && (
+                  <div class="w-8 h-8 rounded bg-kharon-black/60 border border-white/5 flex items-center justify-center p-1.5 flex-none opacity-60">
+                    <img loading="lazy" decoding="async" src={sector.icon} class="w-full h-full object-contain" alt="" />
+                  </div>
+                )}
+                <h3 class="text-[0.65rem] font-black text-white uppercase tracking-wider leading-tight group-hover:text-kharon-cyan">{sector.title}</h3>
+              </div>
+              
+              <p class="mt-3 text-base text-white/40 font-medium leading-relaxed line-clamp-2 uppercase tracking-tight">{sector.risk}</p>
             </div>
-            
-            <p class="mt-3 text-base text-white/40 font-medium leading-relaxed line-clamp-2 uppercase tracking-tight">{sector.risk}</p>
-          </div>
 
-          <div class="mt-4 flex items-center justify-between border-t border-white/5 pt-3">
-            <span class="text-base font-black uppercase tracking-widest text-kharon-amber/70">
-              {sector.priority}
-            </span>
-            <div class="h-1 flex-grow mx-3 bg-kharon-black/60 rounded-full overflow-hidden relative">
-              <div 
-                class={`h-full bg-kharon-purple/60 rounded-full ${widthClasses[sector.riskLevel as number] || "w-[75%]"}`}
-              ></div>
+            <div class="mt-4 flex items-center justify-between border-t border-white/5 pt-3">
+              <span class="text-base font-black uppercase tracking-widest text-kharon-amber/70">
+                {sector.priority}
+              </span>
+              <div class="h-1 flex-grow mx-3 bg-kharon-black/60 rounded-full overflow-hidden relative">
+                <div 
+                  class={`h-full bg-kharon-purple/60 rounded-full ${widthClasses[sector.riskLevel as number] || "w-[75%]"}`}
+                ></div>
+              </div>
+              <span class="text-base font-black font-mono text-white/20">{sector.riskLevel}%</span>
             </div>
-            <span class="text-base font-black font-mono text-white/20">{sector.riskLevel}%</span>
-          </div>
-        </div>
-      ))}
+          </CardElement>
+        );
+      })}
     </div>
   </div>
 </section>

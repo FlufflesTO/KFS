@@ -10,7 +10,7 @@
     "node": ">=22.12.0",
     "npm": ">=9.6.5"
   },
-  "scripts": {
+    "scripts": {
     "dev": "astro dev",
     "check": "astro check",
     "build:sw": "node scripts/build-sw.js",
@@ -38,6 +38,12 @@
     "cloudflare:domains": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 domains",
     "cloudflare:retry-portal": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 retry-portal",
     "cloudflare:check-portal": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 check-portal",
+    "wrangler:dev:portal": "wrangler dev -c wrangler.portal.jsonc",
+    "wrangler:dev:website": "wrangler dev -c wrangler.website.jsonc",
+    "wrangler:tail:portal": "wrangler tail -c wrangler.portal.jsonc",
+    "wrangler:tail:website": "wrangler tail -c wrangler.website.jsonc",
+    "wrangler:secret:portal": "wrangler secret put -c wrangler.portal.jsonc",
+    "wrangler:secret:website": "wrangler secret put -c wrangler.website.jsonc",
     "deploy:website:artifact": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-website-artifact.ps1 -ArtifactPath .deploy/website",
     "deploy:portal:artifact": "npx wrangler deploy --config .deploy/portal/server/wrangler.json",
     "deploy:website": "npm run build:website && npm run deploy:website:artifact",

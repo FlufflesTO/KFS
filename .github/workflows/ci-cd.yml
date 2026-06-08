@@ -49,6 +49,13 @@ jobs:
             fi
           }
           suffix="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-0123456789abcdef"
+          # E2E rate-limit relaxation: workerd under `astro preview` only sees vars
+          # from .dev.vars, not the runner's process env. Surface CI markers there so
+          # the auth/middleware limiters relax for the full Playwright suite. Written
+          # directly (add_secret skips already-set vars like CI). Production is
+          # unaffected (these are never set on the deployed Worker).
+          printf 'CI=true\nE2E_TEST_MODE=true\n' >> .dev.vars
+          printf 'CI=true\nE2E_TEST_MODE=true\n' >> .env
           add_secret SESSION_SECRET "ci-session-secret-padding-${suffix}"
           add_secret CSRF_SECRET "ci-csrf-secret-${suffix}"
           add_secret MFA_SECRET "ci-mfa-secret-padding-${suffix}"

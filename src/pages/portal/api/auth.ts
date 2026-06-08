@@ -8,7 +8,7 @@
 import type { APIContext } from "astro";
 import type { D1Database } from "@cloudflare/workers-types";
 import { getDatabase } from "../../../lib/server/bindings.ts";
-import { resolveBindingsForAuth } from "../../../lib/server/bindings-auth.ts";
+import { isRateLimitRelaxedEnv } from "../../../lib/server/bindings-auth.ts";
 import { auditEvent, auditError } from "../../../lib/server/audit";
 import { createSessionToken, sessionCookie, verifyPassword, sha256Hex } from "../../../lib/server/auth.js";
 import { decryptMfaSecret, verifyTotpCode } from "../../../lib/server/mfa.ts";
@@ -85,12 +85,14 @@ export async function POST({ request }: APIContext): Promise<Response> {
     // Also rate limit by IP (10 attempts per 15 min) to block password spraying.
     // The /portal/api/auth path is exempt from middleware auth guards (user is not
     // yet set in locals), so we must enforce rate limits here directly.
-    const isLocal = resolveBindingsForAuth().ENVIRONMENT === "local";
-    const isRateLimitTestEmail = email.includes("ratelimit") || /^test\d+@/.test(email);
+    const relaxRateLimit = isRateLimitRelaxedEnv();
+    // Rate-limit-specific tests use dedicated subjects ("ratelimit-*", "retry-*",
+    // "testN@") and MUST stay enforced even when limits are otherwise relaxed.
+    const isRateLimitTestEmail = email.includes("ratelimit") || email.includes("retry-test") || /^test\d+@/.test(email);
     const emailRateLimit = await consumeRateLimit(db!, request, {
       scope: "portal.auth.login",
       subject: email,
-      maxAttempts: (isLocal && !isRateLimitTestEmail) ? 1000 : 5,
+      maxAttempts: (relaxRateLimit && !isRateLimitTestEmail) ? 1000 : 5,
       windowSeconds: 900
     });
     if (!emailRateLimit.allowed) {
@@ -110,7 +112,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
     const ipRateLimit = await consumeRateLimit(db!, request, {
       scope: "portal.auth.login.ip",
       subject: ipHash,
-      maxAttempts: isLocal ? 1000 : 10,
+      maxAttempts: relaxRateLimit ? 1000 : 10,
       windowSeconds: 900
     });
     if (!ipRateLimit.allowed) {
@@ -241,10 +243,10 @@ export async function POST({ request }: APIContext): Promise<Response> {
       maxAttempts: 5,
       windowSeconds: 900
     });
-    await resetRateLimit(db!, request, { 
-      scope: "portal.auth.login.ip", 
+    await resetRateLimit(db!, request, {
+      scope: "portal.auth.login.ip",
       subject: ipHash,
-      maxAttempts: isLocal ? 1000 : 10,
+      maxAttempts: relaxRateLimit ? 1000 : 10,
       windowSeconds: 900
     });
     await db!.prepare(`UPDATE users SET last_login_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1`).bind(user.id).run();
