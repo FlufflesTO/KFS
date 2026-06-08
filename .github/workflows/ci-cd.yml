@@ -63,6 +63,7 @@ jobs:
         run: npm run check
 
       - name: Build Deployment Artifacts
+        shell: bash
         run: npm run build:production
 
       - name: Site Audit (Security & Performance)
