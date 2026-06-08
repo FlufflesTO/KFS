@@ -109,15 +109,15 @@ function validateSecretIsolation(): void {
   const bindings = resolveBindings();
   const sessionSecret = String(bindings.SESSION_SECRET || bindings.AUTH_SECRET || "");
   const mfaSecret = String(bindings.MFA_SECRET || bindings.ENCRYPTION_SECRET || "");
-  
+
   // Check minimum lengths
-  if (sessionSecret.length < 32) {
+  if (bindings.ENVIRONMENT !== "local" && sessionSecret.length < 32) {
     throw new Error("SESSION_SECRET must be configured with at least 32 characters.");
   }
-  if (mfaSecret.length < 32) {
+  if (bindings.ENVIRONMENT !== "local" && mfaSecret.length < 32) {
     throw new Error("MFA_SECRET must be configured with at least 32 characters.");
   }
-  
+
   // Check for duplicate secrets
   if (sessionSecret === mfaSecret) {
     throw new Error(
@@ -131,7 +131,7 @@ function getSessionSecret(): string {
   validateSecretIsolation();
   const bindings = resolveBindings();
   const secret = String(bindings.SESSION_SECRET || bindings.AUTH_SECRET || "");
-  if (secret.length < 32) {
+  if (bindings.ENVIRONMENT !== "local" && secret.length < 32) {
     throw new Error("SESSION_SECRET must be configured with at least 32 characters.");
   }
   return secret;
@@ -145,7 +145,7 @@ export function getMfaSecret(): string {
   validateSecretIsolation();
   const bindings = resolveBindings();
   const secret = String(bindings.MFA_SECRET || bindings.ENCRYPTION_SECRET || "");
-  if (secret.length < 32) {
+  if (bindings.ENVIRONMENT !== "local" && secret.length < 32) {
     throw new Error("MFA_SECRET must be configured with at least 32 characters.");
   }
   return secret;
@@ -192,14 +192,14 @@ export async function verifySessionToken(token: string | null | undefined): Prom
     if (!encodedPayload || !encodedSignature) return null;
 
     const providedSignature = base64UrlDecode(encodedSignature);
-    
+
     // Compute expected signature using HMAC
     const expectedSignature = new Uint8Array(await crypto.subtle.sign(
       "HMAC",
       await hmacKey(getSessionSecret()),
       textEncoder.encode(encodedPayload)
     ));
-    
+
     // Timing-safe comparison to prevent side-channel timing attacks
     const signatureValid = timingSafeEqual(providedSignature, expectedSignature);
 
@@ -213,7 +213,7 @@ export async function verifySessionToken(token: string | null | undefined): Prom
       // Malformed token payload - treat as invalid
       return null;
     }
-    
+
     assertRole(payload.role);
 
     if (!payload.sub || !payload.name || !payload.email || !payload.exp || !payload.iat) return null;
