@@ -1,69 +1,17 @@
 ---
 import ServicePage from "../layouts/ServicePage.astro";
+import { services } from "../data/services.js";
+const s = services["pa-pe-systems"];
 ---
 <ServicePage
-  meta={{
-    title: "Public Address & Voice Evacuation Systems | Kharon",
-    description: "Voice evacuation and public address systems engineered for clear, intelligible messaging across large sites. Aligned to SANS 60849, SANS 54-16 and SANS 54-24."
-  }}
-  hero={{
-    subtitle: "Fire Protection",
-    title: "Public Address & Voice Evacuation",
-    description: "Voice-alarm and public-address systems that deliver intelligible, zoned instructions so occupants know what to do and where to go during an incident.",
-    icon: "/brand/icons/service-fire-detection.svg"
-  }}
-  overview="We design, install and maintain voice-alarm (VA) and public-address (PA) systems that turn an alarm condition into clear spoken instructions. The work covers acoustic assessment, amplifier and loudspeaker design, zoning, and integration with fire detection so that the right message reaches the right area at the right time."
-  problem={{
-    heading: "A bell tells people something is wrong. It does not tell them what to do.",
-    body: "On large or complex sites, tone-only alarms are often inaudible over background noise and give occupants no direction. The result is hesitation, crowding at the wrong exits, and slow evacuation. A voice-evacuation system replaces ambiguity with specific, intelligible instructions, but only if it is designed for the acoustics of the space and proven to be understood.",
-    points: [
-      "Tone-only alarms are inaudible across high-bay racking, plant rooms and noisy production floors.",
-      "Poor loudspeaker placement and reverberant spaces produce announcements that cannot be understood.",
-      "Without zoning, every area hears the same message, causing congestion instead of orderly egress.",
-      "Systems that are never intelligibility-tested can pass a visual inspection yet fail when it matters."
-    ]
-  }}
-  capabilities={[
-    {
-      title: "Acoustic and intelligibility design",
-      text: "Loudspeaker layout and amplifier sizing based on the room's acoustics and background noise, designed to meet the speech-intelligibility targets in SANS 60849 and verified on commissioning."
-    },
-    {
-      title: "Zoned message control",
-      text: "Independently addressable zones so each area receives the correct alert, evacuate or all-clear message, supporting phased evacuation strategies where required."
-    },
-    {
-      title: "Integration with fire detection",
-      text: "The voice-alarm system is driven by the detection cause-and-effect matrix, so a confirmed event automatically triggers the correct sequence of messages without manual intervention."
-    },
-    {
-      title: "Pre-recorded and live messaging",
-      text: "Pre-recorded evacuation and alert messages for consistency, plus a controlled live-paging facility for marshals and emergency responders to give real-time instructions."
-    },
-    {
-      title: "Monitored, fault-tolerant lines",
-      text: "Continuously monitored loudspeaker circuits and standby power so a single cable or amplifier fault is reported and does not silence a whole zone."
-    },
-    {
-      title: "Commissioning and documentation",
-      text: "Intelligibility measurements, zone plans and a cause-and-effect matrix handed over as a defensible record for insurers, consultants and authorities."
-    }
-  ]}
-  standards={["SANS 60849", "SANS 54-16", "SANS 54-24"]}
-  intent="pa-pe"
-  faqs={[
-    {
-      q: "What is the difference between a public address and a voice-evacuation system?",
-      a: "A public-address system distributes general announcements. A voice-evacuation system is a life-safety system: its messages, zoning, monitoring and power supply are engineered and tested to deliver intelligible evacuation instructions during a fire. We design PA and VA so they work together where a single platform serves both functions."
-    },
-    {
-      q: "How do you prove the system can actually be understood?",
-      a: "Intelligibility is measured on site at commissioning rather than assumed from the design. We document the results against the speech-intelligibility targets in SANS 60849 and include them in the handover pack."
-    },
-    {
-      q: "Can a voice-evacuation system be added to our existing fire alarm?",
-      a: "Often, yes. We assess the existing detection panel and cause-and-effect logic to confirm it can drive a voice-alarm system, then design the loudspeaker and amplifier layout for your spaces. Where the panel cannot support it, we set out the upgrade options."
-    }
-  ]}
-  caseStudySlug="warehouse-detection-and-evacuation"
+  meta={s.meta}
+  hero={s.hero}
+  overview={s.overview}
+  problem={s.problem}
+  capabilities={s.capabilities}
+  standards={s.standards}
+  intent={s.intent}
+  faqs={s.faqs}
+  caseStudySlug={s.caseStudySlug}
+  disclaimerVariant={s.disclaimerVariant}
 />

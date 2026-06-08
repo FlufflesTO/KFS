@@ -1,56 +1,15 @@
 ---
 import SectorPage from "../../layouts/SectorPage.astro";
+import { sectors } from "../../data/sectors.js";
+const s = sectors["control-rooms"];
 ---
 <SectorPage
-  meta={{
-    title: "Control Room & Operations Centre Fire Protection | Kharon",
-    description:
-      "Detection, clean-agent suppression and integrated security for control rooms and operations centres that must keep running through an incident — to SANS 10139 and SANS 62676."
-  }}
-  hero={{
-    subtitle: "Sectors",
-    title: "Control Rooms",
-    description:
-      "Fire protection and security for control rooms and operations centres — the spaces that have to stay staffed and operational while they coordinate the wider site's response.",
-    icon: "/brand/icons/sector-control-room.svg"
-  }}
-  overview="A control room or operations centre is the space a site depends on during any incident, so its own protection cannot force an evacuation or knock out the consoles that run the response. We design early detection with clean-agent suppression that is safe for continuously occupied rooms and leaves electronics intact, integrated with the access control and surveillance that govern who reaches a sensitive space. The aim is a room that detects and contains a fault while staff keep operating, backed by documentation for audit."
-  risks={[
-    {
-      title: "Continuous occupancy and operation",
-      text: "Control rooms are staffed around the clock and can't simply be evacuated and powered down. Suppression must be personnel-safe at design concentration and detection must avoid nuisance trips that disrupt operations."
-    },
-    {
-      title: "Sensitive electronics and consoles",
-      text: "Video walls, consoles and comms equipment are intolerant of water and powder. Clean-agent suppression extinguishes without residue, keeping the room's monitoring and coordination capability intact."
-    },
-    {
-      title: "Access and physical security",
-      text: "Operations centres hold sensitive systems and need controlled, auditable entry. Access control and surveillance must integrate with fire and egress so security never compromises safe evacuation."
-    }
-  ]}
-  systems={[
-    {
-      label: "Fire Detection",
-      href: "/fire-detection",
-      text: "Early and very-early-warning detection with cross-zoning to confirm genuine events and avoid disruptive false alarms in a staffed room."
-    },
-    {
-      label: "Gas Suppression",
-      href: "/gas-suppression",
-      text: "Clean-agent suppression safe for continuously occupied control rooms, extinguishing without residue on consoles and comms equipment."
-    },
-    {
-      label: "CCTV",
-      href: "/cctv",
-      text: "Surveillance design and retention to SANS 62676 for the operations centre and the wider areas it monitors."
-    },
-    {
-      label: "Access Control",
-      href: "/access-control",
-      text: "Auditable electronic access to sensitive control spaces, integrated to SANS 60839-11-1 so egress stays safe during an alarm."
-    }
-  ]}
-  standards={["SANS 10139", "SANS 62676", "SANS 60839-11-1"]}
-  intent="control-rooms"
+  meta={s.meta}
+  hero={s.hero}
+  overview={s.overview}
+  risks={s.risks}
+  systems={s.systems}
+  standards={s.standards}
+  intent={s.intent}
+  caseStudySlug={s.caseStudySlug}
 />

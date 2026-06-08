@@ -1,56 +1,15 @@
 ---
 import SectorPage from "../../layouts/SectorPage.astro";
+import { sectors } from "../../data/sectors.js";
+const s = sectors["industrial-facilities"];
 ---
 <SectorPage
-  meta={{
-    title: "Industrial & Process Facility Fire Protection | Kharon",
-    description:
-      "Risk-segmented detection, rugged hardware selection and maintainable layouts for manufacturing and process plants — designed to SANS 10139, SANS 10108 and SANS 10400-T."
-  }}
-  hero={{
-    subtitle: "Sectors",
-    title: "Industrial Facilities",
-    description:
-      "Fire detection and protection for manufacturing and process environments, where mixed hazards, harsh conditions and continuous operation make one-size-fits-all detection unreliable.",
-    icon: "/brand/icons/sector-factory.svg"
-  }}
-  overview="Industrial and process facilities rarely present a single, uniform fire risk. Production lines, storage, plant rooms and hazardous-process areas each have different ignition sources, contaminants and access constraints. We segment the site into risk zones and select detection and protection suited to each — heat, flame or specialised detection where dust, fumes or temperature defeat standard smoke detectors. Layouts are planned for safe maintenance access during operation, and every zone is documented so the protection scheme stays defensible and serviceable."
-  risks={[
-    {
-      title: "Mixed and zone-specific hazards",
-      text: "A single facility can span clean assembly areas, dusty stores and hazardous-process zones. Detection selected for one area will miss or false-alarm in another, so risk has to be segmented and addressed zone by zone."
-    },
-    {
-      title: "Harsh environments defeat standard detection",
-      text: "Dust, fumes, vibration and temperature swings blind or trip conventional smoke detectors. Rugged detection — heat, flame or aspirating with filtration — keeps coverage reliable where ordinary devices fail."
-    },
-    {
-      title: "Maintenance access under continuous operation",
-      text: "Plants that run around the clock can't shut down for awkward servicing. Detection and suppression have to be laid out so testing and maintenance happen safely without halting production."
-    }
-  ]}
-  systems={[
-    {
-      label: "Fire Detection",
-      href: "/fire-detection",
-      text: "Risk-segmented detection using heat, flame, smoke or aspirating devices matched to each zone's hazard and environmental conditions."
-    },
-    {
-      label: "Gas Suppression",
-      href: "/gas-suppression",
-      text: "Engineered and clean-agent suppression for plant rooms, control cabinets and high-value process equipment to SANS 14520."
-    },
-    {
-      label: "Compliance & Maintenance",
-      href: "/compliance-maintenance",
-      text: "Structured inspection and servicing scheduled around production windows, with records kept ready for audit and insurer review."
-    },
-    {
-      label: "PA / PE Systems",
-      href: "/pa-pe-systems",
-      text: "Voice evacuation and public address that stay intelligible above process noise across large industrial floor areas."
-    }
-  ]}
-  standards={["SANS 10139", "SANS 10108", "SANS 10400-T"]}
-  intent="industrial"
+  meta={s.meta}
+  hero={s.hero}
+  overview={s.overview}
+  risks={s.risks}
+  systems={s.systems}
+  standards={s.standards}
+  intent={s.intent}
+  caseStudySlug={s.caseStudySlug}
 />

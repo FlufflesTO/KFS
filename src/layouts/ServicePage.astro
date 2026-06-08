@@ -10,6 +10,7 @@ import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import WhatHappensNext from "../components/sections/WhatHappensNext.astro";
 import CaseStudyCard from "../components/sections/CaseStudyCard.astro";
+import DisclaimerNote from "../components/sections/DisclaimerNote.astro";
 
 import LeadMagnetCard from "../components/blocks/LeadMagnetCard.astro";
 import { leadMagnets } from "../data/leadMagnets.js";
@@ -42,6 +43,8 @@ export interface Props {
   caseStudySlug?: string;
   /** contact form routing intent */
   intent: string;
+  /** optional DisclaimerNote variant rendered before WhatHappensNext */
+  disclaimerVariant?: "sans" | "privacy" | "sla" | "case-study" | "product-suitability" | "fire-door";
   cta?: { title: string; description: string; label?: string };
 }
 
@@ -49,7 +52,7 @@ const {
   meta, hero, overview, problem,
   capabilitiesHeading = "What's involved",
   capabilities, standards, faqs, caseStudySlug, intent, cta,
-  leadMagnetId, proofItems
+  leadMagnetId, proofItems, disclaimerVariant
 } = Astro.props;
 
 const study = caseStudySlug ? getCaseStudy(caseStudySlug) : undefined;
@@ -172,6 +175,14 @@ const faqSchema = faqs && faqs.length > 0 ? generateFAQSchema(faqs.map(f => ({ q
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  )}
+
+  {disclaimerVariant && (
+    <section class="bg-kharon-black">
+      <div class="mx-auto max-w-4xl px-4 pb-4 sm:px-6">
+        <DisclaimerNote variant={disclaimerVariant} />
       </div>
     </section>
   )}

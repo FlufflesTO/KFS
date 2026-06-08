@@ -1,57 +1,15 @@
 ---
 import SectorPage from "../../layouts/SectorPage.astro";
+import { sectors } from "../../data/sectors.js";
+const s = sectors["warehousing-logistics"];
 ---
 <SectorPage
-  meta={{
-    title: "Warehouse & Logistics Fire Protection | Kharon",
-    description:
-      "Large-volume detection coverage and intelligible voice evacuation for high-bay warehouses and distribution centres — designed to SANS 10139 and SANS 60849."
-  }}
-  hero={{
-    subtitle: "Sectors",
-    title: "Warehousing & Logistics",
-    description:
-      "Fire detection and voice evacuation for high-bay storage and distribution centres, where large open volumes and dense racking make early warning and clear egress hard to get right.",
-    icon: "/brand/icons/sector-warehouse.svg"
-  }}
-  overview="Warehouses and distribution centres combine large open volumes, high-bay racking and a small, mobile workforce — conditions where smoke can travel far before it reaches a detector and a bell alone is inaudible across the floor. We design detection coverage matched to the building geometry and storage layout, paired with intelligible voice evacuation that gives staff clear, zoned instructions. The result is early warning across the full volume and an evacuation strategy that holds up to insurer and inspection scrutiny."
-  risks={[
-    {
-      title: "Coverage across large open volumes",
-      text: "High ceilings and long sightlines dilute smoke before it reaches a point detector. Detection has to be zoned and positioned for the actual building geometry, not a generic grid, to give usable early warning."
-    },
-    {
-      title: "Inaudible, unclear alarms",
-      text: "Bell-only systems are drowned out by MHE and racking. Without intelligible voice messaging, staff spread across a large floor do not know where to go, slowing evacuation when minutes matter."
-    },
-    {
-      title: "Rapid fire spread in dense racking",
-      text: "Stacked, combustible stock and narrow aisles let a fire spread quickly and trap occupants. Early detection plus a documented evacuation sequence reduces the time between ignition and a clear floor."
-    }
-  ]}
-  systems={[
-    {
-      label: "Fire Detection",
-      href: "/fire-detection",
-      text: "Addressable detection zoned for high-bay coverage, with aspirating options where ceiling height defeats conventional point detectors."
-    },
-    {
-      label: "PA / PE Systems",
-      href: "/pa-pe-systems",
-      text: "Voice evacuation and public address with zoned, intelligible messaging designed to SANS 60849 for clear, controlled egress."
-    },
-    {
-      label: "Fire Safety Signage",
-      href: "/fire-safety-signage",
-      text: "Photoluminescent and illuminated escape signage that stays visible across long aisles and large floor plates."
-    },
-    {
-      label: "CCTV",
-      href: "/cctv",
-      text: "Surveillance coverage for loading bays, yards and storage zones, supporting both security and incident review."
-    }
-  ]}
-  standards={["SANS 10139", "SANS 60849", "SANS 10400-T"]}
-  intent="warehousing"
-  caseStudySlug="warehouse-detection-and-evacuation"
+  meta={s.meta}
+  hero={s.hero}
+  overview={s.overview}
+  risks={s.risks}
+  systems={s.systems}
+  standards={s.standards}
+  intent={s.intent}
+  caseStudySlug={s.caseStudySlug}
 />

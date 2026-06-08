@@ -1,68 +1,17 @@
 ---
 import ServicePage from "../layouts/ServicePage.astro";
+import { services } from "../data/services.js";
+const s = services["fire-doors"];
 ---
 <ServicePage
-  meta={{
-    title: "Fire Doors: Supply, Installation & Inspection | Kharon",
-    description: "Certified fire doors supplied, installed and inspected as complete assemblies — leaf, frame, ironmongery and seals — to SANS 1253 and SANS 10400-T."
-  }}
-  hero={{
-    subtitle: "Fire Protection",
-    title: "Fire Doors",
-    description: "Fire-rated doorsets supplied, installed and inspected as complete, certified assemblies so they hold back fire and smoke for the rated period.",
-    icon: "/brand/icons/service-engineering.svg"
-  }}
-  overview="We supply, install and inspect fire doors as complete certified assemblies — the leaf, frame, intumescent and smoke seals, hinges, closers and other ironmongery. A fire door only performs to its rating when every component is compatible and correctly fitted, so we treat the doorset as a single tested system rather than a collection of parts."
-  problem={{
-    heading: "A fire door is only fire-rated if the whole assembly is — and most fail on the details.",
-    body: "Fire doors are routine to look at and easy to compromise. A replaced closer, a packed-out gap, a painted-over seal or a wedge holding it open can void the rating of an otherwise sound door. Because the failures are small and incremental, they pass unnoticed until an inspection or, worse, a fire finds the weak point. Compliance depends on the complete assembly being correct and demonstrably maintained.",
-    points: [
-      "Gaps around the leaf outside tolerance, letting smoke and fire bypass the seals.",
-      "Non-compatible or missing ironmongery that voids the doorset's tested rating.",
-      "Intumescent and smoke seals damaged, painted over, or never fitted.",
-      "Self-closing devices removed or defeated, leaving doors propped open."
-    ]
-  }}
-  capabilities={[
-    {
-      title: "Certified doorset supply",
-      text: "Fire-rated doorsets supplied as tested assemblies with the leaf, frame and seals matched to the required rating, so the installed door reflects what was actually tested."
-    },
-    {
-      title: "Compliant installation",
-      text: "Installation to the manufacturer's certified detail, with gap tolerances, frame fixings and seals fitted correctly so the door performs to its rated period in line with SANS 1253."
-    },
-    {
-      title: "Controlled door hardware",
-      text: "Hinges, closers and latching specified to be compatible with the doorset and rated for self-closing performance, including controlled closing devices to SANS 51155 where required."
-    },
-    {
-      title: "Inspection and condition surveys",
-      text: "Systematic fire-door inspections against gap tolerances, seal condition, ironmongery and closing function, producing a defect register prioritised by risk."
-    },
-    {
-      title: "Remedial works",
-      text: "Correction of common failures — adjusting gaps, replacing seals and non-compatible hardware, and reinstating self-closing devices — to return the assembly to its rated condition."
-    },
-    {
-      title: "Records and labelling",
-      text: "An inspection record and door schedule that gives facilities teams a defensible, maintainable register of every fire door and its current condition."
-    }
-  ]}
-  standards={["SANS 1253", "SANS 10400-T", "SANS 51155"]}
-  intent="fire-doors"
-  faqs={[
-    {
-      q: "Why can't we just replace a fire door's closer or handle ourselves?",
-      a: "A fire door is certified as a complete assembly. Fitting hardware that was not part of the tested doorset, or installing it incorrectly, can void the door's rating. We specify compatible, rated hardware and record the change so the assembly stays certifiable."
-    },
-    {
-      q: "How often should fire doors be inspected?",
-      a: "Inspection frequency depends on the building's use and traffic; high-traffic doors degrade faster. We recommend a routine schedule and set it out after surveying your doors, with the inspection record forming the basis of ongoing maintenance."
-    },
-    {
-      q: "Can existing fire doors be repaired rather than replaced?",
-      a: "Frequently, yes. Many failures — gaps, damaged seals, missing or defeated closers — are remediable and far cheaper than replacement. Where a leaf or frame is damaged beyond the certified tolerance, we recommend replacement and explain why."
-    }
-  ]}
+  meta={s.meta}
+  hero={s.hero}
+  overview={s.overview}
+  problem={s.problem}
+  capabilities={s.capabilities}
+  standards={s.standards}
+  intent={s.intent}
+  faqs={s.faqs}
+  caseStudySlug={s.caseStudySlug}
+  disclaimerVariant={s.disclaimerVariant}
 />

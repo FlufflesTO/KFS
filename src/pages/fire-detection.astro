@@ -1,69 +1,17 @@
 ---
 import ServicePage from "../layouts/ServicePage.astro";
+import { services } from "../data/services.js";
+const s = services["fire-detection"];
 ---
 <ServicePage
-  meta={{
-    title: "Fire Detection Systems: Design, Install & Maintain | Kharon",
-    description: "Addressable and specialist fire detection designed for early, reliable warning. Engineered and maintained to SANS 10139, SANS 322, SANS 246 and EN 54."
-  }}
-  hero={{
-    subtitle: "Fire Protection",
-    title: "Fire Detection",
-    description: "Addressable and specialist detection systems engineered for early, reliable warning and precise fault location across complex sites.",
-    icon: "/brand/icons/service-fire-detection.svg"
-  }}
-  overview="We design, install and maintain fire-detection systems that identify a fire early and drive the right response. The work spans detector selection for the environment, addressable zoning, cause-and-effect programming, and integration with alarms, suppression and building systems — engineered and documented to SANS 10139."
-  problem={{
-    heading: "Late detection and nuisance alarms both cost you — one in damage, the other in trust.",
-    body: "Detection that triggers too late gives occupants no margin and lets a fire take hold. Detection that triggers too often trains people to ignore it and prompts staff to disable devices. Both come down to the same root cause: detectors and zoning that were not matched to the actual environment. Reliable early warning depends on selecting the right detection technology for each space and proving the system end to end.",
-    points: [
-      "Standard smoke detectors in dusty, humid or high-airflow areas cause repeated false alarms.",
-      "Coarse zoning that cannot pinpoint where an event is, slowing response and investigation.",
-      "Detection that is not linked to a defined cause-and-effect, so an alarm triggers nothing useful.",
-      "Systems that are installed and forgotten, with no maintenance record when an inspection arrives."
-    ]
-  }}
-  capabilities={[
-    {
-      title: "Addressable detection",
-      text: "Individually addressed devices for precise fault and event location, maintainable layouts and clear zone reporting, designed to SANS 10139."
-    },
-    {
-      title: "Specialist detection",
-      text: "Aspirating smoke detection, flame and linear heat detection for high-airflow, high-ceiling or harsh environments where point detectors are unreliable."
-    },
-    {
-      title: "Environment-matched device selection",
-      text: "Detector type chosen for each space — including electronic-equipment areas (SANS 246) and hospital environments (SANS 322) — to give early warning without nuisance alarms."
-    },
-    {
-      title: "Cause-and-effect logic",
-      text: "Programmed response logic that maps each detection event to defined actions: alarms, suppression release, HVAC shutdown and interlocks, documented as a cause-and-effect matrix."
-    },
-    {
-      title: "Panel integration and monitoring",
-      text: "Centralised control with event logging, fault diagnostics and remote monitoring so faults are seen and acted on, not discovered at the next inspection."
-    },
-    {
-      title: "Maintenance and certification",
-      text: "Scheduled servicing, testing and a documented maintenance record that keeps the system compliant and defensible for insurers and authorities."
-    }
-  ]}
-  standards={["SANS 10139", "SANS 322", "SANS 246", "SANS 54 (EN 54)"]}
-  intent="fire-detection"
-  faqs={[
-    {
-      q: "What is the difference between addressable and conventional detection?",
-      a: "A conventional system reports an alarm by zone, so you know roughly where but not which device. An addressable system identifies the exact device, giving faster location of both alarms and faults. For anything beyond a small, simple site we design addressable systems for this reason."
-    },
-    {
-      q: "How do you reduce false alarms?",
-      a: "Most false alarms come from the wrong detector in the wrong place. We match detection technology to each environment — for example aspirating detection in high-airflow areas — and use cause-and-effect logic and verification so a single transient event does not trigger a full response."
-    },
-    {
-      q: "Can detection trigger suppression and shut down equipment?",
-      a: "Yes. We program a cause-and-effect matrix so a confirmed event can release suppression, shut down HVAC and trigger interlocks in the correct sequence. This is documented and tested at commissioning."
-    }
-  ]}
-  caseStudySlug="data-centre-clean-agent-upgrade"
+  meta={s.meta}
+  hero={s.hero}
+  overview={s.overview}
+  problem={s.problem}
+  capabilities={s.capabilities}
+  standards={s.standards}
+  intent={s.intent}
+  faqs={s.faqs}
+  caseStudySlug={s.caseStudySlug}
+  disclaimerVariant={s.disclaimerVariant}
 />

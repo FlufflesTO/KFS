@@ -1,56 +1,15 @@
 ---
 import SectorPage from "../../layouts/SectorPage.astro";
+import { sectors } from "../../data/sectors.js";
+const s = sectors["electrical-rooms"];
 ---
 <SectorPage
-  meta={{
-    title: "Electrical Room & Switchgear Fire Protection | Kharon",
-    description:
-      "Early detection and clean-agent suppression for switchrooms, MV/LV distribution and transformer spaces — limiting collateral damage and downtime to SANS 14520 and SANS 10142-1."
-  }}
-  hero={{
-    subtitle: "Sectors",
-    title: "Electrical Rooms",
-    description:
-      "Protection for switchrooms, distribution boards and transformer spaces where an electrical fire develops fast and water-based response makes the damage worse.",
-    icon: "/brand/icons/sector-switchgear.svg"
-  }}
-  overview="Electrical rooms concentrate energy, heat and ignition risk in a confined space. An arc fault or overheated connection can escalate before anyone is in the room, and conventional water suppression destroys switchgear and forces a long, costly rebuild. We design early detection paired with clean-agent suppression that catches incipient faults and extinguishes without leaving residue or conductive water on live equipment, keeping distribution recoverable and the site energised."
-  risks={[
-    {
-      title: "Rapid escalation from arc faults",
-      text: "Overheated busbars, loose terminations and arc faults can develop into a fire in minutes, often in an unoccupied room. Detection has to identify heat and smoke early enough to act before switchgear is lost."
-    },
-    {
-      title: "Collateral damage from the wrong agent",
-      text: "Water and powder leave residue that corrodes and short-circuits switchgear, turning a contained fault into a full replacement. Clean agents extinguish without conductive or corrosive residue on energised equipment."
-    },
-    {
-      title: "Downtime to critical distribution",
-      text: "A switchroom outage can de-energise an entire facility. Protecting distribution assets keeps the rest of the site operational and avoids extended, expensive switchgear lead times."
-    }
-  ]}
-  systems={[
-    {
-      label: "Gas Suppression",
-      href: "/gas-suppression",
-      text: "Clean-agent and inert-gas suppression sized for switchroom volumes to SANS 14520, extinguishing without residue on live distribution equipment."
-    },
-    {
-      label: "Fire Detection",
-      href: "/fire-detection",
-      text: "Addressable and aspirating detection tuned to pick up overheating and incipient smoke in dense electrical enclosures."
-    },
-    {
-      label: "Compliance & Maintenance",
-      href: "/compliance-maintenance",
-      text: "Routine servicing, agent checks and detection testing coordinated around electrical-installation requirements and access constraints."
-    },
-    {
-      label: "Fire Safety Signage",
-      href: "/fire-safety-signage",
-      text: "Clear room identification, suppression-release warning and escape signage for switchrooms and plant spaces."
-    }
-  ]}
-  standards={["SANS 14520", "SANS 10142-1", "SANS 10108"]}
-  intent="electrical-rooms"
+  meta={s.meta}
+  hero={s.hero}
+  overview={s.overview}
+  risks={s.risks}
+  systems={s.systems}
+  standards={s.standards}
+  intent={s.intent}
+  caseStudySlug={s.caseStudySlug}
 />
