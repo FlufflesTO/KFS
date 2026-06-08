@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findAvailableSlots, Technician, ScheduledJob } from '../../../src/lib/algorithms/capacity-balancing';
+import { findAvailableSlots, Technician, ScheduledJob } from './capacity-balancing';
 
 describe('capacity-balancing', () => {
   describe('findAvailableSlots', () => {
