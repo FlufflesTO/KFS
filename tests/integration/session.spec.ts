@@ -622,53 +622,32 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
 
   test('should handle null byte in session token', async ({ page }) => {
     await page.context().clearCookies();
-    await page.context().addCookies([
-      {
-        name: 'kharon_session_token',
-        value: 'token\x00with\x00nulls',
-        domain: 'localhost',
-        path: '/portal',
-        httpOnly: true,
-        sameSite: 'Strict',
-      },
-    ]);
-
-    const response = await page.request.get('/portal/admin/dashboard');
+    const response = await page.request.get('/portal/admin/dashboard', {
+      headers: {
+        'Cookie': 'kharon_session_token=token\\x00with\\x00nulls'
+      }
+    });
     expect([302, 401]).toContain(response.status());
   });
 
   test('should handle session token with SQL injection attempt', async ({ page }) => {
     await page.context().clearCookies();
-    await page.context().addCookies([
-      {
-        name: 'kharon_session_token',
-        value: "'; DROP TABLE users; --",
-        domain: 'localhost',
-        path: '/portal',
-        httpOnly: true,
-        sameSite: 'Strict',
-      },
-    ]);
-
-    const response = await page.request.get('/portal/admin/dashboard');
+    const response = await page.request.get('/portal/admin/dashboard', {
+      headers: {
+        'Cookie': 'kharon_session_token=\'; DROP TABLE users; --'
+      }
+    });
     // Should not cause server error
     expect(response.status()).not.toBe(500);
   });
 
   test('should handle session token with XSS attempt', async ({ page }) => {
     await page.context().clearCookies();
-    await page.context().addCookies([
-      {
-        name: 'kharon_session_token',
-        value: '<script>alert("xss")</script>',
-        domain: 'localhost',
-        path: '/portal',
-        httpOnly: true,
-        sameSite: 'Strict',
-      },
-    ]);
-
-    const response = await page.request.get('/portal/admin/dashboard');
+    const response = await page.request.get('/portal/admin/dashboard', {
+      headers: {
+        'Cookie': 'kharon_session_token=<script>alert("xss")</script>'
+      }
+    });
     expect(response.status()).not.toBe(500);
   });
 
