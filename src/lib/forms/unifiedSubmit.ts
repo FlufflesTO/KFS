@@ -6,6 +6,13 @@ import { portalPost, setResult, showToast } from "../client/portalApi.ts";
 // Binds all .sage-ref-form, .payment-form, .credit-note-btn, and
 // .finance-quick-status elements using kharonPortalFetch + portalPost.
 export function bindFinanceForms(): void {
+  bindSageRefForms();
+  bindPaymentForms();
+  bindFinanceQuickStatusButtons();
+  bindCreditNoteButtons();
+}
+
+function bindSageRefForms(): void {
   for (const form of document.querySelectorAll<HTMLFormElement>(".sage-ref-form")) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -48,7 +55,9 @@ export function bindFinanceForms(): void {
       if (btn) btn.disabled = false;
     });
   }
+}
 
+function bindPaymentForms(): void {
   for (const form of document.querySelectorAll<HTMLFormElement>(".payment-form")) {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -70,7 +79,9 @@ export function bindFinanceForms(): void {
       else if (btn) { btn.disabled = false; btn.textContent = "Record Paid in Sage"; }
     });
   }
+}
 
+function bindFinanceQuickStatusButtons(): void {
   for (const btn of document.querySelectorAll<HTMLButtonElement>(".finance-quick-status")) {
     btn.addEventListener("click", async () => {
       const recordId = btn.dataset.recordId ?? "";
@@ -87,7 +98,9 @@ export function bindFinanceForms(): void {
       }
     });
   }
+}
 
+function bindCreditNoteButtons(): void {
   for (const btn of document.querySelectorAll<HTMLButtonElement>(".credit-note-btn")) {
     btn.addEventListener("click", async () => {
       const recordId = btn.dataset.recordId ?? "";

@@ -26,10 +26,10 @@ jobs:
       SAGE_WEBHOOK_SECRET: ${{ secrets.SAGE_WEBHOOK_SECRET }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js (>=22.12.0)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
           cache: 'npm'
@@ -55,6 +55,15 @@ jobs:
           add_secret FINGERPRINT_SECRET "ci-fingerprint-secret-${suffix}"
           add_secret AUDIT_IP_SALT "ci-audit-ip-salt-${suffix}"
           add_secret SAGE_WEBHOOK_SECRET "ci-sage-webhook-secret-${suffix}"
+
+      - name: Setup PowerShell
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https software-properties-common
+          wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+          sudo dpkg -i packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo apt-get install -y powershell
 
       - name: Lint
         run: npm run lint
@@ -107,7 +116,7 @@ jobs:
 
       - name: Upload Backup Artifact
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: d1-pre-migration-backup-${{ github.run_id }}
           path: backups/d1-pre-migration-${{ github.run_id }}.sql
