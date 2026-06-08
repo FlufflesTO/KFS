@@ -23,7 +23,7 @@ test.describe('Kharon Fire & Security - Visual & Interactivity Validation', () =
       };
     });
     // Watermark style checks are skipped on mobile-safari/webkit due to headless browser getComputedStyle bugs
-    if (testInfo.project.name !== 'mobile-safari') {
+    if (testInfo.project.name !== 'mobile-safari' && testInfo.project.name !== 'webkit') {
       // Watermark should use the correct branding mark asset
       expect(watermarkStyles.backgroundImage).toContain('kharon-mark.svg');
       // Opacity must be transparent (0.03) to prevent blocking visibility
