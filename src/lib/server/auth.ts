@@ -47,7 +47,7 @@ export const sessionCookieName = "kharon_session_token";
  * Timing-safe comparison of two Uint8Arrays to prevent timing attacks.
  * Compares all bytes regardless of where differences occur.
  */
-function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
+export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   // Pad to same length if different
   const maxLen = Math.max(a.length, b.length);
   const paddedA = new Uint8Array(maxLen);

@@ -41,7 +41,6 @@
     "deploy:cloudflare": "npm run build && npm run deploy:portal && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-site.ps1 staging && npm run deploy:website",
     "deploy:cloudflare:preview": "npx wrangler pages deploy dist --project-name kfs-website --branch preview",
     "deploy:cloudflare:ps": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cloudflare-pages.ps1 production",
-    
     "prepare": "husky"
   },
   "dependencies": {

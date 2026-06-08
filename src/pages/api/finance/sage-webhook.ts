@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "../../../lib/server/auth";
 import { getBindings } from "../../../lib/server/bindings";
 
 export const prerender = false;
@@ -14,7 +15,10 @@ export async function POST({ request }: { request: Request }) {
       console.warn("SAGE_WEBHOOK_SECRET is not configured. Webhook security is degraded.");
     }
 
-    if (!authHeader || (webhookSecret && authHeader !== `Bearer ${webhookSecret}`)) {
+    if (!authHeader || (webhookSecret && !timingSafeEqual(
+      new TextEncoder().encode(authHeader),
+      new TextEncoder().encode(`Bearer ${webhookSecret}`)
+    ))) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json" } }
