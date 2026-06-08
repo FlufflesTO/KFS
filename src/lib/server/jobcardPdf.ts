@@ -5,7 +5,7 @@
  * Structural Role: PDF generation layer
  */
 
-const encoder = new TextEncoder();
+
 
 export interface JobcardTechnician {
   name: string;
@@ -179,30 +179,36 @@ function pdfCircle(cx: number, cy: number, r: number, colorCmd: string): string 
   ].join("\n");
 }
 
-export async function buildJobcardPdf(params: JobcardPdfParams): Promise<JobcardPdfResult> {
+function buildPdfContent(params: {
+  completedAt: string;
+  jobReference: string;
+  systemReference: string;
+  signatureReference: string;
+  signatureBox: { x: number; y: number; width: number; height: number };
+  technician: JobcardTechnician;
+  evidence: JobcardEvidence;
+  comments: string[];
+  followUp: string[];
+  customerName: string;
+  customerTitle: string;
+  signatureStrokes: SignaturePoint[][];
+}): string {
   const {
-    jobId,
-    systemId,
-    technician,
-    techComments,
-    signatureBase64,
-    signatureStrokes = [],
     completedAt,
-    evidence = {}
+    jobReference,
+    systemReference,
+    signatureReference,
+    signatureBox,
+    technician,
+    evidence,
+    comments,
+    followUp,
+    customerName,
+    customerTitle,
+    signatureStrokes
   } = params;
 
-  const signatureBytes = dataUriToBytes(signatureBase64);
-  const signatureHash = await sha256Hex(signatureBytes);
-  const jobReference = compactReference(jobId, 8, 6);
-  const systemReference = compactReference(systemId, 8, 6);
-  const signatureReference = compactReference(signatureHash, 14, 14);
-  const signatureBox = { x: 54, y: 112, width: 250, height: 86 };
-  const comments = wrapText(techComments, 92).slice(0, 7);
-  const followUp = wrapText(evidence.followUpActions, 82).slice(0, 4);
-  const customerName  = String(evidence.customerName  || "Not recorded").trim().slice(0, 60);
-  const customerTitle = String(evidence.customerTitle || "—").trim().slice(0, 60);
-
-  const content = [
+  return [
     "0.95 0.96 0.97 rg",
     "0 0 595 842 re f",
     // Letterhead-style header
@@ -259,7 +265,9 @@ export async function buildJobcardPdf(params: JobcardPdfParams): Promise<Jobcard
     ...textLine("Unit 58, M5 Freeway Park, 2B Uppercamp Road, Ndabeni, Maitland, 7405", 44, 22, 7, "1 1 1 rg"),
     ...textLine("T: 061 545 8830   E: admin@kharon.co.za   W: www.tequit.co.za", 44, 10, 7, "1 1 1 rg")
   ].join("\n");
+}
 
+function assemblePdf(content: string, encoder: TextEncoder): Uint8Array {
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
     "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
@@ -283,8 +291,41 @@ export async function buildJobcardPdf(params: JobcardPdfParams): Promise<Jobcard
   }
   pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
 
+  return encoder.encode(pdf);
+}
+
+export async function buildJobcardPdf(params: JobcardPdfParams): Promise<JobcardPdfResult> {
+  const {
+    jobId,
+    systemId,
+    technician,
+    techComments,
+    signatureBase64,
+    signatureStrokes = [],
+    completedAt,
+    evidence = {}
+  } = params;
+
+  const signatureBytes = dataUriToBytes(signatureBase64);
+  const signatureHash = await sha256Hex(signatureBytes);
+
+  const content = buildPdfContent({
+    completedAt,
+    jobReference: compactReference(jobId, 8, 6),
+    systemReference: compactReference(systemId, 8, 6),
+    signatureReference: compactReference(signatureHash, 14, 14),
+    signatureBox: { x: 54, y: 112, width: 250, height: 86 },
+    technician,
+    evidence,
+    comments: wrapText(techComments, 92).slice(0, 7),
+    followUp: wrapText(evidence.followUpActions, 82).slice(0, 4),
+    customerName: String(evidence.customerName || "Not recorded").trim().slice(0, 60),
+    customerTitle: String(evidence.customerTitle || "—").trim().slice(0, 60),
+    signatureStrokes
+  });
+
   return {
-    pdfBytes: encoder.encode(pdf),
+    pdfBytes: assemblePdf(content, new TextEncoder()),
     signatureBytes,
     signatureHash
   };
