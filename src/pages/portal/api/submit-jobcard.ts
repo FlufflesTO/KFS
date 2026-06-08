@@ -73,349 +73,399 @@ function dataUriToBytes(dataUri: string): { bytes: Uint8Array; contentType: stri
   return { bytes, contentType: match[1] || "image/jpeg" };
 }
 
-export async function POST({ request, locals }: APIContext): Promise<Response> {
-  let jobId = "unknown";
-  let db: Awaited<ReturnType<typeof getBindings>>["db"] | undefined;
+async function validateRequest(request: Request, locals: APIContext["locals"]) {
+  if (!locals.user || !["admin", "tech"].includes(locals.user.role)) {
+    return { errorResponse: forbidden("Insufficient permissions.") };
+  }
 
+  const csrfValid = await verifyCsrfRequest(request, locals.user);
+  if (!csrfValid) {
+    return { errorResponse: badRequest("Invalid CSRF token") };
+  }
+
+  let payload: Record<string, any>;
   try {
-    // Manual role check since requireRole doesn't exist
-    if (!locals.user || !["admin", "tech"].includes(locals.user.role)) {
-      return forbidden("Insufficient permissions.");
+    payload = await request.json() as Record<string, any>;
+  } catch (e) {
+    return { errorResponse: badRequest("Request body must be valid JSON.") };
+  }
+  const parsed = JobCardSchema.safeParse(payload);
+
+  if (!parsed.success) {
+    return { errorResponse: badRequest(parsed.error.issues[0]?.message || "Validation failed.") };
+  }
+
+  return { parsedData: parsed.data };
+}
+
+function parseEvidenceAndDefects(rawEvidencePhotos: any[], rawDefects: any[], jobId: string) {
+  const evidenceRecords: EvidenceRecord[] = rawEvidencePhotos.map((photo, index) => {
+    const { bytes, contentType } = dataUriToBytes(photo.dataUri);
+    const id = crypto.randomUUID();
+    const extension = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+    return {
+      bytes,
+      contentType,
+      caption: photo.caption || `Evidence photo ${index + 1}`,
+      id,
+      storagePath: `job-evidence/job-${jobId}/${id}.${extension}`,
+      index
+    };
+  });
+
+  const defects: DefectInput[] = rawDefects.map(d => ({
+    severity: d.severity,
+    description: d.description,
+    sansClauseRef: d.sansClauseRef || "",
+    certificateBlocking: d.certificateBlocking ? 1 : 0
+  }));
+
+  return { evidenceRecords, defects };
+}
+
+async function fetchJobDetails(db: Awaited<ReturnType<typeof getBindings>>["db"], jobId: string, systemId: string) {
+  return await db
+    .prepare(
+      `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, jobs.scheduled_date, jobs.job_type, jobs.version,
+              systems.site_id, systems.system_type, systems.coverage_area,
+              systems.service_interval_months,
+              sites.owner_company_name, sites.physical_address,
+              existing_finance.id AS existing_financial_record_id
+       FROM jobs
+       INNER JOIN systems ON systems.id = jobs.system_id
+       INNER JOIN sites ON sites.id = systems.site_id
+       LEFT JOIN financial_records AS existing_finance
+         ON existing_finance.job_id = jobs.id
+        AND existing_finance.item_type = 'Invoice'
+        AND existing_finance.payment_status IN ('Pending Approval', 'Unpaid', 'Settled')
+       WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
+         AND jobs.id = ?1 AND jobs.system_id = ?2
+       LIMIT 1`
+    )
+    .bind(jobId, systemId)
+    .first<JobQueryResult>() ?? null;
+}
+
+async function validateJobPreconditions(db: any, request: Request, locals: APIContext["locals"], systemRepository: SystemRepository, job: JobQueryResult | null, jobId: string, systemId: string, expectedVersion: number) {
+  if (!job) {
+    await auditEvent(db, request, {
+      eventType: "jobcard.close",
+      entityType: "job",
+      entityId: jobId,
+      outcome: "failure",
+      user: locals.user,
+      subject: locals.user?.email || "unknown",
+      metadata: { reason: "missing_job_system", systemId }
+    });
+    return { errorResponse: badRequest("The requested job and system mapping was not found.") };
+  }
+
+  if (job.assigned_technician_id !== locals.user?.id) {
+    await auditEvent(db, request, {
+      eventType: "jobcard.close",
+      entityType: "job",
+      entityId: jobId,
+      outcome: "blocked",
+      user: locals.user,
+      subject: locals.user?.email || "unknown",
+      metadata: { reason: "wrong_technician", assignedTechnicianId: job.assigned_technician_id }
+    });
+    return { errorResponse: forbidden("This job is not assigned to the authenticated technician.") };
+  }
+
+  if (!["Scheduled", "In Progress"].includes(job.status)) {
+    await auditEvent(db, request, {
+      eventType: "jobcard.close",
+      entityType: "job",
+      entityId: jobId,
+      outcome: "failure",
+      user: locals.user,
+      subject: locals.user?.email || "unknown",
+      metadata: { reason: "invalid_status", currentStatus: job.status }
+    });
+    return { errorResponse: badRequest("Only scheduled or in-progress jobs can be closed.") };
+  }
+
+  if (typeof job.version === "number" && job.version !== expectedVersion) {
+    await auditEvent(db, request, {
+      eventType: "jobcard.close",
+      entityType: "job",
+      entityId: jobId,
+      outcome: "blocked",
+      user: locals.user,
+      subject: locals.user?.email || "unknown",
+      metadata: { reason: "version_conflict", expectedVersion, serverVersion: job.version }
+    });
+    return {
+      errorResponse: new Response(
+        JSON.stringify({ ok: false, error: "version_conflict", serverVersion: job.version, serverStatus: job.status }),
+        { status: 409, headers: { "Content-Type": "application/json" } }
+      )
+    };
+  }
+
+  const system = await systemRepository.findById(systemId);
+  if (!system) {
+    await auditEvent(db, request, {
+      eventType: "jobcard.close",
+      entityType: "system",
+      entityId: systemId,
+      outcome: "failure",
+      user: locals.user,
+      subject: locals.user?.email || "unknown",
+      metadata: { reason: "system_not_found_or_deleted" }
+    });
+    return { errorResponse: badRequest("The associated system was not found or has been deleted.") };
+  }
+
+  return { success: true };
+}
+
+async function processAndUploadFiles(storage: any, parsedData: any, job: JobQueryResult, locals: APIContext["locals"], completedAt: Date, evidenceRecords: EvidenceRecord[]) {
+  const {
+    jobId,
+    systemId,
+    techComments,
+    signatureBase64,
+    signatureStrokes,
+    faultCategory,
+    partsUsed,
+    followUpActions,
+    customerName,
+    customerTitle
+  } = parsedData;
+
+  const documentationPath = `jobcards/job-${jobId}-completed.pdf`;
+
+  const { pdfBytes, signatureHash } = (await buildJobcardPdf({
+    jobId,
+    systemId,
+    technician: locals.user!,
+    techComments,
+    signatureBase64,
+    signatureStrokes,
+    completedAt: completedAt.toISOString(),
+    evidence: {
+      ownerCompanyName: job.owner_company_name,
+      physicalAddress: job.physical_address,
+      systemType: job.system_type,
+      coverageArea: job.coverage_area,
+      scheduledDate: job.scheduled_date,
+      jobType: job.job_type,
+      faultCategory,
+      partsUsed,
+      followUpActions,
+      customerName,
+      customerTitle
     }
+  })) as { pdfBytes: Uint8Array; signatureHash: string };
 
-    const bindings = getBindings();
-    db = bindings.db;
-    const { storage } = bindings;
-
-    // Initialize repositories
-    const systemRepository = new SystemRepository(db);
-
-    // Verify CSRF token from header (JSON payload submission)
-    const csrfValid = await verifyCsrfRequest(request, locals.user);
-    if (!csrfValid) {
-      return badRequest("Invalid CSRF token");
-    }
-
-    let payload: Record<string, any>;
-    try {
-      payload = await request.json() as Record<string, any>;
-    } catch (e) {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
-    }
-    const parsed = JobCardSchema.safeParse(payload);
-
-    if (!parsed.success) {
-      return badRequest(parsed.error.issues[0]?.message || "Validation failed.");
-    }
-
-    const {
-      jobId: rawJobId,
+  await storage.put(documentationPath, pdfBytes, {
+    httpMetadata: {
+      contentType: "application/pdf",
+      contentDisposition: `inline; filename="job-${jobId}-completed.pdf"`
+    },
+    customMetadata: {
+      jobId,
       systemId,
+      technicianId: locals.user?.id,
+      signatureSha256: signatureHash,
+      completedAt: completedAt.toISOString(),
+      faultCategory
+    }
+  });
+
+  for (const evidence of evidenceRecords) {
+    await storage.put(evidence.storagePath, evidence.bytes, {
+      httpMetadata: {
+        contentType: evidence.contentType,
+        contentDisposition: `inline; filename="job-${jobId}-evidence-${evidence.index + 1}"`
+      },
+      customMetadata: {
+        jobId,
+        systemId,
+        technicianId: locals.user?.id,
+        evidenceType: "Photo",
+        completedAt: completedAt.toISOString()
+      }
+    });
+  }
+
+  return documentationPath;
+}
+
+async function finalizeJobSubmission(db: any, request: Request, locals: APIContext["locals"], parsedData: any, job: JobQueryResult, evidenceRecords: EvidenceRecord[], defects: DefectInput[], documentationPath: string, nextDueDate: string, financialRecordId: string, amount: number) {
+  const {
+    jobId,
+    systemId,
+    techComments,
+    signatureBase64,
+    signatureStrokes,
+    faultCategory,
+    partsUsed,
+    followUpActions,
+    customerName,
+    customerTitle,
+    expectedVersion
+  } = parsedData;
+
+  const financeService = new FinanceService(db);
+  await financeService.createInvoiceRequired(
+    job.site_id,
+    jobId,
+    amount,
+    `Invoice required for job ${jobId} completion`
+  );
+
+  const batchStatements = [
+    db.prepare(
+      `UPDATE jobs SET
+         status = 'Completed',
+         completed_at = CURRENT_TIMESTAMP,
+         tech_comments = ?1,
+         signature_base64 = ?2,
+         signature_strokes = ?3,
+         fault_category = ?4,
+         parts_used = ?5,
+         follow_up_actions = ?6,
+         customer_name = ?7,
+         customer_title = ?8,
+         documentation_path = ?9,
+         next_due_date = ?10,
+         version = version + 1,
+         updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?11 AND version = ?12`
+    ).bind(
       techComments,
       signatureBase64,
-      signatureStrokes,
+      JSON.stringify(signatureStrokes),
       faultCategory,
       partsUsed,
       followUpActions,
       customerName,
       customerTitle,
-      expectedVersion,
-      evidencePhotos: rawEvidencePhotos,
-      defects: rawDefects
-    } = parsed.data;
-
-    jobId = rawJobId;
-
-    const evidenceRecords: EvidenceRecord[] = rawEvidencePhotos.map((photo, index) => {
-      const { bytes, contentType } = dataUriToBytes(photo.dataUri);
-      const id = crypto.randomUUID();
-      const extension = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
-      return {
-        bytes,
-        contentType,
-        caption: photo.caption || `Evidence photo ${index + 1}`,
-        id,
-        storagePath: `job-evidence/job-${jobId}/${id}.${extension}`,
-        index
-      };
-    });
-
-    const defects: DefectInput[] = rawDefects.map(d => ({
-      severity: d.severity,
-      description: d.description,
-      sansClauseRef: d.sansClauseRef || "",
-      certificateBlocking: d.certificateBlocking ? 1 : 0
-    }));
-
-    // Use JobRepository to fetch job with related data
-    const job = await db
-      .prepare(
-        `SELECT jobs.id, jobs.system_id, jobs.assigned_technician_id, jobs.status, jobs.scheduled_date, jobs.job_type, jobs.version,
-                systems.site_id, systems.system_type, systems.coverage_area,
-                systems.service_interval_months,
-                sites.owner_company_name, sites.physical_address,
-                existing_finance.id AS existing_financial_record_id
-         FROM jobs
-         INNER JOIN systems ON systems.id = jobs.system_id
-         INNER JOIN sites ON sites.id = systems.site_id
-         LEFT JOIN financial_records AS existing_finance
-           ON existing_finance.job_id = jobs.id
-          AND existing_finance.item_type = 'Invoice'
-          AND existing_finance.payment_status IN ('Pending Approval', 'Unpaid', 'Settled')
-         WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL
-           AND jobs.id = ?1 AND jobs.system_id = ?2
-         LIMIT 1`
-      )
-      .bind(jobId, systemId)
-      .first<JobQueryResult>() ?? null;
-
-    if (!job) {
-      await auditEvent(db, request, {
-        eventType: "jobcard.close",
-        entityType: "job",
-        entityId: jobId,
-        outcome: "failure",
-        user: locals.user,
-        subject: locals.user?.email || "unknown",
-        metadata: { reason: "missing_job_system", systemId }
-      });
-      return badRequest("The requested job and system mapping was not found.");
-    }
-
-    if (job.assigned_technician_id !== locals.user.id) {
-      await auditEvent(db, request, {
-        eventType: "jobcard.close",
-        entityType: "job",
-        entityId: jobId,
-        outcome: "blocked",
-        user: locals.user,
-        subject: locals.user?.email || "unknown",
-        metadata: { reason: "wrong_technician", assignedTechnicianId: job.assigned_technician_id }
-      });
-      return forbidden("This job is not assigned to the authenticated technician.");
-    }
-
-    if (!["Scheduled", "In Progress"].includes(job.status)) {
-      await auditEvent(db, request, {
-        eventType: "jobcard.close",
-        entityType: "job",
-        entityId: jobId,
-        outcome: "failure",
-        user: locals.user,
-        subject: locals.user?.email || "unknown",
-        metadata: { reason: "invalid_status", currentStatus: job.status }
-      });
-      return badRequest("Only scheduled or in-progress jobs can be closed.");
-    }
-
-    // Optimistic concurrency: reject if the job changed since the technician loaded it.
-    if (typeof job.version === "number" && job.version !== expectedVersion) {
-      await auditEvent(db, request, {
-        eventType: "jobcard.close",
-        entityType: "job",
-        entityId: jobId,
-        outcome: "blocked",
-        user: locals.user,
-        subject: locals.user?.email || "unknown",
-        metadata: { reason: "version_conflict", expectedVersion, serverVersion: job.version }
-      });
-      return new Response(
-        JSON.stringify({ ok: false, error: "version_conflict", serverVersion: job.version, serverStatus: job.status }),
-        { status: 409, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    // Verify system exists using repository (soft-delete aware)
-    const system = await systemRepository.findById(systemId);
-    if (!system) {
-      await auditEvent(db, request, {
-        eventType: "jobcard.close",
-        entityType: "system",
-        entityId: systemId,
-        outcome: "failure",
-        user: locals.user,
-        subject: locals.user?.email || "unknown",
-        metadata: { reason: "system_not_found_or_deleted" }
-      });
-      return badRequest("The associated system was not found or has been deleted.");
-    }
-
-    const completedAt = new Date();
-    const serviceIntervalMonths = typeof job.service_interval_months === "number" && Number.isInteger(job.service_interval_months) && job.service_interval_months >= 1 ? job.service_interval_months : 6;
-    const nextDueDate = addMonths(completedAt, serviceIntervalMonths);
-    const documentationPath = `jobcards/job-${jobId}-completed.pdf`;
-    const financialRecordId = job.existing_financial_record_id || crypto.randomUUID();
-    const amount = getStandardServiceFee();
-
-    const { pdfBytes, signatureHash } = (await buildJobcardPdf({
+      documentationPath,
+      nextDueDate,
       jobId,
-      systemId,
-      technician: locals.user,
-      techComments,
-      signatureBase64,
-      signatureStrokes,
-      completedAt: completedAt.toISOString(),
-      evidence: {
-        ownerCompanyName: job.owner_company_name,
-        physicalAddress: job.physical_address,
-        systemType: job.system_type,
-        coverageArea: job.coverage_area,
-        scheduledDate: job.scheduled_date,
-        jobType: job.job_type,
-        faultCategory,
-        partsUsed,
-        followUpActions,
-        customerName,
-        customerTitle
-      }
-    })) as { pdfBytes: Uint8Array; signatureHash: string };
+      expectedVersion
+    )
+  ];
 
-    await storage.put(documentationPath, pdfBytes, {
-      httpMetadata: {
-        contentType: "application/pdf",
-        contentDisposition: `inline; filename="job-${jobId}-completed.pdf"`
-      },
-      customMetadata: {
-        jobId,
-        systemId,
-        technicianId: locals.user.id,
-        signatureSha256: signatureHash,
-        completedAt: completedAt.toISOString(),
-        faultCategory
-      }
-    });
-
-    for (const evidence of evidenceRecords) {
-      await storage.put(evidence.storagePath, evidence.bytes, {
-        httpMetadata: {
-          contentType: evidence.contentType,
-          contentDisposition: `inline; filename="job-${jobId}-evidence-${evidence.index + 1}"`
-        },
-        customMetadata: {
-          jobId,
-          systemId,
-          technicianId: locals.user.id,
-          evidenceType: "Photo",
-          completedAt: completedAt.toISOString()
-        }
-      });
-    }
-
-    // Create finance task for invoice
-    const financeService = new FinanceService(db);
-    await financeService.createInvoiceRequired(
-      job.site_id,
-      jobId,
-      amount,
-      `Invoice required for job ${jobId} completion`
+  for (const evidence of evidenceRecords) {
+    batchStatements.push(
+      db
+        .prepare(
+          `INSERT INTO job_evidence_files
+             (id, job_id, system_id, uploaded_by_user_id, evidence_type, storage_path, content_type, file_size_bytes, caption)
+           VALUES
+             (?1, ?2, ?3, ?4, 'Photo', ?5, ?6, ?7, ?8)`
+        )
+        .bind(evidence.id, jobId, systemId, locals.user?.id, evidence.storagePath, evidence.contentType, evidence.bytes.length, evidence.caption)
     );
+  }
 
-    const batchStatements = [
-      db.prepare(
-        `UPDATE jobs SET
-           status = 'Completed',
-           completed_at = CURRENT_TIMESTAMP,
-           tech_comments = ?1,
-           signature_base64 = ?2,
-           signature_strokes = ?3,
-           fault_category = ?4,
-           parts_used = ?5,
-           follow_up_actions = ?6,
-           customer_name = ?7,
-           customer_title = ?8,
-           documentation_path = ?9,
-           next_due_date = ?10,
-           version = version + 1,
-           updated_at = CURRENT_TIMESTAMP
-         WHERE id = ?11 AND version = ?12`
-      ).bind(
-        techComments,
-        signatureBase64,
-        JSON.stringify(signatureStrokes),
-        faultCategory,
-        partsUsed,
-        followUpActions,
-        customerName,
-        customerTitle,
-        documentationPath,
-        nextDueDate,
-        jobId,
-        expectedVersion
-      )
-    ];
+  for (const defect of defects) {
+    const defectId = crypto.randomUUID();
+    batchStatements.push(
+      db
+        .prepare(
+          `INSERT INTO defects
+             (id, system_id, job_id, severity, sans_clause_ref, description, certificate_blocking, status)
+           VALUES
+             (?1, ?2, ?3, ?4, ?5, ?6, ?7, 'Open')`
+        )
+        .bind(defectId, systemId, jobId, defect.severity, defect.sansClauseRef || null, defect.description, defect.certificateBlocking)
+    );
+  }
 
-    for (const evidence of evidenceRecords) {
-      batchStatements.push(
-        db
-          .prepare(
-            `INSERT INTO job_evidence_files
-               (id, job_id, system_id, uploaded_by_user_id, evidence_type, storage_path, content_type, file_size_bytes, caption)
-             VALUES
-               (?1, ?2, ?3, ?4, 'Photo', ?5, ?6, ?7, ?8)`
-          )
-          .bind(evidence.id, jobId, systemId, locals.user?.id, evidence.storagePath, evidence.contentType, evidence.bytes.length, evidence.caption)
-      );
-    }
+  await db.batch(batchStatements);
 
-    for (const defect of defects) {
-      const defectId = crypto.randomUUID();
-      batchStatements.push(
-        db
-          .prepare(
-            `INSERT INTO defects
-               (id, system_id, job_id, severity, sans_clause_ref, description, certificate_blocking, status)
-             VALUES
-               (?1, ?2, ?3, ?4, ?5, ?6, ?7, 'Open')`
-          )
-          .bind(defectId, systemId, jobId, defect.severity, defect.sansClauseRef || null, defect.description, defect.certificateBlocking)
-      );
-    }
-
-    await db.batch(batchStatements);
-
-    if (!job.existing_financial_record_id) {
-      const hasBlockingDefects = defects.some((d) => d.certificateBlocking === 1);
-      await auditEvent(db, request, {
-        eventType: "finance.record.create",
-        entityType: "financial_record",
-        entityId: financialRecordId,
-        outcome: "success",
-        user: locals.user,
-        subject: locals.user?.email || "unknown",
-        metadata: {
-          itemType: "Task",
-          siteId: job.site_id,
-          jobId,
-          amountExVat: null,
-          vatAmount: null,
-          amountIncVat: amount,
-          paymentStatus: "Pending",
-          reference: hasBlockingDefects ? `Sage quote required for defect remediation on job ${jobId}` : `Sage invoice required for completed job ${jobId}`,
-          financeTaskStatus: hasBlockingDefects ? "Quote Required" : "Invoice Required"
-        }
-      });
-    }
-
+  if (!job.existing_financial_record_id) {
+    const hasBlockingDefects = defects.some((d) => d.certificateBlocking === 1);
     await auditEvent(db, request, {
-      eventType: "jobcard.close",
-      entityType: "job",
-      entityId: jobId,
+      eventType: "finance.record.create",
+      entityType: "financial_record",
+      entityId: financialRecordId,
       outcome: "success",
       user: locals.user,
       subject: locals.user?.email || "unknown",
       metadata: {
-        systemId,
-        documentationPath,
-        nextDueDate,
-        financialRecordId,
-        faultCategory,
-        partsUsed,
-        followUpActions,
-        customerName,
-        evidenceCount: evidenceRecords.length,
-        defectCount: defects.length
+        itemType: "Task",
+        siteId: job.site_id,
+        jobId,
+        amountExVat: null,
+        vatAmount: null,
+        amountIncVat: amount,
+        paymentStatus: "Pending",
+        reference: hasBlockingDefects ? `Sage quote required for defect remediation on job ${jobId}` : `Sage invoice required for completed job ${jobId}`,
+        financeTaskStatus: hasBlockingDefects ? "Quote Required" : "Invoice Required"
       }
     });
+  }
+
+  await auditEvent(db, request, {
+    eventType: "jobcard.close",
+    entityType: "job",
+    entityId: jobId,
+    outcome: "success",
+    user: locals.user,
+    subject: locals.user?.email || "unknown",
+    metadata: {
+      systemId,
+      documentationPath,
+      nextDueDate,
+      financialRecordId,
+      faultCategory,
+      partsUsed,
+      followUpActions,
+      customerName,
+      evidenceCount: evidenceRecords.length,
+      defectCount: defects.length
+    }
+  });
+}
+
+export async function POST({ request, locals }: APIContext): Promise<Response> {
+  let jobId = "unknown";
+  let db: Awaited<ReturnType<typeof getBindings>>["db"] | undefined;
+
+  try {
+    const validationResult = await validateRequest(request, locals);
+    if (validationResult.errorResponse) {
+      return validationResult.errorResponse;
+    }
+    const { parsedData } = validationResult;
+    if (!parsedData) return badRequest("Validation failed.");
+
+    jobId = parsedData.jobId;
+    const systemId = parsedData.systemId;
+
+    const bindings = getBindings();
+    db = bindings.db;
+    const { storage } = bindings;
+
+    const systemRepository = new SystemRepository(db);
+
+    const { evidenceRecords, defects } = parseEvidenceAndDefects(parsedData.evidencePhotos, parsedData.defects, jobId);
+
+    const job = await fetchJobDetails(db, jobId, systemId);
+
+    const preconditionResult = await validateJobPreconditions(db, request, locals, systemRepository, job, jobId, systemId, parsedData.expectedVersion);
+    if (preconditionResult.errorResponse) {
+      return preconditionResult.errorResponse;
+    }
+
+    if (!job) return serverError("Job validation failed unexpectedly.");
+
+    const completedAt = new Date();
+    const serviceIntervalMonths = typeof job.service_interval_months === "number" && Number.isInteger(job.service_interval_months) && job.service_interval_months >= 1 ? job.service_interval_months : 6;
+    const nextDueDate = addMonths(completedAt, serviceIntervalMonths);
+    const financialRecordId = job.existing_financial_record_id || crypto.randomUUID();
+    const amount = getStandardServiceFee();
+
+    const documentationPath = await processAndUploadFiles(storage, parsedData, job, locals, completedAt, evidenceRecords);
+
+    await finalizeJobSubmission(db, request, locals, parsedData, job, evidenceRecords, defects, documentationPath, nextDueDate, financialRecordId, amount);
 
     return json({
       ok: true,
