@@ -4,7 +4,7 @@
  * Dependencies: getDatabase
  * Structural Role: REST API endpoint for inventory management
  */
-import { getDatabase } from "../../../lib/server/bindings";
+import { getDatabase } from "../../../../lib/server/bindings";
 
 export const prerender = false;
 
