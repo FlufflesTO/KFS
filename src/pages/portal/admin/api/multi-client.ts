@@ -1,12 +1,16 @@
 // Removed unused import: import type { APIContext } from "astro";
 import { getDatabase } from "../../../../lib/server/bindings.js";
+import { requireAdmin } from "../../../../lib/server/access.js";
 
 export const prerender = false;
 
-export async function GET({}: { request: Request, locals: App.Locals }) {
+export async function GET({ locals }: { request: Request, locals: App.Locals }) {
+  const adminError = requireAdmin(locals.user);
+  if (adminError) return adminError;
+
   try {
     const db = getDatabase();
-    
+
     const clients = await db.prepare(`
       SELECT id, company_name, contact_person, email, phone, address, created_at, updated_at
       FROM clients

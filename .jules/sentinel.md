@@ -1,0 +1,4 @@
+## 2025-05-18 - Missing Authorization on Admin Multi-Client API Endpoint
+**Vulnerability:** The GET endpoint at `src/pages/portal/admin/api/multi-client.ts` was returning sensitive client data without any authorization checks. Anyone could access the endpoint and retrieve all client records (name, email, phone, address, etc).
+**Learning:** Even though an endpoint is placed within an admin-specific directory structure (`/portal/admin/api`), Astro API endpoints do not automatically inherit access controls. The developer assumed the middleware would protect it, but the middleware's access control only redirects UI requests or specific listed API paths.
+**Prevention:** Always explicitly use `requireAdmin(locals.user)` or other relevant role-based access control functions at the beginning of sensitive API endpoint handlers. Never assume directory structure provides access control for API endpoints.
