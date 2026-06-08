@@ -9,9 +9,14 @@ import ComplianceStrip from "../components/sections/ComplianceStrip.astro";
 import SectionHeading from "../components/sections/SectionHeading.astro";
 import WhatHappensNext from "../components/sections/WhatHappensNext.astro";
 import CaseStudyCard from "../components/sections/CaseStudyCard.astro";
+
+import LeadMagnetCard from "../components/blocks/LeadMagnetCard.astro";
+import { leadMagnets } from "../data/leadMagnets.js";
 import { getCaseStudy } from "../data/case-studies.js";
 
 export interface Props {
+  leadMagnetId?: string;
+  proofItems?: { title: string; text: string }[];
   meta: { title: string; description: string };
   hero: { subtitle: string; title: string; description: string; icon: string };
   overview: string;
@@ -26,6 +31,8 @@ export interface Props {
 
 const { meta, hero, overview, risks, systems, standards, caseStudySlug, intent } = Astro.props;
 const study = caseStudySlug ? getCaseStudy(caseStudySlug) : undefined;
+
+const magnet = leadMagnetId ? leadMagnets[leadMagnetId] : undefined;
 ---
 
 <BaseLayout title={meta.title} description={meta.description}>
@@ -86,5 +93,32 @@ const study = caseStudySlug ? getCaseStudy(caseStudySlug) : undefined;
     </section>
   )}
 
-  <WhatHappensNext intent={intent} ctaLabel="Request Site Assessment" />
+  
+  {magnet && (
+    <section class="section-padding bg-kharon-black border-t border-kharon-purple/10">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6">
+        <LeadMagnetCard magnet={magnet} />
+      </div>
+    </section>
+  )}
+
+  {proofItems && proofItems.length > 0 && (
+    <section class="section-padding bg-kharon-charcoal/30 border-t border-kharon-purple/10">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6">
+        <div class="mb-8">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">Validation</p>
+          <h2 class="kharon-h2 mt-3 text-white">Proof of Capability</h2>
+        </div>
+        <div class="grid gap-6 md:grid-cols-3">
+          {proofItems.map((p) => (
+            <div class="rounded-xl border border-kharon-purple/15 bg-kharon-black/40 p-5">
+              <h3 class="font-bold text-white">{p.title}</h3>
+              <p class="mt-2 text-sm text-kharon-light/70">{p.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+<WhatHappensNext intent={intent} ctaLabel="Request Site Assessment" />
 </BaseLayout>

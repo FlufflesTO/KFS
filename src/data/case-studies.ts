@@ -49,9 +49,9 @@ export const caseStudies: CaseStudy[] = [
     outcome:
       "Passed the tenant compliance audit on re-inspection; personnel-safe agent with sub-10-second design concentration and zero downtime during cut-over.",
     metrics: [
-      { label: "Hall downtime", value: "0 hrs" },
+      { label: "Hall downtime", value: "Minimal" },
       { label: "Audit result", value: "Pass" },
-      { label: "Design concentration", value: "<10 s" }
+      { label: "Design concentration", value: "Compliant" }
     ],
     intent: "data-centre",
     related: [
@@ -78,7 +78,7 @@ export const caseStudies: CaseStudy[] = [
     outcome:
       "Full audible and intelligible coverage across the facility; documented evacuation strategy accepted by the insurer.",
     metrics: [
-      { label: "Coverage", value: "100%" },
+      { label: "Coverage", value: "Comprehensive" },
       { label: "Intelligibility", value: "Pass" }
     ],
     intent: "warehousing",
@@ -137,7 +137,7 @@ export const caseStudies: CaseStudy[] = [
     metrics: [
       { label: "Evacuation", value: "Phased" },
       { label: "Intelligibility", value: "Pass" },
-      { label: "Coverage", value: "100%" }
+      { label: "Coverage", value: "Comprehensive" }
     ],
     intent: "healthcare",
     related: [
