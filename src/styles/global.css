@@ -180,7 +180,8 @@ summary::-webkit-details-marker { display: none; }
 }
 
 .kharon-field:focus {
-  outline: none;
+  outline: 2px solid var(--color-kharon-cyan);
+  outline-offset: 4px;
   border-color: var(--color-kharon-purple);
 }
 
