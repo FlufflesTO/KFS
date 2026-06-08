@@ -44,12 +44,14 @@ jobs:
             value="$2"
             if [ -z "${!name}" ]; then
               echo "$name=$value" >> "$GITHUB_ENV"
+              echo "$name=$value" >> .dev.vars
+              echo "$name=$value" >> .env
             fi
           }
           suffix="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-0123456789abcdef"
-          add_secret SESSION_SECRET "ci-session-secret-${suffix}"
+          add_secret SESSION_SECRET "ci-session-secret-padding-${suffix}"
           add_secret CSRF_SECRET "ci-csrf-secret-${suffix}"
-          add_secret MFA_SECRET "ci-mfa-secret-${suffix}"
+          add_secret MFA_SECRET "ci-mfa-secret-padding-${suffix}"
           add_secret ENCRYPTION_SECRET "ci-encryption-secret-${suffix}"
           add_secret AUTH_SECRET "ci-auth-secret-${suffix}"
           add_secret FINGERPRINT_SECRET "ci-fingerprint-secret-${suffix}"
