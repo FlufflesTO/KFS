@@ -1,0 +1,7 @@
+🔒 Server-side validation of file content types
+
+🎯 What: Added an `isValidFileContent` helper function to verify magic numbers (file signatures) of uploaded files against a whitelist of allowed file types (PDF, JPEG, PNG, WebP, DOC, DOCX).
+⚠️ Risk: Missing server-side validation of file content types allowed attackers to bypass client-side MIME type checks by uploading malicious payloads disguised as allowed file types (e.g., an HTML or SVG payload with a `.jpg` extension).
+🛡️ Solution: Verify the actual contents of the uploaded file on the server using magic numbers to ensure the file type matches the allowed types before processing or storing the file.
+
+Playwright tests timeout locally due to webserver connection issues, but `npm run lint` and `npm run check` pass cleanly, verifying code syntax and types.

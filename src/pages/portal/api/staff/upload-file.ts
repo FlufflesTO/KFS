@@ -25,6 +25,28 @@ const ALLOWED_MIME_TYPES = new Set([
 ]);
 const VALID_FILE_TYPES = new Set<string>(["ID Document", "Contract", "Certificate", "Other"]);
 
+function isValidFileContent(buffer: ArrayBuffer): boolean {
+  if (buffer.byteLength < 4) return false;
+  const bytes = new Uint8Array(buffer);
+
+  // PDF: %PDF
+  if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) return true;
+  // JPEG: FF D8 FF
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return true;
+  // PNG: 89 50 4E 47
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return true;
+  // WebP: RIFF ... WEBP
+  if (bytes.byteLength >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+      bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return true;
+  // DOC (OLE2): D0 CF 11 E0
+  if (bytes[0] === 0xd0 && bytes[1] === 0xcf && bytes[2] === 0x11 && bytes[3] === 0xe0) return true;
+  // DOCX (ZIP): 50 4B 03 04
+  if (bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) return true;
+
+  return false;
+}
+
+
 export async function POST({ request, locals }: APIContext): Promise<Response> {
   const user = locals.user;
   if (!user) return unauthorized();
@@ -65,6 +87,9 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     const r2Key = `staff-files/${memberId}/${fileUuid}/${safeName}`;
 
     const fileBuffer = await fileField.arrayBuffer();
+    if (!isValidFileContent(fileBuffer)) {
+      return badRequest("Invalid file content detected. Magic number verification failed.");
+    }
     await storage.put(r2Key, fileBuffer, {
       httpMetadata: { contentType: fileField.type },
       customMetadata: { uploadedBy: user.id, staffMemberId: memberId },
