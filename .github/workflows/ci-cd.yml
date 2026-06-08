@@ -11,6 +11,9 @@ on:
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
     permissions:
       contents: read
     env:
