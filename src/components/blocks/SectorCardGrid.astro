@@ -1,0 +1,53 @@
+---
+/**
+ * Project Sentinel - Sector Card Grid
+ * Purpose: Sector routing cards (Data Centres, Commercial, etc.)
+ * Dependencies: KharonCard
+ * Structural Role: Reusable block
+ */
+
+
+export interface SectorItem {
+  id: string;
+  title: string;
+  image?: string;
+  href: string;
+}
+
+export interface Props {
+  title: string;
+  subtitle?: string;
+  sectors: SectorItem[];
+}
+
+const { title, subtitle, sectors } = Astro.props;
+---
+
+<section class="py-16 lg:py-24 bg-kharon-black">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12">
+      {subtitle && <span class="text-sm font-semibold tracking-widest uppercase text-kharon-purple mb-2 block">{subtitle}</span>}
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-white">{title}</h2>
+    </div>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {sectors.map((sector) => (
+        <a href={sector.href} class="group block h-full focus:outline-none focus:ring-2 focus:ring-kharon-purple rounded-xl overflow-hidden relative min-h-[250px]">
+          <div class="absolute inset-0 bg-kharon-surface-charcoal">
+            {sector.image && <img src={sector.image} alt={sector.title} class="w-full h-full object-cover opacity-50 group-hover:opacity-70 transition-opacity duration-500 group-hover:scale-105 transform" />}
+            <div class="absolute inset-0 bg-gradient-to-t from-kharon-black via-kharon-black/80 to-transparent"></div>
+          </div>
+          <div class="relative h-full p-6 flex flex-col justify-end">
+            <h3 class="text-xl font-bold text-white mb-2 group-hover:text-kharon-purple transition-colors">{sector.title}</h3>
+            <div class="flex items-center text-white/80 text-sm font-medium uppercase tracking-wider group-hover:text-white">
+              <span>View Sector</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2 group-hover:translate-x-1 transition-transform">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
