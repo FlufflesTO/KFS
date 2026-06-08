@@ -6,6 +6,13 @@
  * Structural Role: Reusable sections UI component
  */
 import SectionHeading from "./SectionHeading.astro";
+import type { ProofGridItem } from "../../data/proof";
+
+export interface Props {
+  items?: ProofGridItem[];
+  title?: string;
+  subtitle?: string;
+}
 
 const { items = [], title = "Verification and Intelligence Matrix", subtitle = "Proof Signals" } = Astro.props;
 ---
@@ -20,7 +27,7 @@ const { items = [], title = "Verification and Intelligence Matrix", subtitle = "
     />
 
     <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((item: any, index: number) => (
+      {items.map((item: ProofGridItem, index: number) => (
         <div class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 backdrop-blur-sm kharon-surface">
           <div class="flex items-start">
             <div class="flex-shrink-0">

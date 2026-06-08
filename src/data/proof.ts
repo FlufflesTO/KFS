@@ -1,47 +1,75 @@
-import type { ProofModel, ProofType } from "@sentinel/types";
-export type { ProofModel, ProofType };
 
-export const proof: ProofModel[] = [
+
+export interface TrustModuleItem {
+  title: string;
+  text: string;
+  status: 'Records' | 'Cadence' | 'Response' | 'success';
+}
+
+export interface ProofGridItem {
+  title: string;
+  text: string;
+}
+
+export const accreditations: ProofGridItem[] = [
   {
-    id: "proof-1",
-    type: "Accreditation",
-    title: "ISO 9001",
-    description: "Quality Management System Accreditation"
+    title: "SAQCC Registered Technicians",
+    text: "All field technicians hold valid SAQCC Fire registrations, ensuring legally compliant service and maintenance."
   },
   {
-    id: "proof-2",
-    type: "Photo",
-    title: "System Installation",
-    description: "High-quality installation of suppression system"
+    title: "SANS Standards Alignment",
+    text: "Installations and inspections strictly adhere to mandated South African National Standards (e.g., SANS 10139, 14520, 62676)."
   },
   {
-    id: "proof-3",
-    type: "Documentation",
-    title: "Compliance Certificate",
-    description: "Standard compliance document"
+    title: "Documented Competency",
+    text: "Continuous internal engineering assessments and manufacturer-specific equipment training."
+  }
+];
+
+export const portalPreviews: TrustModuleItem[] = [
+  {
+    title: "Dashboard Overview",
+    text: "Real-time visibility into system health, upcoming maintenance schedules, and active defect reports.",
+    status: "Records"
   },
   {
-    id: "proof-4",
-    type: "Portal",
-    title: "Client Portal Screenshot",
-    description: "Real-time reporting portal"
+    title: "Service Record Archive",
+    text: "Instant retrieval of historical job cards, technician notes, and digitally signed compliance certificates.",
+    status: "Cadence"
   },
   {
-    id: "proof-5",
-    type: "Case study",
-    title: "Case Study Excerpt",
-    description: "Excerpt of success metrics"
+    title: "Defect Workflow Tracking",
+    text: "Track identified defects from initial logging through to quotation, repair, and final resolution.",
+    status: "Response"
+  }
+];
+
+export const documentationProof: ProofGridItem[] = [
+  {
+    title: "Sample Inspection Report",
+    text: "Comprehensive, digitally captured inspection criteria covering all required SANS parameters."
   },
   {
-    id: "proof-6",
-    type: "Team",
-    title: "Certified Technician",
-    description: "SAQCC registered technician"
+    title: "Categorized Defect Lists",
+    text: "Clear prioritization of defects into Critical, Warning, and Advisory statuses for immediate action."
   },
   {
-    id: "proof-7",
-    type: "Testimonial",
-    title: "Client Testimonial",
-    description: "We are extremely satisfied with Sentinel."
+    title: "Compliance Summary",
+    text: "Automated generation of compliance certificates upon successful completion of SANS-aligned maintenance."
+  }
+];
+
+export const testimonials: ProofGridItem[] = [
+  {
+    title: "Data Centre Infrastructure",
+    text: "\"The transition to their portal meant we finally had auditable proof of maintenance for our gas suppression systems during insurance risk surveys.\""
+  },
+  {
+    title: "Industrial Manufacturing",
+    text: "\"Downtime was slashed by 40% after they overhauled our fire detection network and established a proactive cadence.\""
+  },
+  {
+    title: "Commercial Real Estate",
+    text: "\"Clear, un-hyped reporting. We know exactly what failed, why it failed, and what it costs to fix within hours of an inspection.\""
   }
 ];

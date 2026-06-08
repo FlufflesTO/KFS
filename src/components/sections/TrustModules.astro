@@ -1,6 +1,11 @@
 ---
 import SectionHeading from "./SectionHeading.astro";
 import StatusIndicator from "../ui/StatusIndicator.astro";
+import type { TrustModuleItem } from "../../data/proof";
+
+export interface Props {
+  items?: TrustModuleItem[];
+}
 
 const { items = [] } = Astro.props;
 ---
@@ -15,7 +20,7 @@ const { items = [] } = Astro.props;
     />
 
     <div class="mt-12 grid gap-6 md:grid-cols-2">
-      {items.map((item: any) => (
+      {items.map((item: TrustModuleItem) => (
         <article class="rounded-lg border border-kharon-purple/15 bg-kharon-surface-elevated p-6 hover:border-kharon-purple/30 backdrop-blur-sm kharon-surface">
           <StatusIndicator status={item.status === 'Records' ? 'active' : item.status === 'Cadence' ? 'processing' : item.status === 'Response' ? 'warning' : 'success'} label={item.status} />
           <h3 class="mt-4 text-xl font-semibold text-white">{item.title}</h3>
