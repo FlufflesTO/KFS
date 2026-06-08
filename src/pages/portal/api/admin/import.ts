@@ -17,19 +17,53 @@ function cleanImportId(value: unknown): string {
   return result || crypto.randomUUID();
 }
 
-async function siteExists(db: import("@cloudflare/workers-types").D1Database, id: string | null | undefined): Promise<boolean> {
-  if (!id) return false;
-  const record = await db.prepare(`SELECT id FROM sites WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`).bind(id).first();
-  return Boolean(record);
+async function fetchExistingSystems(db: import("@cloudflare/workers-types").D1Database, ids: Set<string>): Promise<Set<string>> {
+  const existing = new Set<string>();
+  const idsArr = Array.from(ids).filter(Boolean);
+
+  // D1 has parameter limits, but we limit imports to 250 rows, so 250 parameters is fine.
+  if (idsArr.length === 0) return existing;
+
+  // Split into chunks if needed, but 250 is well within SQLite's 999/32766 limit
+  const placeholders = idsArr.map((_, i) => `?${i + 1}`).join(',');
+  const { results } = await db.prepare(`SELECT id FROM systems WHERE id IN (${placeholders}) AND deleted_at IS NULL`).bind(...idsArr).all();
+  for (const row of results) {
+    if (row.id) existing.add(row.id as string);
+  }
+  return existing;
 }
 
-async function systemExists(db: import("@cloudflare/workers-types").D1Database, id: string | null | undefined): Promise<boolean> {
-  if (!id) return false;
-  const record = await db.prepare(`SELECT id FROM systems WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`).bind(id).first();
-  return Boolean(record);
+async function fetchExistingSites(db: import("@cloudflare/workers-types").D1Database, ids: Set<string>): Promise<Set<string>> {
+  const existing = new Set<string>();
+  const idsArr = Array.from(ids).filter(Boolean);
+
+  // D1 has parameter limits, but we limit imports to 250 rows, so 250 parameters is fine.
+  if (idsArr.length === 0) return existing;
+
+  // Split into chunks if needed, but 250 is well within SQLite's 999/32766 limit
+  const placeholders = idsArr.map((_, i) => `?${i + 1}`).join(',');
+  const { results } = await db.prepare(`SELECT id FROM sites WHERE id IN (${placeholders}) AND deleted_at IS NULL`).bind(...idsArr).all();
+  for (const row of results) {
+    if (row.id) existing.add(row.id as string);
+  }
+  return existing;
 }
 
 async function importSites(db: import("@cloudflare/workers-types").D1Database, rows: CsvObjectResult[], isDryRun: boolean) {
+  // Pre-fetch all referenced sites to avoid N+1 queries
+  const siteIdsToLookup = new Set<string>();
+  for (const row of rows) {
+    try {
+      const data = row.data;
+      if (data.id) siteIdsToLookup.add(String(data.id));
+    } catch (e) {
+      // ignore invalid data for pre-fetch
+    }
+  }
+
+  const existingSites = await fetchExistingSites(db, siteIdsToLookup);
+
+
   const results = [];
   for (const row of rows) {
     try {
@@ -41,7 +75,7 @@ async function importSites(db: import("@cloudflare/workers-types").D1Database, r
       const siteContactEmail = cleanEmail(data.site_contact_email, "site_contact_email", { required: false });
       const siteContactPhone = cleanText(data.site_contact_phone, "site_contact_phone", { required: false, max: 80 });
       const billingEmails = cleanText(data.billing_emails, "billing_emails", { min: 3, max: 1000 });
-      const exists = await siteExists(db, id);
+      const exists = id ? existingSites.has(id) : false;
 
       if (exists) {
         if (!isDryRun) {
@@ -82,21 +116,39 @@ async function importSites(db: import("@cloudflare/workers-types").D1Database, r
 }
 
 async function importSystems(db: import("@cloudflare/workers-types").D1Database, rows: CsvObjectResult[], isDryRun: boolean) {
+  // Pre-fetch all referenced sites and systems to avoid N+1 queries
+  const siteIdsToLookup = new Set<string>();
+  const systemIdsToLookup = new Set<string>();
+
+  for (const row of rows) {
+    try {
+      const data = row.data;
+      if (data.site_id) siteIdsToLookup.add(String(data.site_id));
+      if (data.id) systemIdsToLookup.add(String(data.id));
+    } catch (e) {
+      // ignore invalid data for pre-fetch
+    }
+  }
+
+  const existingSites = await fetchExistingSites(db, siteIdsToLookup);
+  const existingSystems = await fetchExistingSystems(db, systemIdsToLookup);
+
   const results = [];
   for (const row of rows) {
     try {
       const data = row.data;
       const id = cleanImportId(data.id);
       const siteId = cleanId(data.site_id, "site_id");
-      const site = await db.prepare(`SELECT id FROM sites WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`).bind(siteId).first();
-      if (!site) throw new Error("site_id does not match an existing site.");
+      if (!siteId || !existingSites.has(siteId)) {
+        throw new Error("site_id does not match an existing site.");
+      }
 
       const systemType = cleanChoice(data.system_type, "system_type", systemTypes);
       const coverageArea = cleanText(data.coverage_area, "coverage_area", { min: 2, max: 200 });
       const manufacturer = cleanText(data.manufacturer, "manufacturer", { required: false, max: 120 });
       const modelReference = cleanText(data.model_reference, "model_reference", { required: false, max: 120 });
       const nextDueDate = cleanDate(data.next_due_date, "next_due_date");
-      const exists = await systemExists(db, id);
+      const exists = id ? existingSystems.has(id) : false;
 
       if (exists) {
         if (!isDryRun) {
