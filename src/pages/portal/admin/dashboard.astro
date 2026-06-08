@@ -55,15 +55,15 @@ const exceptions = [
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(75,46,131,0.1),transparent)]"></div>
     <div class="mx-auto max-w-7xl relative z-10">
       <div class="flex items-center gap-3 mb-4">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
           <svg class="h-[1.1rem] w-[1.1rem] text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
           </svg>
         </div>
-        <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Admin Control Panel</p>
+        <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-cyan">Admin Control Panel</p>
       </div>
       <h1 class="text-2xl font-black sm:text-3xl tracking-tight text-white">Operations Matrix</h1>
-      <p class="mt-2 max-w-2xl text-sm text-white/60">
+      <p class="mt-2 max-w-2xl text-base text-white/60">
         Portfolio health at a glance — exceptions, dispatch status, and compliance standing across all client sites.
       </p>
     </div>
@@ -72,21 +72,21 @@ const exceptions = [
   <div class="mx-auto max-w-7xl px-4 sm:px-6 space-y-6 pb-10">
 
     {loadError && (
-      <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>
+      <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-base font-semibold text-kharon-red">{loadError}</p>
     )}
 
     <section>
-      <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Quick Actions</h2>
+      <h2 class="text-base font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Quick Actions</h2>
       <PortalQuickActions actions={adminActions} />
     </section>
 
     {exceptions.length > 0 ? (
       <section class="rounded-xl border border-kharon-red/20 bg-kharon-red/5 p-4 sm:p-5">
-        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-red mb-3">Exceptions Requiring Attention</p>
+        <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-red mb-3">Exceptions Requiring Attention</p>
         <ul class="space-y-2">
           {exceptions.map(ex => (
             <li>
-              <a href={ex.href} class={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm font-semibold transition-colors ${ex.severity === 'red' ? 'border-kharon-red/30 bg-kharon-red/10 text-red-200 hover:bg-kharon-red/15' : 'border-kharon-amber/30 bg-kharon-amber/10 text-kharon-amber hover:bg-kharon-amber/15'}`}>
+              <a href={ex.href} class={`flex items-center gap-3 rounded-lg border px-4 py-3 text-base font-semibold transition-colors ${ex.severity === 'red' ? 'border-kharon-red/30 bg-kharon-red/10 text-red-200 hover:bg-kharon-red/15' : 'border-kharon-amber/30 bg-kharon-amber/10 text-kharon-amber hover:bg-kharon-amber/15'}`}>
                 <span class={`text-xl font-black tabular-nums ${ex.severity === 'red' ? 'text-kharon-red' : 'text-kharon-amber'}`}>{ex.count}</span>
                 <span class="flex-1">{ex.label}</span>
                 <svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
@@ -99,48 +99,48 @@ const exceptions = [
       <section class="rounded-xl border border-kharon-green/20 bg-kharon-green/5 px-5 py-4">
         <div class="flex items-center gap-3">
           <svg class="h-5 w-5 shrink-0 text-kharon-green" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-          <p class="text-sm font-bold text-kharon-green">All clear — no exceptions detected across the portfolio.</p>
+          <p class="text-base font-bold text-kharon-green">All clear — no exceptions detected across the portfolio.</p>
         </div>
       </section>
     ) : null}
 
     <section>
-      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Portfolio Health</p>
+      <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-purple/80 mb-3">Portfolio Health</p>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <a href="/portal/admin/dispatch" class="kharon-surface p-4 text-center hover:border-kharon-purple/40 transition-colors">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Active Jobs</p>
+          <p class="text-base font-bold uppercase tracking-wider text-kharon-purple mb-1">Active Jobs</p>
           <p class="text-2xl font-black text-white">{stats.activeJobs}</p>
         </a>
         <a href="/portal/admin/dispatch" class={`kharon-surface p-4 text-center transition-colors ${stats.unassignedJobs > 0 ? 'border-kharon-red/40 hover:border-kharon-red/60' : 'hover:border-kharon-purple/40'}`}>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Unassigned</p>
+          <p class="text-base font-bold uppercase tracking-wider text-kharon-purple mb-1">Unassigned</p>
           <p class={`text-2xl font-black ${stats.unassignedJobs > 0 ? 'text-kharon-red' : 'text-white'}`}>{stats.unassignedJobs}</p>
         </a>
         <a href="/portal/admin/systems" class={`kharon-surface p-4 text-center transition-colors ${stats.overdueSystems > 0 ? 'border-kharon-amber/40 hover:border-kharon-amber/60' : 'hover:border-kharon-purple/40'}`}>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Overdue Systems</p>
+          <p class="text-base font-bold uppercase tracking-wider text-kharon-purple mb-1">Overdue Systems</p>
           <p class={`text-2xl font-black ${stats.overdueSystems > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.overdueSystems}</p>
         </a>
         <a href="/portal/admin/dispatch" class={`kharon-surface p-4 text-center transition-colors ${stats.openRequests > 0 ? 'border-kharon-amber/40 hover:border-kharon-amber/60' : 'hover:border-kharon-purple/40'}`}>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Client Requests</p>
+          <p class="text-base font-bold uppercase tracking-wider text-kharon-purple mb-1">Client Requests</p>
           <p class={`text-2xl font-black ${stats.openRequests > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.openRequests}</p>
         </a>
         <a href="/portal/admin/jobs" class={`kharon-surface p-4 text-center transition-colors ${stats.missingDocuments > 0 ? 'border-kharon-amber/40 hover:border-kharon-amber/60' : 'hover:border-kharon-purple/40'}`}>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Missing Docs</p>
+          <p class="text-base font-bold uppercase tracking-wider text-kharon-purple mb-1">Missing Docs</p>
           <p class={`text-2xl font-black ${stats.missingDocuments > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.missingDocuments}</p>
         </a>
         <a href="/portal/admin/systems" class={`kharon-surface p-4 text-center transition-colors ${stats.openDefects > 0 ? 'border-kharon-amber/30 hover:border-kharon-amber/50' : 'hover:border-kharon-purple/40'}`}>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Open Defects</p>
+          <p class="text-base font-bold uppercase tracking-wider text-kharon-purple mb-1">Open Defects</p>
           <p class={`text-2xl font-black ${stats.openDefects > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.openDefects}</p>
         </a>
         <a href="/portal/admin/systems" class={`kharon-surface p-4 text-center transition-colors ${stats.criticalDefects > 0 ? 'border-kharon-red/40 hover:border-kharon-red/60' : 'hover:border-kharon-purple/40'}`}>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Critical Defects</p>
+          <p class="text-base font-bold uppercase tracking-wider text-kharon-purple mb-1">Critical Defects</p>
           <p class={`text-2xl font-black ${stats.criticalDefects > 0 ? 'text-kharon-red' : 'text-white'}`}>{stats.criticalDefects}</p>
         </a>
         <a href="/portal/admin/compliance" class={`kharon-surface p-4 text-center transition-colors ${stats.blockedCertificates > 0 ? 'border-kharon-amber/30 hover:border-kharon-amber/50' : 'hover:border-kharon-purple/40'}`}>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Blocked Certs</p>
+          <p class="text-base font-bold uppercase tracking-wider text-kharon-purple mb-1">Blocked Certs</p>
           <p class={`text-2xl font-black ${stats.blockedCertificates > 0 ? 'text-kharon-amber' : 'text-white'}`}>{stats.blockedCertificates}</p>
         </a>
         <div class="kharon-surface p-4 text-center">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-kharon-purple mb-1">Valid Certs</p>
+          <p class="text-base font-bold uppercase tracking-wider text-kharon-purple mb-1">Valid Certs</p>
           <p class="text-2xl font-black text-white">{stats.validCertificates}</p>
         </div>
       </div>

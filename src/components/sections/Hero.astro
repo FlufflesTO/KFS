@@ -8,7 +8,7 @@ const { title, text, proofItems = [] } = Astro.props;
 
   <div class="relative z-10 mx-auto grid min-h-[auto] max-w-7xl items-center gap-6 lg:gap-10 px-4 py-6 sm:px-6 md:min-h-[52vh] md:py-8 lg:min-h-[64vh] lg:grid-cols-[1.1fr_0.9fr] lg:py-0">
     <div class="reveal">
-      <p class="mb-4 text-sm font-bold uppercase text-kharon-purple">
+      <p class="mb-4 text-base font-bold uppercase text-kharon-purple">
         Commercial Fire Detection & Gas Suppression Specialists
       </p>
 
@@ -20,7 +20,7 @@ const { title, text, proofItems = [] } = Astro.props;
         {text}
       </p>
 
-      <p class="mt-5 inline-flex rounded-md border border-kharon-purple/30 bg-kharon-purple/10 px-4 py-3 text-sm font-bold uppercase text-kharon-purple">
+      <p class="mt-5 inline-flex rounded-md border border-kharon-purple/30 bg-kharon-purple/10 px-4 py-3 text-base font-bold uppercase text-kharon-purple">
         Commercial & industrial environments only
       </p>
 
@@ -28,7 +28,7 @@ const { title, text, proofItems = [] } = Astro.props;
         proofItems.length > 0 && (
           <div class="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {proofItems.map((item: string) => (
-              <span class="rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-bold uppercase text-white/75">
+              <span class="rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-base font-bold uppercase text-white/75">
                 {item}
               </span>
             ))}

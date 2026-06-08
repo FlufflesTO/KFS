@@ -10,7 +10,7 @@ const schema = generateBreadcrumbSchema(items);
 ---
 
 <nav aria-label="Breadcrumb" class="mb-6">
-  <ol class="flex items-center space-x-2 text-xs font-medium text-white/50">
+  <ol class="flex items-center space-x-2 text-base font-medium text-white/50">
     <li>
       <a href="/" class="hover:text-kharon-cyan transition-colors">Home</a>
     </li>
@@ -29,4 +29,4 @@ const schema = generateBreadcrumbSchema(items);
   </ol>
 </nav>
 
-<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+<script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />

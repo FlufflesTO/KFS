@@ -69,14 +69,14 @@ const badgeClasses: Record<string, string> = {
         ></svg>
       </div>
       {badge !== undefined && (
-        <span class={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider leading-none ${badgeClasses[badgeVariant]}`}>
+        <span class={`rounded-full px-2 py-0.5 text-base font-black uppercase tracking-wider leading-none ${badgeClasses[badgeVariant]}`}>
           {badge}
         </span>
       )}
     </div>
 
     <!-- Title -->
-    <h3 class="text-sm font-bold text-white tracking-tight leading-snug group-hover:text-white transition-colors">
+    <h3 class="text-base font-bold text-white tracking-tight leading-snug group-hover:text-white transition-colors">
       {title}
     </h3>
 
@@ -87,7 +87,7 @@ const badgeClasses: Record<string, string> = {
 
     <!-- Bottom CTA indicator -->
     <div class="mt-4 flex items-center gap-1">
-      <span class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple/60 group-hover:text-kharon-cyan transition-colors duration-200">
+      <span class="text-base font-bold uppercase tracking-widest text-kharon-purple/60 group-hover:text-kharon-cyan transition-colors duration-200">
         Open
       </span>
       <svg

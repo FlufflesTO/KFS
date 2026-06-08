@@ -63,12 +63,12 @@ function typeBadgeCls(type: string): string {
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
         <h1 class="text-base font-black uppercase tracking-widest text-white">HR &amp; Staff File Vault</h1>
-        <p class="text-sm text-white/50 mt-1">Manage staff members and confidential documents</p>
+        <p class="text-base text-white/50 mt-1">Manage staff members and confidential documents</p>
       </div>
       <button
         id="open-add-member"
         type="button"
-        class="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg bg-gradient-to-r from-kharon-purple to-kharon-blue text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        class="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg bg-gradient-to-r from-kharon-purple to-kharon-blue text-white text-base font-semibold hover:opacity-90 transition-opacity"
       >
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -78,7 +78,7 @@ function typeBadgeCls(type: string): string {
     </div>
 
     {loadError && (
-      <div class="rounded-lg border border-kharon-red/30 bg-kharon-red/10 px-4 py-3 text-sm text-kharon-red">
+      <div class="rounded-lg border border-kharon-red/30 bg-kharon-red/10 px-4 py-3 text-base text-kharon-red">
         {loadError}
       </div>
     )}
@@ -100,49 +100,49 @@ function typeBadgeCls(type: string): string {
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label for="full_name" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Full Name *</label>
+              <label for="full_name" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Full Name *</label>
               <input id="full_name" name="full_name" type="text" required
-                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
             </div>
             <div>
-              <label for="role_title" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Role / Title *</label>
+              <label for="role_title" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Role / Title *</label>
               <input id="role_title" name="role_title" type="text" required
-                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
             </div>
           </div>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label for="email" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Email</label>
+              <label for="email" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Email</label>
               <input id="email" name="email" type="email"
-                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
             </div>
             <div>
-              <label for="phone" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Phone</label>
+              <label for="phone" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Phone</label>
               <input id="phone" name="phone" type="tel"
-                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
             </div>
           </div>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <label for="start_date" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Start Date</label>
+              <label for="start_date" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Start Date</label>
               <input id="start_date" name="start_date" type="date"
-                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
             </div>
             <div>
-              <label for="employment_type" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Employment Type</label>
+              <label for="employment_type" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Employment Type</label>
               <select id="employment_type" name="employment_type"
-                class="w-full rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-sm text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan">
+                class="w-full rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan">
                 <option value="Full-time">Full-time</option>
                 <option value="Part-time">Part-time</option>
                 <option value="Contractor">Contractor</option>
               </select>
             </div>
             <div>
-              <label for="status" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Status</label>
+              <label for="status" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Status</label>
               <select id="status" name="status"
-                class="w-full rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-sm text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan">
+                class="w-full rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan">
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
                 <option value="Terminated">Terminated</option>
@@ -151,19 +151,19 @@ function typeBadgeCls(type: string): string {
           </div>
 
           <div>
-            <label for="notes" class="block text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Notes</label>
+            <label for="notes" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Notes</label>
             <textarea id="notes" name="notes" rows="3"
-              class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan resize-none"></textarea>
+              class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan resize-none"></textarea>
           </div>
 
-          <div id="member-form-result" class="hidden rounded-md border px-3 py-2 text-sm"></div>
+          <div id="member-form-result" class="hidden rounded-md border px-3 py-2 text-base"></div>
 
           <div class="flex justify-end gap-3 pt-2">
-            <button type="button" id="cancel-member" class="px-4 py-2 min-h-[44px] rounded-md border border-white/20 text-sm text-white/70 hover:text-white hover:border-white/40 transition-colors">
+            <button type="button" id="cancel-member" class="px-4 py-2 min-h-[44px] rounded-md border border-white/20 text-base text-white/70 hover:text-white hover:border-white/40 transition-colors">
               Cancel
             </button>
             <button type="submit" id="member-submit-btn"
-              class="px-5 py-2 min-h-[44px] rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+              class="px-5 py-2 min-h-[44px] rounded-md bg-gradient-to-r from-kharon-purple to-kharon-blue text-white text-base font-semibold hover:opacity-90 transition-opacity">
               Save Member
             </button>
           </div>
@@ -174,7 +174,7 @@ function typeBadgeCls(type: string): string {
     <!-- Staff List -->
     {staffWithFiles.length === 0 && !loadError ? (
       <div class="rounded-xl border border-white/10 bg-kharon-black/85 px-6 py-12 text-center">
-        <p class="text-sm text-white/40">No staff members found. Add the first member above.</p>
+        <p class="text-base text-white/40">No staff members found. Add the first member above.</p>
       </div>
     ) : (
       <div class="space-y-6">
@@ -185,14 +185,14 @@ function typeBadgeCls(type: string): string {
             <div class="flex flex-wrap items-center gap-3 px-5 py-4">
               <div class="flex-1 min-w-0">
                 <div class="flex flex-wrap items-center gap-2">
-                  <span class="text-sm font-semibold text-white truncate">{member.full_name}</span>
-                  <span class={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest ${statusBadgeCls(member.status)}`}>{member.status}</span>
-                  <span class={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest ${typeBadgeCls(member.employment_type)}`}>{member.employment_type}</span>
+                  <span class="text-base font-semibold text-white truncate">{member.full_name}</span>
+                  <span class={`px-2 py-0.5 rounded-full text-base font-semibold uppercase tracking-widest ${statusBadgeCls(member.status)}`}>{member.status}</span>
+                  <span class={`px-2 py-0.5 rounded-full text-base font-semibold uppercase tracking-widest ${typeBadgeCls(member.employment_type)}`}>{member.employment_type}</span>
                 </div>
-                <p class="text-xs text-white/50 mt-0.5">{member.role_title}{member.email ? ` · ${member.email}` : ""}{member.phone ? ` · ${member.phone}` : ""}</p>
+                <p class="text-base text-white/50 mt-0.5">{member.role_title}{member.email ? ` · ${member.email}` : ""}{member.phone ? ` · ${member.phone}` : ""}</p>
               </div>
               <div class="flex items-center gap-2 shrink-0">
-                <span class="text-xs text-white/40">{member.file_count} file{member.file_count !== 1 ? "s" : ""}</span>
+                <span class="text-base text-white/40">{member.file_count} file{member.file_count !== 1 ? "s" : ""}</span>
                 <button
                   type="button"
                   class="edit-member-btn min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
@@ -229,13 +229,13 @@ function typeBadgeCls(type: string): string {
 
             <!-- Files section -->
             <div class="border-t border-white/5 bg-black/20 px-5 py-4 space-y-3">
-              <p class="text-[10px] font-semibold uppercase tracking-widest text-white/40">Documents</p>
+              <p class="text-base font-semibold uppercase tracking-widest text-white/40">Documents</p>
 
               {member.files.length > 0 && (
                 <div class="portal-scroll-x">
-                  <table class="w-full text-sm">
+                  <table class="w-full text-base">
                     <thead>
-                      <tr class="text-[10px] uppercase tracking-widest text-white/40 border-b border-white/5">
+                      <tr class="text-base uppercase tracking-widest text-white/40 border-b border-white/5">
                         <th scope="col" class="text-left py-2 pr-4 font-semibold">File Name</th>
                         <th scope="col" class="text-left py-2 pr-4 font-semibold">Type</th>
                         <th scope="col" class="text-left py-2 pr-4 font-semibold">Uploaded</th>
@@ -246,26 +246,26 @@ function typeBadgeCls(type: string): string {
                       {member.files.map((f) => (
                         <tr class="text-white/70">
                           <td class="py-2 pr-4">
-                            <span class="text-sm text-white/80">{f.file_name}</span>
+                            <span class="text-base text-white/80">{f.file_name}</span>
                           </td>
                           <td class="py-2 pr-4">
-                            <span class="text-xs text-white/50">{f.file_type}</span>
+                            <span class="text-base text-white/50">{f.file_type}</span>
                           </td>
                           <td class="py-2 pr-4">
-                            <span class="text-xs text-white/40">{f.uploaded_at.slice(0, 10)}</span>
+                            <span class="text-base text-white/40">{f.uploaded_at.slice(0, 10)}</span>
                           </td>
                           <td class="py-2">
                             <div class="flex items-center gap-2">
                               <a
                                 href={`/portal/api/staff/download/${f.id}`}
-                                class="min-h-[44px] px-3 flex items-center text-xs text-kharon-cyan hover:text-white transition-colors"
+                                class="min-h-[44px] px-3 flex items-center text-base text-kharon-cyan hover:text-white transition-colors"
                                 download
                               >
                                 Download
                               </a>
                               <button
                                 type="button"
-                                class="delete-file-btn min-h-[44px] px-3 text-xs text-kharon-red/60 hover:text-kharon-red transition-colors"
+                                class="delete-file-btn min-h-[44px] px-3 text-base text-kharon-red/60 hover:text-kharon-red transition-colors"
                                 data-file-id={f.id}
                                 data-file-name={f.file_name}
                               >
@@ -290,8 +290,8 @@ function typeBadgeCls(type: string): string {
                 <CsrfInput />
                 <input type="hidden" name="member_id" value={member.id} />
                 <div>
-                  <label class="block text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-1">File Type</label>
-                  <select name="file_type" class="rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-sm text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan min-h-[44px]">
+                  <label class="block text-base font-semibold uppercase tracking-widest text-white/40 mb-1">File Type</label>
+                  <select name="file_type" class="rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan min-h-[44px]">
                     <option value="ID Document">ID Document</option>
                     <option value="Contract">Contract</option>
                     <option value="Certificate">Certificate</option>
@@ -299,22 +299,22 @@ function typeBadgeCls(type: string): string {
                   </select>
                 </div>
                 <div>
-                  <label class="block text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-1">File (max 10 MB)</label>
+                  <label class="block text-base font-semibold uppercase tracking-widest text-white/40 mb-1">File (max 10 MB)</label>
                   <input
                     type="file"
                     name="file"
                     accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
                     required
-                    class="block text-sm text-white/60 file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-xs file:text-white file:cursor-pointer file:min-h-[44px]"
+                    class="block text-base text-white/60 file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-base file:text-white file:cursor-pointer file:min-h-[44px]"
                   />
                 </div>
                 <button
                   type="submit"
-                  class="px-4 py-2 min-h-[44px] rounded-md bg-white/10 border border-white/20 text-sm text-white hover:bg-white/15 transition-colors"
+                  class="px-4 py-2 min-h-[44px] rounded-md bg-white/10 border border-white/20 text-base text-white hover:bg-white/15 transition-colors"
                 >
                   Upload
                 </button>
-                <div class="upload-result hidden w-full rounded-md border px-3 py-2 text-sm"></div>
+                <div class="upload-result hidden w-full rounded-md border px-3 py-2 text-base"></div>
               </form>
             </div>
 
@@ -500,11 +500,11 @@ document.querySelectorAll<HTMLFormElement>(".upload-form").forEach((uploadForm) 
       if (uploadResult) {
         uploadResult.classList.remove("hidden");
         if (response.ok && body.ok) {
-          uploadResult.className = "upload-result rounded-md border border-kharon-green/30 bg-kharon-green/10 px-3 py-2 text-sm text-kharon-green";
+          uploadResult.className = "upload-result rounded-md border border-kharon-green/30 bg-kharon-green/10 px-3 py-2 text-base text-kharon-green";
           uploadResult.textContent = body.message ?? "File uploaded.";
           setTimeout(() => window.location.reload(), 800);
         } else {
-          uploadResult.className = "upload-result rounded-md border border-kharon-red/30 bg-kharon-red/10 px-3 py-2 text-sm text-kharon-red";
+          uploadResult.className = "upload-result rounded-md border border-kharon-red/30 bg-kharon-red/10 px-3 py-2 text-base text-kharon-red";
           uploadResult.textContent = body.message ?? "Upload failed.";
           if (submitEl) {
             submitEl.disabled = false;
@@ -515,7 +515,7 @@ document.querySelectorAll<HTMLFormElement>(".upload-form").forEach((uploadForm) 
     } catch {
       if (uploadResult) {
         uploadResult.classList.remove("hidden");
-        uploadResult.className = "upload-result rounded-md border border-kharon-red/30 bg-kharon-red/10 px-3 py-2 text-sm text-kharon-red";
+        uploadResult.className = "upload-result rounded-md border border-kharon-red/30 bg-kharon-red/10 px-3 py-2 text-base text-kharon-red";
         uploadResult.textContent = "Network error. Please try again.";
       }
       if (submitEl) {

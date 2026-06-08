@@ -44,10 +44,10 @@ const summaries: Record<string, string> = {
             class="group flex min-h-[44px] flex-col rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-6 transition-colors hover:border-kharon-cyan/40"
           >
             <h2 class="text-base font-bold text-white group-hover:text-kharon-cyan">{link.label}</h2>
-            <p class="mt-3 flex-1 text-sm leading-relaxed text-kharon-light/70">
+            <p class="mt-3 flex-1 text-base leading-relaxed text-kharon-light/70">
               {summaries[link.href] ?? "Guidance and reference material for buyers and responsible persons."}
             </p>
-            <span class="mt-4 text-xs font-bold uppercase tracking-widest text-kharon-cyan">Read more &rarr;</span>
+            <span class="mt-4 text-base font-bold uppercase tracking-widest text-kharon-cyan">Read more &rarr;</span>
           </a>
         ))}
       </div>

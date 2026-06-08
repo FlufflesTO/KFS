@@ -197,14 +197,14 @@ const categories = [
         {category.standards.map((std) => (
           <div class="group rounded-lg border border-white/5 bg-kharon-black/40 p-4 transition-all duration-300 hover:border-kharon-purple/30 hover:bg-kharon-black/60">
             <div class="flex items-center justify-between gap-2">
-              <span class={`rounded px-3 py-0.5 text-xs font-black uppercase tracking-wider border ${category.color}`}>
+              <span class={`rounded px-3 py-0.5 text-base font-black uppercase tracking-wider border ${category.color}`}>
                 {std.code}
               </span>
             </div>
-            <h4 class="mt-2 text-sm font-bold text-white group-hover:text-kharon-cyan transition-colors">
+            <h4 class="mt-2 text-base font-bold text-white group-hover:text-kharon-cyan transition-colors">
               {std.name}
             </h4>
-            <p class="mt-2 text-xs leading-relaxed text-kharon-light/70">
+            <p class="mt-2 text-base leading-relaxed text-kharon-light/70">
               {std.governs}
             </p>
           </div>

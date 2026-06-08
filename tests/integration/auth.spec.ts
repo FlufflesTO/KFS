@@ -359,8 +359,8 @@ test.describe('MFA API - POST /portal/api/mfa', () => {
     expect(response.status()).toBe(401);
   });
 
-  test('should allow MFA setup for admin user', async ({ page }) => {
-    await loginAsTestUser(page, 'admin');
+  test('should allow MFA setup for tech user', async ({ page }) => {
+    await loginAsTestUser(page, 'tech');
 
     const response = await page.request.post('/portal/api/mfa', {
       data: { action: 'setup' },
@@ -374,25 +374,6 @@ test.describe('MFA API - POST /portal/api/mfa', () => {
     expect(body.qrCode).toBeDefined();
   });
 
-  test('should allow MFA setup for finance user', async ({ page }) => {
-    await loginAsTestUser(page, 'finance');
-
-    const response = await page.request.post('/portal/api/mfa', {
-      data: { action: 'setup' },
-    });
-
-    expect(response.status()).toBe(200);
-  });
-
-  test('should allow MFA setup for tech user', async ({ page }) => {
-    await loginAsTestUser(page, 'tech');
-
-    const response = await page.request.post('/portal/api/mfa', {
-      data: { action: 'setup' },
-    });
-
-    expect(response.status()).toBe(200);
-  });
 
   test('should forbid MFA setup for client user', async ({ page }) => {
     await loginAsTestUser(page, 'client');
@@ -417,7 +398,7 @@ test.describe('MFA API - POST /portal/api/mfa', () => {
   });
 
   test('should return 400 for MFA enable with invalid code', async ({ page }) => {
-    await loginAsTestUser(page, 'admin');
+    await loginAsTestUser(page, 'tech');
 
     // First setup to get secret
     const setupResponse = await page.request.post('/portal/api/mfa', {

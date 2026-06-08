@@ -96,7 +96,8 @@ export async function loginAsTestUser(
   mfaCode?: string
 ): Promise<{ response: APIResponse; body: AuthResponse }> {
   const user = testUsers[userKey];
-  return loginToPortal(page, user.email, user.password, mfaCode);
+  const code = mfaCode !== undefined ? mfaCode : (user.mfaEnabled ? '000000' : undefined);
+  return loginToPortal(page, user.email, user.password, code);
 }
 
 /**

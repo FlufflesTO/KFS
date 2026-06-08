@@ -3,8 +3,11 @@
  * Structure per the agreed format: sector, problem, system, intervention,
  * documentation produced, outcome, proof, CTA.
  *
- * NOTE: These are representative examples for demonstration. They do not name real
- * clients. Keep claims technically accurate and defensible.
+ * NOTE: These are representative scenarios for demonstration. They do not name real
+ * clients and do not report measured project results. Values in `metrics` are
+ * illustrative deliverables, not verified outcomes — the CaseStudyCard disclaimer
+ * states this on every card. Replace with approved project evidence before using
+ * any of these as a real, attributable case study.
  */
 
 export interface CaseStudy {
@@ -18,7 +21,7 @@ export interface CaseStudy {
   intervention: string;
   documentation: string[];
   outcome: string;
-  /** optional headline metrics */
+  /** optional illustrative deliverables (NOT measured results — see file header) */
   metrics?: { label: string; value: string }[];
   /** optional proof image in /public */
   image?: string;
@@ -36,10 +39,10 @@ export const caseStudies: CaseStudy[] = [
     sector: "Data Centres",
     sectorHref: "/sectors/data-centres",
     problem:
-      "An ageing CO₂ system protected a live colocation hall, creating a personnel-safety risk and failing a tenant compliance audit.",
+      "An ageing CO₂ system protected a live colocation hall, creating a personnel-safety risk and falling short of a tenant compliance review.",
     system: "Gaseous suppression (SANS 14520) with addressable detection (SANS 10139) and HVAC interlock.",
     intervention:
-      "Phased cut-over to an FM-200 clean-agent system with cross-zoned detection, room-integrity (fan) testing and an HVAC shutdown interlock — completed without taking the hall offline.",
+      "Phased cut-over to an FM-200 clean-agent system with cross-zoned detection, room-integrity (fan) testing and an HVAC shutdown interlock — planned to keep the hall in service throughout.",
     documentation: [
       "Room-integrity test certificate",
       "SANS 14520 design concentration calculation",
@@ -47,11 +50,11 @@ export const caseStudies: CaseStudy[] = [
       "Commissioning and handover pack"
     ],
     outcome:
-      "Passed the tenant compliance audit on re-inspection; personnel-safe agent with sub-10-second design concentration and zero downtime during cut-over.",
+      "Handover pack prepared to support the tenant compliance review; a personnel-safe clean agent with a documented design-concentration calculation, and a cut-over staged to limit disruption to the live hall.",
     metrics: [
-      { label: "Hall downtime", value: "Minimal" },
-      { label: "Audit result", value: "Pass" },
-      { label: "Design concentration", value: "Compliant" }
+      { label: "Cut-over", value: "Staged" },
+      { label: "Audit support", value: "Handover pack" },
+      { label: "Design basis", value: "Calculated" }
     ],
     intent: "data-centre",
     related: [
@@ -76,10 +79,10 @@ export const caseStudies: CaseStudy[] = [
       "Annual maintenance schedule"
     ],
     outcome:
-      "Full audible and intelligible coverage across the facility; documented evacuation strategy accepted by the insurer.",
+      "Audible and intelligible coverage designed across the facility, with a documented evacuation strategy and intelligibility report prepared for insurer and responsible-person review.",
     metrics: [
-      { label: "Coverage", value: "Comprehensive" },
-      { label: "Intelligibility", value: "Pass" }
+      { label: "Coverage", value: "Documented" },
+      { label: "Intelligibility", value: "Report" }
     ],
     intent: "warehousing",
     related: [
@@ -104,11 +107,11 @@ export const caseStudies: CaseStudy[] = [
       "Commissioning certificate and operator instructions"
     ],
     outcome:
-      "People-safe automatic protection for the switchgear room with verified hold time; detection and damper interlocks demonstrated at commissioning and accepted by the site's risk engineer.",
+      "People-safe automatic protection for the switchgear room with a documented hold-time test; detection and damper interlocks demonstrated and recorded at commissioning, with the evidence pack prepared for the site's risk engineer.",
     metrics: [
       { label: "Agent", value: "People-safe" },
-      { label: "Integrity test", value: "Pass" },
-      { label: "Interlocks", value: "Verified" }
+      { label: "Integrity test", value: "Recorded" },
+      { label: "Interlocks", value: "Recorded" }
     ],
     intent: "electrical-rooms",
     related: [
@@ -133,11 +136,11 @@ export const caseStudies: CaseStudy[] = [
       "Emergency-lighting duration-test record"
     ],
     outcome:
-      "Early, location-specific detection with a controlled phased-evacuation strategy and intelligible messaging across all occupied zones; full handover documentation for the responsible person.",
+      "Early, location-specific detection with a controlled phased-evacuation strategy and intelligible messaging across the occupied zones, and full handover documentation for the responsible person.",
     metrics: [
       { label: "Evacuation", value: "Phased" },
-      { label: "Intelligibility", value: "Pass" },
-      { label: "Coverage", value: "Comprehensive" }
+      { label: "Intelligibility", value: "Report" },
+      { label: "Coverage", value: "Documented" }
     ],
     intent: "healthcare",
     related: [
@@ -152,7 +155,7 @@ export const caseStudies: CaseStudy[] = [
     sector: "Control Rooms",
     sectorHref: "/sectors/control-rooms",
     problem:
-      "A site operations control room ran CCTV, access control and intrusion detection as disconnected systems, slowing verification and producing false dispatches.",
+      "A site operations control room ran CCTV, access control and intrusion detection as disconnected systems, slowing verification and producing avoidable dispatches.",
     system: "Integrated security: CCTV (SANS 62676), access control (SANS 60839-11-1) and intrusion detection (SANS 50131).",
     intervention:
       "Unified the three systems under a single monitoring view so intrusion and access events trigger associated camera verification, with access control configured to fail safe on fire alarm to protect egress.",
@@ -163,11 +166,11 @@ export const caseStudies: CaseStudy[] = [
       "Integration commissioning record"
     ],
     outcome:
-      "Faster, camera-verified response to security events and fewer false dispatches, with egress protected on fire alarm; a single operator view across all three systems.",
+      "Camera-verified response to security events from a single operator view, designed to reduce avoidable dispatches, with egress protected on fire alarm across all three systems.",
     metrics: [
       { label: "Verification", value: "Unified" },
       { label: "Egress", value: "Fail-safe" },
-      { label: "False dispatch", value: "Reduced" }
+      { label: "Dispatches", value: "Fewer (aim)" }
     ],
     intent: "integrated-security",
     related: [
@@ -182,7 +185,7 @@ export const caseStudies: CaseStudy[] = [
     sector: "Healthcare & Commercial",
     sectorHref: "/sectors/healthcare-commercial",
     problem:
-      "A multi-tenant commercial building failed a compliance review on its fire doors — propped doors, failed seals and non-rated hardware compromised compartmentation.",
+      "A multi-tenant commercial building fell short on a compliance review of its fire doors — propped doors, failed seals and non-rated hardware compromised compartmentation.",
     system: "Fire-door assemblies and ironmongery (SANS 1253, SANS 10400-T, SANS 51155).",
     intervention:
       "Surveyed every fire door against its certification, then remediated defects: replaced intumescent and smoke seals, refitted rated hardware and self-closers, corrected gap tolerances and fitted alarm-released electromagnetic hold-opens where doors needed to stay open in normal use.",
@@ -193,10 +196,10 @@ export const caseStudies: CaseStudy[] = [
       "Remedial certification for completed assemblies"
     ],
     outcome:
-      "Compartmentation restored across the building with a documented, door-by-door evidence trail; the building passed re-inspection.",
+      "Compartmentation addressed across the building with a documented, door-by-door evidence trail and remedial certification prepared to support re-inspection.",
     metrics: [
       { label: "Doors surveyed", value: "Full set" },
-      { label: "Re-inspection", value: "Pass" },
+      { label: "Re-inspection", value: "Defects closed" },
       { label: "Evidence", value: "Door-level" }
     ],
     intent: "fire-doors",
@@ -222,11 +225,11 @@ export const caseStudies: CaseStudy[] = [
       "Commissioning certificate and operator instructions"
     ],
     outcome:
-      "Auditable, credential-based access replacing mechanical keys, with verified fail-safe egress on every escape-route door confirmed at commissioning.",
+      "Auditable, credential-based access replacing mechanical keys, with fail-safe egress on every escape-route door demonstrated and recorded at commissioning.",
     metrics: [
       { label: "Audit trail", value: "Full" },
       { label: "Egress", value: "Fail-safe" },
-      { label: "Integration", value: "Verified" }
+      { label: "Integration", value: "Recorded" }
     ],
     intent: "access-control",
     related: [

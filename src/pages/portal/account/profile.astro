@@ -12,29 +12,29 @@ if (!user) {
 <PortalLayout title="Profile | Kharon Portal" active="profile" user={user}>
   <section class="grid gap-6">
     <header class="flex flex-col gap-2 border-b border-kharon-purple/15 pb-5">
-      <p class="text-xs font-black uppercase tracking-[0.18em] text-kharon-purple">Account</p>
+      <p class="text-base font-black uppercase tracking-[0.18em] text-kharon-purple">Account</p>
       <h1 class="text-2xl font-bold text-white">Profile</h1>
-      <p class="max-w-3xl text-sm leading-6 text-kharon-light/70">
+      <p class="max-w-3xl text-base leading-6 text-kharon-light/70">
         Account details for your signed-in session. To update your password or MFA settings use the links below.
       </p>
     </header>
 
     <div class="kharon-surface grid gap-5 p-5 md:grid-cols-2">
       <div class="grid gap-1.5">
-        <label class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Name</label>
+        <label class="text-base font-bold uppercase tracking-widest text-kharon-purple">Name</label>
         <p class="kharon-field flex items-center opacity-80">{user.name}</p>
       </div>
       <div class="grid gap-1.5">
-        <label class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Email</label>
+        <label class="text-base font-bold uppercase tracking-widest text-kharon-purple">Email</label>
         <p class="kharon-field flex items-center opacity-80">{user.email}</p>
       </div>
       <div class="grid gap-1.5">
-        <label class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Portal Role</label>
+        <label class="text-base font-bold uppercase tracking-widest text-kharon-purple">Portal Role</label>
         <p class="kharon-field flex items-center capitalize opacity-80">{user.role}</p>
       </div>
       <div class="flex flex-col justify-end gap-3 md:col-span-2 sm:flex-row">
-        <a href="/portal/account/password" class="kharon-secondary-button min-h-[44px] px-5 py-2 text-xs text-center">Change Password</a>
-        <a href="/portal/account/mfa" class="kharon-command-button min-h-[44px] px-5 py-2 text-xs text-center">MFA Settings</a>
+        <a href="/portal/account/password" class="kharon-secondary-button min-h-[44px] px-5 py-2 text-base text-center">Change Password</a>
+        <a href="/portal/account/mfa" class="kharon-command-button min-h-[44px] px-5 py-2 text-base text-center">MFA Settings</a>
       </div>
     </div>
   </section>

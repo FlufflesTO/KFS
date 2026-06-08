@@ -54,14 +54,14 @@ const integritySteps = [
   <div class="mx-auto max-w-7xl px-6">
 
     <!-- ─── Block 1: Clean Agent Comparison ─── -->
-    <span class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Agent Selection — SANS 14520</span>
+    <span class="text-base font-bold uppercase tracking-widest text-kharon-purple">Agent Selection — SANS 14520</span>
     <h2 class="text-3xl font-bold leading-tight text-white mt-2">Clean agent characteristics.</h2>
     <p class="mt-4 max-w-3xl text-lg leading-8 text-white/70">
       Selection depends on room volume, environmental targets, and safety requirements. All agents used by Kharon are non-conductive and leave no residue.
     </p>
 
     <div class="mt-10 overflow-x-auto portal-scroll-x scrollbar-hide">
-      <table class="w-full min-w-[640px] border-collapse text-sm">
+      <table class="w-full min-w-[640px] border-collapse text-base">
         <thead>
           <tr>
             <th class="border border-kharon-purple/20 bg-kharon-purple px-4 py-3 text-left font-bold text-white">Agent Type</th>
@@ -76,7 +76,7 @@ const integritySteps = [
               <td class="border border-kharon-purple/20 px-4 py-4 font-bold text-white">{agent.name}</td>
               <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-light/80">{agent.mechanism}</td>
               <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-light/80 font-medium text-kharon-cyan">{agent.safety}</td>
-              <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-light/60 text-xs uppercase tracking-wider">{agent.environment}</td>
+              <td class="border border-kharon-purple/20 px-4 py-4 text-kharon-light/60 text-base uppercase tracking-wider">{agent.environment}</td>
             </tr>
           ))}
         </tbody>
@@ -85,7 +85,7 @@ const integritySteps = [
 
     <!-- ─── Block 2: Discharge Sequencing Flowchart ─── -->
     <div class="mt-12">
-      <span class="text-sm font-bold uppercase tracking-wider text-kharon-purple">Discharge Orchestration</span>
+      <span class="text-base font-bold uppercase tracking-wider text-kharon-purple">Discharge Orchestration</span>
       <h2 class="text-3xl font-bold leading-tight text-white mt-2">Precision release sequencing.</h2>
       <p class="mt-4 max-w-3xl text-lg leading-8 text-white/70">
         Engineered systems follow a strict 'Double-Knock' logic to prevent accidental discharge while ensuring rapid response to confirmed fire events.
@@ -153,11 +153,11 @@ const integritySteps = [
       <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {maintenanceItems.map((item) => (
           <div class="rounded-xl border border-kharon-purple/20 p-6 bg-kharon-charcoal transition-all hover:border-kharon-purple/40">
-            <span class="inline-block px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-kharon-purple/10 text-kharon-purple mb-4 border border-kharon-purple/20">
+            <span class="inline-block px-2 py-1 rounded text-base font-black uppercase tracking-widest bg-kharon-purple/10 text-kharon-purple mb-4 border border-kharon-purple/20">
               {item.step}
             </span>
             <h3 class="text-base font-bold tracking-tight text-white mb-2">{item.title}</h3>
-            <p class="text-xs leading-relaxed text-white/50">{item.text}</p>
+            <p class="text-base leading-relaxed text-white/50">{item.text}</p>
           </div>
         ))}
       </div>
@@ -167,7 +167,7 @@ const integritySteps = [
     <div class="mt-20 reveal">
       <div class="grid gap-12 lg:grid-cols-2 items-center">
         <div>
-          <span class="text-sm font-bold uppercase tracking-wider text-kharon-cyan">Verification Layer</span>
+          <span class="text-base font-bold uppercase tracking-wider text-kharon-cyan">Verification Layer</span>
           <h2 class="text-3xl font-bold leading-tight text-white mt-2">Room integrity testing.</h2>
           <p class="mt-6 text-lg text-white/70 leading-relaxed">
             The world's best suppression system will fail if the room cannot contain the gas. We perform 'Door Fan Integrity Testing' to prove your space meets the required hold-time for insurance and life safety.
@@ -180,8 +180,8 @@ const integritySteps = [
                   <div class="h-2 w-2 rounded-full bg-kharon-cyan"></div>
                 </div>
                 <div>
-                  <h4 class="font-bold text-white text-sm uppercase tracking-wide">{step.title}</h4>
-                  <p class="text-sm text-white/50 mt-1">{step.text}</p>
+                  <h4 class="font-bold text-white text-base uppercase tracking-wide">{step.title}</h4>
+                  <p class="text-base text-white/50 mt-1">{step.text}</p>
                 </div>
               </div>
             ))}
@@ -192,7 +192,7 @@ const integritySteps = [
           <div class="absolute -right-20 -top-20 h-64 w-64 bg-kharon-purple/10 rounded-full blur-3xl group-hover:bg-kharon-purple/20 transition-colors"></div>
           <div class="relative z-10">
             <h3 class="text-xl font-bold text-white mb-4">Why Integrity Fails</h3>
-            <ul class="space-y-4 text-sm text-white/60">
+            <ul class="space-y-4 text-base text-white/60">
               <li class="flex gap-3">
                 <span class="text-kharon-red font-bold">×</span>
                 Unsealed cable penetrations added post-commissioning.
@@ -211,7 +211,7 @@ const integritySteps = [
               </li>
             </ul>
             <div class="mt-8 pt-6 border-t border-kharon-purple/10">
-              <p class="text-xs font-medium text-kharon-cyan italic">
+              <p class="text-base font-medium text-kharon-cyan italic">
                 SANS 14520 requires an annual integrity check or when significant room modifications occur.
               </p>
             </div>

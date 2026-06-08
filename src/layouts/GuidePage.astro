@@ -34,7 +34,7 @@ const { meta, hero, intro, sections, checklists, related, intent } = Astro.props
             {s.list && s.list.length > 0 && (
               <ul class="mt-4 grid gap-2">
                 {s.list.map((li) => (
-                  <li class="flex items-start gap-3 text-sm leading-relaxed text-kharon-light/80">
+                  <li class="flex items-start gap-3 text-base leading-relaxed text-kharon-light/80">
                     <span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-kharon-cyan"></span>{li}
                   </li>
                 ))}
@@ -51,8 +51,8 @@ const { meta, hero, intro, sections, checklists, related, intent } = Astro.props
               <h3 class="text-base font-bold text-white">{c.title}</h3>
               <ul class="mt-4 grid gap-2">
                 {c.items.map((item) => (
-                  <li class="flex items-start gap-3 text-sm leading-relaxed text-kharon-light/80">
-                    <span class="mt-0.5 flex h-4 w-4 flex-none items-center justify-center rounded border border-kharon-cyan/40 text-[0.6rem] text-kharon-cyan">✓</span>{item}
+                  <li class="flex items-start gap-3 text-base leading-relaxed text-kharon-light/80">
+                    <span class="mt-0.5 flex h-4 w-4 flex-none items-center justify-center rounded border border-kharon-cyan/40 text-base text-kharon-cyan">✓</span>{item}
                   </li>
                 ))}
               </ul>
@@ -63,10 +63,10 @@ const { meta, hero, intro, sections, checklists, related, intent } = Astro.props
 
       {related && related.length > 0 && (
         <div class="mt-12 border-t border-kharon-purple/10 pt-8">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">Related</p>
+          <p class="text-base font-bold uppercase tracking-[0.2em] text-kharon-cyan">Related</p>
           <div class="mt-4 flex flex-wrap gap-3">
             {related.map((r) => (
-              <a href={r.href} class="rounded-lg border border-kharon-purple/20 bg-kharon-charcoal/30 px-4 py-2 text-sm font-bold text-white hover:border-kharon-cyan/40 hover:text-kharon-cyan">{r.label}</a>
+              <a href={r.href} class="rounded-lg border border-kharon-purple/20 bg-kharon-charcoal/30 px-4 py-2 text-base font-bold text-white hover:border-kharon-cyan/40 hover:text-kharon-cyan">{r.label}</a>
             ))}
           </div>
         </div>

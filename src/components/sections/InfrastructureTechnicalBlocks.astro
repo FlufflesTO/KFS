@@ -81,12 +81,12 @@ const matrixRows: Array<[string, string, string, string]> = [
               <p class={`text-[0.625rem] font-bold uppercase tracking-widest ${t.label}`}>{tier.band}</p>
             </div>
             <h3 class="mt-4 text-xl font-bold tracking-tight text-white">{tier.title}</h3>
-            <p class="mt-2 text-xs font-semibold text-white/50 uppercase tracking-wider">{tier.sectors}</p>
+            <p class="mt-2 text-base font-semibold text-white/50 uppercase tracking-wider">{tier.sectors}</p>
             <dl class="mt-6 space-y-4">
               {tier.rows.map(([label, val]) => (
                 <div class="border-b border-kharon-purple/15 pb-2.5">
                   <dt class="text-[0.625rem] font-bold uppercase tracking-widest text-white/40">{label}</dt>
-                  <dd class="mt-1 text-sm font-bold text-white">{val}</dd>
+                  <dd class="mt-1 text-base font-bold text-white">{val}</dd>
                 </div>
               ))}
             </dl>
@@ -172,7 +172,7 @@ const matrixRows: Array<[string, string, string, string]> = [
       </div>
 
       <div class="mt-12 overflow-x-auto rounded-xl border border-kharon-purple/20">
-        <div class="min-w-[640px] bg-kharon-charcoal text-sm">
+        <div class="min-w-[640px] bg-kharon-charcoal text-base">
           <!-- Header row -->
           <div class="grid grid-cols-4 border-b border-kharon-purple/20">
             <div class="px-6 py-5 font-bold uppercase tracking-widest text-[0.625rem] text-white/40">Criteria</div>

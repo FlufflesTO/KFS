@@ -101,7 +101,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
         <h1 class="text-2xl font-bold text-white tracking-tight font-heading">Job Management</h1>
-        <p class="mt-1 text-sm text-white/60">Dispatch, assign, and manage field service works</p>
+        <p class="mt-1 text-base text-white/60">Dispatch, assign, and manage field service works</p>
       </div>
     </div>
 
@@ -112,11 +112,11 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
     <article class="kharon-surface p-4 sm:p-5">
       <div class="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-line-cyan-soft pb-4">
         <h2 class="text-xl font-bold text-white font-heading">
-          Jobs <span class="ml-2 text-sm font-normal text-white/60">({jobsTotal})</span>
+          Jobs <span class="ml-2 text-base font-normal text-white/60">({jobsTotal})</span>
         </h2>
         <form class="flex flex-wrap items-end gap-3" method="get">
           <div class="grid gap-1">
-            <label for="jobs-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search</label>
+            <label for="jobs-q" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Search</label>
             <input
               id="jobs-q"
               name="q"
@@ -127,7 +127,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             />
           </div>
           <div class="grid gap-1">
-            <label for="jobs-status" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Status</label>
+            <label for="jobs-status" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Status</label>
             <select id="jobs-status" name="status" class="kharon-field">
               <option value="">All statuses</option>
               {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
@@ -135,15 +135,15 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               ))}
             </select>
           </div>
-          <button type="submit" class="kharon-command-button text-xs py-2 px-4 h-[38px] self-end">Filter</button>
+          <button type="submit" class="kharon-command-button text-base py-2 px-4 h-[38px] self-end">Filter</button>
           {(searchQuery || statusFilter) && (
-            <a href="/portal/admin/jobs" class="kharon-secondary-button text-xs py-2 px-4 h-[38px] flex items-center justify-center">Clear</a>
+            <a href="/portal/admin/jobs" class="kharon-secondary-button text-base py-2 px-4 h-[38px] flex items-center justify-center">Clear</a>
           )}
         </form>
       </div>
 
       <div class="grid gap-4">
-        {jobs.length === 0 && <p class="py-4 text-sm text-white/50 italic">No jobs match your filter.</p>}
+        {jobs.length === 0 && <p class="py-4 text-base text-white/50 italic">No jobs match your filter.</p>}
         {jobs.map((record) => (
           <form
             class="admin-form grid gap-4 bg-surface-charcoal/40 border border-line-cyan-soft/50 p-4 lg:grid-cols-7 rounded-md"
@@ -154,7 +154,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <input type="hidden" name="id" value={record.id} />
             
             <div class="grid gap-1 lg:col-span-2">
-              <label for={`system-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">System Scope</label>
+              <label for={`system-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">System Scope</label>
               <select id={`system-${record.id}`} class="kharon-field" name="systemId">
                 {systems.map((system) => (
                   <option value={system.id} selected={record.system_id === system.id}>
@@ -165,7 +165,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="grid gap-1">
-              <label for={`tech-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Assign Technician</label>
+              <label for={`tech-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Assign Technician</label>
               <select id={`tech-${record.id}`} class="kharon-field" name="assignedTechnicianId">
                 <option value="">Unassigned</option>
                 {technicians.map((tech) => (
@@ -175,12 +175,12 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="grid gap-1">
-              <label for={`date-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Scheduled Date</label>
+              <label for={`date-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Scheduled Date</label>
               <input id={`date-${record.id}`} class="kharon-field" name="scheduledDate" type="date" value={record.scheduled_date} />
             </div>
 
             <div class="grid gap-1">
-              <label for={`status-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Job Status</label>
+              <label for={`status-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Job Status</label>
               <select id={`status-${record.id}`} class="kharon-field" name="status">
                 {["Scheduled", "In Progress", "Completed", "Invoiced"].map((s) => (
                   <option value={s} selected={record.status === s}>{s}</option>
@@ -189,21 +189,21 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="grid gap-1">
-              <label for={`type-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Job Type</label>
+              <label for={`type-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Job Type</label>
               <input id={`type-${record.id}`} class="kharon-field" name="jobType" value={record.job_type} required />
             </div>
 
             <div class="grid gap-1 self-end">
-              <button class="kharon-command-button w-full py-2 text-xs">Save</button>
+              <button class="kharon-command-button w-full py-2 text-base">Save</button>
             </div>
 
             <div class="grid gap-1 lg:col-span-3">
-              <label for={`notes-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Site Operational Notes</label>
+              <label for={`notes-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Site Operational Notes</label>
               <input id={`notes-${record.id}`} class="kharon-field" name="siteNotes" value={record.site_notes || ""} />
             </div>
 
             <div class="grid gap-1">
-              <label for={`priority-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Priority</label>
+              <label for={`priority-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Priority</label>
               <select id={`priority-${record.id}`} class="kharon-field" name="priority">
                 {["Critical", "High", "Normal", "Low"].map((p) => (
                   <option value={p} selected={record.priority === p}>{p}</option>
@@ -212,17 +212,17 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="grid gap-1 lg:col-span-2">
-              <label for={`reqby-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Required By Date</label>
+              <label for={`reqby-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Required By Date</label>
               <input id={`reqby-${record.id}`} class="kharon-field" name="requiredByDate" type="date" value={record.required_by_date || ""} />
             </div>
 
-            <div class="flex items-center gap-2 text-xs lg:col-span-1 self-center mt-4">
+            <div class="flex items-center gap-2 text-base lg:col-span-1 self-center mt-4">
               <label class="flex items-center gap-2 cursor-pointer font-bold text-white/80">
                 <input type="checkbox" name="isEmergency" checked={record.is_emergency === 1} /> Emergency
               </label>
             </div>
             
-            <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold lg:col-span-7"></p>
+            <p class="admin-result hidden rounded border px-4 py-3 text-base font-semibold lg:col-span-7"></p>
           </form>
         ))}
       </div>
@@ -230,15 +230,15 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 
     <nav class="mt-6 mb-8 flex items-center justify-between border-t border-line-cyan-soft pt-4">
       {page > 1 ? (
-        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`} class="kharon-secondary-button py-2 text-xs">Previous</a>
+        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`} class="kharon-secondary-button py-2 text-base">Previous</a>
       ) : (
-        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Previous</span>
+        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-base font-semibold text-white/30">Previous</span>
       )}
-      <span class="text-sm text-white/60">Page {page} of {totalPages}</span>
+      <span class="text-base text-white/60">Page {page} of {totalPages}</span>
       {page < totalPages ? (
-        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`} class="kharon-secondary-button py-2 text-xs">Next</a>
+        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`} class="kharon-secondary-button py-2 text-base">Next</a>
       ) : (
-        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Next</span>
+        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-base font-semibold text-white/30">Next</span>
       )}
     </nav>
 
@@ -249,7 +249,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         <input type="hidden" name="action" value="create" />
         
         <div class="grid gap-1">
-          <label for="create-systemId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Select Protected System *</label>
+          <label for="create-systemId" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Select Protected System *</label>
           <select id="create-systemId" class="kharon-field" name="systemId" required>
             <option value="">Select system</option>
             {systems.map((system) => (
@@ -259,7 +259,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         </div>
 
         <div class="grid gap-1">
-          <label for="create-assignedTechnicianId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Assign Technician</label>
+          <label for="create-assignedTechnicianId" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Assign Technician</label>
           <select id="create-assignedTechnicianId" class="kharon-field" name="assignedTechnicianId">
             <option value="">Unassigned</option>
             {technicians.map((tech) => <option value={tech.id}>{tech.name}</option>)}
@@ -267,12 +267,12 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         </div>
 
         <div class="grid gap-1">
-          <label for="create-scheduledDate" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Scheduled Date *</label>
+          <label for="create-scheduledDate" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Scheduled Date *</label>
           <input id="create-scheduledDate" class="kharon-field" name="scheduledDate" type="date" value={today} required />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-status" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Job Status *</label>
+          <label for="create-status" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Job Status *</label>
           <select id="create-status" class="kharon-field" name="status" required>
             <option value="Scheduled">Scheduled</option>
             <option value="In Progress">In Progress</option>
@@ -280,12 +280,12 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         </div>
 
         <div class="grid gap-1">
-          <label for="create-jobType" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Job Type *</label>
+          <label for="create-jobType" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Job Type *</label>
           <input id="create-jobType" class="kharon-field" name="jobType" value="Maintenance" required />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-priority" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Priority Level *</label>
+          <label for="create-priority" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Priority Level *</label>
           <select id="create-priority" class="kharon-field" name="priority" required>
             <option value="Normal">Normal priority</option>
             <option value="High">High priority</option>
@@ -295,25 +295,25 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         </div>
 
         <div class="grid gap-1">
-          <label for="create-requiredByDate" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Required By Date</label>
+          <label for="create-requiredByDate" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Required By Date</label>
           <input id="create-requiredByDate" class="kharon-field" name="requiredByDate" type="date" placeholder="Required by date (optional)" />
         </div>
 
-        <div class="flex items-center gap-2 text-xs self-end pb-2">
+        <div class="flex items-center gap-2 text-base self-end pb-2">
           <label class="flex items-center gap-2 cursor-pointer font-semibold text-white/80">
             <input type="checkbox" name="isEmergency" /> Emergency / after-hours
           </label>
         </div>
 
         <div class="md:col-span-2 lg:col-span-3">
-          <label for="create-siteNotes" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Site Operations Notes</label>
+          <label for="create-siteNotes" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Site Operations Notes</label>
           <textarea id="create-siteNotes" class="min-h-20 kharon-field" name="siteNotes" placeholder="Provide task list or instructions..."></textarea>
         </div>
 
         <div class="md:col-span-2 lg:col-span-3 mt-2">
           <button class="w-full kharon-command-button py-3">Create Dispatch Job</button>
         </div>
-        <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold md:col-span-2 lg:col-span-3"></p>
+        <p class="admin-result hidden rounded border px-4 py-3 text-base font-semibold md:col-span-2 lg:col-span-3"></p>
       </form>
     </article>
   </div>

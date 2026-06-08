@@ -40,8 +40,8 @@ const bgAccents: Record<string, string> = {
         <svg class={`h-6 w-6 ${accents[action.accent || 'purple']}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={action.icon}></svg>
       </div>
       <div>
-        <p class="text-xs font-black uppercase tracking-widest text-white leading-tight">{action.label}</p>
-        <p class="mt-0.5 text-[10px] font-bold text-kharon-light/40 uppercase tracking-tighter">Command Shortcut</p>
+        <p class="text-base font-black uppercase tracking-widest text-white leading-tight">{action.label}</p>
+        <p class="mt-0.5 text-base font-bold text-kharon-light/40 uppercase tracking-tighter">Command Shortcut</p>
       </div>
     </a>
   ))}

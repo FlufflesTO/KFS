@@ -86,7 +86,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
         <h1 class="text-2xl font-bold text-white tracking-tight font-heading">User Management</h1>
-        <p class="mt-1 text-sm text-white/60">Manage system users, roles, and access control</p>
+        <p class="mt-1 text-base text-white/60">Manage system users, roles, and access control</p>
       </div>
     </div>
 
@@ -97,11 +97,11 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
     <article class="kharon-surface p-4 sm:p-5">
       <div class="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-line-cyan-soft pb-4">
         <h2 class="text-xl font-bold text-white font-heading">
-          Users <span class="ml-2 text-sm font-normal text-white/60">({usersTotal})</span>
+          Users <span class="ml-2 text-base font-normal text-white/60">({usersTotal})</span>
         </h2>
         <form class="flex flex-wrap items-end gap-3" method="get">
           <div class="grid gap-1">
-            <label for="users-q" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Search Name/Email</label>
+            <label for="users-q" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Search Name/Email</label>
             <input
               id="users-q"
               name="q"
@@ -112,7 +112,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             />
           </div>
           <div class="grid gap-1">
-            <label for="users-role" class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Role</label>
+            <label for="users-role" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Role</label>
             <select id="users-role" name="role" class="kharon-field">
               <option value="">All roles</option>
               {["tech", "admin", "client", "finance"].map((r) => (
@@ -120,15 +120,15 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               ))}
             </select>
           </div>
-          <button type="submit" class="kharon-command-button text-xs py-2 px-4 h-[38px] self-end">Filter</button>
+          <button type="submit" class="kharon-command-button text-base py-2 px-4 h-[38px] self-end">Filter</button>
           {(searchQuery || roleFilter) && (
-            <a href="/portal/admin/users" class="kharon-secondary-button text-xs py-2 px-4 h-[38px] flex items-center justify-center">Clear</a>
+            <a href="/portal/admin/users" class="kharon-secondary-button text-base py-2 px-4 h-[38px] flex items-center justify-center">Clear</a>
           )}
         </form>
       </div>
 
       <div class="grid gap-4">
-        {users.length === 0 && <p class="py-4 text-sm text-white/50 italic">No users match your filter.</p>}
+        {users.length === 0 && <p class="py-4 text-base text-white/50 italic">No users match your filter.</p>}
         {users.map((record) => (
           <form
             class="admin-form grid gap-4 bg-surface-charcoal/40 border border-line-cyan-soft/50 p-4 lg:grid-cols-6 rounded-md"
@@ -139,17 +139,17 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             <input type="hidden" name="id" value={record.id} />
             
             <div class="grid gap-1">
-              <label for={`name-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Full Name</label>
+              <label for={`name-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Full Name</label>
               <input id={`name-${record.id}`} class="kharon-field" name="name" value={record.name} required />
             </div>
             
             <div class="grid gap-1">
-              <label for={`email-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Email Address</label>
+              <label for={`email-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Email Address</label>
               <input id={`email-${record.id}`} class="kharon-field opacity-60 cursor-not-allowed" value={record.email} disabled />
             </div>
             
             <div class="grid gap-1">
-              <label for={`role-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">System Role</label>
+              <label for={`role-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">System Role</label>
               <select id={`role-${record.id}`} class="kharon-field" name="role">
                 {(["tech", "admin", "client", "finance"] as const).map((role) => (
                   <option value={role} selected={record.role === role}>{role}</option>
@@ -158,7 +158,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
             </div>
             
             <div class="grid gap-1">
-              <label for={`site-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Site Mapping</label>
+              <label for={`site-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Site Mapping</label>
               <select id={`site-${record.id}`} class="kharon-field" name="siteId">
                 <option value="">No site</option>
                 {sites.map((site) => (
@@ -167,24 +167,24 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               </select>
             </div>
             
-            <div class="grid gap-2 text-xs self-center">
+            <div class="grid gap-2 text-base self-center">
               <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="isActive" checked={Boolean(record.is_active)} /> Active</label>
               <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="forcePasswordChange" checked={Boolean(record.force_password_change)} /> Rotate password</label>
               {(record.role === "admin" || record.role === "finance" || record.role === "tech") && (
                 <label class="flex items-center gap-2 cursor-pointer text-white/80"><input type="checkbox" name="mfaRequired" checked={Boolean(record.mfa_required)} /> Require MFA</label>
               )}
-              {record.mfa_enabled ? <span class="text-[10px] font-bold uppercase text-kharon-purple">MFA enabled</span> : null}
+              {record.mfa_enabled ? <span class="text-base font-bold uppercase text-kharon-purple">MFA enabled</span> : null}
             </div>
             
             <div class="grid gap-2">
               <div class="grid gap-1">
-                <label for={`password-${record.id}`} class="text-[10px] font-bold uppercase tracking-widest text-kharon-purple">Reset Password</label>
+                <label for={`password-${record.id}`} class="text-base font-bold uppercase tracking-widest text-kharon-purple">Reset Password</label>
                 <input id={`password-${record.id}`} class="kharon-field py-1" name="password" type="password" placeholder="Optional reset password" />
               </div>
               <div class="flex gap-2">
-                <button class="flex-1 kharon-command-button py-1.5 text-xs">Save</button>
+                <button class="flex-1 kharon-command-button py-1.5 text-base">Save</button>
                 <button
-                  class="generate-reset-link kharon-secondary-button py-1.5 text-xs"
+                  class="generate-reset-link kharon-secondary-button py-1.5 text-base"
                   type="button"
                   data-user-id={record.id}
                   data-user-email={record.email}
@@ -194,7 +194,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
               </div>
               {record.mfa_enabled ? (
                 <button
-                  class="reset-mfa kharon-danger-button py-1.5 text-xs"
+                  class="reset-mfa kharon-danger-button py-1.5 text-base"
                   type="button"
                   data-user-id={record.id}
                   data-user-email={record.email}
@@ -203,7 +203,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
                 </button>
               ) : null}
             </div>
-            <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold lg:col-span-6"></p>
+            <p class="admin-result hidden rounded border px-4 py-3 text-base font-semibold lg:col-span-6"></p>
           </form>
         ))}
       </div>
@@ -211,15 +211,15 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
 
     <nav class="mt-6 mb-8 flex items-center justify-between border-t border-line-cyan-soft pt-4">
       {page > 1 ? (
-        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&role=${encodeURIComponent(roleFilter)}`} class="kharon-secondary-button py-2 text-xs">Previous</a>
+        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&role=${encodeURIComponent(roleFilter)}`} class="kharon-secondary-button py-2 text-base">Previous</a>
       ) : (
-        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Previous</span>
+        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-base font-semibold text-white/30">Previous</span>
       )}
-      <span class="text-sm text-white/60">Page {page} of {totalPages}</span>
+      <span class="text-base text-white/60">Page {page} of {totalPages}</span>
       {page < totalPages ? (
-        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&role=${encodeURIComponent(roleFilter)}`} class="kharon-secondary-button py-2 text-xs">Next</a>
+        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&role=${encodeURIComponent(roleFilter)}`} class="kharon-secondary-button py-2 text-base">Next</a>
       ) : (
-        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-xs font-semibold text-white/30">Next</span>
+        <span class="cursor-not-allowed rounded border border-line-cyan-soft/40 px-4 py-2 text-base font-semibold text-white/30">Next</span>
       )}
     </nav>
 
@@ -230,17 +230,17 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         <input type="hidden" name="action" value="create" />
         
         <div class="grid gap-1">
-          <label for="create-name" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Full Name *</label>
+          <label for="create-name" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Full Name *</label>
           <input id="create-name" class="kharon-field" name="name" placeholder="John Doe" required />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-email" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Email Address *</label>
+          <label for="create-email" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Email Address *</label>
           <input id="create-email" class="kharon-field" name="email" type="email" placeholder="email@domain.co.za" required />
         </div>
 
         <div class="grid gap-1">
-          <label for="create-role" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">System Role *</label>
+          <label for="create-role" class="text-base font-bold uppercase tracking-widest text-kharon-purple">System Role *</label>
           <select id="create-role" class="kharon-field" name="role" required>
             <option value="tech">Technician</option>
             <option value="admin">Admin</option>
@@ -250,7 +250,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         </div>
 
         <div class="grid gap-1">
-          <label for="create-siteId" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Site Mapping (Optional)</label>
+          <label for="create-siteId" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Site Mapping (Optional)</label>
           <select id="create-siteId" class="kharon-field" name="siteId">
             <option value="">No site mapping</option>
             {sites.map((site) => <option value={site.id}>{site.owner_company_name}</option>)}
@@ -258,11 +258,11 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         </div>
 
         <div class="grid gap-1">
-          <label for="create-password" class="text-xs font-bold uppercase tracking-widest text-kharon-purple">Temporary Password *</label>
+          <label for="create-password" class="text-base font-bold uppercase tracking-widest text-kharon-purple">Temporary Password *</label>
           <input id="create-password" class="kharon-field" name="password" type="password" minlength="14" placeholder="Temporary password" required />
         </div>
 
-        <div class="flex flex-col gap-2 justify-end text-xs pb-1">
+        <div class="flex flex-col gap-2 justify-end text-base pb-1">
           <label class="flex items-center gap-2 cursor-pointer font-semibold text-white/80">
             <input type="checkbox" name="forcePasswordChange" checked /> Force password change
           </label>
@@ -274,7 +274,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         <div class="md:col-span-2 lg:col-span-3 mt-2">
           <button class="w-full kharon-command-button py-3">Create User Account</button>
         </div>
-        <p class="admin-result hidden rounded border px-4 py-3 text-sm font-semibold md:col-span-2 lg:col-span-3"></p>
+        <p class="admin-result hidden rounded border px-4 py-3 text-base font-semibold md:col-span-2 lg:col-span-3"></p>
       </form>
     </article>
   </div>
@@ -304,7 +304,7 @@ import CsrfInput from "../../../components/ui/CsrfInput.astro";
         const copyBtn = document.createElement("button");
         copyBtn.type = "button";
         copyBtn.textContent = "Copy link";
-        copyBtn.className = "ml-1 inline-flex items-center rounded border border-green-600 px-2 py-0.5 text-xs font-bold text-green-200 hover:bg-green-700 bg-green-800";
+        copyBtn.className = "ml-1 inline-flex items-center rounded border border-green-600 px-2 py-0.5 text-base font-bold text-green-200 hover:bg-green-700 bg-green-800";
         copyBtn.addEventListener("click", async () => {
           await navigator.clipboard.writeText(resetUrl).catch(() => null);
           copyBtn.textContent = "Copied!";

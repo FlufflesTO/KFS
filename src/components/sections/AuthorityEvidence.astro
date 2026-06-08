@@ -8,7 +8,7 @@ import { proofSignals, supportedEcosystem } from "../../data/site.js";
       <div class="lg:sticky lg:top-32">
         <div class="flex items-center gap-3 mb-4">
           <div class="h-0.5 w-6 bg-kharon-purple"></div>
-          <p class="text-[0.55rem] font-black uppercase tracking-[0.3em] text-kharon-purple">Technical Authority</p>
+          <p class="text-base font-black uppercase tracking-[0.3em] text-kharon-purple">Technical Authority</p>
         </div>
 
         <h2 class="text-4xl font-black text-white tracking-tighter uppercase leading-[0.9]">
@@ -22,11 +22,11 @@ import { proofSignals, supportedEcosystem } from "../../data/site.js";
         <div class="mt-10 grid grid-cols-2 gap-8 pt-8 border-t border-white/5">
           <div>
             <p class="text-4xl font-black text-white tracking-tighter">100%</p>
-            <p class="mt-1 text-[0.55rem] font-black uppercase tracking-widest text-white/20">SANS Compliance</p>
+            <p class="mt-1 text-base font-black uppercase tracking-widest text-white/20">SANS Compliance</p>
           </div>
           <div>
             <p class="text-4xl font-black text-white tracking-tighter">24/7</p>
-            <p class="mt-1 text-[0.55rem] font-black uppercase tracking-widest text-white/20">Support SLA</p>
+            <p class="mt-1 text-base font-black uppercase tracking-widest text-white/20">Support SLA</p>
           </div>
         </div>
       </div>
@@ -34,7 +34,7 @@ import { proofSignals, supportedEcosystem } from "../../data/site.js";
       <div class="grid gap-3">
         {proofSignals.map((item) => (
           <article class="group rounded-lg border border-white/10 bg-kharon-charcoal/30 p-6 transition-all hover:border-kharon-purple/30">
-            <p class="text-[0.55rem] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4 opacity-50">{item.status}</p>
+            <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-purple mb-4 opacity-50">{item.status}</p>
             <h3 class="text-base font-black text-white uppercase tracking-tight mb-2">{item.title}</h3>
             <p class="text-[0.65rem] leading-relaxed text-white/40 font-medium uppercase tracking-wide">{item.text}</p>
           </article>
@@ -46,17 +46,17 @@ import { proofSignals, supportedEcosystem } from "../../data/site.js";
     <div class="mt-16 pt-12 border-t border-white/5">
       <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
         <div>
-          <p class="text-[0.55rem] font-black uppercase tracking-[0.3em] text-kharon-purple mb-2">System Ecosystem</p>
+          <p class="text-base font-black uppercase tracking-[0.3em] text-kharon-purple mb-2">System Ecosystem</p>
           <h3 class="text-xl font-black text-white uppercase tracking-tighter">Supported Technologies & Manufacturer Platforms</h3>
         </div>
-        <p class="max-w-xs text-[0.55rem] font-bold text-white/20 uppercase tracking-[0.1em] leading-tight lg:text-right">
+        <p class="max-w-xs text-base font-bold text-white/20 uppercase tracking-[0.1em] leading-tight lg:text-right">
           Listed as ecosystem familiarity. Procurement should verify current approvals and product-specific authorisations.
         </p>
       </div>
 
       <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
         {supportedEcosystem.map((item) => (
-          <div class="flex items-center gap-2.5 rounded border border-white/5 bg-white/[0.02] px-4 py-3 text-[0.6rem] font-black uppercase tracking-widest text-white/40 hover:bg-white/[0.05] hover:text-white/70 transition-all group">
+          <div class="flex items-center gap-2.5 rounded border border-white/5 bg-white/[0.02] px-4 py-3 text-base font-black uppercase tracking-widest text-white/40 hover:bg-white/[0.05] hover:text-white/70 transition-all group">
             <div class="h-1.5 w-1.5 rounded-full bg-white/10 group-hover:bg-kharon-purple/60 transition-colors"></div>
             {item}
           </div>

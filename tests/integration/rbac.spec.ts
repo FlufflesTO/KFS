@@ -197,7 +197,7 @@ test.describe('Finance Role Access Control', () => {
   });
 
   test('should NOT access admin user management', async ({ page }) => {
-    const response = await page.request.get('/portal/admin/users');
+    const response = await page.request.get('/portal/admin/users', { maxRedirects: 0 });
     expect(response.status()).toBe(302); // Redirect to dashboard
     expect(response.headers()['location']).toContain('/portal/finance');
   });
@@ -208,12 +208,12 @@ test.describe('Finance Role Access Control', () => {
   });
 
   test('should NOT access technician paths', async ({ page }) => {
-    const response = await page.request.get('/portal/tech/dashboard');
+    const response = await page.request.get('/portal/tech/dashboard', { maxRedirects: 0 });
     expect(response.status()).toBe(302);
   });
 
   test('should NOT access client-specific data', async ({ page }) => {
-    const response = await page.request.get('/portal/client/dashboard');
+    const response = await page.request.get('/portal/client/dashboard', { maxRedirects: 0 });
     expect(response.status()).toBe(302);
   });
 
@@ -270,7 +270,7 @@ test.describe('Technician Role Access Control', () => {
   });
 
   test('should NOT access admin paths', async ({ page }) => {
-    const response = await page.request.get('/portal/admin/dashboard');
+    const response = await page.request.get('/portal/admin/dashboard', { maxRedirects: 0 });
     expect(response.status()).toBe(302);
   });
 
@@ -280,7 +280,7 @@ test.describe('Technician Role Access Control', () => {
   });
 
   test('should NOT access finance paths', async ({ page }) => {
-    const response = await page.request.get('/portal/finance/dashboard');
+    const response = await page.request.get('/portal/finance/dashboard', { maxRedirects: 0 });
     expect(response.status()).toBe(302);
   });
 
@@ -290,7 +290,7 @@ test.describe('Technician Role Access Control', () => {
   });
 
   test('should NOT access client dashboard', async ({ page }) => {
-    const response = await page.request.get('/portal/client/dashboard');
+    const response = await page.request.get('/portal/client/dashboard', { maxRedirects: 0 });
     expect(response.status()).toBe(302);
   });
 
@@ -352,7 +352,7 @@ test.describe('Client Role Access Control', () => {
   });
 
   test('should NOT access admin paths', async ({ page }) => {
-    const response = await page.request.get('/portal/admin/dashboard');
+    const response = await page.request.get('/portal/admin/dashboard', { maxRedirects: 0 });
     expect(response.status()).toBe(302);
   });
 
@@ -362,7 +362,7 @@ test.describe('Client Role Access Control', () => {
   });
 
   test('should NOT access finance paths', async ({ page }) => {
-    const response = await page.request.get('/portal/finance/dashboard');
+    const response = await page.request.get('/portal/finance/dashboard', { maxRedirects: 0 });
     expect(response.status()).toBe(302);
   });
 
@@ -372,13 +372,13 @@ test.describe('Client Role Access Control', () => {
   });
 
   test('should NOT access technician paths', async ({ page }) => {
-    const response = await page.request.get('/portal/tech/dashboard');
+    const response = await page.request.get('/portal/tech/dashboard', { maxRedirects: 0 });
     expect(response.status()).toBe(302);
   });
 
   test('should NOT access other clients data', async ({ page }) => {
     // Attempt to access another client's site (should be scoped by user ID)
-    const response = await page.request.get('/portal/api/client/sites?site_id=other-client-site');
+    const response = await page.request.get('/portal/api/client/sites?site_id=other-client-site', { maxRedirects: 0 });
     // Should either return 403 or filter to only user's sites
     expect([200, 400, 403, 404]).toContain(response.status());
   });

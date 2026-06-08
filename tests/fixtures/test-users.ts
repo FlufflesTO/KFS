@@ -30,7 +30,7 @@ export const testUsers: Record<string, TestUser> = {
     name: 'Test Admin User',
     role: 'admin',
     siteId: null,
-    mfaEnabled: false,
+    mfaEnabled: true,
   },
   finance: {
     id: 'test-finance-001',
@@ -39,7 +39,7 @@ export const testUsers: Record<string, TestUser> = {
     name: 'Test Finance User',
     role: 'finance',
     siteId: null,
-    mfaEnabled: false,
+    mfaEnabled: true,
   },
   tech: {
     id: 'test-tech-001',
@@ -142,8 +142,8 @@ INSERT OR REPLACE INTO users (
     'admin',
     1,
     0,
-    0,
-    NULL,
+    1,
+    'MFA_SECRET_PLACEHOLDER',
     0,
     NULL
   ),
@@ -155,8 +155,8 @@ INSERT OR REPLACE INTO users (
     'finance',
     1,
     0,
-    0,
-    NULL,
+    1,
+    'MFA_SECRET_PLACEHOLDER',
     0,
     NULL
   ),

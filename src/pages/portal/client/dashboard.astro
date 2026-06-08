@@ -101,44 +101,44 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(75,46,131,0.08),transparent)]"></div>
     <div class="relative z-10">
       <div class="flex items-center gap-3 mb-4">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
           <svg class="h-[1.1rem] w-[1.1rem] text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
         </div>
-        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-cyan">Client Gateway</p>
+        <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-cyan">Client Gateway</p>
       </div>
       <h1 class="text-2xl font-black sm:text-3xl tracking-tight">
         Welcome{user?.name ? `, ${user.name.split(" ")[0]}` : ""}
       </h1>
-      <p class="mt-2 max-w-2xl text-sm text-white/60">Your Kharon portal — system health, compliance status and service records at a glance.</p>
+      <p class="mt-2 max-w-2xl text-base text-white/60">Your Kharon portal — system health, compliance status and service records at a glance.</p>
     </div>
   </section>
 
   <div class="px-1 sm:px-4 space-y-6 pb-10">
     <div class="mx-auto max-w-7xl space-y-6">
 
-      {loadError && <p class="rounded-lg border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
+      {loadError && <p class="rounded-lg border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-base font-semibold text-kharon-red">{loadError}</p>}
 
       {/* ── Pending Quotes Action Strip ── */}
       {pendingQuoteCount > 0 && (
         <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-kharon-amber/30 bg-kharon-amber/5 px-5 py-4 relative overflow-hidden">
           <div class="absolute inset-0 bg-[radial-gradient(circle_at_90%_50%,rgba(245,158,11,0.05),transparent)]"></div>
           <div class="relative z-10">
-            <p class="text-sm font-black text-kharon-amber uppercase tracking-wider">
+            <p class="text-base font-black text-kharon-amber uppercase tracking-wider">
               {pendingQuoteCount === 1 ? "1 Quote" : `${pendingQuoteCount} Quotes`} Pending Your Approval
             </p>
-            <p class="text-xs text-white/60 mt-0.5">
+            <p class="text-base text-white/60 mt-0.5">
               Total value: <span class="font-bold text-white/80">{formatCurrency(pendingQuoteAmount)}</span> — action required before invoicing can proceed.
             </p>
           </div>
-          <KharonButton href="/portal/client/quotes?filter=pending" variant="secondary" size="md" className="relative z-10 text-xs font-bold tracking-widest uppercase shrink-0 border-kharon-amber/50 text-kharon-amber hover:bg-kharon-amber/10">Review &amp; Approve →</KharonButton>
+          <KharonButton href="/portal/client/quotes?filter=pending" variant="secondary" size="md" className="relative z-10 text-base font-bold tracking-widest uppercase shrink-0 border-kharon-amber/50 text-kharon-amber hover:bg-kharon-amber/10">Review &amp; Approve →</KharonButton>
         </div>
       )}
 
       {/* ── Feature Navigation ── */}
       <div>
-        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple mb-4 px-1">Navigation Console</p>
+        <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-purple mb-4 px-1">Navigation Console</p>
         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <DashboardFeatureCard
             title="System Register"
@@ -176,7 +176,7 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
       <div class="grid gap-6 lg:grid-cols-3">
         {/* Compliance Radial Gauge */}
         <div class="lg:col-span-1 rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/60 p-6 flex flex-col items-center justify-center text-center shadow-xl backdrop-blur-md">
-          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple mb-6">Portfolio Certification</p>
+          <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-purple mb-6">Portfolio Certification</p>
           <div class="relative flex items-center justify-center h-40 w-40 mb-6">
             <svg class="w-full h-full transform -rotate-90">
               <circle cx="80" cy="80" r={radius*2.2} stroke="rgba(75, 46, 131, 0.1)" stroke-width={stroke*2} fill="transparent" />
@@ -185,17 +185,17 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
             </svg>
             <div class="absolute flex flex-col items-center">
               <span class="text-4xl font-black text-white tracking-tighter">{compliancePercentage}%</span>
-              <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">Compliant</span>
+              <span class="text-base font-bold text-white/40 uppercase tracking-widest mt-1">Compliant</span>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4 w-full border-t border-kharon-purple/10 pt-6">
             <div>
               <p class="text-white font-black text-lg">{compliantCount}</p>
-              <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Active Systems</p>
+              <p class="text-base font-bold text-white/40 uppercase tracking-widest">Active Systems</p>
             </div>
             <div>
               <p class="text-kharon-red font-black text-lg">{overdueCount}</p>
-              <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Overdue</p>
+              <p class="text-base font-bold text-white/40 uppercase tracking-widest">Overdue</p>
             </div>
           </div>
         </div>
@@ -203,19 +203,19 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
         {/* Portfolio Heatmap */}
         <div class="lg:col-span-2 rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/60 p-6 shadow-xl backdrop-blur-md">
           <div class="flex items-center justify-between mb-6">
-            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple">Site Compliance Heatmap</p>
-            <span class="text-[10px] font-bold text-white/40 uppercase tracking-tighter">{siteAggregates.length} sites tracked</span>
+            <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-purple">Site Compliance Heatmap</p>
+            <span class="text-base font-bold text-white/40 uppercase tracking-tighter">{siteAggregates.length} sites tracked</span>
           </div>
           <ComplianceHeatmap sites={siteStatuses} />
           
           <div class="mt-8 grid gap-4 sm:grid-cols-2">
             <div class="p-4 rounded-xl bg-kharon-black/40 border border-kharon-purple/10">
-              <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Open Remediation</p>
-              <p class="text-xl font-black text-white">{totalDefects} <span class="text-xs font-bold text-white/30 ml-1">Defects recorded</span></p>
+              <p class="text-base font-black uppercase tracking-widest text-white/40 mb-1">Open Remediation</p>
+              <p class="text-xl font-black text-white">{totalDefects} <span class="text-base font-bold text-white/30 ml-1">Defects recorded</span></p>
             </div>
             <div class="p-4 rounded-xl bg-kharon-black/40 border border-kharon-purple/10">
-              <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Critical Exceptions</p>
-              <p class="text-xl font-black text-kharon-red">{totalCritical} <span class="text-xs font-bold text-white/30 ml-1">Action items</span></p>
+              <p class="text-base font-black uppercase tracking-widest text-white/40 mb-1">Critical Exceptions</p>
+              <p class="text-xl font-black text-kharon-red">{totalCritical} <span class="text-base font-bold text-white/30 ml-1">Action items</span></p>
             </div>
           </div>
         </div>
@@ -226,9 +226,9 @@ const siteStatuses: SiteStatus[] = siteAggregates.map(site => {
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_90%_50%,rgba(196,51,47,0.1),transparent)]"></div>
         <div class="relative z-10">
           <p class="text-lg font-black text-kharon-red uppercase tracking-wider">Urgent Technical Intervention Required?</p>
-          <p class="text-sm text-white/70 mt-1 max-w-xl leading-relaxed">For live system faults, active alarms or critical compliance blockages requiring an immediate technician dispatch.</p>
+          <p class="text-base text-white/70 mt-1 max-w-xl leading-relaxed">For live system faults, active alarms or critical compliance blockages requiring an immediate technician dispatch.</p>
         </div>
-        <KharonButton href="/emergency-support" variant="danger" size="md" className="relative z-10 text-xs font-bold tracking-widest uppercase">Emergency support →</KharonButton>
+        <KharonButton href="/emergency-support" variant="danger" size="md" className="relative z-10 text-base font-bold tracking-widest uppercase">Emergency support →</KharonButton>
       </div>
 
     </div>

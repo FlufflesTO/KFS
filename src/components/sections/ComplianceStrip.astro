@@ -5,7 +5,7 @@ import { complianceSignals } from "../../data/site.js";
 <section class="border-y border-white/5 bg-kharon-charcoal py-3 text-white" aria-label="Compliance proof signals">
   <div class="mx-auto max-w-7xl px-6">
     <div class="flex flex-wrap items-center gap-2">
-      <p class="mr-4 text-[0.6rem] font-black uppercase tracking-[0.2em] text-kharon-purple">
+      <p class="mr-4 text-base font-black uppercase tracking-[0.2em] text-kharon-purple">
         Compliance Layer
       </p>
       {complianceSignals.map((item) => (
@@ -26,8 +26,8 @@ import { complianceSignals } from "../../data/site.js";
         { label: "SANS Alignment", icon: "✓" }
       ].map(item => (
         <div class="flex items-center gap-1.5">
-          <span class="text-kharon-cyan text-[0.6rem] font-black">{item.icon}</span>
-          <span class="text-[0.6rem] font-black uppercase tracking-widest text-white/20">{item.label}</span>
+          <span class="text-kharon-cyan text-base font-black">{item.icon}</span>
+          <span class="text-base font-black uppercase tracking-widest text-white/20">{item.label}</span>
         </div>
       ))}
     </div>

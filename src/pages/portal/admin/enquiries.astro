@@ -65,31 +65,31 @@ const totalPages = Math.max(1, Math.ceil(total / perPage));
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
       <div>
         <h1 class="text-2xl font-bold text-white">Website Enquiries</h1>
-        <p class="mt-1 text-sm text-kharon-light/60">View contact form submissions from the public website</p>
+        <p class="mt-1 text-base text-kharon-light/60">View contact form submissions from the public website</p>
       </div>
     </div>
 
     {loadError && (
-      <p class="mx-auto mb-6 max-w-7xl rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>
+      <p class="mx-auto mb-6 max-w-7xl rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-base font-semibold text-kharon-red">{loadError}</p>
     )}
 
     <article class="border border-kharon-purple/20 bg-kharon-charcoal p-4 sm:p-5">
       <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-kharon-charcoal">
         <h2 class="text-xl font-bold">
-          Enquiries <span class="ml-2 text-sm font-normal text-white/70">({total})</span>
+          Enquiries <span class="ml-2 text-base font-normal text-white/70">({total})</span>
         </h2>
         <form class="flex flex-wrap gap-3" method="get">
           <input
             name="q"
             type="search"
-            class="rounded-md border border-kharon-purple/20 px-3 py-2 text-sm"
+            class="rounded-md border border-kharon-purple/20 px-3 py-2 text-base"
             placeholder="Search name, email, message…"
             value={searchQuery}
             size="24"
           />
-          <button type="submit" class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white text-sm">Search</button>
+          <button type="submit" class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white text-base">Search</button>
           {searchQuery && (
-            <a href="/portal/admin/enquiries" class="rounded-md border border-kharon-purple/20 px-4 py-2 font-semibold text-white/70 text-sm">Clear</a>
+            <a href="/portal/admin/enquiries" class="rounded-md border border-kharon-purple/20 px-4 py-2 font-semibold text-white/70 text-base">Clear</a>
           )}
         </form>
       </div>
@@ -102,13 +102,13 @@ const totalPages = Math.max(1, Math.ceil(total / perPage));
           <article class="grid gap-2 border-l-4 border-kharon-blue bg-kharon-charcoal p-4 lg:grid-cols-2">
             <div class="min-w-0">
               <p class="font-semibold">{item.name}</p>
-              <p class="text-sm text-kharon-purple">
+              <p class="text-base text-kharon-purple">
                 <a href={`mailto:${item.email}`} class="hover:underline">{item.email}</a>
               </p>
-              <p class="mt-1 text-xs font-bold uppercase text-white/70">{item.request_type}</p>
-              <p class="mt-2 text-sm leading-6 text-white">{item.message}</p>
+              <p class="mt-1 text-base font-bold uppercase text-white/70">{item.request_type}</p>
+              <p class="mt-2 text-base leading-6 text-white">{item.message}</p>
             </div>
-            <div class="text-xs text-white/70 flex justify-between flex-col lg:items-end">
+            <div class="text-base text-white/70 flex justify-between flex-col lg:items-end">
               <p>{item.submitted_at?.slice(0, 16).replace("T", " ")} UTC</p>
             </div>
           </article>
@@ -118,15 +118,15 @@ const totalPages = Math.max(1, Math.ceil(total / perPage));
 
     <nav class="mt-6 mb-8 flex items-center justify-between border-t border-kharon-purple/20 pt-4">
       {page > 1 ? (
-        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}`} class="rounded border border-kharon-purple/20 px-4 py-2 text-sm font-medium text-white hover:bg-kharon-charcoal">Previous</a>
+        <a href={`?page=${page - 1}&q=${encodeURIComponent(searchQuery)}`} class="rounded border border-kharon-purple/20 px-4 py-2 text-base font-medium text-white hover:bg-kharon-charcoal">Previous</a>
       ) : (
-        <span class="cursor-not-allowed rounded border border-kharon-purple/20 px-4 py-2 text-sm font-medium text-white/40">Previous</span>
+        <span class="cursor-not-allowed rounded border border-kharon-purple/20 px-4 py-2 text-base font-medium text-white/40">Previous</span>
       )}
-      <span class="text-sm text-white/70">Page {page} of {totalPages}</span>
+      <span class="text-base text-white/70">Page {page} of {totalPages}</span>
       {page < totalPages ? (
-        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}`} class="rounded border border-kharon-purple/20 px-4 py-2 text-sm font-medium text-white hover:bg-kharon-charcoal">Next</a>
+        <a href={`?page=${page + 1}&q=${encodeURIComponent(searchQuery)}`} class="rounded border border-kharon-purple/20 px-4 py-2 text-base font-medium text-white hover:bg-kharon-charcoal">Next</a>
       ) : (
-        <span class="cursor-not-allowed rounded border border-kharon-purple/20 px-4 py-2 text-sm font-medium text-white/40">Next</span>
+        <span class="cursor-not-allowed rounded border border-kharon-purple/20 px-4 py-2 text-base font-medium text-white/40">Next</span>
       )}
     </nav>
   </div>

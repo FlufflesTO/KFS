@@ -11,11 +11,11 @@ const nonce = Astro.locals.nonce;
 
 <div id="operations-toast" class="fixed bottom-4 right-4 z-[200] max-w-sm w-full translate-y-12 opacity-0 transition-all duration-300 pointer-events-none">
   <div class="bg-kharon-charcoal border border-kharon-purple/30 shadow-2xl shadow-kharon-black/50 rounded-lg overflow-hidden">
-    <div id="toast-header" class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-white flex justify-between items-center bg-gradient-to-r from-kharon-purple to-kharon-blue">
+    <div id="toast-header" class="px-4 py-2 text-base font-bold uppercase tracking-widest text-white flex justify-between items-center bg-gradient-to-r from-kharon-purple to-kharon-blue">
       <span id="toast-title">Notification</span>
       <button id="toast-close" aria-label="Close notification" class="text-white/60 hover:text-white pointer-events-auto">×</button>
     </div>
-    <div class="p-4 bg-kharon-charcoal text-sm text-kharon-light" id="toast-message">
+    <div class="p-4 bg-kharon-charcoal text-base text-kharon-light" id="toast-message">
     </div>
     <div id="toast-actions" class="px-4 py-3 bg-kharon-charcoal/60 border-t border-kharon-purple/20 hidden pointer-events-auto">
     </div>
@@ -45,7 +45,7 @@ const nonce = Astro.locals.nonce;
       }
       
       const header = document.getElementById('toast-header');
-      header.className = `px-4 py-2 text-xs font-bold uppercase tracking-widest text-white flex justify-between items-center ${
+      header.className = `px-4 py-2 text-base font-bold uppercase tracking-widest text-white flex justify-between items-center ${
         type === 'error' ? 'bg-gradient-to-r from-kharon-red to-kharon-red/80' :
         type === 'warning' ? 'bg-gradient-to-r from-kharon-amber to-orange-600' :
         'bg-gradient-to-r from-kharon-purple to-kharon-blue'
@@ -169,7 +169,7 @@ const nonce = Astro.locals.nonce;
     const warningTime = 7.5 * 60 * 60 * 1000;
     setTimeout(() => {
       const btn = document.createElement('button');
-      btn.className = "w-full py-2 bg-kharon-amber/20 border border-kharon-amber text-kharon-amber font-bold text-xs uppercase rounded hover:bg-kharon-amber hover:text-white transition-colors";
+      btn.className = "w-full py-2 bg-kharon-amber/20 border border-kharon-amber text-kharon-amber font-bold text-base uppercase rounded hover:bg-kharon-amber hover:text-white transition-colors";
       btn.textContent = "Save Drafts to Offline Storage";
       btn.onclick = () => {
         // Save forms to IndexedDB

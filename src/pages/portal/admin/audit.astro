@@ -30,10 +30,10 @@ function formatEventType(et: string): string {
 
 function outcomeClasses(outcome: string): string {
   if (outcome === "success")
-    return "rounded border border-kharon-green bg-kharon-green/10 px-2 py-1 text-xs font-bold text-green-200";
+    return "rounded border border-kharon-green bg-kharon-green/10 px-2 py-1 text-base font-bold text-green-200";
   if (outcome === "failure")
-    return "rounded border border-kharon-red bg-kharon-red/10 px-2 py-1 text-xs font-bold text-red-200";
-  return "rounded border border-kharon-amber bg-kharon-amber/10 px-2 py-1 text-xs font-bold text-amber-200";
+    return "rounded border border-kharon-red bg-kharon-red/10 px-2 py-1 text-base font-bold text-red-200";
+  return "rounded border border-kharon-amber bg-kharon-amber/10 px-2 py-1 text-base font-bold text-amber-200";
 }
 
 function isHighRisk(et: string, outcome: string): boolean {
@@ -73,7 +73,7 @@ try {
 <PortalLayout title="Audit Console | Kharon Portal" active="audit" user={user}>
   <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
     <div class="mx-auto max-w-7xl">
-      <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Administration Console</p>
+      <p class="text-base font-bold uppercase tracking-wider text-kharon-purple">Administration Console</p>
       <h1 class="mt-3 text-2xl font-bold sm:text-3xl font-heading tracking-tight">System Audit Log</h1>
       <p class="mt-4 max-w-3xl text-white/60">
         Read-only ledger of portal security operations and system state modifications. Showing the 100 most recent events.
@@ -89,9 +89,9 @@ try {
 
       <!-- ─── Filter form ─────────────────────────────────────────────── -->
       <form method="GET" action="/portal/admin/audit" class="mb-6 kharon-surface p-4 sm:p-5">
-        <p class="mb-4 text-xs font-bold uppercase tracking-widest text-kharon-purple">Filter telemetry events</p>
+        <p class="mb-4 text-base font-bold uppercase tracking-widest text-kharon-purple">Filter telemetry events</p>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <label class="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-white/85">
+          <label class="grid gap-1.5 text-base font-bold uppercase tracking-wider text-white/85">
             Category
             <select name="category" class="kharon-field">
               <option value="">All categories</option>
@@ -104,7 +104,7 @@ try {
             </select>
           </label>
 
-          <label class="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-white/85">
+          <label class="grid gap-1.5 text-base font-bold uppercase tracking-wider text-white/85">
             Outcome
             <select name="outcome" class="kharon-field">
               <option value="">All outcomes</option>
@@ -114,12 +114,12 @@ try {
             </select>
           </label>
 
-          <label class="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-white/85">
+          <label class="grid gap-1.5 text-base font-bold uppercase tracking-wider text-white/85">
             From
             <input type="date" name="from" value={filterFrom} class="kharon-field" />
           </label>
 
-          <label class="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-white/85">
+          <label class="grid gap-1.5 text-base font-bold uppercase tracking-wider text-white/85">
             To
             <input type="date" name="to" value={filterTo} class="kharon-field" />
           </label>
@@ -127,22 +127,22 @@ try {
 
         <div class="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-kharon-purple/10 pt-5">
           <div class="flex flex-wrap gap-2">
-            <a href="?category=auth&outcome=failure" class="rounded border border-kharon-purple/30 bg-kharon-purple/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-kharon-purple hover:bg-kharon-purple/10 transition-colors">
+            <a href="?category=auth&outcome=failure" class="rounded border border-kharon-purple/30 bg-kharon-purple/5 px-3 py-1.5 text-base font-bold uppercase tracking-widest text-kharon-purple hover:bg-kharon-purple/10 transition-colors">
               Failed logins
             </a>
-            <a href={`?from=${last7}`} class="rounded border border-kharon-purple/30 bg-kharon-purple/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-kharon-purple hover:bg-kharon-purple/10 transition-colors">
+            <a href={`?from=${last7}`} class="rounded border border-kharon-purple/30 bg-kharon-purple/5 px-3 py-1.5 text-base font-bold uppercase tracking-widest text-kharon-purple hover:bg-kharon-purple/10 transition-colors">
               Last 7 days
             </a>
-            <a href={`?from=${last30}`} class="rounded border border-kharon-purple/30 bg-kharon-purple/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-kharon-purple hover:bg-kharon-purple/10 transition-colors">
+            <a href={`?from=${last30}`} class="rounded border border-kharon-purple/30 bg-kharon-purple/5 px-3 py-1.5 text-base font-bold uppercase tracking-widest text-kharon-purple hover:bg-kharon-purple/10 transition-colors">
               Last 30 days
             </a>
             {isFiltered && (
-              <a href="/portal/admin/audit" class="rounded border border-kharon-red/30 bg-kharon-red/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-kharon-red hover:bg-kharon-red/10 transition-colors">
+              <a href="/portal/admin/audit" class="rounded border border-kharon-red/30 bg-kharon-red/5 px-3 py-1.5 text-base font-bold uppercase tracking-widest text-kharon-red hover:bg-kharon-red/10 transition-colors">
                 Clear all
               </a>
             )}
           </div>
-          <button type="submit" class="kharon-command-button px-8 py-2.5 text-xs font-black tracking-widest">
+          <button type="submit" class="kharon-command-button px-8 py-2.5 text-base font-black tracking-widest">
             Execute Filter
           </button>
         </div>
@@ -150,9 +150,9 @@ try {
 
       <!-- ─── Audit table ────────────────────────────────────────────── -->
       <div class="portal-scroll-x rounded-xl border border-kharon-purple/20 bg-kharon-black shadow-2xl overflow-hidden">
-        <table class="w-full min-w-[1000px] border-collapse text-left text-sm">
+        <table class="w-full min-w-[1000px] border-collapse text-left text-base">
           <thead>
-            <tr class="border-b border-kharon-purple/20 bg-kharon-charcoal text-white uppercase tracking-widest text-[10px] font-black">
+            <tr class="border-b border-kharon-purple/20 bg-kharon-charcoal text-white uppercase tracking-widest text-base font-black">
               <th scope="col" class="p-4">Timestamp</th>
               <th scope="col" class="p-4">Actor</th>
               <th scope="col" class="p-4">Event Context</th>
@@ -173,16 +173,16 @@ try {
                 <td class="p-4">
                   <div class="flex flex-col">
                     <span class="font-bold text-white/90">{ev.actor_name || "System"}</span>
-                    <span class="text-[10px] font-black uppercase tracking-tighter text-kharon-purple">{ev.actor_role}</span>
+                    <span class="text-base font-black uppercase tracking-tighter text-kharon-purple">{ev.actor_role}</span>
                   </div>
                 </td>
                 <td class="p-4">
-                  <span class="text-xs font-bold text-kharon-cyan">{formatEventType(ev.event_type)}</span>
+                  <span class="text-base font-bold text-kharon-cyan">{formatEventType(ev.event_type)}</span>
                 </td>
                 <td class="p-4">
                   <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase text-white/40">{ev.entity_type}</span>
-                    <span class="font-mono text-[10px] text-white/60 truncate max-w-[120px]">{ev.entity_id || "—"}</span>
+                    <span class="text-base font-black uppercase text-white/40">{ev.entity_type}</span>
+                    <span class="font-mono text-base text-white/60 truncate max-w-[120px]">{ev.entity_id || "—"}</span>
                   </div>
                 </td>
                 <td class="p-4">
@@ -191,8 +191,8 @@ try {
                 <td class="p-4">
                   {ev.metadata_json && (
                     <details class="group cursor-pointer">
-                      <summary class="text-[10px] font-bold text-kharon-purple hover:text-white transition-colors uppercase tracking-widest list-none">View payload</summary>
-                      <pre class="mt-2 rounded bg-kharon-black/80 p-3 text-[10px] text-kharon-cyan font-mono border border-kharon-purple/20 overflow-x-auto max-w-xs">{JSON.stringify(JSON.parse(ev.metadata_json), null, 2)}</pre>
+                      <summary class="text-base font-bold text-kharon-purple hover:text-white transition-colors uppercase tracking-widest list-none">View payload</summary>
+                      <pre class="mt-2 rounded bg-kharon-black/80 p-3 text-base text-kharon-cyan font-mono border border-kharon-purple/20 overflow-x-auto max-w-xs">{JSON.stringify(JSON.parse(ev.metadata_json), null, 2)}</pre>
                     </details>
                   )}
                 </td>

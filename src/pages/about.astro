@@ -149,14 +149,14 @@ const standardsWorkedTo = [
       <div class="grid gap-8 md:grid-cols-2">
         <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 sm:p-12 relative overflow-hidden group hover:border-kharon-purple/40 transition-all">
           <div class="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-kharon-purple to-transparent opacity-50"></div>
-          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Our Mission</h3>
+          <h3 class="text-base font-black uppercase tracking-[0.2em] text-kharon-purple mb-4">Our Mission</h3>
           <p class="text-kharon-light/60 leading-relaxed text-lg font-medium">
             Create a synergy between human and automated safety and security systems. We provide an environmentally sustainable and safe approach to our business operations, ensuring our work leaves a positive footprint.
           </p>
         </div>
         <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 sm:p-12 relative overflow-hidden group hover:border-kharon-cyan/40 transition-all">
           <div class="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-kharon-cyan to-transparent opacity-50"></div>
-          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-kharon-cyan mb-4">Our Dedication</h3>
+          <h3 class="text-base font-black uppercase tracking-[0.2em] text-kharon-cyan mb-4">Our Dedication</h3>
           <p class="text-kharon-light/60 leading-relaxed text-lg font-medium">
             We are dedicated to our clients' satisfaction and our team's welfare. Profit is seen as a welcome by-product of sustainable practices and successful system implementation within the company.
           </p>
@@ -179,8 +179,8 @@ const standardsWorkedTo = [
             <div class="h-14 w-14 mb-6 rounded-xl bg-kharon-charcoal border border-kharon-purple/20 p-3 group-hover:bg-kharon-purple/10 transition-colors">
               <img loading="lazy" decoding="async" src={item.icon} class="w-full h-full object-contain" alt="" aria-hidden="true" />
             </div>
-            <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">{item.title}</h3>
-            <p class="text-kharon-light/60 text-sm leading-relaxed">{item.text}</p>
+            <h3 class="text-base font-black uppercase tracking-widest text-white mb-3">{item.title}</h3>
+            <p class="text-kharon-light/60 text-base leading-relaxed">{item.text}</p>
           </div>
         ))}
       </div>
@@ -199,8 +199,8 @@ const standardsWorkedTo = [
         {standardsWorkedTo.map((std) => (
           <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/40 p-6 hover:border-kharon-purple/40 transition-all">
             <p class="text-base font-black text-kharon-cyan tracking-tight mb-1">{std.code}</p>
-            <h3 class="text-xs font-black text-white uppercase tracking-widest mb-3">{std.title}</h3>
-            <p class="text-xs text-kharon-light/60 leading-relaxed">{std.text}</p>
+            <h3 class="text-base font-black text-white uppercase tracking-widest mb-3">{std.title}</h3>
+            <p class="text-base text-kharon-light/60 leading-relaxed">{std.text}</p>
           </div>
         ))}
       </div>
@@ -218,10 +218,10 @@ const standardsWorkedTo = [
       <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {serviceCategories.map((cat) => (
           <div class="rounded-xl border border-kharon-purple/10 bg-kharon-charcoal/40 p-8 hover:border-kharon-purple/30 transition-all">
-            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple mb-6 border-b border-kharon-purple/10 pb-4">{cat.title}</h3>
+            <h3 class="text-base font-black uppercase tracking-[0.2em] text-kharon-purple mb-6 border-b border-kharon-purple/10 pb-4">{cat.title}</h3>
             <ul class="space-y-4">
               {cat.items.map((item) => (
-                <li class="flex gap-3 text-sm text-kharon-light/70 leading-relaxed font-medium">
+                <li class="flex gap-3 text-base text-kharon-light/70 leading-relaxed font-medium">
                   <span class="text-kharon-cyan font-black">›</span>
                   {item}
                 </li>
@@ -249,10 +249,10 @@ const standardsWorkedTo = [
         ].map(item => (
           <div class="rounded-2xl border border-kharon-purple/20 bg-kharon-charcoal/30 p-8 flex flex-col items-center text-center hover:border-kharon-purple/40 transition-all">
             <div class="h-16 w-16 mb-6 flex items-center justify-center rounded-full bg-kharon-purple/10 border border-kharon-purple/20">
-              <span class="text-kharon-cyan font-black text-xs uppercase tracking-tighter">{item.code}</span>
+              <span class="text-kharon-cyan font-black text-base uppercase tracking-tighter">{item.code}</span>
             </div>
             <h3 class="text-base font-black text-white mb-2 uppercase tracking-widest">{item.title}</h3>
-            <p class="text-kharon-light/50 text-sm leading-relaxed font-medium">{item.text}</p>
+            <p class="text-kharon-light/50 text-base leading-relaxed font-medium">{item.text}</p>
           </div>
         ))}
       </div>

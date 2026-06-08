@@ -63,15 +63,15 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
   <section class="bg-gradient-to-r from-kharon-black to-kharon-charcoal px-4 py-10 text-white sm:px-6 sm:py-12 shadow-inner">
     <div class="mx-auto max-w-4xl">
       <div class="flex items-center gap-3 mb-2">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
           <svg class="h-4 w-4 text-kharon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <p class="text-xs font-bold uppercase tracking-wider text-kharon-purple">Field Operations</p>
+        <p class="text-base font-bold uppercase tracking-wider text-kharon-purple">Field Operations</p>
       </div>
       <h1 class="mt-2 text-2xl font-bold sm:text-3xl tracking-tight">Log Site Visit Details</h1>
-      <p class="mt-3 max-w-3xl text-sm text-white/60">Record your arrival, departure, and job outcomes for accurate tracking.</p>
+      <p class="mt-3 max-w-3xl text-base text-white/60">Record your arrival, departure, and job outcomes for accurate tracking.</p>
     </div>
   </section>
 
@@ -80,13 +80,13 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
       {loadError ? (
         <div class="rounded-xl border border-kharon-red bg-kharon-red/10 p-6 text-center shadow-sm">
           <p class="font-bold text-red-200">{loadError}</p>
-          <a href="/portal/tech/dashboard" class="mt-4 inline-block kharon-secondary-button py-2 text-xs">Back to Dashboard</a>
+          <a href="/portal/tech/dashboard" class="mt-4 inline-block kharon-secondary-button py-2 text-base">Back to Dashboard</a>
         </div>
       ) : !job ? (
         <div class="rounded-xl border border-line-cyan-soft/40 bg-surface-charcoal/40 p-6 sm:p-7 text-center shadow-sm">
           <p class="font-bold text-white">Job Not Found</p>
-          <p class="mt-2 text-sm text-white/60">The requested job does not exist or is not assigned to you.</p>
-          <a href="/portal/tech/dashboard" class="mt-4 inline-block kharon-secondary-button py-2 text-xs">Back to Dashboard</a>
+          <p class="mt-2 text-base text-white/60">The requested job does not exist or is not assigned to you.</p>
+          <a href="/portal/tech/dashboard" class="mt-4 inline-block kharon-secondary-button py-2 text-base">Back to Dashboard</a>
         </div>
       ) : (
         <div class="kharon-surface p-6 sm:p-8">
@@ -95,12 +95,12 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
             <h2 class="text-lg font-bold text-white font-heading">Job Details</h2>
             <div class="mt-3 grid gap-3 sm:grid-cols-2">
               <div>
-                <p class="text-sm font-semibold text-white">{job.owner_company_name}</p>
-                <p class="text-xs text-white/60">{job.system_type} / {job.coverage_area}</p>
+                <p class="text-base font-semibold text-white">{job.owner_company_name}</p>
+                <p class="text-base text-white/60">{job.system_type} / {job.coverage_area}</p>
               </div>
               <div class="sm:text-right">
-                <p class="text-xs text-kharon-purple font-mono uppercase">Job ID: {job.id}</p>
-                <p class="text-xs text-white/50 font-mono uppercase">Scheduled: {job.scheduled_date}</p>
+                <p class="text-base text-kharon-purple font-mono uppercase">Job ID: {job.id}</p>
+                <p class="text-base text-white/50 font-mono uppercase">Scheduled: {job.scheduled_date}</p>
               </div>
             </div>
           </div>
@@ -110,7 +110,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
           <CsrfInput />
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="grid gap-1">
-                <label for="visit-date-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Visit Date</label>
+                <label for="visit-date-input" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">Visit Date</label>
                 <input
                   id="visit-date-input"
                   type="date"
@@ -122,7 +122,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
               </div>
 
               <div class="grid gap-1">
-                <label for="arrival-time-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Arrival Time</label>
+                <label for="arrival-time-input" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">Arrival Time</label>
                 <input
                   id="arrival-time-input"
                   type="time"
@@ -135,7 +135,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
 
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="grid gap-1">
-                <label for="gps-lat-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">GPS Latitude (optional)</label>
+                <label for="gps-lat-input" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">GPS Latitude (optional)</label>
                 <input
                   id="gps-lat-input"
                   type="number"
@@ -147,7 +147,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
               </div>
 
               <div class="grid gap-1">
-                <label for="gps-lng-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">GPS Longitude (optional)</label>
+                <label for="gps-lng-input" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">GPS Longitude (optional)</label>
                 <input
                   id="gps-lng-input"
                   type="number"
@@ -161,7 +161,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
 
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="grid gap-1">
-                <label for="customer-name-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Customer Name (optional)</label>
+                <label for="customer-name-input" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">Customer Name (optional)</label>
                 <input
                   id="customer-name-input"
                   type="text"
@@ -172,7 +172,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
               </div>
 
               <div class="grid gap-1">
-                <label for="customer-title-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Customer Title (optional)</label>
+                <label for="customer-title-input" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">Customer Title (optional)</label>
                 <input
                   id="customer-title-input"
                   type="text"
@@ -184,7 +184,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="grid gap-1">
-              <label for="arrival-notes-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Notes (optional)</label>
+              <label for="arrival-notes-input" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">Notes (optional)</label>
               <textarea
                 id="arrival-notes-input"
                 name="notes"
@@ -207,7 +207,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
           <CsrfInput />
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="grid gap-1">
-                <label for="departure-time-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Departure Time</label>
+                <label for="departure-time-input" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">Departure Time</label>
                 <input
                   id="departure-time-input"
                   type="time"
@@ -218,7 +218,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
               </div>
 
               <div class="grid gap-1">
-                <label for="visit-status-select" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Visit Outcome</label>
+                <label for="visit-status-select" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">Visit Outcome</label>
                 <select
                   id="visit-status-select"
                   name="visitStatus"
@@ -234,7 +234,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="unable-reason-section hidden grid gap-1">
-              <label for="unable-reason-select" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Unable-to-Complete Reason</label>
+              <label for="unable-reason-select" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">Unable-to-Complete Reason</label>
               <select
                 id="unable-reason-select"
                 name="unableReason"
@@ -248,7 +248,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="grid gap-1">
-              <label for="outcome-notes-input" class="block text-xs font-bold uppercase tracking-widest text-kharon-purple">Outcome Notes (optional)</label>
+              <label for="outcome-notes-input" class="block text-base font-bold uppercase tracking-widest text-kharon-purple">Outcome Notes (optional)</label>
               <textarea
                 id="outcome-notes-input"
                 name="notes"
@@ -260,10 +260,10 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
             </div>
 
             <div class="pt-4 flex gap-4">
-              <button type="submit" class="flex-1 kharon-command-button py-3 text-xs">
+              <button type="submit" class="flex-1 kharon-command-button py-3 text-base">
                 Log Outcome
               </button>
-              <button type="button" class="cancel-outcome-btn flex-1 kharon-secondary-button py-3 text-xs">
+              <button type="button" class="cancel-outcome-btn flex-1 kharon-secondary-button py-3 text-base">
                 Cancel
               </button>
             </div>
@@ -335,7 +335,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
 
           if (visitResult) {
             visitResult.textContent = String(result.message ?? "Arrival logged.");
-            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-green bg-kharon-green/10 text-sm font-semibold text-green-200";
+            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-green bg-kharon-green/10 text-base font-semibold text-green-200";
             visitResult.classList.remove("hidden");
           }
 
@@ -345,7 +345,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
         } catch (error) {
           if (visitResult) {
             visitResult.textContent = (error as Error).message;
-            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-red bg-kharon-red/10 text-sm font-semibold text-red-200";
+            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-red bg-kharon-red/10 text-base font-semibold text-red-200";
             visitResult.classList.remove("hidden");
           }
         }
@@ -380,7 +380,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
 
           if (visitResult) {
             visitResult.textContent = String(result.message ?? "Visit outcome logged.");
-            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-green bg-kharon-green/10 text-sm font-semibold text-green-200";
+            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-green bg-kharon-green/10 text-base font-semibold text-green-200";
             visitResult.classList.remove("hidden");
           }
 
@@ -391,7 +391,7 @@ import CsrfInput from "../../../../../components/ui/CsrfInput.astro";
         } catch (error) {
           if (visitResult) {
             visitResult.textContent = (error as Error).message;
-            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-red bg-kharon-red/10 text-sm font-semibold text-red-200";
+            visitResult.className = "visit-result mt-4 p-4 rounded-lg border border-kharon-red bg-kharon-red/10 text-base font-semibold text-red-200";
             visitResult.classList.remove("hidden");
           }
         }

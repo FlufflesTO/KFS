@@ -307,7 +307,7 @@ categories.push({
   <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:bg-kharon-charcoal focus:px-4 focus:py-2 focus:border focus:border-kharon-purple focus:rounded focus:text-white focus:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-kharon-charcoal">
     Skip to main content
   </a>
-  <div id="offline-conflict-banner" class="hidden border-b border-kharon-amber/40 bg-kharon-amber/10 px-4 py-3 text-sm font-semibold text-kharon-amber" role="status" aria-live="polite">
+  <div id="offline-conflict-banner" class="hidden border-b border-kharon-amber/40 bg-kharon-amber/10 px-4 py-3 text-base font-semibold text-kharon-amber" role="status" aria-live="polite">
     Offline change conflict detected. Review the latest server data before resubmitting this work.
   </div>
 
@@ -321,21 +321,21 @@ categories.push({
       <div class="flex items-center justify-between mb-8 pb-4 border-b border-kharon-purple/10">
         <div class="flex items-center gap-3">
           <img loading="lazy" decoding="async" src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="28" height="28" class="h-7 w-7" />
-          <span class="text-xs font-black uppercase tracking-[0.15em] text-white">Kharon Command</span>
+          <span class="text-base font-black uppercase tracking-[0.15em] text-white">Kharon Command</span>
         </div>
-        <button id="mobile-drawer-close" aria-label="Close navigation menu" class="text-white/60 hover:text-white transition-colors text-2xl font-bold h-10 w-10 flex items-center justify-center rounded-md hover:bg-kharon-purple/10">×</button>
+        <button id="mobile-drawer-close" aria-label="Close navigation menu" class="text-white/60 hover:text-white transition-colors text-2xl font-bold h-12 w-12 flex items-center justify-center rounded-md hover:bg-kharon-purple/10">×</button>
       </div>
 
       <nav class="space-y-6 flex-1" aria-label="Portal mobile navigation">
         {categories.map((category) => (
           <div>
-            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-3 mb-2">{category.title}</h3>
+            <h3 class="text-base font-black uppercase tracking-[0.2em] text-kharon-purple px-3 mb-2">{category.title}</h3>
             <div class="space-y-1">
               {category.links.map((link) => (
                 <a
                   href={link.href}
                   aria-current={active === link.key ? "page" : undefined}
-                  class={`flex items-center gap-3 w-full rounded-md px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/20 border border-kharon-purple/40 border-l-4 border-l-kharon-cyan" : "text-white/70 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
+                  class={`flex items-center gap-3 w-full rounded-md px-3 py-2.5 text-base font-bold uppercase tracking-wide transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/20 border border-kharon-purple/40 border-l-4 border-l-kharon-cyan" : "text-white/70 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
                 >
                   <svg class="h-4.5 w-4.5 shrink-0 text-kharon-cyan/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" set:html={getIconPath(link.key)}></svg>
                   <span>{link.label}</span>
@@ -348,7 +348,7 @@ categories.push({
 
       <div class="mt-6 pt-4 border-t border-kharon-purple/10 flex items-center gap-3">
         <div class="h-1.5 w-1.5 rounded-full bg-kharon-green animate-pulse"></div>
-        <span class="text-[10px] uppercase font-bold tracking-wider text-kharon-light/40">{user?.role} Active</span>
+        <span class="text-base uppercase font-bold tracking-wider text-kharon-light/40">{user?.role} Active</span>
       </div>
     </div>
   </div>
@@ -357,7 +357,7 @@ categories.push({
   <header class="sticky top-0 z-50 w-full border-b border-kharon-purple/10 bg-kharon-black/90 backdrop-blur-md text-white shadow-lg">
     <div class="mx-auto flex min-h-[5rem] max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
       <div class="flex items-center gap-3">
-        <button id="mobile-drawer-toggle" class="lg:hidden flex items-center justify-center p-2 rounded-md text-white/80 hover:text-white hover:bg-kharon-purple/20 focus:outline-none focus:ring-2 focus:ring-kharon-cyan h-10 w-10" aria-label="Toggle navigation menu">
+        <button id="mobile-drawer-toggle" class="lg:hidden flex items-center justify-center p-2 rounded-md text-white/80 hover:text-white hover:bg-kharon-purple/20 focus:outline-none focus:ring-2 focus:ring-kharon-cyan h-12 w-12" aria-label="Toggle navigation menu">
           <svg class="h-6 w-6 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
@@ -366,27 +366,27 @@ categories.push({
         <a href="/portal" class="group flex shrink-0 items-center gap-3 transition-transform duration-300 hover:scale-[1.02]" aria-label="Kharon Operations Portal">
           <div class="relative flex-none">
             <div class="absolute inset-0 bg-kharon-purple/20 blur-lg group-hover:bg-kharon-purple/35 transition-colors duration-500 rounded-full"></div>
-            <img loading="lazy" decoding="async" src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" class="relative z-10 h-8 w-8 object-contain" />
+            <img loading="lazy" decoding="async" src="/brand/kharon-mark.svg" alt="" aria-hidden="true" width="32" height="32" class="relative z-10 h-12 w-12 object-contain" />
           </div>
           <div class="hidden sm:block">
-            <span class="block whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-white">Kharon Command</span>
-            <span class="block whitespace-nowrap text-[10px] font-bold uppercase text-kharon-purple tracking-widest">Secure Operations Console</span>
+            <span class="block whitespace-nowrap text-base font-black uppercase tracking-[0.15em] text-white">Kharon Command</span>
+            <span class="block whitespace-nowrap text-base font-bold uppercase text-kharon-purple tracking-widest">Secure Operations Console</span>
           </div>
         </a>
       </div>
 
       <div class="flex items-center gap-3 sm:gap-6">
         <div class="hidden md:flex flex-col items-end leading-tight border-r border-kharon-purple/20 pr-6">
-          <p class="text-xs font-bold text-white/90">{user?.name}</p>
-          <p class="mt-0.5 text-[10px] uppercase text-kharon-purple font-black tracking-widest">{user?.role}</p>
+          <p class="text-base font-bold text-white/90">{user?.name}</p>
+          <p class="mt-0.5 text-base uppercase text-kharon-purple font-black tracking-widest">{user?.role}</p>
         </div>
         
-        <button id="open-feedback" class="hidden sm:flex items-center gap-2 rounded border border-kharon-purple/30 bg-kharon-charcoal/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white hover:border-kharon-cyan transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-kharon-charcoal">
+        <button id="open-feedback" class="hidden sm:flex items-center gap-2 rounded border border-kharon-purple/30 bg-kharon-charcoal/50 px-3 py-1.5 text-base font-bold uppercase tracking-widest text-white/70 hover:text-white hover:border-kharon-cyan transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-kharon-charcoal">
           Feedback
         </button>
 
         <form id="portal-logout-form">
-          <button class="flex items-center justify-center rounded border border-kharon-red/40 bg-kharon-red/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-kharon-red hover:bg-kharon-red/10 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-kharon-charcoal" type="submit">
+          <button class="flex items-center justify-center rounded border border-kharon-red/40 bg-kharon-red/5 px-4 py-1.5 text-base font-bold uppercase tracking-widest text-kharon-red hover:bg-kharon-red/10 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-kharon-charcoal" type="submit">
             Logout
           </button>
         </form>
@@ -400,13 +400,13 @@ categories.push({
       <nav class="space-y-8" aria-label="Portal navigation">
         {categories.map((category) => (
           <div class="space-y-2">
-            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-kharon-purple px-3">{category.title}</h3>
+            <h3 class="text-base font-black uppercase tracking-[0.2em] text-kharon-purple px-3">{category.title}</h3>
             <div class="space-y-1">
               {category.links.map((link) => (
                 <a
                   href={link.href}
                   aria-current={active === link.key ? "page" : undefined}
-                  class={`flex items-center gap-3 w-full rounded px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/20 border border-kharon-purple/40 border-l-4 border-l-kharon-cyan shadow-lg shadow-kharon-purple/5" : "text-kharon-light/60 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
+                  class={`flex items-center gap-3 w-full rounded px-3 py-2 text-base font-bold uppercase tracking-wider transition-all duration-200 ${active === link.key ? "text-white bg-kharon-purple/20 border border-kharon-purple/40 border-l-4 border-l-kharon-cyan shadow-lg shadow-kharon-purple/5" : "text-kharon-light/60 hover:text-white hover:bg-kharon-purple/10 border border-transparent"}`}
                 >
                   <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" set:html={getIconPath(link.key)}></svg>
                   <span>{link.label}</span>
@@ -429,13 +429,13 @@ categories.push({
   <div id="feedback-modal" class="fixed inset-0 z-[100] hidden items-center justify-center px-4 bg-kharon-black/70 backdrop-blur-md transition-all duration-300 opacity-0">
     <div class="w-full max-w-md scale-95 transition-transform duration-300 bg-kharon-charcoal rounded-xl shadow-2xl shadow-kharon-black/40 overflow-hidden border border-kharon-purple/20">
       <div class="bg-gradient-to-r from-kharon-purple to-kharon-blue px-6 py-4 flex items-center justify-between">
-        <h3 class="text-white font-bold uppercase tracking-widest text-sm">Provide Feedback</h3>
+        <h3 class="text-white font-bold uppercase tracking-widest text-base">Provide Feedback</h3>
         <button id="close-feedback" aria-label="Close feedback form" class="text-white/60 hover:text-white transition-colors text-xl font-bold">×</button>
       </div>
       <form id="feedback-form" class="p-6 space-y-4">
         <div>
-          <label class="block text-[10px] font-bold uppercase tracking-widest text-kharon-purple/80 mb-1.5">Category</label>
-          <select name="category" required class="w-full rounded-lg border border-kharon-purple/20 bg-kharon-charcoal px-3 py-2 text-sm focus:border-kharon-purple focus:ring-1 focus:ring-kharon-purple outline-none transition-all text-white">
+          <label class="block text-base font-bold uppercase tracking-widest text-kharon-purple/80 mb-1.5">Category</label>
+          <select name="category" required class="w-full rounded-lg border border-kharon-purple/20 bg-kharon-charcoal px-3 py-2 text-base focus:border-kharon-purple focus:ring-1 focus:ring-kharon-purple outline-none transition-all text-white">
             <option value="ui">UI / Layout</option>
             <option value="performance">Performance / Speed</option>
             <option value="bug">Bug / Error</option>
@@ -443,11 +443,11 @@ categories.push({
           </select>
         </div>
         <div>
-          <label class="block text-[10px] font-bold uppercase tracking-widest text-kharon-purple/80 mb-1.5">Your Message</label>
-          <textarea name="message" required rows="4" placeholder="How can we improve this page?" class="w-full rounded-lg border border-kharon-purple/20 bg-kharon-charcoal px-3 py-2 text-sm focus:border-kharon-purple focus:ring-1 focus:ring-kharon-purple outline-none transition-all resize-none text-white"></textarea>
+          <label class="block text-base font-bold uppercase tracking-widest text-kharon-purple/80 mb-1.5">Your Message</label>
+          <textarea name="message" required rows="4" placeholder="How can we improve this page?" class="w-full rounded-lg border border-kharon-purple/20 bg-kharon-charcoal px-3 py-2 text-base focus:border-kharon-purple focus:ring-1 focus:ring-kharon-purple outline-none transition-all resize-none text-white"></textarea>
         </div>
-        <div id="feedback-result" class="hidden text-xs font-bold p-3 rounded-lg"></div>
-        <button type="submit" class="w-full rounded-lg bg-gradient-to-r from-kharon-purple to-kharon-blue py-3 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-kharon-purple/20 hover:shadow-kharon-purple/40 transition-all duration-300">
+        <div id="feedback-result" class="hidden text-base font-bold p-3 rounded-lg"></div>
+        <button type="submit" class="w-full rounded-lg bg-gradient-to-r from-kharon-purple to-kharon-blue py-3 text-base font-bold uppercase tracking-widest text-white shadow-lg shadow-kharon-purple/20 hover:shadow-kharon-purple/40 transition-all duration-300">
           Send Feedback
         </button>
       </form>
@@ -486,7 +486,7 @@ categories.push({
         modal?.classList.add("hidden");
         form.reset();
         if (result) {
-          result.className = "hidden text-xs font-bold p-3 rounded-lg";
+          result.className = "hidden text-base font-bold p-3 rounded-lg";
           result.textContent = "";
         }
       }, 300);
@@ -531,18 +531,18 @@ categories.push({
         if (result) {
           result.classList.remove("hidden");
           if (response.ok && body?.ok) {
-            result.className = "text-emerald-400 bg-emerald-900/30 border border-emerald-700/50 p-3 rounded-lg text-xs font-bold";
+            result.className = "text-emerald-400 bg-emerald-900/30 border border-emerald-700/50 p-3 rounded-lg text-base font-bold";
             result.textContent = body.message || "Feedback sent successfully.";
             setTimeout(closeModal, 2000);
           } else {
-            result.className = "text-rose-400 bg-rose-900/30 border border-rose-700/50 p-3 rounded-lg text-xs font-bold";
+            result.className = "text-rose-400 bg-rose-900/30 border border-rose-700/50 p-3 rounded-lg text-base font-bold";
             result.textContent = body?.message || "Feedback could not be sent.";
           }
         }
       } catch (err) {
         if (result) {
           result.classList.remove("hidden");
-          result.className = "text-rose-400 bg-rose-900/30 border border-rose-700/50 p-3 rounded-lg text-xs font-bold";
+          result.className = "text-rose-400 bg-rose-900/30 border border-rose-700/50 p-3 rounded-lg text-base font-bold";
           result.textContent = "Network error occurred.";
         }
       } finally {

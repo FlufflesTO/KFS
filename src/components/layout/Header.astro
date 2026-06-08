@@ -43,7 +43,7 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
       </div>
       <div>
         <span class="block whitespace-nowrap text-base font-black uppercase tracking-[0.18em] text-white leading-none">Kharon</span>
-        <span class="block whitespace-nowrap text-[0.6rem] font-bold uppercase tracking-[0.3em] text-kharon-purple group-hover:text-kharon-cyan transition-colors leading-none mt-1">Fire &amp; Security</span>
+        <span class="block whitespace-nowrap text-base font-bold uppercase tracking-[0.3em] text-kharon-purple group-hover:text-kharon-cyan transition-colors leading-none mt-1">Fire &amp; Security</span>
       </div>
     </a>
 
@@ -64,10 +64,10 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
           <div class="grid grid-cols-3 gap-4">
             {solutionGroups.map((group) => (
               <div>
-                <p class="px-2 pb-2 text-[0.6rem] font-black uppercase tracking-[0.2em] text-kharon-purple">{group.label}</p>
+                <p class="px-2 pb-2 text-base font-black uppercase tracking-[0.2em] text-kharon-purple">{group.label}</p>
                 <div class="grid gap-0.5">
                   {group.items.map((item) => (
-                    <a href={item.href} class="rounded-md px-2 py-2 text-xs font-bold uppercase tracking-wider text-white/70 hover:bg-kharon-purple/10 hover:text-kharon-cyan transition-colors">{item.label}</a>
+                    <a href={item.href} class="rounded-md px-2 py-2 text-base font-bold uppercase tracking-wider text-white/70 hover:bg-kharon-purple/10 hover:text-kharon-cyan transition-colors">{item.label}</a>
                   ))}
                 </div>
               </div>
@@ -147,36 +147,36 @@ const isLinkActive = (href: string): boolean => normalizePath(href) === activePa
         <div class="fixed inset-x-0 top-[var(--header-height)] z-[90] max-h-[calc(100vh-var(--header-height))] overflow-y-auto bg-kharon-black/98 p-6 shadow-2xl backdrop-blur-xl">
           <div class="flex flex-col gap-8 py-4">
             <div class="grid gap-4">
-              <p class="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Solutions</p>
+              <p class="text-base font-bold uppercase tracking-[0.2em] text-kharon-purple">Solutions</p>
               {solutionGroups.map(group => (
                 <div class="grid gap-2">
-                  <p class="text-[0.55rem] font-bold uppercase tracking-[0.2em] text-kharon-light/40">{group.label}</p>
+                  <p class="text-base font-bold uppercase tracking-[0.2em] text-kharon-light/40">{group.label}</p>
                   {group.items.map(item => (
-                    <a href={item.href} class="text-sm font-bold uppercase tracking-widest text-white/80">{item.label}</a>
+                    <a href={item.href} class="text-base font-bold uppercase tracking-widest text-white/80">{item.label}</a>
                   ))}
                 </div>
               ))}
-              <a href="/solutions" class="text-sm font-black uppercase tracking-widest text-kharon-cyan pt-1">All Solutions</a>
+              <a href="/solutions" class="text-base font-black uppercase tracking-widest text-kharon-cyan pt-1">All Solutions</a>
             </div>
             <div class="grid gap-4">
-              <p class="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Sectors</p>
+              <p class="text-base font-bold uppercase tracking-[0.2em] text-kharon-purple">Sectors</p>
               {sectorLinks.map(link => (
-                <a href={link.href} class="text-sm font-bold uppercase tracking-widest text-white/80">{link.label}</a>
+                <a href={link.href} class="text-base font-bold uppercase tracking-widest text-white/80">{link.label}</a>
               ))}
             </div>
             <div class="grid gap-4">
-              <p class="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Resources</p>
+              <p class="text-base font-bold uppercase tracking-[0.2em] text-kharon-purple">Resources</p>
               {resourceLinks.map(link => (
-                <a href={link.href} class="text-sm font-bold uppercase tracking-widest text-white/80">{link.label}</a>
+                <a href={link.href} class="text-base font-bold uppercase tracking-widest text-white/80">{link.label}</a>
               ))}
             </div>
             <div class="grid gap-4">
-              <p class="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-kharon-purple">Company</p>
-              <a href="/about" class="text-sm font-bold uppercase tracking-widest text-white/80">About</a>
-              <a href="/contact" class="text-sm font-bold uppercase tracking-widest text-white/80">Contact</a>
+              <p class="text-base font-bold uppercase tracking-[0.2em] text-kharon-purple">Company</p>
+              <a href="/about" class="text-base font-bold uppercase tracking-widest text-white/80">About</a>
+              <a href="/contact" class="text-base font-bold uppercase tracking-widest text-white/80">Contact</a>
             </div>
-            <a href="/emergency-support" data-analytics="emergency_click" class="rounded-md bg-kharon-red py-4 text-center text-xs font-bold uppercase tracking-[0.2em] text-white">Emergency Support</a>
-            <a href={site.portalLoginPath} data-analytics="portal_click" class="rounded-md border border-kharon-purple/30 py-4 text-center text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan bg-kharon-charcoal/30">Secure Portal</a>
+            <a href="/emergency-support" data-analytics="emergency_click" class="rounded-md bg-kharon-red py-4 text-center text-base font-bold uppercase tracking-[0.2em] text-white">Emergency Support</a>
+            <a href={site.portalLoginPath} data-analytics="portal_click" class="rounded-md border border-kharon-purple/30 py-4 text-center text-base font-bold uppercase tracking-[0.2em] text-kharon-cyan bg-kharon-charcoal/30">Secure Portal</a>
           </div>
         </div>
       </details>

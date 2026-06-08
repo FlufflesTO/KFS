@@ -103,7 +103,7 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
 <PortalLayout title="Job History | Kharon Portal" active="tech-history" user={user}>
   <section class="bg-kharon-black px-4 py-8 text-white sm:px-6 sm:py-10">
     <div class="mx-auto max-w-7xl">
-      <p class="text-xs font-bold uppercase text-kharon-purple">Technician records</p>
+      <p class="text-base font-bold uppercase text-kharon-purple">Technician records</p>
       <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Completed job history</h1>
       <p class="mt-4 max-w-3xl text-white/65">
         Closed and invoiced dispatches for {user?.role === "admin" ? "all technicians" : "your account"}.
@@ -114,7 +114,7 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
 
   <section class="bg-kharon-black px-4 py-6 sm:px-6 sm:py-8 min-h-[40vh]">
     <div class="mx-auto max-w-7xl">
-      {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
+      {loadError && <p class="rounded border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-base font-semibold text-kharon-red">{loadError}</p>}
 
       {!loadError && jobs.length === 0 && (
         <p class="text-white/50">No completed jobs found.</p>
@@ -126,16 +126,16 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
             <input
               id="history-search"
               type="search"
-              class="kharon-field text-sm"
+              class="kharon-field text-base"
               placeholder="Search site, system or comments…"
               size="26"
             />
-            <select id="history-status-filter" class="kharon-field text-sm">
+            <select id="history-status-filter" class="kharon-field text-base">
               <option value="">All statuses</option>
               <option value="Completed">Completed</option>
               <option value="Invoiced">Invoiced</option>
             </select>
-            <select id="history-type-filter" class="kharon-field text-sm">
+            <select id="history-type-filter" class="kharon-field text-base">
               <option value="">All job types</option>
               <option value="Routine service">Routine service</option>
               <option value="Compliance inspection">Compliance inspection</option>
@@ -145,21 +145,21 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
               <option value="Suppression release infrastructure">Suppression release infrastructure</option>
               <option value="Follow-up required">Follow-up required</option>
             </select>
-            <button id="history-clear" class="kharon-secondary-button px-3 py-2 text-xs font-semibold">
+            <button id="history-clear" class="kharon-secondary-button px-3 py-2 text-base font-semibold">
               Clear filters
             </button>
             </div>
             <div class="portal-scroll-x rounded-xl border border-kharon-purple/20 bg-kharon-black shadow-sm overflow-hidden">
-            <table class="min-w-[1000px] border-collapse text-sm">
+            <table class="min-w-[1000px] border-collapse text-base">
               <thead>
                 <tr class="border-b border-kharon-purple/20 bg-kharon-charcoal">
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Completed</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Status</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Site</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">System</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Type</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Comments</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-kharon-purple">Jobcard</th>
+                  <th scope="col" class="px-4 py-3 text-left text-base font-bold uppercase tracking-widest text-kharon-purple">Completed</th>
+                  <th scope="col" class="px-4 py-3 text-left text-base font-bold uppercase tracking-widest text-kharon-purple">Status</th>
+                  <th scope="col" class="px-4 py-3 text-left text-base font-bold uppercase tracking-widest text-kharon-purple">Site</th>
+                  <th scope="col" class="px-4 py-3 text-left text-base font-bold uppercase tracking-widest text-kharon-purple">System</th>
+                  <th scope="col" class="px-4 py-3 text-left text-base font-bold uppercase tracking-widest text-kharon-purple">Type</th>
+                  <th scope="col" class="px-4 py-3 text-left text-base font-bold uppercase tracking-widest text-kharon-purple">Comments</th>
+                  <th scope="col" class="px-4 py-3 text-left text-base font-bold uppercase tracking-widest text-kharon-purple">Jobcard</th>
                 </tr>
               </thead>
               <tbody id="history-rows">
@@ -172,7 +172,7 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
                   >
                     <td class="px-4 py-3 whitespace-nowrap">{job.completed_at ? job.completed_at.slice(0, 10) : "-"}</td>
                     <td class="px-4 py-3">
-                      <span class={`inline-block rounded px-2 py-0.5 text-xs font-bold uppercase ${job.status === "Invoiced" ? "bg-kharon-green/20 text-kharon-green" : "bg-kharon-purple/20 text-kharon-purple"}`}>
+                      <span class={`inline-block rounded px-2 py-0.5 text-base font-bold uppercase ${job.status === "Invoiced" ? "bg-kharon-green/20 text-kharon-green" : "bg-kharon-purple/20 text-kharon-purple"}`}>
                         {job.status}
                       </span>
                     </td>
@@ -197,19 +197,19 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
               </tbody>
             </table>
           </div>
-          <p id="history-no-results" class="hidden py-4 text-sm text-white/70">No jobs match your filter.</p>
+          <p id="history-no-results" class="hidden py-4 text-base text-white/70">No jobs match your filter.</p>
           {totalPages > 1 && (
             <nav class="mt-6 flex items-center justify-between border-t border-kharon-purple/20 pt-4">
               {page > 1 ? (
-                <a href={`?page=${page - 1}`} class="rounded border border-kharon-purple/20 px-4 py-2 text-sm font-semibold text-white hover:bg-kharon-charcoal">Previous</a>
+                <a href={`?page=${page - 1}`} class="rounded border border-kharon-purple/20 px-4 py-2 text-base font-semibold text-white hover:bg-kharon-charcoal">Previous</a>
               ) : (
-                <span class="rounded border border-kharon-purple/20 px-4 py-2 text-sm font-semibold text-white/40">Previous</span>
+                <span class="rounded border border-kharon-purple/20 px-4 py-2 text-base font-semibold text-white/40">Previous</span>
               )}
-              <span class="text-sm text-white/70">Page {page} of {totalPages}</span>
+              <span class="text-base text-white/70">Page {page} of {totalPages}</span>
               {page < totalPages ? (
-                <a href={`?page=${page + 1}`} class="rounded border border-kharon-purple/20 px-4 py-2 text-sm font-semibold text-white hover:bg-kharon-charcoal">Next</a>
+                <a href={`?page=${page + 1}`} class="rounded border border-kharon-purple/20 px-4 py-2 text-base font-semibold text-white hover:bg-kharon-charcoal">Next</a>
               ) : (
-                <span class="rounded border border-kharon-purple/20 px-4 py-2 text-sm font-semibold text-white/40">Next</span>
+                <span class="rounded border border-kharon-purple/20 px-4 py-2 text-base font-semibold text-white/40">Next</span>
               )}
             </nav>
           )}

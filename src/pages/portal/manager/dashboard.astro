@@ -59,33 +59,33 @@ const exceptions = [
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(75,46,131,0.1),transparent)]"></div>
     <div class="mx-auto max-w-7xl relative z-10">
       <div class="flex items-center gap-3 mb-4">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
           <svg class="h-[1.1rem] w-[1.1rem] text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 6a2 2 0 100-4 2 2 0 000 4z" />
           </svg>
         </div>
-        <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Management Console</p>
+        <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-cyan">Management Console</p>
       </div>
       <h1 class="text-2xl font-black sm:text-3xl tracking-tight text-white">Operations Overview</h1>
-      <p class="mt-2 max-w-2xl text-sm text-kharon-light/60">
+      <p class="mt-2 max-w-2xl text-base text-kharon-light/60">
         Live operational status for {user?.name || "Manager"}. All views are read-only — contact your administrator for changes.
       </p>
     </div>
   </section>
 
   {loadError && (
-    <div class="mb-6 rounded-lg border border-kharon-amber/30 bg-kharon-amber/10 px-4 py-3 text-sm text-kharon-amber">
+    <div class="mb-6 rounded-lg border border-kharon-amber/30 bg-kharon-amber/10 px-4 py-3 text-base text-kharon-amber">
       {loadError}
     </div>
   )}
 
   {exceptions.length > 0 && (
     <section class="mb-6 rounded-xl border border-kharon-red/20 bg-kharon-red/5 px-4 py-4">
-      <h2 class="mb-3 text-xs font-black uppercase tracking-widest text-kharon-red">Operational Alerts</h2>
+      <h2 class="mb-3 text-base font-black uppercase tracking-widest text-kharon-red">Operational Alerts</h2>
       <ul class="space-y-2">
         {exceptions.map(e => (
-          <li class="flex items-center gap-3 text-sm">
-            <span class={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-black ${e.severity === 'red' ? 'bg-kharon-red/20 text-kharon-red' : 'bg-kharon-amber/20 text-kharon-amber'}`}>
+          <li class="flex items-center gap-3 text-base">
+            <span class={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-base font-black ${e.severity === 'red' ? 'bg-kharon-red/20 text-kharon-red' : 'bg-kharon-amber/20 text-kharon-amber'}`}>
               {e.count}
             </span>
             <a href={e.href} class="text-kharon-light/80 hover:text-white transition-colors underline-offset-2 hover:underline">
@@ -106,7 +106,7 @@ const exceptions = [
     ].map(stat => (
       <a href={stat.href} class="group rounded-xl border border-kharon-purple/10 bg-kharon-charcoal/60 px-4 py-4 hover:border-kharon-purple/30 transition-colors">
         <div class={`text-2xl font-black ${stat.color}`}>{stat.value}</div>
-        <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-kharon-light/50">{stat.label}</div>
+        <div class="mt-1 text-base font-semibold uppercase tracking-wide text-kharon-light/50">{stat.label}</div>
       </a>
     ))}
   </div>

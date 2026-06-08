@@ -14,18 +14,18 @@ const { certificates, systems, today } = Astro.props;
   <article class="border border-kharon-purple/20 bg-kharon-charcoal p-4 sm:p-5">
     <div class="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 bg-kharon-charcoal">
       <h2 class="text-xl font-bold">
-        Certificates <span class="ml-2 text-sm font-normal text-white/70">({certificates.length})</span>
+        Certificates <span class="ml-2 text-base font-normal text-white/70">({certificates.length})</span>
       </h2>
       <div class="flex flex-wrap gap-3">
         <input
           id="certificates-search"
           type="search"
-          class="rounded-md border border-kharon-purple/20 px-3 py-2 text-sm"
+          class="rounded-md border border-kharon-purple/20 px-3 py-2 text-base"
           placeholder="Search site, area, type…"
           size="24"
           aria-label="Search certificates"
         />
-        <select id="certificates-status-filter" class="rounded-md border border-kharon-purple/20 px-3 py-2 text-sm" aria-label="Filter certificates by status">
+        <select id="certificates-status-filter" class="rounded-md border border-kharon-purple/20 px-3 py-2 text-base" aria-label="Filter certificates by status">
           <option value="">All statuses</option>
           <option value="Valid">Valid</option>
           <option value="Expired">Expired</option>
@@ -44,31 +44,31 @@ const { certificates, systems, today } = Astro.props;
         >
           <div>
             <p class="font-semibold">{item.owner_company_name}</p>
-            <p class="text-sm text-white/70">{item.system_type} / {item.coverage_area}</p>
+            <p class="text-base text-white/70">{item.system_type} / {item.coverage_area}</p>
           </div>
           <div>
-            <p class="text-sm font-semibold">{item.certificate_type}</p>
-            <p class="text-xs text-white/70">Issued {item.issued_date}</p>
+            <p class="text-base font-semibold">{item.certificate_type}</p>
+            <p class="text-base text-white/70">Issued {item.issued_date}</p>
           </div>
           <div>
             {item.expiry_date ? (
               <>
-                <p class="text-sm font-semibold">Expires {item.expiry_date}</p>
-                {item.expiry_date < today && <p class="text-xs font-bold text-kharon-red">Expired</p>}
+                <p class="text-base font-semibold">Expires {item.expiry_date}</p>
+                {item.expiry_date < today && <p class="text-base font-bold text-kharon-red">Expired</p>}
               </>
             ) : (
-              <p class="text-sm text-white/70">No expiry date</p>
+              <p class="text-base text-white/70">No expiry date</p>
             )}
           </div>
           <div class="flex items-center gap-2">
-            <span class={`rounded px-2 py-1 text-xs font-bold ${
+            <span class={`rounded px-2 py-1 text-base font-bold ${
               item.status === "Valid"   ? "bg-kharon-green/20 border border-kharon-green/40 text-kharon-green" :
               item.status === "Blocked" ? "bg-kharon-amber/20 border border-kharon-amber/40 text-kharon-amber" :
               item.status === "Revoked" ? "bg-kharon-red/20 border border-kharon-red/40 text-kharon-red" :
                                           "bg-kharon-grey/20 text-white/70"
             }`}>{item.status}</span>
             {item.blocking_severity && (
-              <span class="rounded border border-kharon-amber/40 bg-kharon-amber/10 px-2 py-1 text-xs font-bold text-kharon-amber">
+              <span class="rounded border border-kharon-amber/40 bg-kharon-amber/10 px-2 py-1 text-base font-bold text-kharon-amber">
                 Blocked: {item.blocking_severity}
               </span>
             )}
@@ -76,22 +76,22 @@ const { certificates, systems, today } = Astro.props;
           <div class="flex flex-wrap gap-2">
             <a
               href={`/portal/api/admin/certificates/${item.id}/pdf`}
-              class="inline-flex min-h-11 items-center rounded-md border border-kharon-purple/40 bg-kharon-purple/10 px-3 py-2 text-xs font-semibold text-white"
+              class="inline-flex min-h-11 items-center rounded-md border border-kharon-purple/40 bg-kharon-purple/10 px-3 py-2 text-base font-semibold text-white"
             >
               PDF
             </a>
             {item.status === "Valid" && (
-              <button type="button" class="revoke-cert min-h-11 rounded-md border border-kharon-red/40 bg-kharon-red/10 px-3 py-2 text-xs font-semibold text-kharon-red" data-id={item.id}>Revoke</button>
+              <button type="button" class="revoke-cert min-h-11 rounded-md border border-kharon-red/40 bg-kharon-red/10 px-3 py-2 text-base font-semibold text-kharon-red" data-id={item.id}>Revoke</button>
             )}
             {item.status === "Valid" && (
-              <button type="button" class="expire-cert min-h-11 rounded-md border border-kharon-grey px-3 py-2 text-xs font-semibold text-white/70" data-id={item.id}>Expire</button>
+              <button type="button" class="expire-cert min-h-11 rounded-md border border-kharon-grey px-3 py-2 text-base font-semibold text-white/70" data-id={item.id}>Expire</button>
             )}
           </div>
-          <p class="text-xs text-white/70 lg:col-span-6">{item.id}</p>
+          <p class="text-base text-white/70 lg:col-span-6">{item.id}</p>
         </article>
       ))}
     </div>
-    <p id="certificates-no-results" class="hidden py-4 text-sm text-white/70">No certificates match your filter.</p>
+    <p id="certificates-no-results" class="hidden py-4 text-base text-white/70">No certificates match your filter.</p>
   </article>
 
   <article class="border border-kharon-purple/20 bg-kharon-charcoal p-4 sm:p-5">
@@ -120,11 +120,11 @@ const { certificates, systems, today } = Astro.props;
         <option value="Valid">Valid</option>
         <option value="Blocked">Blocked</option>
       </select>
-      <p class="text-xs text-white/70">
+      <p class="text-base text-white/70">
         Creating a Valid certificate will be blocked if there are open certificate-blocking defects on the selected system.
       </p>
       <button class="rounded-md bg-kharon-blue px-5 py-3 font-semibold text-white">Create certificate</button>
-      <p class="admin-result hidden rounded-md border px-4 py-3 text-sm font-semibold"></p>
+      <p class="admin-result hidden rounded-md border px-4 py-3 text-base font-semibold"></p>
     </form>
   </article>
 </div>

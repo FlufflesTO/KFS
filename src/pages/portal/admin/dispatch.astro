@@ -95,48 +95,48 @@ const techGroups: TechGroup[] = Array.from(techGroupMap.values()).sort((a, b) =>
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(75,46,131,0.09),transparent)]"></div>
     <div class="relative z-10">
       <div class="flex items-center gap-3 mb-4">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-kharon-purple/10 ring-1 ring-kharon-purple/20">
           <svg class="h-[1.1rem] w-[1.1rem] text-kharon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
           </svg>
         </div>
-        <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Operations Console</p>
+        <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-cyan">Operations Console</p>
       </div>
       <h1 class="text-2xl font-black sm:text-3xl tracking-tight text-white">Dispatch Command Board</h1>
-      <p class="mt-2 max-w-3xl text-sm text-kharon-light/60">Assign technicians, set priorities, and track active fieldwork.</p>
+      <p class="mt-2 max-w-3xl text-base text-kharon-light/60">Assign technicians, set priorities, and track active fieldwork.</p>
     </div>
   </section>
 
   <div class="mx-auto max-w-7xl grid gap-8 px-4 sm:px-6 pb-10">
-    {loadError && <p class="rounded-lg border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-sm font-semibold text-kharon-red">{loadError}</p>}
+    {loadError && <p class="rounded-lg border border-kharon-red/40 bg-kharon-red/10 px-4 py-3 text-base font-semibold text-kharon-red">{loadError}</p>}
 
     <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
       <div class="kharon-surface p-5 text-center">
-        <p class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">Unassigned</p>
+        <p class="text-base font-black uppercase tracking-widest text-kharon-purple">Unassigned</p>
         <p class="text-3xl font-black text-white mt-2">{stats.unassigned}</p>
       </div>
       <div class="kharon-surface p-5 text-center">
-        <p class="text-[10px] font-black uppercase tracking-widest text-kharon-purple">In Progress</p>
+        <p class="text-base font-black uppercase tracking-widest text-kharon-purple">In Progress</p>
         <p class="text-3xl font-black text-kharon-cyan mt-2">{stats.inProgress}</p>
       </div>
       <div class="kharon-surface p-5 text-center">
-        <p class="text-[10px] font-black uppercase tracking-widest text-kharon-red">Emergency</p>
+        <p class="text-base font-black uppercase tracking-widest text-kharon-red">Emergency</p>
         <p class="text-3xl font-black text-white mt-2">{stats.emergency}</p>
       </div>
       <div class="kharon-surface p-5 text-center">
-        <p class="text-[10px] font-black uppercase tracking-widest text-kharon-amber">SLA Danger</p>
+        <p class="text-base font-black uppercase tracking-widest text-kharon-amber">SLA Danger</p>
         <p class="text-3xl font-black text-white mt-2">{stats.slaWarning}</p>
       </div>
     </div>
 
     <div class="grid gap-8 lg:grid-cols-[1fr_1.5fr]">
       <div class="space-y-6">
-        <h2 class="text-sm font-black uppercase tracking-[0.2em] text-kharon-cyan">Unassigned Queue</h2>
+        <h2 class="text-base font-black uppercase tracking-[0.2em] text-kharon-cyan">Unassigned Queue</h2>
         {unassigned.map(job => (
           <div class="rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/80 p-5 shadow-lg relative overflow-hidden group hover:border-kharon-purple/40 transition-all">
             <div class="flex justify-between items-start mb-4">
-              <span class={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest ${job.priorityCls}`}>{job.priority}</span>
-              <span class="text-[10px] font-mono text-white/30 uppercase tracking-tighter">#{job.id.slice(0, 8)}</span>
+              <span class={`rounded-full px-2.5 py-0.5 text-base font-bold uppercase tracking-widest ${job.priorityCls}`}>{job.priority}</span>
+              <span class="text-base font-mono text-white/30 uppercase tracking-tighter">#{job.id.slice(0, 8)}</span>
             </div>
             <h3 class="text-lg font-black text-white leading-tight">{job.owner_company_name}</h3>
             <p class="text-[11px] font-bold text-kharon-cyan uppercase tracking-wider mt-1">{job.system_type} | {job.coverage_area}</p>
@@ -145,75 +145,75 @@ const techGroups: TechGroup[] = Array.from(techGroupMap.values()).sort((a, b) =>
               <CsrfInput />
               <input type="hidden" name="jobId" value={job.id} />
               <div class="grid gap-2 sm:grid-cols-2">
-                <select name="technicianId" class="kharon-field text-xs py-2" required>
+                <select name="technicianId" class="kharon-field text-base py-2" required>
                   <option value="">— Assign Technician —</option>
                   {techs.map(t => <option value={t.id}>{t.name}</option>)}
                 </select>
-                <select name="priority" class="kharon-field text-xs py-2" aria-label="Dispatch priority">
+                <select name="priority" class="kharon-field text-base py-2" aria-label="Dispatch priority">
                   {["Critical", "High", "Normal", "Low"].map(priority => (
                     <option value={priority} selected={job.priority === priority}>{priority}</option>
                   ))}
                 </select>
-                <input type="date" name="requiredByDate" value={job.required_by_date || ""} class="kharon-field text-xs py-2" aria-label="Required by date" />
-                <label class="flex min-h-[44px] items-center gap-2 rounded-md border border-kharon-purple/20 px-3 text-xs font-bold uppercase tracking-widest text-white/70">
+                <input type="date" name="requiredByDate" value={job.required_by_date || ""} class="kharon-field text-base py-2" aria-label="Required by date" />
+                <label class="flex min-h-[44px] items-center gap-2 rounded-md border border-kharon-purple/20 px-3 text-base font-bold uppercase tracking-widest text-white/70">
                   <input type="hidden" name="isEmergency" value="0" />
                   <input type="checkbox" name="isEmergency" value="1" checked={job.isEmergency} class="h-4 w-4" />
                   Emergency
                 </label>
               </div>
-              <button type="submit" class="kharon-command-button min-h-[44px] px-6 py-2 text-[10px]">Dispatch</button>
+              <button type="submit" class="kharon-command-button min-h-[44px] px-6 py-2 text-base">Dispatch</button>
             </form>
           </div>
         ))}
       </div>
 
       <div class="space-y-6">
-        <h2 class="text-sm font-black uppercase tracking-[0.2em] text-kharon-cyan">Technician Workload</h2>
+        <h2 class="text-base font-black uppercase tracking-[0.2em] text-kharon-cyan">Technician Workload</h2>
         {techGroups.map(group => (
           <div class="rounded-xl border border-kharon-purple/20 bg-kharon-black/40 overflow-hidden shadow-xl">
             <div class="flex items-center justify-between bg-kharon-charcoal/80 px-5 py-3 border-b border-kharon-purple/20">
-              <span class="text-sm font-black uppercase tracking-widest text-white">{group.techName}</span>
-              <span class="rounded-full bg-kharon-purple/10 px-2 py-0.5 text-[10px] font-black uppercase text-kharon-cyan">{group.jobs.length} Active</span>
+              <span class="text-base font-black uppercase tracking-widest text-white">{group.techName}</span>
+              <span class="rounded-full bg-kharon-purple/10 px-2 py-0.5 text-base font-black uppercase text-kharon-cyan">{group.jobs.length} Active</span>
             </div>
             <div class="divide-y divide-kharon-purple/10">
               {group.jobs.map(job => (
                 <div class="px-5 py-5 hover:bg-kharon-purple/5 transition-colors">
                    <div class="flex justify-between items-center mb-2">
                       <span class="font-bold text-white tracking-tight">{job.owner_company_name}</span>
-                      <a href={`/portal/tech/jobs/${job.id}`} class="text-[10px] font-black uppercase text-kharon-purple hover:text-kharon-cyan transition-colors">Details &rarr;</a>
+                      <a href={`/portal/tech/jobs/${job.id}`} class="text-base font-black uppercase text-kharon-purple hover:text-kharon-cyan transition-colors">Details &rarr;</a>
                    </div>
-                   <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest">{job.system_type} | {job.coverage_area}</p>
+                   <p class="text-base font-bold text-white/40 uppercase tracking-widest">{job.system_type} | {job.coverage_area}</p>
                    <div class="mt-4 grid gap-3 border-t border-kharon-purple/10 pt-4">
                      <form class="dispatch-form grid gap-2 sm:grid-cols-[1fr_auto]" data-action="assign">
                        <CsrfInput />
                        <input type="hidden" name="jobId" value={job.id} />
-                       <select name="technicianId" class="kharon-field text-xs py-2" required aria-label="Reassign technician">
+                       <select name="technicianId" class="kharon-field text-base py-2" required aria-label="Reassign technician">
                          {techs.map(t => <option value={t.id} selected={t.id === job.assigned_technician_id}>{t.name}</option>)}
                        </select>
-                       <button type="submit" class="kharon-command-button min-h-[44px] px-4 py-2 text-[10px]">Reassign</button>
+                       <button type="submit" class="kharon-command-button min-h-[44px] px-4 py-2 text-base">Reassign</button>
                      </form>
 
                      <form class="dispatch-form grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]" data-action="setDispatch">
                        <CsrfInput />
                        <input type="hidden" name="jobId" value={job.id} />
-                       <select name="priority" class="kharon-field text-xs py-2" aria-label="Priority">
+                       <select name="priority" class="kharon-field text-base py-2" aria-label="Priority">
                          {["Critical", "High", "Normal", "Low"].map(priority => (
                            <option value={priority} selected={job.priority === priority}>{priority}</option>
                          ))}
                        </select>
-                       <input type="date" name="requiredByDate" value={job.required_by_date || ""} class="kharon-field text-xs py-2" aria-label="Required by date" />
-                       <label class="flex min-h-[44px] items-center gap-2 rounded-md border border-kharon-purple/20 px-3 text-xs font-bold uppercase tracking-widest text-white/70">
+                       <input type="date" name="requiredByDate" value={job.required_by_date || ""} class="kharon-field text-base py-2" aria-label="Required by date" />
+                       <label class="flex min-h-[44px] items-center gap-2 rounded-md border border-kharon-purple/20 px-3 text-base font-bold uppercase tracking-widest text-white/70">
                          <input type="hidden" name="isEmergency" value="0" />
                          <input type="checkbox" name="isEmergency" value="1" checked={job.isEmergency} class="h-4 w-4" />
                          Emergency
                        </label>
-                       <button type="submit" class="kharon-command-button min-h-[44px] px-4 py-2 text-[10px]">Save</button>
+                       <button type="submit" class="kharon-command-button min-h-[44px] px-4 py-2 text-base">Save</button>
                      </form>
 
                      <form class="dispatch-form" data-action="unassign">
                        <CsrfInput />
                        <input type="hidden" name="jobId" value={job.id} />
-                       <button type="submit" class="min-h-[44px] rounded-md border border-kharon-red/30 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-kharon-red transition hover:bg-kharon-red/10">Unassign</button>
+                       <button type="submit" class="min-h-[44px] rounded-md border border-kharon-red/30 px-4 py-2 text-base font-black uppercase tracking-widest text-kharon-red transition hover:bg-kharon-red/10">Unassign</button>
                      </form>
                    </div>
                 </div>

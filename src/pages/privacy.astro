@@ -101,13 +101,13 @@ const sections = [
 <BaseLayout title={title} description={description}>
   <section class="section-padding bg-kharon-black">
     <div class="mx-auto max-w-4xl px-4 sm:px-6">
-      <p class="text-xs font-black uppercase tracking-[0.2em] text-kharon-cyan">Legal &amp; Compliance</p>
+      <p class="text-base font-black uppercase tracking-[0.2em] text-kharon-cyan">Legal &amp; Compliance</p>
       <h1 class="kharon-h1 mt-3 text-white">Privacy Policy</h1>
       <p class="mt-4 max-w-2xl text-base leading-7 text-kharon-light/70">
         How {site.shortName} collects, uses, protects and shares personal information in accordance with the
         Protection of Personal Information Act, 2013 (POPIA).
       </p>
-      <p class="mt-2 text-sm font-semibold text-kharon-light/50">Effective {effectiveDate}</p>
+      <p class="mt-2 text-base font-semibold text-kharon-light/50">Effective {effectiveDate}</p>
     </div>
   </section>
 
@@ -118,17 +118,17 @@ const sections = [
           <h2 class="kharon-h3 text-white">{s.heading}</h2>
           <div class="mt-3 grid gap-3">
             {s.body.map((para) => (
-              <p class="text-sm leading-7 text-kharon-light/70">{para}</p>
+              <p class="text-base leading-7 text-kharon-light/70">{para}</p>
             ))}
           </div>
         </article>
       ))}
 
       <div class="flex flex-col gap-3 rounded-xl border border-kharon-purple/20 bg-kharon-charcoal/40 p-6 sm:flex-row sm:items-center sm:justify-between">
-        <p class="text-sm text-kharon-light/70">
+        <p class="text-base text-kharon-light/70">
           Questions about your personal information? Contact our Information Officer.
         </p>
-        <a href="/contact" class="kharon-command-button min-h-[44px] px-6 py-2 text-xs text-center">Contact Kharon</a>
+        <a href="/contact" class="kharon-command-button min-h-[44px] px-6 py-2 text-base text-center">Contact Kharon</a>
       </div>
     </div>
   </section>

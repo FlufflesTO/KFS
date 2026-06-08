@@ -13,12 +13,12 @@ export interface ProofGridItem {
 
 export const accreditations: ProofGridItem[] = [
   {
-    title: "SAQCC Registered Technicians",
-    text: "All field technicians hold valid SAQCC Fire registrations, ensuring legally compliant service and maintenance."
+    title: "SAQCC-Registered Technicians",
+    text: "SAQCC Fire–registered technicians for the applicable fire and gas workstreams. Current registrations are verified per technician before deployment."
   },
   {
     title: "SANS Standards Alignment",
-    text: "Installations and inspections strictly adhere to mandated South African National Standards (e.g., SANS 10139, 14520, 62676)."
+    text: "Installations and inspections are scoped and documented against the relevant South African National Standards (e.g., SANS 10139, 14520, 62676) for the system and site."
   },
   {
     title: "Documented Competency",
@@ -55,7 +55,7 @@ export const documentationProof: ProofGridItem[] = [
   },
   {
     title: "Compliance Summary",
-    text: "Automated generation of compliance certificates upon successful completion of SANS-aligned maintenance."
+    text: "Certificate and service-report workflows generated where the system and work status support sign-off."
   }
 ];
 
@@ -66,7 +66,7 @@ export const testimonials: ProofGridItem[] = [
   },
   {
     title: "Industrial Manufacturing",
-    text: "\"Downtime was slashed by 40% after they overhauled our fire detection network and established a proactive cadence.\""
+    text: "\"Unplanned downtime dropped noticeably after they overhauled our fire detection network and established a proactive maintenance cadence.\""
   },
   {
     title: "Commercial Real Estate",

@@ -14,6 +14,8 @@ import CaseStudyCard from "../components/sections/CaseStudyCard.astro";
 import LeadMagnetCard from "../components/blocks/LeadMagnetCard.astro";
 import { leadMagnets } from "../data/leadMagnets.js";
 import { getCaseStudy } from "../data/case-studies.js";
+import Breadcrumbs from "../components/layout/Breadcrumbs.astro";
+import { generateServiceSchema, generateFAQSchema } from "../lib/seo/schema.ts";
 
 export interface Capability {
   title: string;
@@ -46,22 +48,37 @@ export interface Props {
 const {
   meta, hero, overview, problem,
   capabilitiesHeading = "What's involved",
-  capabilities, standards, faqs, caseStudySlug, intent, cta
+  capabilities, standards, faqs, caseStudySlug, intent, cta,
+  leadMagnetId, proofItems
 } = Astro.props;
 
 const study = caseStudySlug ? getCaseStudy(caseStudySlug) : undefined;
 
 const magnet = leadMagnetId ? leadMagnets[leadMagnetId] : undefined;
+
+const breadcrumbItems = [
+  { name: "Services", url: "/services" },
+  { name: hero.title, url: Astro.url.pathname }
+];
+const serviceSchema = generateServiceSchema(hero.title, hero.description, Astro.url.pathname);
+const faqSchema = faqs && faqs.length > 0 ? generateFAQSchema(faqs.map(f => ({ question: f.q, answer: f.a }))) : null;
 ---
 
 <BaseLayout title={meta.title} description={meta.description}>
+  {serviceSchema && <script type="application/ld+json" set:html={JSON.stringify(serviceSchema)} is:inline />}
+  {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} is:inline />}
+  
+  <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6">
+    <Breadcrumbs items={breadcrumbItems} />
+  </div>
+
   <SolutionHero subtitle={hero.subtitle} title={hero.title} description={hero.description} icon={hero.icon} />
   <ComplianceStrip />
 
   <!-- What we do -->
   <section class="section-padding bg-kharon-black">
     <div class="mx-auto max-w-4xl px-4 sm:px-6">
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">What we do</p>
+      <p class="text-base font-bold uppercase tracking-[0.2em] text-kharon-cyan">What we do</p>
       <p class="mt-4 text-lg leading-relaxed text-kharon-light/80">{overview}</p>
     </div>
   </section>
@@ -75,7 +92,7 @@ const magnet = leadMagnetId ? leadMagnets[leadMagnetId] : undefined;
         {problem.points.map((p) => (
           <li class="flex items-start gap-3 rounded-lg border border-kharon-purple/15 bg-kharon-black/40 p-4">
             <span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-kharon-red"></span>
-            <span class="text-sm leading-relaxed text-kharon-light/80">{p}</span>
+            <span class="text-base leading-relaxed text-kharon-light/80">{p}</span>
           </li>
         ))}
       </ul>
@@ -97,9 +114,9 @@ const magnet = leadMagnetId ? leadMagnets[leadMagnetId] : undefined;
 
       {standards.length > 0 && (
         <div class="mt-10 flex flex-wrap items-center gap-3">
-          <span class="text-xs font-bold uppercase tracking-widest text-kharon-light/50">Aligned to</span>
+          <span class="text-base font-bold uppercase tracking-widest text-kharon-light/50">Aligned to</span>
           {standards.map((s) => (
-            <span class="rounded border border-kharon-purple/20 bg-kharon-purple/5 px-3 py-1 text-xs font-black uppercase tracking-wider text-kharon-purple">{s}</span>
+            <span class="rounded border border-kharon-purple/20 bg-kharon-purple/5 px-3 py-1 text-base font-black uppercase tracking-wider text-kharon-purple">{s}</span>
           ))}
         </div>
       )}
@@ -122,8 +139,8 @@ const magnet = leadMagnetId ? leadMagnets[leadMagnetId] : undefined;
         <div class="grid gap-4">
           {faqs.map((f) => (
             <details class="group rounded-lg border border-kharon-purple/15 bg-kharon-charcoal/30 p-5">
-              <summary class="cursor-pointer list-none text-sm font-bold text-white marker:hidden">{f.q}</summary>
-              <p class="mt-3 text-sm leading-relaxed text-kharon-light/70">{f.a}</p>
+              <summary class="cursor-pointer list-none text-base font-bold text-white marker:hidden">{f.q}</summary>
+              <p class="mt-3 text-base leading-relaxed text-kharon-light/70">{f.a}</p>
             </details>
           ))}
         </div>
@@ -144,14 +161,14 @@ const magnet = leadMagnetId ? leadMagnets[leadMagnetId] : undefined;
     <section class="section-padding bg-kharon-charcoal/30 border-t border-kharon-purple/10">
       <div class="mx-auto max-w-7xl px-4 sm:px-6">
         <div class="mb-8">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-kharon-cyan">Validation</p>
+          <p class="text-base font-bold uppercase tracking-[0.2em] text-kharon-cyan">Validation</p>
           <h2 class="kharon-h2 mt-3 text-white">Proof of Capability</h2>
         </div>
         <div class="grid gap-6 md:grid-cols-3">
           {proofItems.map((p) => (
             <div class="rounded-xl border border-kharon-purple/15 bg-kharon-black/40 p-5">
               <h3 class="font-bold text-white">{p.title}</h3>
-              <p class="mt-2 text-sm text-kharon-light/70">{p.text}</p>
+              <p class="mt-2 text-base text-kharon-light/70">{p.text}</p>
             </div>
           ))}
         </div>
