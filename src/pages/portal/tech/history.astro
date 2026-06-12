@@ -129,13 +129,14 @@ const totalPages = Math.max(1, Math.ceil(totalJobs / perPage));
               class="kharon-field text-base"
               placeholder="Search site, system or comments…"
               size="26"
+              aria-label="Search job history"
             />
-            <select id="history-status-filter" class="kharon-field text-base">
+            <select id="history-status-filter" class="kharon-field text-base" aria-label="Filter job history by status">
               <option value="">All statuses</option>
               <option value="Completed">Completed</option>
               <option value="Invoiced">Invoiced</option>
             </select>
-            <select id="history-type-filter" class="kharon-field text-base">
+            <select id="history-type-filter" class="kharon-field text-base" aria-label="Filter job history by type">
               <option value="">All job types</option>
               <option value="Routine service">Routine service</option>
               <option value="Compliance inspection">Compliance inspection</option>
