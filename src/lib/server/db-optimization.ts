@@ -162,8 +162,8 @@ export async function getClientDashboardData(siteIds: string[]): Promise<ClientD
   const db = getDatabase();
   const sitePlaceholders = siteIds.map(() => '?').join(',');
 
-  // Execute all queries in parallel for better performance
-  const [systemsResult, quotesResult, requestsResult, openDefectsResult, certificatesResult] = await Promise.all([
+  // ⚡ Bolt: Execute all queries in a single db.batch to avoid multiple HTTP roundtrips to D1
+  const [systemsResult, quotesResult, requestsResult, openDefectsResult, certificatesResult] = await db.batch([
     db.prepare(
       `SELECT systems.id, systems.site_id, systems.system_type, systems.coverage_area, systems.last_service_date, systems.next_due_date,
               sites.owner_company_name,
@@ -178,7 +178,7 @@ export async function getClientDashboardData(siteIds: string[]): Promise<ClientD
        )
        WHERE systems.deleted_at IS NULL AND systems.site_id IN (${sitePlaceholders})
        ORDER BY sites.owner_company_name ASC, systems.next_due_date ASC`
-    ).bind(...siteIds).all(),
+    ).bind(...siteIds),
 
     db.prepare(
       `SELECT financial_records.id, financial_records.site_id, financial_records.amount,
@@ -191,7 +191,7 @@ export async function getClientDashboardData(siteIds: string[]): Promise<ClientD
          AND financial_records.item_type = 'Quote'
          AND financial_records.payment_status = 'Pending Approval'
        ORDER BY financial_records.distribution_date ASC`
-    ).bind(...siteIds).all(),
+    ).bind(...siteIds),
 
     db.prepare(
       `SELECT maintenance_requests.id, maintenance_requests.site_id,
@@ -204,7 +204,7 @@ export async function getClientDashboardData(siteIds: string[]): Promise<ClientD
        WHERE maintenance_requests.site_id IN (${sitePlaceholders})
        ORDER BY maintenance_requests.created_at DESC
        LIMIT 8`
-    ).bind(...siteIds).all(),
+    ).bind(...siteIds),
 
     db.prepare(
       `SELECT defects.id, defects.severity, defects.sans_clause_ref, defects.status,
@@ -218,7 +218,7 @@ export async function getClientDashboardData(siteIds: string[]): Promise<ClientD
        ORDER BY CASE defects.severity WHEN 'Critical' THEN 1 WHEN 'Major' THEN 2 ELSE 3 END,
                 defects.created_at DESC
        LIMIT 10`
-    ).bind(...siteIds).all(),
+    ).bind(...siteIds),
 
     db.prepare(
       `SELECT certificates.id, certificates.certificate_type, certificates.status,
@@ -232,14 +232,14 @@ export async function getClientDashboardData(siteIds: string[]): Promise<ClientD
          AND systems.site_id IN (${sitePlaceholders})
        ORDER BY COALESCE(certificates.expiry_date, certificates.issued_date) DESC
        LIMIT 10`
-    ).bind(...siteIds).all()
+    ).bind(...siteIds)
   ]);
 
   return {
-    systems: systemsResult.results || [],
-    quotes: quotesResult.results || [],
-    requests: requestsResult.results || [],
-    openDefects: openDefectsResult.results || [],
-    certificates: certificatesResult.results || []
+    systems: systemsResult?.results || [],
+    quotes: quotesResult?.results || [],
+    requests: requestsResult?.results || [],
+    openDefects: openDefectsResult?.results || [],
+    certificates: certificatesResult?.results || []
   };
 }
