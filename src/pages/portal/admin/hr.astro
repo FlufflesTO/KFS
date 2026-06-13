@@ -11,7 +11,7 @@ import { requireAdmin } from "../../../lib/server/access";
 import CsrfInput from "../../../components/ui/CsrfInput.astro";
 // Data sources: staff_members and staff_files tables; R2 prefix staff-files/
 import type { DbStaffMember, DbStaffFile } from "../../../lib/server/db/staff-repository";
-import { getStaffAndFilesBatched } from "../../../lib/server/db/staff-repository";
+import { listStaffMembers, listStaffFiles } from "../../../lib/server/db/staff-repository";
 
 export const prerender = false;
 
@@ -31,23 +31,13 @@ let loadError = "";
 
 try {
   const db = getDatabase();
-  // ⚡ Bolt Optimization: Eliminated N+1 query vulnerability by fetching all members and all files
-  // in a single db.batch roundtrip and grouping them in-memory via O(N) lookup.
-  // Impact: Reduces initial HR page load queries from O(1 + N) to O(1) batched query.
-  const { members, files } = await getStaffAndFilesBatched(db);
-
-  // Group files by staff member ID
-  const filesByMemberId = new Map<string, DbStaffFile[]>();
-  for (const file of files) {
-    const memberFiles = filesByMemberId.get(file.staff_member_id) ?? [];
-    memberFiles.push(file);
-    filesByMemberId.set(file.staff_member_id, memberFiles);
-  }
-
-  staffWithFiles = members.map((m) => {
-    const memberFiles = filesByMemberId.get(m.id) ?? [];
-    return { ...m, files: memberFiles, file_count: memberFiles.length };
-  });
+  const members = await listStaffMembers(db);
+  staffWithFiles = await Promise.all(
+    members.map(async (m) => {
+      const files = await listStaffFiles(db, m.id);
+      return { ...m, files, file_count: files.length };
+    })
+  );
 } catch (err) {
   loadError = "Failed to load staff data.";
   console.error("HR page load error:", err);
