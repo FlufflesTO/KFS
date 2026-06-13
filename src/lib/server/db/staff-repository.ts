@@ -59,6 +59,33 @@ export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]>
   return results.results ?? [];
 }
 
+export async function getStaffAndFilesBatched(
+  db: D1Database
+): Promise<{ members: DbStaffMember[]; files: DbStaffFile[] }> {
+  const [membersResult, filesResult] = await db.batch<any>([
+    db.prepare(
+      `SELECT id, full_name, role_title, email, phone,
+              start_date, employment_type, status, notes,
+              created_at, updated_at, deleted_at
+       FROM staff_members
+       WHERE deleted_at IS NULL
+       ORDER BY full_name ASC`
+    ),
+    db.prepare(
+      `SELECT id, staff_member_id, file_name, file_type, r2_key,
+              uploaded_by, uploaded_at, deleted_at
+       FROM staff_files
+       WHERE deleted_at IS NULL
+       ORDER BY uploaded_at DESC`
+    )
+  ]);
+
+  return {
+    members: (membersResult.results as DbStaffMember[]) ?? [],
+    files: (filesResult.results as DbStaffFile[]) ?? [],
+  };
+}
+
 export async function getStaffMember(
   db: D1Database,
   id: string
