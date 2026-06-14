@@ -280,7 +280,7 @@ try {
         billingAddress: (document.getElementById("billing-address") as HTMLTextAreaElement).value,
       };
       const result = document.getElementById("modal-result");
-      const { body } = await portalPost("/portal/admin/api/multi-client", payload);
+      const { body } = await portalPost("/portal/api/admin/multi-client", payload);
       if (body.ok) {
         setResult(result, body.message as string || "Client saved.", "success");
         setTimeout(() => { closeModal(); window.location.reload(); }, 900);
@@ -292,7 +292,7 @@ try {
     async function deleteClient() {
       if (!currentClientId) return;
       const result = document.getElementById("delete-result");
-      const { body } = await portalPost("/portal/admin/api/multi-client", { action: "delete", id: currentClientId });
+      const { body } = await portalPost("/portal/api/admin/multi-client", { action: "delete", id: currentClientId });
       if (body.ok) {
         setResult(result, "Client deactivated.", "success");
         setTimeout(() => { closeDeleteModal(); window.location.reload(); }, 900);

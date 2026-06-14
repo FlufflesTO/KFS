@@ -162,7 +162,7 @@ function pathContainsTraversal(pathname: string): boolean {
 
 // @ts-ignore
 function isStateChangingPortalApi(request: Request, pathname: string): boolean {
-  return (pathname.startsWith("/portal/api/") || pathname.startsWith("/portal/admin/api/"))
+  return pathname.startsWith("/portal/api/")
     && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
 }
 
@@ -199,7 +199,7 @@ function rateLimitConfig(pathname: string) {
     "/portal/api/admin/client-site-access": { scope: "portal.admin.client_site_access", maxAttempts: 60, windowSeconds: 900 },
     "/portal/api/admin/import": { scope: "portal.admin.import", maxAttempts: 20, windowSeconds: 900 },
     "/portal/api/admin/maintenance-requests": { scope: "portal.admin.maintenance_requests", maxAttempts: 60, windowSeconds: 900 },
-    "/portal/admin/api/multi-client": { scope: "portal.admin.multi_client", maxAttempts: 40, windowSeconds: 900 }
+    "/portal/api/admin/multi-client": { scope: "portal.admin.multi_client", maxAttempts: 40, windowSeconds: 900 }
   };
 
   return configs[pathname] || { scope: `portal.write.${pathname.replaceAll("/", ".")}`.slice(0, 80), maxAttempts: 20, windowSeconds: 900 };

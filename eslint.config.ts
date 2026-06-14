@@ -26,6 +26,7 @@ const config: Linter.Config[] = [
       ".remember/**/*",
       "memory/**/*",
       "backups/**/*",
+      "playwright-report/**/*",
       "conductor/**/*"
     ]
   },
