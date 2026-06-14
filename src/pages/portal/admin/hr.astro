@@ -11,7 +11,7 @@ import { requireAdmin } from "../../../lib/server/access";
 import CsrfInput from "../../../components/ui/CsrfInput.astro";
 // Data sources: staff_members and staff_files tables; R2 prefix staff-files/
 import type { DbStaffMember, DbStaffFile } from "../../../lib/server/db/staff-repository";
-import { listStaffMembers, listStaffFiles } from "../../../lib/server/db/staff-repository";
+import { listStaffMembers, listStaffFilesForMembers } from "../../../lib/server/db/staff-repository";
 
 export const prerender = false;
 
@@ -32,12 +32,22 @@ let loadError = "";
 try {
   const db = getDatabase();
   const members = await listStaffMembers(db);
-  staffWithFiles = await Promise.all(
-    members.map(async (m) => {
-      const files = await listStaffFiles(db, m.id);
-      return { ...m, files, file_count: files.length };
-    })
-  );
+
+  const memberIds = members.map(m => m.id);
+  const allFiles = await listStaffFilesForMembers(db, memberIds);
+
+  const filesByMemberId = allFiles.reduce((acc, file) => {
+    if (!acc[file.staff_member_id]) {
+      acc[file.staff_member_id] = [];
+    }
+    acc[file.staff_member_id].push(file);
+    return acc;
+  }, {} as Record<string, DbStaffFile[]>);
+
+  staffWithFiles = members.map(m => {
+    const files = filesByMemberId[m.id] || [];
+    return { ...m, files, file_count: files.length };
+  });
 } catch (err) {
   loadError = "Failed to load staff data.";
   console.error("HR page load error:", err);
