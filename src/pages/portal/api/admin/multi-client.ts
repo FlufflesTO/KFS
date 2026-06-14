@@ -1,9 +1,13 @@
-// Removed unused import: import type { APIContext } from "astro";
+import type { APIContext } from "astro";
 import { getDatabase } from "../../../../lib/server/bindings.js";
 
 export const prerender = false;
 
-export async function GET({}: { request: Request, locals: App.Locals }) {
+export async function GET({ locals }: APIContext) {
+  if (!locals.user || locals.user.role !== 'admin') {
+    return new Response(JSON.stringify({ ok: false, message: 'Unauthorized' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+  }
+
   try {
     const db = getDatabase();
     
