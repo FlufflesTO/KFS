@@ -77,7 +77,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "";
 
       <div class="flex items-start mt-2">
         <div class="flex items-center h-5">
-          <input id={`${formId}-popia`} name="popia_consent" type="checkbox" required class="focus:ring-kharon-purple h-4 w-4 text-kharon-purple border-kharon-purple/20 bg-kharon-charcoal rounded cursor-pointer" />
+          <input id={`${formId}-popia`} name="popia_consent" type="checkbox" required class="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-kharon-charcoal h-4 w-4 text-kharon-purple border-kharon-purple/20 bg-kharon-charcoal rounded cursor-pointer" />
         </div>
         <div class="ml-3 text-base">
           <label for={`${formId}-popia`} class="font-medium text-kharon-light/80">
