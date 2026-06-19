@@ -59,6 +59,50 @@ export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]>
   return results.results ?? [];
 }
 
+// ⚡ Bolt: N+1 Query Optimization
+// Replace Promise.all loop with single batched execution roundtrip for better performance.
+export async function listStaffMembersWithFiles(db: D1Database): Promise<(DbStaffMember & { files: DbStaffFile[], file_count: number })[]> {
+  const [membersResult, filesResult] = await db.batch([
+    db.prepare(
+      `SELECT sm.id, sm.full_name, sm.role_title, sm.email, sm.phone,
+              sm.start_date, sm.employment_type, sm.status, sm.notes,
+              sm.created_at, sm.updated_at, sm.deleted_at,
+              COUNT(sf.id) AS file_count
+       FROM staff_members sm
+       LEFT JOIN staff_files sf
+         ON sf.staff_member_id = sm.id AND sf.deleted_at IS NULL
+       WHERE sm.deleted_at IS NULL
+       GROUP BY sm.id
+       ORDER BY sm.full_name ASC`
+    ),
+    db.prepare(
+      `SELECT id, staff_member_id, file_name, file_type, r2_key,
+              uploaded_by, uploaded_at, deleted_at
+       FROM staff_files
+       WHERE deleted_at IS NULL
+       ORDER BY uploaded_at DESC`
+    )
+  ]);
+
+  const members = membersResult.results as (DbStaffMember & { file_count: number })[] ?? [];
+  const allFiles = filesResult.results as DbStaffFile[] ?? [];
+
+  // Group files by staff_member_id in-memory
+  const filesByMemberId = allFiles.reduce((acc, file) => {
+    if (!acc[file.staff_member_id]) {
+      acc[file.staff_member_id] = [];
+    }
+    acc[file.staff_member_id].push(file);
+    return acc;
+  }, {} as Record<string, DbStaffFile[]>);
+
+  return members.map((m) => ({
+    ...m,
+    files: filesByMemberId[m.id] || [],
+    file_count: m.file_count || 0
+  }));
+}
+
 export async function getStaffMember(
   db: D1Database,
   id: string
