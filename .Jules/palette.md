@@ -1,3 +1,3 @@
-## 2025-06-08 - Refactoring the jobs POST API
-**Learning:** Refactoring backend endpoints directly benefits developer experience without altering UI.
-**Action:** Splitting `src/pages/portal/api/admin/jobs.ts` logic into helper functions.
+## 2026-06-02 - Focus rings for keyboard vs mouse users
+**Learning:** Using `focus:` for focus rings in this design system causes a visual distraction when mouse users click buttons, as the ring persists until focus is lost. This is particularly noticeable with the stark cyan (`ring-kharon-cyan`) rings on dark surfaces.
+**Action:** Always use the `focus-visible:` pseudo-class (e.g., `focus-visible:ring-2`) instead of `focus:` for focus rings on interactive elements. This ensures they only trigger during keyboard navigation, adhering to accessibility needs while keeping the interface clean for pointer users.
