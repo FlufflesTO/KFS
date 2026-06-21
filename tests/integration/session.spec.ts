@@ -486,6 +486,7 @@ test.describe('Session Security Headers', () => {
 
   test('should set SameSite=Strict on session cookie', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'kharon_session_token');
@@ -506,6 +507,7 @@ test.describe('Session Security Headers', () => {
 
   test('should set Path=/portal on session cookie', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'kharon_session_token');
@@ -515,6 +517,7 @@ test.describe('Session Security Headers', () => {
 
   test('should not expose session token in JavaScript', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     // Try to read cookie from JavaScript
     const cookieValue = await page.evaluate(() => {
@@ -557,10 +560,12 @@ test.describe('Concurrent Session Handling', () => {
 
   test('should handle session revocation during active use', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const sessionToken = await extractSessionToken(page);
 
     // Logout to revoke session
-    await logoutFromPortal(page);
+    const logoutResponse = await logoutFromPortal(page);
+    expect(logoutResponse.status()).toBe(200);
 
     // Try to use revoked session
     const response = await page.request.get('/portal/admin/dashboard');
