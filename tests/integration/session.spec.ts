@@ -477,6 +477,7 @@ test.describe('Session Lifecycle', () => {
 test.describe('Session Security Headers', () => {
   test('should set HttpOnly flag on session cookie', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'kharon_session_token');
