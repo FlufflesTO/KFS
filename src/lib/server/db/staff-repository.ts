@@ -227,3 +227,22 @@ export async function softDeleteStaffFile(db: D1Database, id: string): Promise<v
     .bind(id)
     .run();
 }
+
+export async function listStaffFilesBatch(
+  db: D1Database,
+  memberIds: string[]
+): Promise<DbStaffFile[]> {
+  if (memberIds.length === 0) return [];
+  const placeholders = memberIds.map(() => '?').join(',');
+  const results = await db
+    .prepare(
+      `SELECT id, staff_member_id, file_name, file_type, r2_key,
+              uploaded_by, uploaded_at, deleted_at
+       FROM staff_files
+       WHERE staff_member_id IN (${placeholders}) AND deleted_at IS NULL
+       ORDER BY uploaded_at DESC`
+    )
+    .bind(...memberIds)
+    .all<DbStaffFile>();
+  return results.results ?? [];
+}
