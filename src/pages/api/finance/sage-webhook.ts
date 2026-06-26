@@ -2,7 +2,7 @@ import type { D1Database } from "@cloudflare/workers-types";
 // @ts-ignore - cloudflare:workers is a Cloudflare runtime virtual module provided by the adapter
 import { env as workerEnv } from "cloudflare:workers";
 import { getDatabase } from "../../../lib/server/bindings";
-import { constantTimeEqual } from "../../../lib/server/crypto-utils";
+import { timingSafeEqual } from "../../../lib/server/auth";
 
 export const prerender = false;
 
@@ -24,7 +24,7 @@ export async function POST({ request }: { request: Request }) {
       );
     }
 
-    if (!bearerToken || !constantTimeEqual(bearerToken, webhookSecret)) {
+    if (!bearerToken || !timingSafeEqual(new TextEncoder().encode(bearerToken), new TextEncoder().encode(webhookSecret))) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json" } }
