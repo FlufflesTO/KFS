@@ -73,6 +73,7 @@ jobs:
           sudo dpkg -i packages-microsoft-prod.deb
           sudo apt-get update
           sudo apt-get install -y powershell
+          sudo ln -sf /usr/bin/pwsh /usr/bin/powershell
 
       - name: Lint
         run: npm run lint
@@ -158,3 +159,4 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+sudo ln -sf /usr/bin/pwsh /usr/bin/powershell
