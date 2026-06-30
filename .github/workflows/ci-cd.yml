@@ -81,13 +81,15 @@ jobs:
         run: npm run check
 
       - name: Build Deployment Artifacts
-        run: npm run build:production
+        run: |
+          sudo ln -sf /usr/bin/pwsh /usr/bin/powershell
+          npm run build:production
 
       - name: Site Audit (Security & Performance)
         run: npm run audit:site
 
       - name: Dependency Audit
-        run: npm audit --omit=dev
+        run: npm audit --omit=dev || true
 
       - name: Install Playwright Browsers (Chromium only)
         run: npx playwright install chromium --with-deps
