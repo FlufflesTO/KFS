@@ -160,6 +160,22 @@ export async function softDeleteStaffMember(db: D1Database, id: string): Promise
     .run();
 }
 
+export async function listAllStaffFiles(
+  db: D1Database
+): Promise<DbStaffFile[]> {
+  const results = await db
+    .prepare(
+      `SELECT sf.id, sf.staff_member_id, sf.file_name, sf.file_type, sf.r2_key,
+              sf.uploaded_by, sf.uploaded_at, sf.deleted_at
+       FROM staff_files sf
+       INNER JOIN staff_members sm ON sm.id = sf.staff_member_id
+       WHERE sf.deleted_at IS NULL AND sm.deleted_at IS NULL
+       ORDER BY sf.uploaded_at DESC`
+    )
+    .all<DbStaffFile>();
+  return results.results ?? [];
+}
+
 export async function listStaffFiles(
   db: D1Database,
   memberId: string
