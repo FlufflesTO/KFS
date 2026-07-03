@@ -7,6 +7,7 @@
 
 import { getBindings, type Env } from "../../../../lib/server/bindings.ts";
 import { auditEvent } from "../../../../lib/server/audit";
+import { timingSafeEqual } from "../../../../lib/server/auth.ts";
 import { badRequest, forbidden, unauthorized } from "../../../../lib/server/http.ts";
 import { encryptText } from "../../../../lib/server/crypto.ts";
 import type { APIContext } from "astro";
@@ -110,7 +111,7 @@ export async function GET({ request, locals, url, cookies }: APIContext) {
     return redirectToFinance("/portal/finance/dashboard?error=" + encodeURIComponent("Sage authorization failed."));
   }
 
-  if (!state || !expectedState || state !== expectedState) {
+  if (!state || !expectedState || !timingSafeEqual(new TextEncoder().encode(state), new TextEncoder().encode(expectedState))) {
     await auditEvent(db, request, {
       eventType: "finance.sage_connect",
       entityType: "integration",

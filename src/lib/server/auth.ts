@@ -50,7 +50,7 @@ export const sessionCookieName = "kharon_session_token";
  * Compares all bytes regardless of where differences occur.
  * Early-return on length mismatch is safe since length is public information.
  */
-function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
+export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   // Early return for different lengths (length is public info)
   if (a.length !== b.length) {
     return false;
