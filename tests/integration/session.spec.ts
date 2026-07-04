@@ -25,10 +25,12 @@ import { testUsers } from '../fixtures/test-users';
 test.describe('Session Cookie Validation', () => {
   test('should authenticate with valid session cookie', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const sessionToken = await extractSessionToken(page);
     expect(sessionToken).toBeDefined();
 
     // Access protected resource with valid session
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect(response.status()).toBe(200);
   });
@@ -36,6 +38,7 @@ test.describe('Session Cookie Validation', () => {
   test('should reject request with expired session cookie', async ({ page }) => {
     // Login first to get a session
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const sessionToken = await extractSessionToken(page);
     expect(sessionToken).toBeDefined();
 
@@ -54,6 +57,7 @@ test.describe('Session Cookie Validation', () => {
     ]);
 
     // Try to access protected resource
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     
     // Should redirect to login or return 401
@@ -63,6 +67,7 @@ test.describe('Session Cookie Validation', () => {
   test('should reject request with tampered session cookie', async ({ page }) => {
     // Login first to get a valid session
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const validToken = await extractSessionToken(page);
     expect(validToken).toBeDefined();
 
@@ -83,6 +88,7 @@ test.describe('Session Cookie Validation', () => {
     ]);
 
     // Try to access protected resource
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     
     // Should reject tampered token
@@ -92,6 +98,7 @@ test.describe('Session Cookie Validation', () => {
   test('should reject request with revoked session cookie', async ({ page }) => {
     // Login first
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const sessionToken = await extractSessionToken(page);
     expect(sessionToken).toBeDefined();
 
@@ -99,6 +106,7 @@ test.describe('Session Cookie Validation', () => {
     await logoutFromPortal(page);
 
     // Try to access protected resource with revoked session
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     
     // Should redirect to login
@@ -111,6 +119,7 @@ test.describe('Session Cookie Validation', () => {
     await page.context().clearCookies();
 
     // Try to access protected resource
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     
     // Should redirect to login
@@ -131,6 +140,7 @@ test.describe('Session Cookie Validation', () => {
       },
     ]);
 
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect(response.status()).toBe(302);
   });
@@ -148,6 +158,7 @@ test.describe('Session Cookie Validation', () => {
       },
     ]);
 
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect([200, 302, 401, 403]).toContain(response.status());
   });
@@ -155,6 +166,7 @@ test.describe('Session Cookie Validation', () => {
   test('should reject request with session from different user', async ({ page }) => {
     // Login as admin
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const adminToken = await extractSessionToken(page);
 
     // Clear and login as client
@@ -179,12 +191,14 @@ test.describe('Session Cookie Validation', () => {
     ]);
 
     // Access should work but show admin data (session determines identity)
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect(response.status()).toBe(200);
   });
 
   test('should handle session cookie with wrong path', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const sessionToken = await extractSessionToken(page);
 
     await page.context().clearCookies();
@@ -200,6 +214,7 @@ test.describe('Session Cookie Validation', () => {
     ]);
 
     // Cookie with wrong path should not be sent to /portal
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect(response.status()).toBe(302);
   });
@@ -225,6 +240,7 @@ test.describe('Session Cookie Validation', () => {
       },
     ]);
 
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect([200, 302, 401, 403]).toContain(response.status());
   });
@@ -233,6 +249,7 @@ test.describe('Session Cookie Validation', () => {
 test.describe('CSRF Protection', () => {
   test('should accept valid CSRF token with POST request', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const csrfToken = await extractCsrfTokenFromCookie(page);
     expect(csrfToken).toBeDefined();
 
@@ -248,6 +265,7 @@ test.describe('CSRF Protection', () => {
 
   test('should reject POST request with missing CSRF token', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     // Make POST request without CSRF token — CSRF middleware returns 403
     // csrfErrorResponse() shape: { ok: false, message: "Security token is missing or invalid." }
@@ -263,6 +281,7 @@ test.describe('CSRF Protection', () => {
 
   test('should reject POST request with invalid CSRF token', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     // Make POST request with invalid CSRF token
     const response = await page.request.post('/portal/api/logout', {
@@ -276,6 +295,7 @@ test.describe('CSRF Protection', () => {
 
   test('should reject POST request with expired CSRF token', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const csrfToken = await extractCsrfTokenFromCookie(page);
 
     // Logout to invalidate CSRF token
@@ -294,6 +314,7 @@ test.describe('CSRF Protection', () => {
 
   test('should reject POST request with tampered CSRF token', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const csrfToken = await extractCsrfTokenFromCookie(page);
 
     // Tamper with the token
@@ -310,14 +331,17 @@ test.describe('CSRF Protection', () => {
 
   test('should allow GET request without CSRF token', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     // GET requests should not require CSRF token
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect(response.status()).toBe(200);
   });
 
   test('should require CSRF token for PUT request', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     const response = await page.request.put('/portal/api/profile', {
       data: { name: 'Test' },
@@ -328,6 +352,7 @@ test.describe('CSRF Protection', () => {
 
   test('should require CSRF token for PATCH request', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     const response = await page.request.patch('/portal/api/profile', {
       data: { name: 'Test' },
@@ -338,6 +363,7 @@ test.describe('CSRF Protection', () => {
 
   test('should require CSRF token for DELETE request', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     const response = await page.request.delete('/portal/api/profile', {
       data: {},
@@ -349,6 +375,7 @@ test.describe('CSRF Protection', () => {
   test('should generate new CSRF token after login', async ({ page }) => {
     // First login
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const csrfToken1 = await extractCsrfTokenFromCookie(page);
 
     // Logout
@@ -364,6 +391,7 @@ test.describe('CSRF Protection', () => {
 
   test('should maintain CSRF token across page navigation', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const csrfToken1 = await extractCsrfTokenFromCookie(page);
 
     // Navigate to different pages
@@ -384,6 +412,7 @@ test.describe('Session Lifecycle', () => {
     await page.context().clearCookies();
     
     const { response } = await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     expect(response.status()).toBe(200);
 
     const sessionToken = await extractSessionToken(page);
@@ -393,6 +422,7 @@ test.describe('Session Lifecycle', () => {
 
   test('should destroy session on logout', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const sessionToken = await extractSessionToken(page);
     expect(sessionToken).toBeDefined();
 
@@ -403,6 +433,7 @@ test.describe('Session Lifecycle', () => {
 
   test('should maintain session across multiple requests', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     // Make multiple requests with same session
     const responses = await Promise.all([
@@ -418,6 +449,7 @@ test.describe('Session Lifecycle', () => {
 
   test('should handle session expiration gracefully', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     // Simulate expired session by setting past expiry
     const sessionToken = await extractSessionToken(page);
@@ -435,6 +467,7 @@ test.describe('Session Lifecycle', () => {
     ]);
 
     // Should redirect to login
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect(response.status()).toBe(302);
     expect(response.headers()['location']).toContain('/portal/login');
@@ -456,6 +489,7 @@ test.describe('Session Lifecycle', () => {
 
     // Login should create new session, not use the attacker's token
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const newSessionToken = await extractSessionToken(page);
     
     expect(newSessionToken).not.toBe('attacker-chosen-token');
@@ -466,6 +500,7 @@ test.describe('Session Lifecycle', () => {
     // Actual implementation would require password change endpoint
     
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const sessionToken1 = await extractSessionToken(page);
 
     // After password change (not implemented in test), old session should be invalid
@@ -477,6 +512,7 @@ test.describe('Session Lifecycle', () => {
 test.describe('Session Security Headers', () => {
   test('should set HttpOnly flag on session cookie', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'kharon_session_token');
@@ -486,6 +522,7 @@ test.describe('Session Security Headers', () => {
 
   test('should set SameSite=Strict on session cookie', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'kharon_session_token');
@@ -495,6 +532,7 @@ test.describe('Session Security Headers', () => {
 
   test('should set Secure flag on session cookie in production', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'kharon_session_token');
@@ -506,6 +544,7 @@ test.describe('Session Security Headers', () => {
 
   test('should set Path=/portal on session cookie', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'kharon_session_token');
@@ -515,6 +554,7 @@ test.describe('Session Security Headers', () => {
 
   test('should not expose session token in JavaScript', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
 
     // Try to read cookie from JavaScript
     const cookieValue = await page.evaluate(() => {
@@ -557,12 +597,14 @@ test.describe('Concurrent Session Handling', () => {
 
   test('should handle session revocation during active use', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
     const sessionToken = await extractSessionToken(page);
 
     // Logout to revoke session
     await logoutFromPortal(page);
 
     // Try to use revoked session
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect(response.status()).toBe(302);
   });
@@ -582,6 +624,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
       },
     ]);
 
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect([200, 302, 401, 403]).toContain(response.status());
   });
@@ -599,6 +642,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
       },
     ]);
 
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect([200, 302, 401, 403]).toContain(response.status());
   });
@@ -616,6 +660,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
       },
     ]);
 
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect([200, 302, 401, 403]).toContain(response.status());
   });
@@ -633,6 +678,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
       },
     ]);
 
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect([200, 302, 401, 403]).toContain(response.status());
   });
@@ -650,6 +696,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
       },
     ]);
 
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     // Should not cause server error
     expect(response.status()).not.toBe(500);
@@ -668,6 +715,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
       },
     ]);
 
+    await page.goto('/portal/admin/dashboard');
     const response = await page.request.get('/portal/admin/dashboard');
     expect(response.status()).not.toBe(500);
   });
@@ -675,6 +723,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
   test('should handle rapid session creation and destruction', async ({ page }) => {
     for (let i = 0; i < 10; i++) {
       await loginAsTestUser(page, 'admin');
+    await page.goto('/portal/login');
       await logoutFromPortal(page);
     }
 
