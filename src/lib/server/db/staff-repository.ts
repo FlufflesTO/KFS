@@ -160,6 +160,30 @@ export async function softDeleteStaffMember(db: D1Database, id: string): Promise
     .run();
 }
 
+/**
+ * ⚡ Bolt Optimization: Batched query to fetch files for multiple staff members.
+ * Resolves an N+1 query problem by fetching all files in a single network roundtrip.
+ * Expected Impact: Reduces database latency from O(N) queries to O(1).
+ */
+export async function listStaffFilesForMembers(
+  db: D1Database,
+  memberIds: string[]
+): Promise<DbStaffFile[]> {
+  if (memberIds.length === 0) return [];
+  const placeholders = memberIds.map(() => '?').join(',');
+  const results = await db
+    .prepare(
+      `SELECT id, staff_member_id, file_name, file_type, r2_key,
+              uploaded_by, uploaded_at, deleted_at
+       FROM staff_files
+       WHERE staff_member_id IN (${placeholders}) AND deleted_at IS NULL
+       ORDER BY uploaded_at DESC`
+    )
+    .bind(...memberIds)
+    .all<DbStaffFile>();
+  return results.results ?? [];
+}
+
 export async function listStaffFiles(
   db: D1Database,
   memberId: string
