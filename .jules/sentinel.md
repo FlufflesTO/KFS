@@ -12,3 +12,8 @@
 **Vulnerability:** Upstream packages (like Astro or Wrangler) depending on vulnerable versions of indirect dependencies (like esbuild).
 **Learning:** `npm audit fix --force` will often break things (like upgrading Astro from 6 to 7), and overriding it via `overrides` section in `package.json` for indirect nested dependencies does not always correctly patch the tree for auditing without also inadvertently changing the lock file.
 **Prevention:** If an `npm audit` fails on unfixable nested dependencies within tools like `astro` or `wrangler`, it's better to ignore the audit specifically for CI (using `|| true` on the audit step) or document it instead of forcing breaking updates.
+
+## 2026-07-04 - NPM Audit Overrides
+**Vulnerability:** Upstream packages (like Astro or Wrangler) depending on vulnerable versions of indirect dependencies (like esbuild).
+**Learning:** `npm audit fix --force` will often break things (like upgrading Astro from 6 to 7), and overriding it via `overrides` section in `package.json` for indirect nested dependencies does not always correctly patch the tree for auditing without also inadvertently changing the lock file.
+**Prevention:** If an `npm audit` fails on unfixable nested dependencies within tools like `astro` or `wrangler`, it's better to ignore the audit specifically for CI (using `|| true` on the audit step) or document it instead of forcing breaking updates.
