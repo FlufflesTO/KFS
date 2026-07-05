@@ -102,12 +102,12 @@ function typeBadgeCls(type: string): string {
             <div>
               <label for="full_name" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Full Name *</label>
               <input id="full_name" name="full_name" type="text" required
-                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus-visible:ring-1 focus-visible:ring-kharon-cyan" />
             </div>
             <div>
               <label for="role_title" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Role / Title *</label>
               <input id="role_title" name="role_title" type="text" required
-                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus-visible:ring-1 focus-visible:ring-kharon-cyan" />
             </div>
           </div>
 
@@ -115,12 +115,12 @@ function typeBadgeCls(type: string): string {
             <div>
               <label for="email" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Email</label>
               <input id="email" name="email" type="email"
-                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus-visible:ring-1 focus-visible:ring-kharon-cyan" />
             </div>
             <div>
               <label for="phone" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Phone</label>
               <input id="phone" name="phone" type="tel"
-                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus-visible:ring-1 focus-visible:ring-kharon-cyan" />
             </div>
           </div>
 
@@ -128,12 +128,12 @@ function typeBadgeCls(type: string): string {
             <div>
               <label for="start_date" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Start Date</label>
               <input id="start_date" name="start_date" type="date"
-                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan" />
+                class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus-visible:ring-1 focus-visible:ring-kharon-cyan" />
             </div>
             <div>
               <label for="employment_type" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Employment Type</label>
               <select id="employment_type" name="employment_type"
-                class="w-full rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan">
+                class="w-full rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus-visible:ring-1 focus-visible:ring-kharon-cyan">
                 <option value="Full-time">Full-time</option>
                 <option value="Part-time">Part-time</option>
                 <option value="Contractor">Contractor</option>
@@ -142,7 +142,7 @@ function typeBadgeCls(type: string): string {
             <div>
               <label for="status" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Status</label>
               <select id="status" name="status"
-                class="w-full rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan">
+                class="w-full rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus-visible:ring-1 focus-visible:ring-kharon-cyan">
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
                 <option value="Terminated">Terminated</option>
@@ -153,7 +153,7 @@ function typeBadgeCls(type: string): string {
           <div>
             <label for="notes" class="block text-base font-semibold uppercase tracking-widest text-white/50 mb-1">Notes</label>
             <textarea id="notes" name="notes" rows="3"
-              class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan resize-none"></textarea>
+              class="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-base text-white placeholder-white/30 focus:border-kharon-cyan focus:outline-none focus-visible:ring-1 focus-visible:ring-kharon-cyan resize-none"></textarea>
           </div>
 
           <div id="member-form-result" class="hidden rounded-md border px-3 py-2 text-base"></div>
@@ -291,7 +291,7 @@ function typeBadgeCls(type: string): string {
                 <input type="hidden" name="member_id" value={member.id} />
                 <div>
                   <label class="block text-base font-semibold uppercase tracking-widest text-white/40 mb-1">File Type</label>
-                  <select name="file_type" class="rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus:ring-1 focus:ring-kharon-cyan min-h-[44px]">
+                  <select name="file_type" class="rounded-md border border-white/10 bg-kharon-charcoal px-3 py-2 text-base text-white focus:border-kharon-cyan focus:outline-none focus-visible:ring-1 focus-visible:ring-kharon-cyan min-h-[44px]">
                     <option value="ID Document">ID Document</option>
                     <option value="Contract">Contract</option>
                     <option value="Certificate">Certificate</option>
