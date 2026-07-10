@@ -32,12 +32,50 @@ let loadError = "";
 try {
   const db = getDatabase();
   const members = await listStaffMembers(db);
-  staffWithFiles = await Promise.all(
-    members.map(async (m) => {
-      const files = await listStaffFiles(db, m.id);
-      return { ...m, files, file_count: files.length };
-    })
-  );
+
+  // ⚡ Bolt: Prevent N+1 queries when fetching files for staff members
+  // Group all IDs and batch fetch with IN (...) clause
+  const memberIds = members.map((m) => m.id);
+  const CHUNK_SIZE = 100;
+  const queries = [];
+
+  for (let i = 0; i < memberIds.length; i += CHUNK_SIZE) {
+    const chunk = memberIds.slice(i, i + CHUNK_SIZE);
+    if (chunk.length > 0) {
+      const placeholders = chunk.map(() => '?').join(',');
+      queries.push(
+        db.prepare(
+          `SELECT id, staff_member_id, file_name, file_type, r2_key,
+                  uploaded_by, uploaded_at, deleted_at
+           FROM staff_files
+           WHERE staff_member_id IN (${placeholders}) AND deleted_at IS NULL
+           ORDER BY uploaded_at DESC`
+        ).bind(...chunk)
+      );
+    }
+  }
+
+  const allFiles: DbStaffFile[] = [];
+  if (queries.length > 0) {
+    const batchResults = await db.batch<DbStaffFile>(queries);
+    for (const result of batchResults) {
+      if (result.results) {
+        allFiles.push(...result.results);
+      }
+    }
+  }
+
+  const filesByMemberId = new Map<string, DbStaffFile[]>();
+  for (const file of allFiles) {
+    const memberFiles = filesByMemberId.get(file.staff_member_id) ?? [];
+    memberFiles.push(file);
+    filesByMemberId.set(file.staff_member_id, memberFiles);
+  }
+
+  staffWithFiles = members.map((m) => {
+    const files = filesByMemberId.get(m.id) ?? [];
+    return { ...m, files, file_count: files.length };
+  });
 } catch (err) {
   loadError = "Failed to load staff data.";
   console.error("HR page load error:", err);
