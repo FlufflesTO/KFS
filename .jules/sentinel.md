@@ -3,3 +3,4 @@
 **Learning:** Webhook secret validation and other cryptographic comparisons must use byte-level timing safe comparisons.
 **Prevention:** Always export and utilize `timingSafeEqual` from `src/lib/server/auth.ts` which correctly encodes via `TextEncoder` for cryptographic equality checks, rather than standard string equality or unsafe string utility functions.
 **Learning:** CI workflow actions specifying node environments with `npm` actions can fail or produce inconsistencies in strict `pnpm` workspaces, always utilize the `pnpm/action-setup` GitHub Action and execute scripts via `pnpm run`.
+**Learning:** In GitHub Action `setup-node` configurations utilizing `cache: pnpm`, the cache step attempts to parse `pnpm-lock.yaml`. If a repository does not commit this lockfile (e.g. to circumvent line-limit constraints during agent checks), the cache step will crash. Omit the `cache: pnpm` directive entirely to resolve this.
