@@ -1,4 +1,6 @@
-## 2025-06-08 - Refactoring the jobs POST API
-**Vulnerability:** Complex routing structures can accidentally combine access boundaries.
-**Learning:** Organizing route handling into separate functions ensures the exact required conditions can be met and reviewed more easily.
-**Prevention:** Continuing to separate logical actions into bounded helper functions underneath standard access controls.
+## 2026-07-11 - [Fix webhook secret timing vulnerability]
+**Vulnerability:** The webhook secret verification endpoint used `constantTimeEqual` string comparison which contained an early return leaking string length. It could be used to perform timing attacks on webhook secrets.
+**Learning:** Webhook secret validation and other cryptographic comparisons must use byte-level timing safe comparisons.
+**Prevention:** Always export and utilize `timingSafeEqual` from `src/lib/server/auth.ts` which correctly encodes via `TextEncoder` for cryptographic equality checks, rather than standard string equality or unsafe string utility functions.
+**Learning:** CI workflow actions specifying node environments with `npm` actions can fail or produce inconsistencies in strict `pnpm` workspaces, always utilize the `pnpm/action-setup` GitHub Action and execute scripts via `pnpm run`.
+**Learning:** In GitHub Action `setup-node` configurations utilizing `cache: pnpm`, the cache step attempts to parse `pnpm-lock.yaml`. If a repository does not commit this lockfile (e.g. to circumvent line-limit constraints during agent checks), the cache step will crash. Omit the `cache: pnpm` directive entirely to resolve this.
