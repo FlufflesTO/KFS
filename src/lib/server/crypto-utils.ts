@@ -77,20 +77,3 @@ export async function sha256Text(text: string): Promise<string> {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
-
-/**
- * Timing-safe comparison of two strings to prevent timing attacks.
- * @param a - First string
- * @param b - Second string
- * @returns true if strings are equal, false otherwise
- */
-export function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
-}
