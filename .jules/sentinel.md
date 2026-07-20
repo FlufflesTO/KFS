@@ -1,4 +1,7 @@
-## 2025-06-08 - Refactoring the jobs POST API
-**Vulnerability:** Complex routing structures can accidentally combine access boundaries.
-**Learning:** Organizing route handling into separate functions ensures the exact required conditions can be met and reviewed more easily.
-**Prevention:** Continuing to separate logical actions into bounded helper functions underneath standard access controls.
+## 2024-07-20 - Defense-in-depth Authentication
+
+**Vulnerability:** Found a missing authentication check on `src/pages/portal/admin/api/multi-client.ts`, which allowed unauthenticated or unauthorized users to fetch all client data.
+
+**Learning:** `src/middleware.ts`'s path-based validation checks authorization based on routes, but it relies on an explicit list of paths (or path prefixes). For API endpoints under `src/pages/portal/admin/api/`, while the middleware might catch them if configured correctly via `/portal/admin/`, the endpoints themselves lacked the defense-in-depth explicit `requireAdmin(locals.user)` check that is present in other admin API endpoints like `src/pages/portal/api/admin/users.ts`.
+
+**Prevention:** For security in Astro API endpoints (e.g., admin or sensitive data routes), explicitly call the relevant authorization guards (like `requireAdmin(locals.user)`) within the endpoint code as defense-in-depth, rather than relying entirely on path-based validation in `src/middleware.ts`.
