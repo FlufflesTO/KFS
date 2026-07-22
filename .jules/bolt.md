@@ -1,3 +1,4 @@
 ## 2025-06-08 - Refactoring the jobs POST API
 **Learning:** Refactoring overly long functions, especially those routing API endpoints based on payload actions, greatly improves maintainability.
 **Action:** Extracted `markInvoiced` and `create/update` logic from `POST` in `src/pages/portal/api/admin/jobs.ts` into isolated async helper functions.
+## 2025-10-24 - PowerShell executable in github actions CI\n**Learning:** In GitHub Actions with Ubuntu runner, the powershell binary may only be available as `pwsh`, which causes scripts trying to run `powershell` to fail with `powershell: not found`. The correct fix is to create a symlink from `pwsh` to `powershell`.\n**Action:** Add `sudo ln -sf /usr/bin/pwsh /usr/bin/powershell` immediately after powershell is installed via apt-get in the workflow file.
