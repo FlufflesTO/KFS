@@ -85,12 +85,14 @@ export async function sha256Text(text: string): Promise<string> {
  * @returns true if strings are equal, false otherwise
  */
 export function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false;
+  const aBytes = textEncoder.encode(a);
+  const bBytes = textEncoder.encode(b);
+  const length = Math.max(aBytes.length, bBytes.length);
+  let result = aBytes.length ^ bBytes.length;
+
+  for (let i = 0; i < length; i++) {
+    result |= (aBytes[i] || 0) ^ (bBytes[i] || 0);
   }
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
+
   return result === 0;
 }
