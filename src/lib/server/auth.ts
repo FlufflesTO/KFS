@@ -111,10 +111,10 @@ function validateSecretIsolation(): void {
   const mfaSecret = String(bindings.MFA_SECRET || bindings.ENCRYPTION_SECRET || "");
 
   // Check minimum lengths
-  if (bindings.ENVIRONMENT !== "local" && sessionSecret.length < 32) {
+  if (bindings.ENVIRONMENT !== "local" && bindings.ENVIRONMENT !== "test" && sessionSecret.length < 32) {
     throw new Error("SESSION_SECRET must be configured with at least 32 characters.");
   }
-  if (bindings.ENVIRONMENT !== "local" && mfaSecret.length < 32) {
+  if (bindings.ENVIRONMENT !== "local" && bindings.ENVIRONMENT !== "test" && mfaSecret.length < 32) {
     throw new Error("MFA_SECRET must be configured with at least 32 characters.");
   }
 
@@ -131,7 +131,7 @@ function getSessionSecret(): string {
   validateSecretIsolation();
   const bindings = resolveBindings();
   const secret = String(bindings.SESSION_SECRET || bindings.AUTH_SECRET || "");
-  if (bindings.ENVIRONMENT !== "local" && secret.length < 32) {
+  if (bindings.ENVIRONMENT !== "local" && bindings.ENVIRONMENT !== "test" && secret.length < 32) {
     throw new Error("SESSION_SECRET must be configured with at least 32 characters.");
   }
   return secret;
@@ -145,7 +145,7 @@ export function getMfaSecret(): string {
   validateSecretIsolation();
   const bindings = resolveBindings();
   const secret = String(bindings.MFA_SECRET || bindings.ENCRYPTION_SECRET || "");
-  if (bindings.ENVIRONMENT !== "local" && secret.length < 32) {
+  if (bindings.ENVIRONMENT !== "local" && bindings.ENVIRONMENT !== "test" && secret.length < 32) {
     throw new Error("MFA_SECRET must be configured with at least 32 characters.");
   }
   return secret;
