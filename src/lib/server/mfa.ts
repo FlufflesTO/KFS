@@ -174,12 +174,14 @@ async function hotp(secret: string, counter: number): Promise<string> {
 function constantTimeEqual(left: string, right: string): boolean {
   const leftBytes = encoder.encode(left);
   const rightBytes = encoder.encode(right);
-  const length = Math.max(leftBytes.length, rightBytes.length);
-  let diff = leftBytes.length ^ rightBytes.length;
-  for (let index = 0; index < length; index += 1) {
-    diff |= (leftBytes[index] || 0) ^ (rightBytes[index] || 0);
+  if (leftBytes.length !== rightBytes.length) {
+    return false;
   }
-  return diff === 0;
+  let result = 0;
+  for (let index = 0; index < leftBytes.length; index += 1) {
+    result |= leftBytes[index] ^ rightBytes[index];
+  }
+  return result === 0;
 }
 
 export async function verifyTotpCode(secret: string, code: string | null | undefined, options: MfaOptions = {}): Promise<boolean> {

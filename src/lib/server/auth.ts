@@ -354,14 +354,16 @@ export async function verifyPassword(password: string, storedHash: string): Prom
 function constantTimeEqual(left: string, right: string): boolean {
   const leftBytes = textEncoder.encode(left);
   const rightBytes = textEncoder.encode(right);
-  const length = Math.max(leftBytes.length, rightBytes.length);
-  let diff = leftBytes.length ^ rightBytes.length;
+  if (leftBytes.length !== rightBytes.length) {
+    return false;
+  }
+  let result = 0;
 
-  for (let index = 0; index < length; index += 1) {
-    diff |= (leftBytes[index] || 0) ^ (rightBytes[index] || 0);
+  for (let index = 0; index < leftBytes.length; index += 1) {
+    result |= leftBytes[index] ^ rightBytes[index];
   }
 
-  return diff === 0;
+  return result === 0;
 }
 
 export async function sha256Hex(value: string): Promise<string> {
