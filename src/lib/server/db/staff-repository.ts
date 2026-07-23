@@ -177,6 +177,45 @@ export async function listStaffFiles(
   return results.results ?? [];
 }
 
+export async function listStaffFilesByMemberIds(
+  db: D1Database,
+  memberIds: string[]
+): Promise<DbStaffFile[]> {
+  if (memberIds.length === 0) return [];
+
+  const allFiles: DbStaffFile[] = [];
+  const chunkSize = 100;
+
+  // Cloudflare D1 has a 100 parameter limit per query, batch if needed
+  const chunks = [];
+  for (let i = 0; i < memberIds.length; i += chunkSize) {
+    chunks.push(memberIds.slice(i, i + chunkSize));
+  }
+
+  const queries = chunks.map(chunk => {
+    const placeholders = chunk.map(() => '?').join(',');
+    return db
+      .prepare(
+        `SELECT id, staff_member_id, file_name, file_type, r2_key,
+                uploaded_by, uploaded_at, deleted_at
+         FROM staff_files
+         WHERE staff_member_id IN (${placeholders}) AND deleted_at IS NULL
+         ORDER BY uploaded_at DESC`
+      )
+      .bind(...chunk);
+  });
+
+  const results = await db.batch<DbStaffFile>(queries);
+
+  for (const result of results) {
+    if (result.results) {
+      allFiles.push(...result.results);
+    }
+  }
+
+  return allFiles;
+}
+
 export async function getStaffFile(
   db: D1Database,
   id: string
