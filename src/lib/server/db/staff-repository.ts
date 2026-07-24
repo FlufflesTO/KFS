@@ -1,5 +1,5 @@
 
-import type { D1Database } from "@cloudflare/workers-types";
+import type { D1Database, D1PreparedStatement } from "@cloudflare/workers-types";
 import type { DbStaffMember, DbStaffFile } from "@sentinel/types";
 
 /**
@@ -175,6 +175,34 @@ export async function listStaffFiles(
     .bind(memberId)
     .all<DbStaffFile>();
   return results.results ?? [];
+}
+
+export async function listStaffFilesForMembers(
+  db: D1Database,
+  memberIds: string[]
+): Promise<DbStaffFile[]> {
+  if (memberIds.length === 0) return [];
+
+  const BATCH_SIZE = 100;
+  const queries: D1PreparedStatement[] = [];
+
+  for (let i = 0; i < memberIds.length; i += BATCH_SIZE) {
+    const chunk = memberIds.slice(i, i + BATCH_SIZE);
+    const placeholders = chunk.map((_, index) => `?${index + 1}`).join(", ");
+    const stmt = db
+      .prepare(
+        `SELECT id, staff_member_id, file_name, file_type, r2_key,
+                uploaded_by, uploaded_at, deleted_at
+         FROM staff_files
+         WHERE staff_member_id IN (${placeholders}) AND deleted_at IS NULL
+         ORDER BY uploaded_at DESC`
+      )
+      .bind(...chunk);
+    queries.push(stmt);
+  }
+
+  const results = await db.batch<DbStaffFile>(queries);
+  return results.flatMap(r => r.results ?? []);
 }
 
 export async function getStaffFile(

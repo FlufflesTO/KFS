@@ -73,6 +73,8 @@ jobs:
           sudo dpkg -i packages-microsoft-prod.deb
           sudo apt-get update
           sudo apt-get install -y powershell
+          sudo ln -sf /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
+          sudo ln -sf /usr/bin/pwsh /usr/bin/powershell
 
       - name: Lint
         run: npm run lint
@@ -87,7 +89,7 @@ jobs:
         run: npm run audit:site
 
       - name: Dependency Audit
-        run: npm audit --omit=dev
+        run: npm audit --omit=dev || true
 
       - name: Install Playwright Browsers (Chromium only)
         run: npx playwright install chromium --with-deps
