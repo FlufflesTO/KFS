@@ -7,6 +7,7 @@
 
 import type { D1Database } from "@cloudflare/workers-types";
 import { resolveBindingsForAuth } from "./bindings-auth.js";
+import { timingSafeEqual } from "./crypto-utils.js";
 
 export interface SessionUser {
   id: string;
@@ -50,21 +51,6 @@ export const sessionCookieName = "kharon_session_token";
  * Compares all bytes regardless of where differences occur.
  * Early-return on length mismatch is safe since length is public information.
  */
-function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
-  // Early return for different lengths (length is public info)
-  if (a.length !== b.length) {
-    return false;
-  }
-
-  // Use XOR accumulation to avoid early exit
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a[i] ^ b[i];
-  }
-
-  return result === 0;
-}
-
 function base64UrlEncode(input: string | Uint8Array): string {
   const bytes = input instanceof Uint8Array ? input : textEncoder.encode(String(input));
   let binary = "";
@@ -345,23 +331,10 @@ export async function verifyPassword(password: string, storedHash: string): Prom
       256
     );
 
-    return constantTimeEqual(base64UrlEncode(new Uint8Array(derived)), encodedHash);
+    return timingSafeEqual(textEncoder.encode(base64UrlEncode(new Uint8Array(derived))), textEncoder.encode(encodedHash));
   } catch {
     return false;
   }
-}
-
-function constantTimeEqual(left: string, right: string): boolean {
-  const leftBytes = textEncoder.encode(left);
-  const rightBytes = textEncoder.encode(right);
-  const length = Math.max(leftBytes.length, rightBytes.length);
-  let diff = leftBytes.length ^ rightBytes.length;
-
-  for (let index = 0; index < length; index += 1) {
-    diff |= (leftBytes[index] || 0) ^ (rightBytes[index] || 0);
-  }
-
-  return diff === 0;
 }
 
 export async function sha256Hex(value: string): Promise<string> {

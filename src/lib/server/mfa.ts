@@ -6,6 +6,7 @@
  */
 
 import { resolveBindingsForAuth } from "./bindings-auth.js";
+import { timingSafeEqual } from "./crypto-utils.js";
 
 import QRCode from "qrcode";
 const encoder = new TextEncoder();
@@ -143,10 +144,10 @@ function base32Decode(secret: string): Uint8Array {
 async function hotp(secret: string, counter: number): Promise<string> {
   const secretBytes = base32Decode(secret);
   const key = await crypto.subtle.importKey(
-    "raw", 
-    new Uint8Array(secretBytes), 
-    { name: "HMAC", hash: "SHA-1" }, 
-    false, 
+    "raw",
+    new Uint8Array(secretBytes),
+    { name: "HMAC", hash: "SHA-1" },
+    false,
     ["sign"]
   );
   const buffer = new ArrayBuffer(8);
@@ -171,17 +172,6 @@ async function hotp(secret: string, counter: number): Promise<string> {
   return String(code % 1000000).padStart(6, "0");
 }
 
-function constantTimeEqual(left: string, right: string): boolean {
-  const leftBytes = encoder.encode(left);
-  const rightBytes = encoder.encode(right);
-  const length = Math.max(leftBytes.length, rightBytes.length);
-  let diff = leftBytes.length ^ rightBytes.length;
-  for (let index = 0; index < length; index += 1) {
-    diff |= (leftBytes[index] || 0) ^ (rightBytes[index] || 0);
-  }
-  return diff === 0;
-}
-
 export async function verifyTotpCode(secret: string, code: string | null | undefined, options: MfaOptions = {}): Promise<boolean> {
   const cleaned = String(code || "").replace(/\s+/g, "");
   if (!/^\d{6}$/.test(cleaned)) return false;
@@ -190,7 +180,7 @@ export async function verifyTotpCode(secret: string, code: string | null | undef
   const window = options.window || 1;
   const currentCounter = Math.floor(Date.now() / 1000 / period);
   for (let offset = -window; offset <= window; offset += 1) {
-    if (constantTimeEqual(await hotp(secret, currentCounter + offset), cleaned)) return true;
+    if (timingSafeEqual(encoder.encode(await hotp(secret, currentCounter + offset)), encoder.encode(cleaned))) return true;
   }
   return false;
 }
