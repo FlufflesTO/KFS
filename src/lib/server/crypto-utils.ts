@@ -79,18 +79,18 @@ export async function sha256Text(text: string): Promise<string> {
 }
 
 /**
- * Timing-safe comparison of two strings to prevent timing attacks.
- * @param a - First string
- * @param b - Second string
- * @returns true if strings are equal, false otherwise
+ * Timing-safe comparison of two byte arrays to prevent timing attacks.
+ * @param a - First byte array
+ * @param b - Second byte array
+ * @returns true if byte arrays are equal, false otherwise
  */
-export function constantTimeEqual(a: string, b: string): boolean {
+export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) {
     return false;
   }
   let result = 0;
   for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    result |= a[i] ^ b[i];
   }
   return result === 0;
 }
