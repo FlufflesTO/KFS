@@ -160,6 +160,34 @@ export async function softDeleteStaffMember(db: D1Database, id: string): Promise
     .run();
 }
 
+export async function listStaffFilesBatch(
+  db: D1Database,
+  memberIds: string[]
+): Promise<DbStaffFile[]> {
+  if (!memberIds.length) return [];
+
+  const chunks: string[][] = [];
+  for (let i = 0; i < memberIds.length; i += 100) {
+    chunks.push(memberIds.slice(i, i + 100));
+  }
+
+  const queries = chunks.map((chunk) => {
+    const placeholders = chunk.map(() => "?").join(",");
+    return db
+      .prepare(
+        `SELECT id, staff_member_id, file_name, file_type, r2_key,
+                uploaded_by, uploaded_at, deleted_at
+         FROM staff_files
+         WHERE staff_member_id IN (${placeholders}) AND deleted_at IS NULL
+         ORDER BY uploaded_at DESC`
+      )
+      .bind(...chunk);
+  });
+
+  const results = await db.batch<DbStaffFile>(queries);
+  return results.flatMap((r) => r.results ?? []);
+}
+
 export async function listStaffFiles(
   db: D1Database,
   memberId: string
