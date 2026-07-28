@@ -177,6 +177,41 @@ export async function listStaffFiles(
   return results.results ?? [];
 }
 
+export async function listStaffFilesByMembers(
+  db: D1Database,
+  memberIds: string[]
+): Promise<DbStaffFile[]> {
+  if (memberIds.length === 0) return [];
+
+  // D1 limit is 100 params. 1 param per ID in IN (...) clause.
+  const CHUNK_SIZE = 90;
+  const queries = [];
+  const results: DbStaffFile[] = [];
+
+  for (let i = 0; i < memberIds.length; i += CHUNK_SIZE) {
+    const chunk = memberIds.slice(i, i + CHUNK_SIZE);
+    const placeholders = chunk.map((_, idx) => `?${idx + 1}`).join(", ");
+    queries.push(
+      db.prepare(
+        `SELECT id, staff_member_id, file_name, file_type, r2_key,
+                uploaded_by, uploaded_at, deleted_at
+         FROM staff_files
+         WHERE staff_member_id IN (${placeholders}) AND deleted_at IS NULL
+         ORDER BY uploaded_at DESC`
+      ).bind(...chunk)
+    );
+  }
+
+  const batchResults = await db.batch<DbStaffFile>(queries);
+  for (const result of batchResults) {
+    if (result.results) {
+      results.push(...result.results);
+    }
+  }
+
+  return results;
+}
+
 export async function getStaffFile(
   db: D1Database,
   id: string
