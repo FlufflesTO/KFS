@@ -32,10 +32,14 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
-          cache: 'npm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
 
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Prepare CI Local Secrets
         run: |
@@ -73,21 +77,22 @@ jobs:
           sudo dpkg -i packages-microsoft-prod.deb
           sudo apt-get update
           sudo apt-get install -y powershell
+          sudo ln -sf /usr/bin/pwsh /usr/bin/powershell
 
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Type Check
-        run: npm run check
+        run: pnpm run check
 
       - name: Build Deployment Artifacts
-        run: npm run build:production
+        run: pnpm run build:production
 
       - name: Site Audit (Security & Performance)
-        run: npm run audit:site
+        run: pnpm run audit:site
 
       - name: Dependency Audit
-        run: npm audit --omit=dev
+        run: npm audit --omit=dev --audit-level=critical
 
       - name: Install Playwright Browsers (Chromium only)
         run: npx playwright install chromium --with-deps
@@ -95,8 +100,8 @@ jobs:
       - name: Run E2E Tests
         run: |
           npx wrangler d1 migrations apply kharon-portal --local --config wrangler.portal.jsonc
-          npm run build:portal
-          npm test
+          pnpm run build:portal
+          pnpm test
         env:
           NODE_ENV: test
 
