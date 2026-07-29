@@ -177,6 +177,38 @@ export async function listStaffFiles(
   return results.results ?? [];
 }
 
+export async function batchListStaffFiles(
+  db: D1Database,
+  memberIds: string[]
+): Promise<DbStaffFile[]> {
+  if (memberIds.length === 0) return [];
+
+  const allFiles: DbStaffFile[] = [];
+
+  // D1 has a parameter limit of 100, so we chunk the array
+  const CHUNK_SIZE = 100;
+  for (let i = 0; i < memberIds.length; i += CHUNK_SIZE) {
+    const chunk = memberIds.slice(i, i + CHUNK_SIZE);
+    const placeholders = chunk.map(() => '?').join(',');
+    const results = await db
+      .prepare(
+        `SELECT id, staff_member_id, file_name, file_type, r2_key,
+                uploaded_by, uploaded_at, deleted_at
+         FROM staff_files
+         WHERE staff_member_id IN (${placeholders}) AND deleted_at IS NULL
+         ORDER BY uploaded_at DESC`
+      )
+      .bind(...chunk)
+      .all<DbStaffFile>();
+
+    if (results.results) {
+      allFiles.push(...results.results);
+    }
+  }
+
+  return allFiles;
+}
+
 export async function getStaffFile(
   db: D1Database,
   id: string
