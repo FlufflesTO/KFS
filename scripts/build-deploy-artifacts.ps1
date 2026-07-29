@@ -147,17 +147,17 @@ function Invoke-TargetBuild {
 
   Set-TargetEnvironment $BuildTarget
   if ($BuildTarget -eq "website") {
-    npm run build:astro
+    pnpm build:astro
     if ($LASTEXITCODE -ne 0) {
       throw "$BuildTarget Astro build failed with exit code $LASTEXITCODE"
     }
-    npm run build:cron
+    pnpm build:cron
     if ($LASTEXITCODE -ne 0) {
       throw "$BuildTarget cron build failed with exit code $LASTEXITCODE"
     }
-    npm run build:css
+    pnpm build:css
   } else {
-    npm run build
+    pnpm build
   }
   if ($LASTEXITCODE -ne 0) {
     throw "$BuildTarget build failed with exit code $LASTEXITCODE"
