@@ -6,8 +6,12 @@
 
 ## Toolchain & Commands
 - **Build**: `npm run build` (Critical: `src/sw.ts` $\to$ `public/sw.js` must happen before Astro build).
-- **Validation**: Run `npm run validate:site` before PRs.
-- **Tests**: `npx playwright test` (e2e) or `npx playwright test tests/foo.spec.ts` (single file).
+- **Lint**: `npm run lint` (ESLint). Runs automatically on pre-commit via Husky.
+- **Typecheck**: `npm run check` (`astro check`). Runs in CI before build.
+- **Validation**: Run `npm run validate:site` before PRs. Runs automatically on pre-push via Husky.
+- **Unit tests**: `npx vitest run` (Vitest; tests in `src/lib/server/test/*.test.ts`).
+- **E2E tests**: `npx playwright test` (or `npx playwright test tests/foo.spec.ts` for a single file). Requires a portal build and local D1 migrations first:
+  `npx wrangler d1 migrations apply kharon-portal --local --config wrangler.portal.jsonc && npm run build:portal && npm test`.
 
 ## Architecture Constraints
 - **Bindings**: Use `getDatabase()` / `getStorage()` from `@server/bindings`. Do NOT use `Astro.locals.env` or `context.env`.
