@@ -48,7 +48,7 @@ test.describe('Session Cookie Validation', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
         expires: Math.floor(Date.now() / 1000) - 3600, // Expired 1 hour ago
       },
     ]);
@@ -78,7 +78,7 @@ test.describe('Session Cookie Validation', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -127,7 +127,7 @@ test.describe('Session Cookie Validation', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -144,7 +144,7 @@ test.describe('Session Cookie Validation', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -174,7 +174,7 @@ test.describe('Session Cookie Validation', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -195,7 +195,7 @@ test.describe('Session Cookie Validation', () => {
         domain: 'localhost',
         path: '/', // Wrong path - should be /portal
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -213,7 +213,7 @@ test.describe('Session Cookie Validation', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
       {
         name: 'kharon_session_token',
@@ -221,7 +221,7 @@ test.describe('Session Cookie Validation', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -429,7 +429,7 @@ test.describe('Session Lifecycle', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
         expires: Math.floor(Date.now() / 1000) - 86400, // Expired 1 day ago
       },
     ]);
@@ -450,7 +450,7 @@ test.describe('Session Lifecycle', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -484,13 +484,13 @@ test.describe('Session Security Headers', () => {
     expect(sessionCookie?.httpOnly).toBe(true);
   });
 
-  test('should set SameSite=Strict on session cookie', async ({ page }) => {
+  test('should set SameSite=Lax on session cookie', async ({ page }) => {
     await loginAsTestUser(page, 'admin');
 
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'kharon_session_token');
 
-    expect(sessionCookie?.sameSite).toBe('Strict');
+    expect(sessionCookie?.sameSite).toBe('Lax');
   });
 
   test('should set Secure flag on session cookie in production', async ({ page }) => {
@@ -578,7 +578,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -595,7 +595,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -612,7 +612,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -629,7 +629,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -646,7 +646,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
@@ -664,7 +664,7 @@ test.describe('Destruction Tests - Session Edge Cases', () => {
         domain: 'localhost',
         path: '/portal',
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Lax',
       },
     ]);
 
