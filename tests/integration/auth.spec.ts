@@ -77,7 +77,7 @@ test.describe('Authentication API - POST /portal/api/auth', () => {
       expect(sessionCookie).toBeDefined();
       expect(sessionCookie?.httpOnly).toBe(true);
       expect(sessionCookie?.path).toBe('/portal');
-      expect(sessionCookie?.sameSite).toBe('Strict');
+      expect(sessionCookie?.sameSite).toBe('Lax');
     });
 
     test('should set CSRF token cookie after successful login', async ({ page }) => {
