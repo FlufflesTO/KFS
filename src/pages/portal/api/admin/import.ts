@@ -17,20 +17,25 @@ function cleanImportId(value: unknown): string {
   return result || crypto.randomUUID();
 }
 
-async function siteExists(db: import("@cloudflare/workers-types").D1Database, id: string | null | undefined): Promise<boolean> {
-  if (!id) return false;
-  const record = await db.prepare(`SELECT id FROM sites WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`).bind(id).first();
-  return Boolean(record);
-}
-
-async function systemExists(db: import("@cloudflare/workers-types").D1Database, id: string | null | undefined): Promise<boolean> {
-  if (!id) return false;
-  const record = await db.prepare(`SELECT id FROM systems WHERE deleted_at IS NULL AND id = ?1 LIMIT 1`).bind(id).first();
-  return Boolean(record);
-}
-
 async function importSites(db: import("@cloudflare/workers-types").D1Database, rows: CsvObjectResult[], isDryRun: boolean) {
   const results = [];
+
+  const rawIds = rows.map((r) => r.data.id).filter(Boolean);
+  const ids = Array.from(new Set(rawIds)).map((id) => cleanImportId(id));
+
+  const existingSiteIds = new Set<string>();
+  if (ids.length > 0) {
+    for (let i = 0; i < ids.length; i += 100) {
+      const chunk = ids.slice(i, i + 100);
+      const placeholders = chunk.map(() => "?").join(",");
+      const query = `SELECT id FROM sites WHERE id IN (${placeholders}) AND deleted_at IS NULL`;
+      const records = (await db.prepare(query).bind(...chunk).all<{ id: string }>()).results || [];
+      for (const record of records) {
+        if (record.id) existingSiteIds.add(String(record.id));
+      }
+    }
+  }
+
   for (const row of rows) {
     try {
       const data = row.data;
@@ -41,7 +46,7 @@ async function importSites(db: import("@cloudflare/workers-types").D1Database, r
       const siteContactEmail = cleanEmail(data.site_contact_email, "site_contact_email", { required: false });
       const siteContactPhone = cleanText(data.site_contact_phone, "site_contact_phone", { required: false, max: 80 });
       const billingEmails = cleanText(data.billing_emails, "billing_emails", { min: 3, max: 1000 });
-      const exists = await siteExists(db, id);
+      const exists = existingSiteIds.has(id);
 
       if (exists) {
         if (!isDryRun) {
@@ -83,20 +88,60 @@ async function importSites(db: import("@cloudflare/workers-types").D1Database, r
 
 async function importSystems(db: import("@cloudflare/workers-types").D1Database, rows: CsvObjectResult[], isDryRun: boolean) {
   const results = [];
+
+  const rawSystemIds = rows.map((r) => r.data.id).filter(Boolean);
+  const systemIds = Array.from(new Set(rawSystemIds)).map((id) => cleanImportId(id));
+
+  // Extract site IDs safely without throwing validation errors prematurely
+  const rawSiteIds = rows.map((r) => {
+    try {
+      return r.data.site_id ? String(r.data.site_id) : null;
+    } catch { return null; }
+  }).filter((id) => id && id !== "undefined" && id !== "null");
+  const siteIds = Array.from(new Set(rawSiteIds));
+
+  const existingSystemIds = new Set<string>();
+  if (systemIds.length > 0) {
+    for (let i = 0; i < systemIds.length; i += 100) {
+      const chunk = systemIds.slice(i, i + 100);
+      const placeholders = chunk.map(() => "?").join(",");
+      const query = `SELECT id FROM systems WHERE id IN (${placeholders}) AND deleted_at IS NULL`;
+      const records = (await db.prepare(query).bind(...chunk).all<{ id: string }>()).results || [];
+      for (const record of records) {
+        if (record.id) existingSystemIds.add(String(record.id));
+      }
+    }
+  }
+
+  const existingSiteIds = new Set<string>();
+  if (siteIds.length > 0) {
+    for (let i = 0; i < siteIds.length; i += 100) {
+      const chunk = siteIds.slice(i, i + 100);
+      const placeholders = chunk.map(() => "?").join(",");
+      const query = `SELECT id FROM sites WHERE id IN (${placeholders}) AND deleted_at IS NULL`;
+      const records = (await db.prepare(query).bind(...chunk).all<{ id: string }>()).results || [];
+      for (const record of records) {
+        if (record.id) existingSiteIds.add(String(record.id));
+      }
+    }
+  }
+
   for (const row of rows) {
     try {
       const data = row.data;
       const id = cleanImportId(data.id);
       const siteId = cleanId(data.site_id, "site_id");
-      const site = await db.prepare(`SELECT id FROM sites WHERE id = ?1 AND deleted_at IS NULL LIMIT 1`).bind(siteId).first();
-      if (!site) throw new Error("site_id does not match an existing site.");
+
+      if (!siteId || !existingSiteIds.has(siteId)) {
+        throw new Error("site_id does not match an existing site.");
+      }
 
       const systemType = cleanChoice(data.system_type, "system_type", systemTypes);
       const coverageArea = cleanText(data.coverage_area, "coverage_area", { min: 2, max: 200 });
       const manufacturer = cleanText(data.manufacturer, "manufacturer", { required: false, max: 120 });
       const modelReference = cleanText(data.model_reference, "model_reference", { required: false, max: 120 });
       const nextDueDate = cleanDate(data.next_due_date, "next_due_date");
-      const exists = await systemExists(db, id);
+      const exists = existingSystemIds.has(id);
 
       if (exists) {
         if (!isDryRun) {
