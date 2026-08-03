@@ -81,10 +81,10 @@ const { certificates, systems, today } = Astro.props;
               PDF
             </a>
             {item.status === "Valid" && (
-              <button type="button" class="revoke-cert min-h-11 rounded-md border border-kharon-red/40 bg-kharon-red/10 px-3 py-2 text-base font-semibold text-kharon-red" data-id={item.id}>Revoke</button>
+              <button type="button" class="revoke-cert min-h-11 rounded-md border border-kharon-red/40 bg-kharon-red/10 px-3 py-2 text-base font-semibold text-kharon-red" data-id={item.id} aria-label={`Revoke certificate ${item.id}`}>Revoke</button>
             )}
             {item.status === "Valid" && (
-              <button type="button" class="expire-cert min-h-11 rounded-md border border-kharon-grey px-3 py-2 text-base font-semibold text-white/70" data-id={item.id}>Expire</button>
+              <button type="button" class="expire-cert min-h-11 rounded-md border border-kharon-grey px-3 py-2 text-base font-semibold text-white/70" data-id={item.id} aria-label={`Expire certificate ${item.id}`}>Expire</button>
             )}
           </div>
           <p class="text-base text-white/70 lg:col-span-6">{item.id}</p>
