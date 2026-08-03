@@ -91,15 +91,15 @@ const { defects, systems } = Astro.props;
             ) : null}
           </div>
           <div class="flex flex-wrap gap-2">
-            <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+            <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white" aria-label={`Save defect ${item.id}`}>Save</button>
             {item.status !== "Resolved" && (
-              <button type="button" class="resolve-defect rounded-md border border-kharon-green/40 bg-kharon-green/10 px-4 py-2 text-base font-semibold text-kharon-green" data-id={item.id}>Resolve</button>
+              <button type="button" class="resolve-defect rounded-md border border-kharon-green/40 bg-kharon-green/10 px-4 py-2 text-base font-semibold text-kharon-green" data-id={item.id} aria-label={`Resolve defect ${item.id}`}>Resolve</button>
             )}
             {item.status !== "Closed" && (
-              <button type="button" class="close-defect rounded-md border border-kharon-grey px-4 py-2 text-base font-semibold text-white/70" data-id={item.id}>Close</button>
+              <button type="button" class="close-defect rounded-md border border-kharon-grey px-4 py-2 text-base font-semibold text-white/70" data-id={item.id} aria-label={`Close defect ${item.id}`}>Close</button>
             )}
             {(["Open", "In Progress"] as const).includes(item.status as "Open" | "In Progress") && (
-              <button type="button" class="quote-defect rounded-md border border-amber-500 px-4 py-2 text-base font-semibold text-amber-700" data-id={item.id}>Quote Required</button>
+              <button type="button" class="quote-defect rounded-md border border-amber-500 px-4 py-2 text-base font-semibold text-amber-700" data-id={item.id} aria-label={`Request quote for defect ${item.id}`}>Quote Required</button>
             )}
           </div>
           <p class="admin-result hidden rounded-md border px-4 py-3 text-base font-semibold lg:col-span-7"></p>
