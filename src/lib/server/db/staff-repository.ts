@@ -227,3 +227,34 @@ export async function softDeleteStaffFile(db: D1Database, id: string): Promise<v
     .bind(id)
     .run();
 }
+
+/**
+ * ⚡ Bolt Optimization: Fetches files for multiple members using batched IN (...) clauses
+ * Resolves D1 N+1 issues and strictly respects the 100 bind parameter limit.
+ */
+export async function listStaffFilesForMembers(
+  db: D1Database,
+  memberIds: string[]
+): Promise<DbStaffFile[]> {
+  if (memberIds.length === 0) return [];
+
+  const CHUNK_SIZE = 100;
+  const queries = [];
+
+  for (let i = 0; i < memberIds.length; i += CHUNK_SIZE) {
+    const chunk = memberIds.slice(i, i + CHUNK_SIZE);
+    const placeholders = chunk.map(() => '?').join(',');
+    queries.push(
+      db.prepare(
+        `SELECT id, staff_member_id, file_name, file_type, r2_key,
+                uploaded_by, uploaded_at, deleted_at
+         FROM staff_files
+         WHERE staff_member_id IN (${placeholders}) AND deleted_at IS NULL
+         ORDER BY uploaded_at DESC`
+      ).bind(...chunk)
+    );
+  }
+
+  const results = await db.batch<DbStaffFile>(queries);
+  return results.flatMap(r => r.results ?? []);
+}
