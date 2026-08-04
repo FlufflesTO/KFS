@@ -20,6 +20,7 @@ function runQuery(sql: string): void {
   const escapedSql = sql.replaceAll('"', '\\"');
   execSync(`npx wrangler d1 execute ${database} --remote --config wrangler.portal.jsonc --command "${escapedSql}"`, {
     cwd: process.cwd(),
+    env: { ...process.env, CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID },
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"]
   });
