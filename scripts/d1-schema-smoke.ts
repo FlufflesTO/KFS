@@ -20,6 +20,7 @@ function runQuery(sql: string): void {
   const escapedSql = sql.replaceAll('"', '\\"');
   execSync(`npx wrangler d1 execute ${database} --remote --config wrangler.portal.jsonc --command "${escapedSql}"`, {
     cwd: process.cwd(),
+    env: process.env,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"]
   });

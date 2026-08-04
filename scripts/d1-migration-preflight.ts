@@ -8,6 +8,7 @@ const migrationsDir = path.join(process.cwd(), "migrations");
 function run(command: string): string {
   return execSync(command, {
     cwd: process.cwd(),
+    env: process.env,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"]
   });
