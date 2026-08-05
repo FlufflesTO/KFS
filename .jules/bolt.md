@@ -5,3 +5,11 @@
 ## 2025-06-08 - Caching derived PBKDF2 keys in crypto.ts
 **Learning:** High-iteration PBKDF2 key derivation (e.g., 600,000 iterations for POPIA compliance) adds substantial synchronous blocking overhead (~350ms) per execution. Without caching, performing multiple encryptions/decryptions sequentially during a request becomes a significant bottleneck.
 **Action:** Implement memory caching for derived `CryptoKey` instances in Node.js module scope, mapping the original secret string to the derived key to avoid redundant computations on subsequent identical calls.
+
+## 2025-06-08 - Caching derived PBKDF2 keys in crypto.ts
+**Learning:** High-iteration PBKDF2 key derivation (e.g., 600,000 iterations for POPIA compliance) adds substantial synchronous blocking overhead (~350ms) per execution. Without caching, performing multiple encryptions/decryptions sequentially during a request becomes a significant bottleneck.
+**Action:** Implement memory caching for derived `CryptoKey` instances in Node.js module scope, mapping the original secret string to the derived key to avoid redundant computations on subsequent identical calls.
+
+## 2025-06-08 - CI cross-platform PowerShell execution failure
+**Learning:** Linux-based CI environments install PowerShell as `pwsh` instead of `powershell`.
+**Action:** Symlink `pwsh` to `powershell` in GitHub Actions setup instead of modifying `package.json` scripts, to maintain script compatibility across different operating systems.
