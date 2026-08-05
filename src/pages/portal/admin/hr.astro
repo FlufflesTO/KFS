@@ -195,7 +195,7 @@ function typeBadgeCls(type: string): string {
                 <span class="text-base text-white/40">{member.file_count} file{member.file_count !== 1 ? "s" : ""}</span>
                 <button
                   type="button"
-                  class="edit-member-btn min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+                  class="edit-member-btn min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-kharon-charcoal"
                   data-member={JSON.stringify({
                     id: member.id,
                     full_name: member.full_name,
@@ -215,7 +215,7 @@ function typeBadgeCls(type: string): string {
                 </button>
                 <button
                   type="button"
-                  class="delete-member-btn min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-kharon-red/20 text-kharon-red/60 hover:text-kharon-red hover:border-kharon-red/40 transition-colors"
+                  class="delete-member-btn min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-kharon-red/20 text-kharon-red/60 hover:text-kharon-red hover:border-kharon-red/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-kharon-charcoal"
                   data-member-id={member.id}
                   data-member-name={member.full_name}
                   aria-label={`Delete ${member.full_name}`}
