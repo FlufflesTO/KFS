@@ -8,6 +8,9 @@
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
+let cachedDerivedKey: CryptoKey | null = null;
+let cachedSecret: string | null = null;
+
 function getEncryptionKey(env: Record<string, unknown>): string {
   const secret = String(env.ENCRYPTION_SECRET || "");
   if (secret.length < 32) {
@@ -17,6 +20,10 @@ function getEncryptionKey(env: Record<string, unknown>): string {
 }
 
 async function deriveAesKey(secret: string): Promise<CryptoKey> {
+  if (cachedDerivedKey && cachedSecret === secret) {
+    return cachedDerivedKey;
+  }
+
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
     textEncoder.encode(secret),
@@ -25,7 +32,7 @@ async function deriveAesKey(secret: string): Promise<CryptoKey> {
     ["deriveKey"]
   );
   // POPIA Section 24 Compliance: 600,000 iterations for key derivation
-  return crypto.subtle.deriveKey(
+  const derivedKey = await crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
       salt: textEncoder.encode("kharon-storage-salt"),
@@ -37,6 +44,10 @@ async function deriveAesKey(secret: string): Promise<CryptoKey> {
     false,
     ["encrypt", "decrypt"]
   );
+
+  cachedDerivedKey = derivedKey;
+  cachedSecret = secret;
+  return derivedKey;
 }
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -71,7 +82,7 @@ export async function encryptText(text: string, env: Record<string, unknown>): P
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encoded = textEncoder.encode(text);
   const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
-  
+
   const ivBase64 = arrayBufferToBase64(iv.buffer);
   const cipherBase64 = arrayBufferToBase64(ciphertext);
   return `${ivBase64}:${cipherBase64}`;
