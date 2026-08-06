@@ -126,7 +126,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (!refreshed) return forbidden("Account no longer available.");
 
       // Revoke the old session token to prevent session fixation
-      const oldToken = request.headers.get("cookie")?.split("; ").find(c => c.startsWith(`${sessionCookieName}=`))?.split("=")[1]; 
+      const oldToken = request.headers.get("cookie")?.split("; ").find(c => c.startsWith(`${sessionCookieName}=`))?.split("=")[1];
       if (oldToken) {
         await revokeSessionToken(db, oldToken);
       }
@@ -141,10 +141,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (action === "disable") {
       if (!record.mfa_enabled) return json({ ok: true, redirectTo: "/portal/account/mfa" });
       const code = String(body.code || "").trim();
-      const isTestBypass = record.mfa_secret_encrypted === 'MFA_SECRET_PLACEHOLDER' && code === '000000';
-      
+
       let secret = null;
-      if (!isTestBypass && record.mfa_secret_encrypted) {
+      if (record.mfa_secret_encrypted) {
         try {
           secret = await decryptMfaSecret(record.mfa_secret_encrypted);
         } catch (e) {
@@ -152,7 +151,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         }
       }
 
-      if (!isTestBypass && (!secret || !(await verifyTotpCode(secret, code)))) {
+      if (!secret || !(await verifyTotpCode(secret, code))) {
         await auditEvent(db, request, {
           eventType: "auth.mfa_disable",
           entityType: "user",
@@ -194,7 +193,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (error instanceof SyntaxError) return badRequest("Request body must be valid JSON.");
     const err = error as any;
     if (err.message?.includes("MFA_SECRET") || err.name === "OperationError") {
-      await auditError(db, request, error as Error, { user: user || undefined, metadata: { message: "mfa configuration failed" } }); 
+      await auditError(db, request, error as Error, { user: user || undefined, metadata: { message: "mfa configuration failed" } });
       return serverError("MFA could not be completed.");
     }
     await auditError(db, request, error as Error, { user: user || undefined, metadata: { message: "mfa action failed" } });
