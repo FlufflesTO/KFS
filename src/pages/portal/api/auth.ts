@@ -176,10 +176,8 @@ export async function POST({ request }: APIContext): Promise<Response> {
     }
 
     if (user.mfa_enabled) {
-      const isTestBypass = user.mfa_secret_encrypted === 'MFA_SECRET_PLACEHOLDER' && mfaCode === '000000';
-      
       let mfaSecret = null;
-      if (!isTestBypass && user.mfa_secret_encrypted) {
+      if (user.mfa_secret_encrypted) {
         try {
           mfaSecret = await decryptMfaSecret(user.mfa_secret_encrypted);
         } catch (e) {
@@ -187,8 +185,8 @@ export async function POST({ request }: APIContext): Promise<Response> {
         }
       }
 
-      const mfaValid = isTestBypass || (mfaSecret && mfaCode && (await verifyTotpCode(mfaSecret, mfaCode)));
-      
+      const mfaValid = mfaSecret && mfaCode && (await verifyTotpCode(mfaSecret, mfaCode));
+
       if (!mfaValid) {
         await auditEvent(db!, request, {
           eventType: "auth.mfa",
@@ -219,7 +217,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
       mfaRequired: Boolean(user.mfa_required),
       mfaEnabled: Boolean(user.mfa_enabled)
     });
-    
+
     const destination = user.force_password_change
       ? "/portal/account/password"
       : user.mfa_required && !user.mfa_enabled
@@ -237,8 +235,8 @@ export async function POST({ request }: APIContext): Promise<Response> {
       mfaEnabled: Boolean(user.mfa_enabled)
     });
 
-    await resetRateLimit(db!, request, { 
-      scope: "portal.auth.login", 
+    await resetRateLimit(db!, request, {
+      scope: "portal.auth.login",
       subject: email,
       maxAttempts: 5,
       windowSeconds: 900
@@ -295,7 +293,7 @@ export async function POST({ request }: APIContext): Promise<Response> {
     const errorStack = error instanceof Error ? error.stack : "No stack trace";
     console.error("AUTH_API_ERROR:", errorMessage);
     console.error("AUTH_API_ERROR_STACK:", errorStack);
-    
+
     if (db) {
       try {
         await auditError(db, request, error as Error, {
