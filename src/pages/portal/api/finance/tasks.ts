@@ -17,14 +17,14 @@ export async function GET({ locals }: import('astro').APIContext) {
     const db = getDatabase();
     const financeService = new FinanceService(db);
 
-    // Get finance summary
-    const summary = await financeService.getFinanceSummary();
-
-    // Get pending tasks
-    const pendingTasks = await financeService.getPendingTasks();
+    // Performance optimization: Fetch summary and pending tasks concurrently
+    const [summary, pendingTasks] = await Promise.all([
+      financeService.getFinanceSummary(),
+      financeService.getPendingTasks()
+    ]);
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
         summary,
         pendingTasks
