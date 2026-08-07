@@ -62,10 +62,10 @@ export class FinanceService {
   async createFinanceTask(task: Omit<FinanceTask, 'id' | 'createdAt' | 'updatedAt' | 'completedAt'>): Promise<FinanceTask> {
     const id = `ft-${crypto.randomUUID()}`;
     const completedAt = (task.status === 'Completed' || task.status === 'Cancelled') ? new Date().toISOString() : null;
-    
+
     await this.db.prepare(`
       INSERT INTO finance_tasks (
-        id, site_id, job_id, task_type, amount, vat_amount, reference, 
+        id, site_id, job_id, task_type, amount, vat_amount, reference,
         sage_document_ref, sage_document_id, status, notes, created_at, updated_at, completed_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)
     `).bind(
@@ -152,15 +152,15 @@ export class FinanceService {
    */
   async getTasksBySite(siteId: string): Promise<FinanceTask[]> {
     const tasks = await this.db.prepare(`
-      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
-             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
-             sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
+      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount,
+             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef,
+             sage_document_id as sageDocumentId, status, notes, created_at as createdAt,
              updated_at as updatedAt, completed_at as completedAt
-      FROM finance_tasks 
-      WHERE site_id = ? 
+      FROM finance_tasks
+      WHERE site_id = ?
       ORDER BY created_at DESC
     `).bind(siteId).all<FinanceTaskRow>();
-    
+
     return tasks.results.map((row) => ({
       id: row.id,
       siteId: row.siteId,
@@ -184,15 +184,15 @@ export class FinanceService {
    */
   async getTasksByJob(jobId: string): Promise<FinanceTask[]> {
     const tasks = await this.db.prepare(`
-      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
-             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
-             sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
+      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount,
+             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef,
+             sage_document_id as sageDocumentId, status, notes, created_at as createdAt,
              updated_at as updatedAt, completed_at as completedAt
-      FROM finance_tasks 
-      WHERE job_id = ? 
+      FROM finance_tasks
+      WHERE job_id = ?
       ORDER BY created_at DESC
     `).bind(jobId).all<FinanceTaskRow>();
-    
+
     return tasks.results.map((row) => ({
       id: row.id,
       siteId: row.siteId,
@@ -216,15 +216,15 @@ export class FinanceService {
    */
   async getPendingTasks(): Promise<FinanceTask[]> {
     const tasks = await this.db.prepare(`
-      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
-             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
-             sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
+      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount,
+             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef,
+             sage_document_id as sageDocumentId, status, notes, created_at as createdAt,
              updated_at as updatedAt, completed_at as completedAt
-      FROM finance_tasks 
+      FROM finance_tasks
       WHERE status = 'Pending'
       ORDER BY created_at ASC
     `).all<FinanceTaskRow>();
-    
+
     return tasks.results.map((row) => ({
       id: row.id,
       siteId: row.siteId,
@@ -255,11 +255,11 @@ export class FinanceService {
       status: 'Pending',
       notes: notes || 'Quote required for job/service'
     };
-    
+
     if (jobId !== undefined) {
       taskObj.jobId = jobId;
     }
-    
+
     return this.createFinanceTask(taskObj);
   }
 
@@ -275,11 +275,11 @@ export class FinanceService {
       status: 'Pending',
       notes: notes || 'Invoice required to be issued in Sage'
     };
-    
+
     if (jobId !== undefined) {
       taskObj.jobId = jobId;
     }
-    
+
     return this.createFinanceTask(taskObj);
   }
 
@@ -307,11 +307,11 @@ export class FinanceService {
       status: 'Pending',
       notes: 'Client approved quote, invoice required in Sage'
     };
-    
+
     if (existingTask.jobId !== undefined) {
       taskObj.jobId = existingTask.jobId;
     }
-    
+
     await this.createFinanceTask(taskObj);
   }
 
@@ -342,18 +342,18 @@ export class FinanceService {
    */
   async getTaskById(taskId: string): Promise<FinanceTask> {
     const task = await this.db.prepare(`
-      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount, 
-             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef, 
-             sage_document_id as sageDocumentId, status, notes, created_at as createdAt, 
+      SELECT id, site_id as siteId, job_id as jobId, task_type as taskType, amount,
+             vat_amount as vatAmount, reference, sage_document_ref as sageDocumentRef,
+             sage_document_id as sageDocumentId, status, notes, created_at as createdAt,
              updated_at as updatedAt, completed_at as completedAt
-      FROM finance_tasks 
+      FROM finance_tasks
       WHERE id = ?
     `).bind(taskId).first<FinanceTaskRow>();
-    
+
     if (!task) {
       throw new Error(`Finance task with id ${taskId} not found`);
     }
-    
+
     return {
       id: task.id,
       siteId: task.siteId,
@@ -382,14 +382,14 @@ export class FinanceService {
     unpaidAmount: number;
   }> {
     const result = await this.db.prepare(`
-      SELECT 
+      SELECT
         COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending_tasks,
         SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as total_pending_value,
         COUNT(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN 1 END) as overdue_invoices,
         SUM(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN amount ELSE 0 END) as unpaid_amount
       FROM finance_tasks
     `).first<FinanceSummaryRow>();
-    
+
     if (!result) {
       return {
         pendingTasks: 0,
@@ -398,7 +398,7 @@ export class FinanceService {
         unpaidAmount: 0
       };
     }
-    
+
     return {
       pendingTasks: Number(result.pending_tasks || 0),
       totalPendingValue: Number(result.total_pending_value || 0),
@@ -425,14 +425,19 @@ export class FinanceService {
       throw new Error(`Cannot push task type '${task.taskType}' to Sage automatically.`);
     }
 
-    // Retrieve client details
-    const siteResult = await this.db.prepare(`SELECT owner_company_name FROM sites WHERE id = ?`).bind(task.siteId).first();
-    if (!siteResult) throw new Error("Site not found");
+    // Retrieve client details in a single query
+    const clientResult = await this.db.prepare(`
+      SELECT c.*, s.owner_company_name
+      FROM sites s
+      LEFT JOIN clients c ON c.company_name = s.owner_company_name
+      WHERE s.id = ?
+    `).bind(task.siteId).first();
 
-    const clientName = siteResult.owner_company_name as string;
-    const clientResult = await this.db.prepare(`SELECT * FROM clients WHERE company_name = ?`).bind(clientName).first();
-    
-    if (!clientResult) throw new Error(`Client record not found for company: ${clientName}`);
+    if (!clientResult) throw new Error("Site not found");
+
+    const clientName = clientResult.owner_company_name as string;
+
+    if (!clientResult.id) throw new Error(`Client record not found for company: ${clientName}`);
 
     const sageClient = new SageClient(this.db, env);
     let sageContactId = clientResult.sage_contact_id as string | undefined;
@@ -448,14 +453,14 @@ export class FinanceService {
         const newContact = await sageClient.createContact(clientName);
         sageContactId = newContact.id;
       }
-      
+
       // 3. Cache Contact ID
       await this.db.prepare(`UPDATE clients SET sage_contact_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(sageContactId, clientResult.id).run();
     }
 
     // Prepare Document Description
     const description = `${isQuote ? 'Quote' : 'Invoice'} for Site Services (${task.taskType})`;
-    
+
     // Create Document in Sage
     let document;
     if (isInvoice) {
