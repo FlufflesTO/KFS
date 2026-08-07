@@ -110,11 +110,13 @@ try {
                 <div class="flex gap-2 shrink-0">
                   <button
                     class="edit-client kharon-secondary-button px-3 py-2 text-base"
+                    aria-label={`Edit ${client.company_name}`}
                     type="button"
                     data-client={JSON.stringify(client)}
                   >Edit</button>
                   <button
                     class="delete-client rounded border border-kharon-red/40 bg-kharon-red/10 px-3 py-2 text-base font-semibold text-kharon-red hover:bg-kharon-red/20 transition-colors min-h-[44px]"
+                    aria-label={`Deactivate ${client.company_name}`}
                     type="button"
                     data-client-id={client.id}
                     data-client-name={client.company_name}
