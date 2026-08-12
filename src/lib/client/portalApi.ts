@@ -91,7 +91,8 @@ export function showToast(message: string, variant: ResultVariant = "error"): vo
   text.textContent = message;
   
   const close = document.createElement("button");
-  close.className = "flex-none text-current opacity-70 hover:opacity-100 transition-opacity";
+  close.className = "flex-none text-current opacity-70 hover:opacity-100 transition-opacity rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-current";
+  close.setAttribute("aria-label", "Close notification");
   
   const closeIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   closeIcon.setAttribute("class", "w-4 h-4");
