@@ -56,6 +56,7 @@ export class ReportService {
   constructor(private db: D1Database) {}
 
   async getFullReport(): Promise<FullReportingData> {
+    // Optimized: Batched queries to reduce D1 roundtrip latency
     const [statsResult, trendsResult, techsResult, typesResult, financeResult] = await this.db.batch([
       this.db.prepare(`
         SELECT
