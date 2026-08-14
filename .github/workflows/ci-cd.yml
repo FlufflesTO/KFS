@@ -100,6 +100,7 @@ jobs:
           npm test
         env:
           NODE_ENV: test
+          ENVIRONMENT: local
 
       - name: D1 Migration Ledger Preflight
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
