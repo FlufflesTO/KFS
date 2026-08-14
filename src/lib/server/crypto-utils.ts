@@ -84,13 +84,17 @@ export async function sha256Text(text: string): Promise<string> {
  * @param b - Second string
  * @returns true if strings are equal, false otherwise
  */
-export function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
+export async function constantTimeEqual(a: string, b: string): Promise<boolean> {
+  const hashA = await crypto.subtle.digest("SHA-256", textEncoder.encode(a));
+  const hashB = await crypto.subtle.digest("SHA-256", textEncoder.encode(b));
+
+  const bytesA = new Uint8Array(hashA);
+  const bytesB = new Uint8Array(hashB);
+
   let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  for (let i = 0; i < bytesA.length; i++) {
+    result |= bytesA[i] ^ bytesB[i];
   }
+
   return result === 0;
 }
