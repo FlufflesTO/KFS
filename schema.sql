@@ -542,3 +542,10 @@ FOR EACH ROW
 BEGIN
     UPDATE staff_leave_requests SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = OLD.id;
 END;
+
+-- Optimization indexes
+CREATE INDEX IF NOT EXISTS idx_systems_deleted_at ON systems(deleted_at);
+CREATE INDEX IF NOT EXISTS idx_sites_deleted_at ON sites(deleted_at);
+CREATE INDEX IF NOT EXISTS idx_jobs_deleted_at_status ON jobs(deleted_at, status);
+CREATE INDEX IF NOT EXISTS idx_defects_deleted_at_status ON defects(deleted_at, status);
+CREATE INDEX IF NOT EXISTS idx_certificates_deleted_at_status ON certificates(deleted_at, status);
