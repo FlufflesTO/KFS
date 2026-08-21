@@ -50,88 +50,94 @@ let stats = { totalSageAmountExVat: 0, totalSageVatAmount: 0, totalSageAmountInc
 let sageConnection = { connected: false, expired: false };
 
 try {
-  // Get finance summary
-  const summaryResult = await db.prepare(`
-    SELECT 
-      COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending_tasks,
-      SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as total_pending_value,
-      COUNT(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN 1 END) as overdue_invoices,
-      SUM(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN amount ELSE 0 END) as unpaid_amount
-    FROM finance_tasks
-  `).first();
-  if (summaryResult) {
+  // Batch all queries to reduce network roundtrips to the database
+  const [
+    summaryResult,
+    pendingTasksResult,
+    completedTasksResult,
+    missingSageRefsResult,
+    vatStatsResult,
+    sageConnectionResult,
+    sitesResult,
+    linkableJobsResult
+  ] = await db.batch([
+    db.prepare(`
+      SELECT
+        COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending_tasks,
+        SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as total_pending_value,
+        COUNT(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN 1 END) as overdue_invoices,
+        SUM(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN amount ELSE 0 END) as unpaid_amount
+      FROM finance_tasks
+    `),
+    db.prepare(`
+      SELECT ft.*, s.owner_company_name, j.job_type
+      FROM finance_tasks ft
+      LEFT JOIN sites s ON s.id = ft.site_id
+      LEFT JOIN jobs j ON j.id = ft.job_id
+      WHERE ft.status = 'Pending' OR ft.status = 'In Progress'
+      ORDER BY ft.created_at DESC
+      LIMIT 50
+    `),
+    db.prepare(`
+      SELECT ft.*, s.owner_company_name, j.job_type
+      FROM finance_tasks ft
+      LEFT JOIN sites s ON s.id = ft.site_id
+      LEFT JOIN jobs j ON j.id = ft.job_id
+      WHERE ft.status = 'Completed'
+      ORDER BY ft.updated_at DESC
+      LIMIT 50
+    `),
+    db.prepare(`
+      SELECT ft.*, s.owner_company_name, j.job_type
+      FROM finance_tasks ft
+      LEFT JOIN sites s ON s.id = ft.site_id
+      LEFT JOIN jobs j ON j.id = ft.job_id
+      WHERE ft.status = 'Completed' AND ft.sage_document_ref IS NULL
+      ORDER BY ft.updated_at DESC
+      LIMIT 50
+    `),
+    db.prepare("SELECT SUM(amount) as totalEx, SUM(vat_amount) as totalVat FROM finance_tasks WHERE status = 'Completed'"),
+    db.prepare("SELECT expires_at FROM sage_config WHERE id = 1"),
+    db.prepare("SELECT id, owner_company_name FROM sites WHERE deleted_at IS NULL ORDER BY owner_company_name ASC"),
+    db.prepare(`
+      SELECT j.id, j.job_type, j.status, j.scheduled_date, j.completed_at AS completed_date,
+             sys.system_type, sys.coverage_area, si.owner_company_name
+      FROM jobs j
+      JOIN systems sys ON sys.id = j.system_id AND sys.deleted_at IS NULL
+      JOIN sites si ON si.id = sys.site_id AND si.deleted_at IS NULL
+      WHERE (j.status = 'Completed' OR j.status = 'In Progress') AND j.deleted_at IS NULL
+      ORDER BY j.created_at DESC
+    `)
+  ]);
+
+  const summaryData = summaryResult.results?.[0] as any;
+  if (summaryData) {
     summary = {
-      pending_tasks: Number(summaryResult.pending_tasks) || 0,
-      total_pending_value: Number(summaryResult.total_pending_value) || 0,
-      overdue_invoices: Number(summaryResult.overdue_invoices) || 0,
-      unpaid_amount: Number(summaryResult.unpaid_amount) || 0
+      pending_tasks: Number(summaryData.pending_tasks) || 0,
+      total_pending_value: Number(summaryData.total_pending_value) || 0,
+      overdue_invoices: Number(summaryData.overdue_invoices) || 0,
+      unpaid_amount: Number(summaryData.unpaid_amount) || 0
     };
   }
 
-  // Get pending finance tasks
-  const pendingTasksResult = await db.prepare(`
-    SELECT ft.*, s.owner_company_name, j.job_type
-    FROM finance_tasks ft
-    LEFT JOIN sites s ON s.id = ft.site_id
-    LEFT JOIN jobs j ON j.id = ft.job_id
-    WHERE ft.status = 'Pending' OR ft.status = 'In Progress'
-    ORDER BY ft.created_at DESC
-    LIMIT 50
-  `).all();
   pendingTasks = pendingTasksResult.results || [];
-
-  // Get recent completed tasks
-  const completedTasksResult = await db.prepare(`
-    SELECT ft.*, s.owner_company_name, j.job_type
-    FROM finance_tasks ft
-    LEFT JOIN sites s ON s.id = ft.site_id
-    LEFT JOIN jobs j ON j.id = ft.job_id
-    WHERE ft.status = 'Completed'
-    ORDER BY ft.updated_at DESC
-    LIMIT 50
-  `).all();
   completedTasks = completedTasksResult.results || [];
-
-  // Get Sage references that need to be entered
-  const missingSageRefsResult = await db.prepare(`
-    SELECT ft.*, s.owner_company_name, j.job_type
-    FROM finance_tasks ft
-    LEFT JOIN sites s ON s.id = ft.site_id
-    LEFT JOIN jobs j ON j.id = ft.job_id
-    WHERE ft.status = 'Completed' AND ft.sage_document_ref IS NULL
-    ORDER BY ft.updated_at DESC
-    LIMIT 50
-  `).all();
   missingSageRefs = missingSageRefsResult.results || [];
 
-  // Compute VAT stats from completed tasks
-  const vatStats = await db.prepare("SELECT SUM(amount) as totalEx, SUM(vat_amount) as totalVat FROM finance_tasks WHERE status = 'Completed'").first();
+  const vatData = vatStatsResult.results?.[0] as any;
   stats = {
-    totalSageAmountExVat: Number(vatStats?.totalEx) || 0,
-    totalSageVatAmount: Number(vatStats?.totalVat) || 0,
-    totalSageAmountIncVat: (Number(vatStats?.totalEx) || 0) + (Number(vatStats?.totalVat) || 0)
+    totalSageAmountExVat: Number(vatData?.totalEx) || 0,
+    totalSageVatAmount: Number(vatData?.totalVat) || 0,
+    totalSageAmountIncVat: (Number(vatData?.totalEx) || 0) + (Number(vatData?.totalVat) || 0)
   };
 
-  // Get Sage connection status
-  const sageConnectionRow = await db.prepare("SELECT expires_at FROM sage_config WHERE id = 1").first();
+  const sageConnectionData = sageConnectionResult.results?.[0] as any;
   sageConnection = {
-    connected: !!sageConnectionRow,
-    expired: sageConnectionRow ? new Date(Number(sageConnectionRow.expires_at) * 1000) < new Date() : false
+    connected: !!sageConnectionData,
+    expired: sageConnectionData ? new Date(Number(sageConnectionData.expires_at) * 1000) < new Date() : false
   };
 
-  // Get data for create form
-  const sitesResult = await db.prepare("SELECT id, owner_company_name FROM sites WHERE deleted_at IS NULL ORDER BY owner_company_name ASC").all();
   sites = sitesResult.results || [];
-
-  const linkableJobsResult = await db.prepare(`
-    SELECT j.id, j.job_type, j.status, j.scheduled_date, j.completed_at AS completed_date,
-           sys.system_type, sys.coverage_area, si.owner_company_name
-    FROM jobs j
-    JOIN systems sys ON sys.id = j.system_id AND sys.deleted_at IS NULL
-    JOIN sites si ON si.id = sys.site_id AND si.deleted_at IS NULL
-    WHERE (j.status = 'Completed' OR j.status = 'In Progress') AND j.deleted_at IS NULL
-    ORDER BY j.created_at DESC
-  `).all();
   linkableJobs = linkableJobsResult.results || [];
 
 } catch (error) {
