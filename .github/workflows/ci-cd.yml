@@ -54,15 +54,15 @@ jobs:
           # the auth/middleware limiters relax for the full Playwright suite. Written
           # directly (add_secret skips already-set vars like CI). Production is
           # unaffected (these are never set on the deployed Worker).
-          printf 'CI=true\nE2E_TEST_MODE=true\n' >> .dev.vars
-          printf 'CI=true\nE2E_TEST_MODE=true\n' >> .env
+          printf 'CI=true\nE2E_TEST_MODE=true\nENVIRONMENT=local\n' >> .dev.vars
+          printf 'CI=true\nE2E_TEST_MODE=true\nENVIRONMENT=local\n' >> .env
           add_secret SESSION_SECRET "ci-session-secret-padding-${suffix}"
-          add_secret CSRF_SECRET "ci-csrf-secret-${suffix}"
+          add_secret CSRF_SECRET "ci-csrf-secret-padding-${suffix}"
           add_secret MFA_SECRET "ci-mfa-secret-padding-${suffix}"
           add_secret ENCRYPTION_SECRET "ci-encryption-secret-${suffix}"
-          add_secret AUTH_SECRET "ci-auth-secret-${suffix}"
+          add_secret AUTH_SECRET "ci-auth-secret-padding-${suffix}"
           add_secret FINGERPRINT_SECRET "ci-fingerprint-secret-${suffix}"
-          add_secret AUDIT_IP_SALT "ci-audit-ip-salt-${suffix}"
+          add_secret AUDIT_IP_SALT "ci-audit-ip-salt-padding-${suffix}"
           add_secret SAGE_WEBHOOK_SECRET "ci-sage-webhook-secret-${suffix}"
 
       - name: Setup PowerShell
