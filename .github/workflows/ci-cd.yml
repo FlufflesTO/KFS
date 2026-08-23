@@ -74,6 +74,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y powershell
           sudo ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
+          sudo ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/powershell
 
       - name: Lint
         run: npm run lint
