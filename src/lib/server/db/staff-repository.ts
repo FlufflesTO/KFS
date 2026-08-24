@@ -41,13 +41,30 @@ export interface CreateStaffFileData {
   uploaded_by: string;
 }
 
-export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]> {
+export type DbStaffMemberWithFiles = DbStaffMember & { files: DbStaffFile[]; file_count: number };
+
+export async function listStaffMembers(db: D1Database): Promise<DbStaffMemberWithFiles[]> {
   const results = await db
     .prepare(
       `SELECT sm.id, sm.full_name, sm.role_title, sm.email, sm.phone,
               sm.start_date, sm.employment_type, sm.status, sm.notes,
               sm.created_at, sm.updated_at, sm.deleted_at,
-              COUNT(sf.id) AS file_count
+              COUNT(sf.id) AS file_count,
+              COALESCE(
+                json_group_array(
+                  json_object(
+                    'id', sf.id,
+                    'staff_member_id', sf.staff_member_id,
+                    'file_name', sf.file_name,
+                    'file_type', sf.file_type,
+                    'r2_key', sf.r2_key,
+                    'uploaded_by', sf.uploaded_by,
+                    'uploaded_at', sf.uploaded_at,
+                    'deleted_at', sf.deleted_at
+                  )
+                ) FILTER (WHERE sf.id IS NOT NULL),
+                '[]'
+              ) as files_json
        FROM staff_members sm
        LEFT JOIN staff_files sf
          ON sf.staff_member_id = sm.id AND sf.deleted_at IS NULL
@@ -55,8 +72,20 @@ export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]>
        GROUP BY sm.id
        ORDER BY sm.full_name ASC`
     )
-    .all<DbStaffMember>();
-  return results.results ?? [];
+    .all<DbStaffMember & { files_json: string; file_count: number }>();
+
+  return (results.results ?? []).map((row) => {
+    const { files_json, ...memberData } = row;
+    let files: DbStaffFile[] = [];
+    try {
+      files = JSON.parse(files_json);
+      // Sort files by uploaded_at DESC to match previous logic
+      files.sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime());
+    } catch (e) {
+      console.error("Failed to parse staff files json", e);
+    }
+    return { ...memberData, files };
+  });
 }
 
 export async function getStaffMember(
