@@ -59,6 +59,45 @@ export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]>
   return results.results ?? [];
 }
 
+export async function listStaffMembersWithFiles(db: D1Database): Promise<(DbStaffMember & { files: DbStaffFile[], file_count: number })[]> {
+  const [membersResult, filesResult] = await db.batch([
+    db.prepare(
+      `SELECT id, full_name, role_title, email, phone, start_date,
+              employment_type, status, notes, created_at, updated_at, deleted_at
+       FROM staff_members
+       WHERE deleted_at IS NULL
+       ORDER BY full_name ASC`
+    ),
+    db.prepare(
+      `SELECT id, staff_member_id, file_name, file_type, r2_key,
+              uploaded_by, uploaded_at, deleted_at
+       FROM staff_files
+       WHERE deleted_at IS NULL
+       ORDER BY uploaded_at DESC`
+    )
+  ]);
+
+  const members = (membersResult.results ?? []) as DbStaffMember[];
+  const files = (filesResult.results ?? []) as DbStaffFile[];
+
+  const filesByMemberId = new Map<string, DbStaffFile[]>();
+  for (const file of files) {
+    if (!filesByMemberId.has(file.staff_member_id)) {
+      filesByMemberId.set(file.staff_member_id, []);
+    }
+    filesByMemberId.get(file.staff_member_id)!.push(file);
+  }
+
+  return members.map(m => {
+    const memberFiles = filesByMemberId.get(m.id) || [];
+    return {
+      ...m,
+      files: memberFiles,
+      file_count: memberFiles.length
+    };
+  });
+}
+
 export async function getStaffMember(
   db: D1Database,
   id: string
