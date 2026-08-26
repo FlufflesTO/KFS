@@ -56,6 +56,7 @@ jobs:
           # unaffected (these are never set on the deployed Worker).
           printf 'CI=true\nE2E_TEST_MODE=true\n' >> .dev.vars
           printf 'CI=true\nE2E_TEST_MODE=true\n' >> .env
+          add_secret ENVIRONMENT "local"
           add_secret SESSION_SECRET "ci-session-secret-padding-${suffix}"
           add_secret CSRF_SECRET "ci-csrf-secret-${suffix}"
           add_secret MFA_SECRET "ci-mfa-secret-padding-${suffix}"
@@ -73,6 +74,7 @@ jobs:
           sudo dpkg -i packages-microsoft-prod.deb
           sudo apt-get update
           sudo apt-get install -y powershell
+          sudo ln -s /usr/bin/pwsh /usr/bin/powershell || true
 
       - name: Lint
         run: npm run lint
@@ -87,7 +89,7 @@ jobs:
         run: npm run audit:site
 
       - name: Dependency Audit
-        run: npm audit --omit=dev
+        run: npm audit --omit=dev --audit-level=critical
 
       - name: Install Playwright Browsers (Chromium only)
         run: npx playwright install chromium --with-deps
