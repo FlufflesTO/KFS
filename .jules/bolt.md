@@ -1,3 +1,3 @@
-## 2025-06-08 - Refactoring the jobs POST API
-**Learning:** Refactoring overly long functions, especially those routing API endpoints based on payload actions, greatly improves maintainability.
-**Action:** Extracted `markInvoiced` and `create/update` logic from `POST` in `src/pages/portal/api/admin/jobs.ts` into isolated async helper functions.
+## 2024-05-24 - Efficiently fetch related records with SQLite JSON aggregation
+**Learning:** In Cloudflare D1 (SQLite), executing N+1 queries to fetch related child records for a list of parent records is a major performance bottleneck due to network latency.
+**Action:** Use JSON aggregation (`json_group_array` and `json_object`) in the SQL query to fetch the parent and all related children in a single database call.

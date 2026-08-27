@@ -41,22 +41,52 @@ export interface CreateStaffFileData {
   uploaded_by: string;
 }
 
-export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]> {
+export async function listStaffMembers(db: D1Database): Promise<(DbStaffMember & { files: DbStaffFile[], file_count: number })[]> {
   const results = await db
     .prepare(
       `SELECT sm.id, sm.full_name, sm.role_title, sm.email, sm.phone,
               sm.start_date, sm.employment_type, sm.status, sm.notes,
               sm.created_at, sm.updated_at, sm.deleted_at,
-              COUNT(sf.id) AS file_count
+              (
+                SELECT json_group_array(
+                  json_object(
+                    'id', sf.id,
+                    'staff_member_id', sf.staff_member_id,
+                    'file_name', sf.file_name,
+                    'file_type', sf.file_type,
+                    'r2_key', sf.r2_key,
+                    'uploaded_by', sf.uploaded_by,
+                    'uploaded_at', sf.uploaded_at,
+                    'deleted_at', sf.deleted_at
+                  )
+                )
+                FROM staff_files sf
+                WHERE sf.staff_member_id = sm.id AND sf.deleted_at IS NULL
+                ORDER BY sf.uploaded_at DESC
+              ) AS files_json
        FROM staff_members sm
-       LEFT JOIN staff_files sf
-         ON sf.staff_member_id = sm.id AND sf.deleted_at IS NULL
        WHERE sm.deleted_at IS NULL
-       GROUP BY sm.id
        ORDER BY sm.full_name ASC`
     )
-    .all<DbStaffMember>();
-  return results.results ?? [];
+    .all<DbStaffMember & { files_json: string }>();
+
+  return (results.results ?? []).map(row => {
+    let files: DbStaffFile[] = [];
+    if (row.files_json) {
+      try {
+        const parsed = JSON.parse(row.files_json);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].id !== null) {
+          files = parsed;
+        }
+      } catch (e) {
+        // ignore parse error
+      }
+    }
+
+    // We intentionally omit files_json from the return object
+    const { files_json, ...rest } = row;
+    return { ...rest, files, file_count: files.length };
+  });
 }
 
 export async function getStaffMember(
