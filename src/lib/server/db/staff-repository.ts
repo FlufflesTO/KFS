@@ -64,10 +64,10 @@ export async function listStaffMembersWithFiles(db: D1Database): Promise<(DbStaf
                   )
                   FROM (
                     SELECT * FROM staff_files
-                    WHERE staff_member_id = sm.id AND deleted_at IS NULL
+                    WHERE deleted_at IS NULL
                     ORDER BY uploaded_at DESC
                   ) sf
-                  WHERE sf.id IS NOT NULL
+                  WHERE sf.staff_member_id = sm.id
                 ),
                 '[]'
               ) AS files_json
