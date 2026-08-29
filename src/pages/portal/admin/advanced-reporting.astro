@@ -55,6 +55,8 @@ interface FinanceRow {
   payment_status: string;
 }
 
+// ⚡ Bolt: Consolidated 5 sequential D1 queries into a single db.batch() request.
+// Impact: Reduces initial page load latency by eliminating 4 unnecessary network roundtrips to the Cloudflare D1 database.
 const [
   statsResult,
   monthlyTrendsResult,
