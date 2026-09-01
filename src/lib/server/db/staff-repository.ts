@@ -59,6 +59,54 @@ export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]>
   return results.results ?? [];
 }
 
+/**
+ * ⚡ Bolt Optimization: Fetch all staff members and their associated files in a single query.
+ * Why: Prevents N+1 queries when loading the HR page, which previously executed `listStaffFiles` for each member.
+ * Impact: Reduces database round-trips from O(N) to O(1).
+ * Measurement: The HR page will load faster due to minimal database latency overhead.
+ */
+export async function listStaffMembersWithFiles(db: D1Database): Promise<(DbStaffMember & { files: DbStaffFile[], file_count: number })[]> {
+  const results = await db
+    .prepare(
+      `SELECT sm.id, sm.full_name, sm.role_title, sm.email, sm.phone,
+              sm.start_date, sm.employment_type, sm.status, sm.notes,
+              sm.created_at, sm.updated_at, sm.deleted_at,
+              COUNT(sf.id) AS file_count,
+              CASE
+                WHEN COUNT(sf.id) > 0 THEN
+                  json_group_array(
+                    json_object(
+                      'id', sf.id,
+                      'staff_member_id', sf.staff_member_id,
+                      'file_name', sf.file_name,
+                      'file_type', sf.file_type,
+                      'r2_key', sf.r2_key,
+                      'uploaded_by', sf.uploaded_by,
+                      'uploaded_at', sf.uploaded_at,
+                      'deleted_at', sf.deleted_at
+                    )
+                  )
+                ELSE '[]'
+              END AS files_json
+       FROM staff_members sm
+       LEFT JOIN staff_files sf
+         ON sf.staff_member_id = sm.id AND sf.deleted_at IS NULL
+       WHERE sm.deleted_at IS NULL
+       GROUP BY sm.id
+       ORDER BY sm.full_name ASC`
+    )
+    .all();
+
+  return (results.results ?? []).map((row: any) => {
+    const { files_json, file_count, ...memberData } = row;
+    return {
+      ...memberData,
+      file_count: Number(file_count),
+      files: JSON.parse(files_json)
+    };
+  }) as (DbStaffMember & { files: DbStaffFile[], file_count: number })[];
+}
+
 export async function getStaffMember(
   db: D1Database,
   id: string
