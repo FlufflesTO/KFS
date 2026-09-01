@@ -10,7 +10,7 @@
     "node": ">=22.12.0",
     "npm": ">=9.6.5"
   },
-    "scripts": {
+  "scripts": {
     "dev": "astro dev",
     "check": "astro check",
     "build:sw": "node scripts/build-sw.js",
@@ -61,6 +61,7 @@
     "astro": "^6.3.3",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
+    "sqlite-async": "^1.2.2",
     "tailwindcss": "^4.3.0",
     "zod": "^4.4.3"
   },
