@@ -9,3 +9,7 @@
 ## 2026-09-04 - Bypassing CI npm audit Failures for Core Dependencies
 **Learning:** When core dependency vulnerabilities (like those in Astro or esbuild) surface in `npm audit` but cannot be resolved without introducing breaking changes or manual overrides, the pipeline can stall and block valid UX fixes.
 **Action:** Use `--audit-level=critical || true` in GitHub Actions CI pipelines to prevent these unresolvable upstream dependency warnings from blocking otherwise perfectly sound pull requests.
+
+## 2026-09-04 - CI Playwright Session Security Flaw
+**Learning:** If Playwright session tests fail in CI with session cookies missing or `sessionCookie?.sameSite` evaluating to `undefined`, the `Secure` cookie flag may be incorrectly enforced in the local/CI HTTP test environment, causing cookies to drop.
+**Action:** Ensure `ENVIRONMENT=local` is set in the CI script's `.dev.vars` and `.env` files to disable the strict `Secure` requirement during testing.
