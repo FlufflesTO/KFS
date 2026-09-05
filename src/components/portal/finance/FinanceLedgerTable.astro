@@ -86,10 +86,13 @@ const { completedTasks } = Astro.props;
                   <form class="sage-ref-form grid gap-1.5" data-task-id={task.id}>
                     <input class="rounded border border-kharon-purple/20 px-2 py-1.5 text-base" name="sageDocumentRef" maxlength="60"
                       placeholder="Sage Document Ref"
+                      aria-label="Sage Document Reference"
                       value={task.sage_document_ref || ""} />
                     
                     <input class="rounded border border-kharon-purple/20 px-2 py-1.5 text-base" name="notes" maxlength="500"
-                      placeholder="Finance notes (optional)" value={task.notes || ""} />
+                      placeholder="Finance notes (optional)"
+                      aria-label="Finance notes"
+                      value={task.notes || ""} />
                       
                     <button class="rounded bg-kharon-grey px-2 py-1.5 text-base font-semibold text-white hover:bg-kharon-black" type="submit">
                       {task.sage_document_ref ? "Update Ref" : "Save Ref"}
