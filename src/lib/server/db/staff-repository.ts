@@ -41,21 +41,36 @@ export interface CreateStaffFileData {
   uploaded_by: string;
 }
 
-export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]> {
+export async function listStaffMembers(db: D1Database): Promise<(DbStaffMember & { files_json?: string })[]> {
   const results = await db
     .prepare(
       `SELECT sm.id, sm.full_name, sm.role_title, sm.email, sm.phone,
               sm.start_date, sm.employment_type, sm.status, sm.notes,
               sm.created_at, sm.updated_at, sm.deleted_at,
-              COUNT(sf.id) AS file_count
+              COUNT(sf.id) AS file_count,
+              json_group_array(
+                CASE WHEN sf.id IS NOT NULL THEN
+                  json_object(
+                    'id', sf.id,
+                    'staff_member_id', sf.staff_member_id,
+                    'file_name', sf.file_name,
+                    'file_type', sf.file_type,
+                    'r2_key', sf.r2_key,
+                    'uploaded_by', sf.uploaded_by,
+                    'uploaded_at', sf.uploaded_at,
+                    'deleted_at', sf.deleted_at
+                  )
+                ELSE NULL END
+              ) AS files_json
        FROM staff_members sm
-       LEFT JOIN staff_files sf
-         ON sf.staff_member_id = sm.id AND sf.deleted_at IS NULL
+       LEFT JOIN (
+         SELECT * FROM staff_files WHERE deleted_at IS NULL ORDER BY uploaded_at DESC
+       ) sf ON sf.staff_member_id = sm.id
        WHERE sm.deleted_at IS NULL
        GROUP BY sm.id
        ORDER BY sm.full_name ASC`
     )
-    .all<DbStaffMember>();
+    .all<DbStaffMember & { files_json?: string }>();
   return results.results ?? [];
 }
 
