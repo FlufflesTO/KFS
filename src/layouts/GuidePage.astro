@@ -88,7 +88,7 @@ const faqSchema = faqs && faqs.length > 0
           <div class="mt-4 grid gap-4">
             {faqs.map((f) => (
               <details class="group rounded-lg border border-kharon-purple/15 bg-kharon-charcoal/30 p-5">
-                <summary class="cursor-pointer list-none text-base font-bold text-white marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-kharon-charcoal">{f.q}</summary>
+                <summary class="cursor-pointer list-none text-base font-bold text-white marker:hidden">{f.q}</summary>
                 <p class="mt-3 text-base leading-relaxed text-kharon-light/70">{f.a}</p>
               </details>
             ))}
