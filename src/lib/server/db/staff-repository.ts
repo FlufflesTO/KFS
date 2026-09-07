@@ -59,6 +59,8 @@ export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]>
   return results.results ?? [];
 }
 
+// ⚡ Bolt Optimization: Fetches staff members and all their files in a single query using JSON aggregation.
+// Impact: Reduces queries from (1 + N) to 1, eliminating the N+1 problem on the HR dashboard.
 export async function listStaffMembersWithFiles(db: D1Database): Promise<(DbStaffMember & { files: DbStaffFile[], file_count: number })[]> {
   const results = await db
     .prepare(
