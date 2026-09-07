@@ -147,6 +147,7 @@ async function countExpiredRecords(
   entityType: string,
   cutoffDate: string
 ): Promise<number> {
+  if (!/^[a-zA-Z0-9_]+$/.test(entityType)) return 0;
   const dateColumn = DEFAULT_ENTITY_DATE_COLUMN[entityType] || "created_at";
 
   try {
@@ -183,6 +184,7 @@ async function deleteExpiredRecords(
   cutoffDate: string,
   dryRun: boolean = false
 ): Promise<{ deleted: number; batches: number; error?: string }> {
+  if (!/^[a-zA-Z0-9_]+$/.test(entityType)) return { deleted: 0, batches: 0, error: "Invalid entity type" };
   const dateColumn = DEFAULT_ENTITY_DATE_COLUMN[entityType] || "created_at";
   let totalDeleted = 0;
   let batchesProcessed = 0;
