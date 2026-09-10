@@ -77,33 +77,41 @@ export async function getTechDashboardData(techId: string): Promise<JobWithDetai
 export async function getDashboardStats(): Promise<DashboardStats> {
   const db = getDatabase();
   
-  const [activeJobs, unassignedJobs, overdueSystems, openRequests, missingDocuments,
-         openDefects, criticalDefects, blockedCertificates, validCertificates] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
+  const [jobsResult, overdueSystems, openRequests, defectsResult, certsResult] = await db.batch([
+    db.prepare(`SELECT
+      SUM(CASE WHEN status IN ('Scheduled', 'In Progress') THEN 1 ELSE 0 END) AS activeJobs,
+      SUM(CASE WHEN status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL THEN 1 ELSE 0 END) AS unassignedJobs,
+      SUM(CASE WHEN status IN ('Completed', 'Invoiced') AND documentation_path IS NULL THEN 1 ELSE 0 END) AS missingDocs
+      FROM jobs WHERE deleted_at IS NULL`),
     db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
     db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
+    db.prepare(`SELECT
+      SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END) AS openDefects,
+      SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END) AS criticalDefects
+      FROM defects WHERE deleted_at IS NULL`),
+    db.prepare(`SELECT
+      SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END) AS blockedCerts,
+      SUM(CASE WHEN status = 'Valid' THEN 1 ELSE 0 END) AS validCerts
+      FROM certificates WHERE deleted_at IS NULL`)
   ]);
 
   interface CountResult {
     n: number;
   }
   
+  const getCount = (res: unknown) => (res as { results: CountResult[] })?.results?.[0]?.n ?? 0;
+  const getSum = (res: unknown, key: string) => Number((res as { results: Record<string, number>[] })?.results?.[0]?.[key] ?? 0);
+
   return {
-    activeJobs: (activeJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    unassignedJobs: (unassignedJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    overdueSystems: (overdueSystems?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openRequests: (openRequests?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    missingDocuments: (missingDocuments?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openDefects: (openDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    criticalDefects: (criticalDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    blockedCertificates: (blockedCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    validCertificates: (validCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0
+    activeJobs: getSum(jobsResult, 'activeJobs'),
+    unassignedJobs: getSum(jobsResult, 'unassignedJobs'),
+    overdueSystems: getCount(overdueSystems),
+    openRequests: getCount(openRequests),
+    missingDocuments: getSum(jobsResult, 'missingDocs'),
+    openDefects: getSum(defectsResult, 'openDefects'),
+    criticalDefects: getSum(defectsResult, 'criticalDefects'),
+    blockedCertificates: getSum(certsResult, 'blockedCerts'),
+    validCertificates: getSum(certsResult, 'validCerts')
   };
 }
 
