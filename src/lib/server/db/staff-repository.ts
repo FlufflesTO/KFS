@@ -41,6 +41,48 @@ export interface CreateStaffFileData {
   uploaded_by: string;
 }
 
+export async function listStaffMembersWithFiles(db: D1Database): Promise<(DbStaffMember & { files: DbStaffFile[], file_count: number })[]> {
+  const results = await db
+    .prepare(
+      `SELECT sm.id, sm.full_name, sm.role_title, sm.email, sm.phone,
+              sm.start_date, sm.employment_type, sm.status, sm.notes,
+              sm.created_at, sm.updated_at, sm.deleted_at,
+              COUNT(sf.id) AS file_count,
+              CASE WHEN COUNT(sf.id) > 0 THEN json_group_array(
+                json_object(
+                  'id', sf.id,
+                  'staff_member_id', sf.staff_member_id,
+                  'file_name', sf.file_name,
+                  'file_type', sf.file_type,
+                  'r2_key', sf.r2_key,
+                  'uploaded_by', sf.uploaded_by,
+                  'uploaded_at', sf.uploaded_at,
+                  'deleted_at', sf.deleted_at
+                )
+              ) ELSE '[]' END AS files_json
+       FROM staff_members sm
+       LEFT JOIN staff_files sf
+         ON sf.staff_member_id = sm.id AND sf.deleted_at IS NULL
+       WHERE sm.deleted_at IS NULL
+       GROUP BY sm.id
+       ORDER BY sm.full_name ASC`
+    )
+    .all<DbStaffMember & { files_json: string, file_count: number }>();
+
+  return (results.results ?? []).map((member) => {
+    let files: DbStaffFile[] = [];
+    try {
+      files = JSON.parse(member.files_json);
+      files.sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime());
+    } catch (e) {
+      // ignore
+    }
+    // We can safely delete files_json from the return object if we want, or just omit it from the type.
+    const { files_json, ...rest } = member;
+    return { ...rest, files, file_count: rest.file_count ?? 0 } as unknown as (DbStaffMember & { files: DbStaffFile[], file_count: number });
+  });
+}
+
 export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]> {
   const results = await db
     .prepare(
