@@ -7,6 +7,7 @@
 
 import type { D1Database } from "@cloudflare/workers-types";
 import { resolveBindingsForAuth } from "./bindings-auth.js";
+import { constantTimeEqual } from "./crypto-utils.js";
 
 export interface SessionUser {
   id: string;
@@ -345,23 +346,10 @@ export async function verifyPassword(password: string, storedHash: string): Prom
       256
     );
 
-    return constantTimeEqual(base64UrlEncode(new Uint8Array(derived)), encodedHash);
+    return await constantTimeEqual(base64UrlEncode(new Uint8Array(derived)), encodedHash);
   } catch {
     return false;
   }
-}
-
-function constantTimeEqual(left: string, right: string): boolean {
-  const leftBytes = textEncoder.encode(left);
-  const rightBytes = textEncoder.encode(right);
-  const length = Math.max(leftBytes.length, rightBytes.length);
-  let diff = leftBytes.length ^ rightBytes.length;
-
-  for (let index = 0; index < length; index += 1) {
-    diff |= (leftBytes[index] || 0) ^ (rightBytes[index] || 0);
-  }
-
-  return diff === 0;
 }
 
 export async function sha256Hex(value: string): Promise<string> {
