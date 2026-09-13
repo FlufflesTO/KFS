@@ -59,6 +59,56 @@ export async function listStaffMembers(db: D1Database): Promise<DbStaffMember[]>
   return results.results ?? [];
 }
 
+export async function listStaffMembersWithFiles(db: D1Database): Promise<(DbStaffMember & { files: DbStaffFile[], file_count: number })[]> {
+  const results = await db
+    .prepare(
+      `SELECT sm.id, sm.full_name, sm.role_title, sm.email, sm.phone,
+              sm.start_date, sm.employment_type, sm.status, sm.notes,
+              sm.created_at, sm.updated_at, sm.deleted_at,
+              COUNT(sf.id) AS file_count,
+              json_group_array(
+                CASE WHEN sf.id IS NOT NULL THEN json_object(
+                  'id', sf.id,
+                  'staff_member_id', sf.staff_member_id,
+                  'file_name', sf.file_name,
+                  'file_type', sf.file_type,
+                  'r2_key', sf.r2_key,
+                  'uploaded_by', sf.uploaded_by,
+                  'uploaded_at', sf.uploaded_at,
+                  'deleted_at', sf.deleted_at
+                ) ELSE NULL END
+              ) AS files_json
+       FROM staff_members sm
+       LEFT JOIN staff_files sf
+         ON sf.staff_member_id = sm.id AND sf.deleted_at IS NULL
+       WHERE sm.deleted_at IS NULL
+       GROUP BY sm.id
+       ORDER BY sm.full_name ASC`
+    )
+    .all<DbStaffMember & { file_count: number; files_json: string }>();
+
+  return (results.results ?? []).map((row) => {
+    let files: DbStaffFile[] = [];
+    if (row.files_json) {
+      try {
+        const parsed = JSON.parse(row.files_json);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0] !== null) {
+          files = parsed;
+          files.sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime());
+        }
+      } catch (e) {
+        console.error("Failed to parse files_json", e);
+      }
+    }
+
+    return {
+      ...row,
+      files,
+      file_count: row.file_count,
+    };
+  });
+}
+
 export async function getStaffMember(
   db: D1Database,
   id: string
