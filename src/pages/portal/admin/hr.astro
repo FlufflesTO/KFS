@@ -32,12 +32,10 @@ let loadError = "";
 try {
   const db = getDatabase();
   const members = await listStaffMembers(db);
-  staffWithFiles = await Promise.all(
-    members.map(async (m) => {
-      const files = await listStaffFiles(db, m.id);
-      return { ...m, files, file_count: files.length };
-    })
-  );
+  staffWithFiles = members.map(m => ({
+    ...m,
+    file_count: m.files.length
+  }));
 } catch (err) {
   loadError = "Failed to load staff data.";
   console.error("HR page load error:", err);
