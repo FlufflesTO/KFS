@@ -24,7 +24,7 @@ export async function POST({ request }: { request: Request }) {
       );
     }
 
-    if (!bearerToken || !constantTimeEqual(bearerToken, webhookSecret)) {
+    if (!bearerToken || !(await constantTimeEqual(bearerToken, webhookSecret))) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json" } }
