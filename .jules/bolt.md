@@ -4,3 +4,6 @@
 ## 2026-09-17 - Consolidating redundant COUNT queries
 **Learning:** Issuing multiple `COUNT(*)` queries on the same table with slightly different conditions triggers repetitive full table scans in SQLite, degrading performance on dashboard loading.
 **Action:** Replace multiple `COUNT(*)` queries with a single query using conditional aggregation `SUM(CASE WHEN <condition> THEN 1 ELSE 0 END)` to scan the table only once.
+## 2026-09-17 - Ubuntu 24.04 PowerShell symlink issue
+**Learning:** `powershell` on Ubuntu 24.04 uses the binary name `pwsh` instead of `powershell`, which breaks CI scripts invoking it.
+**Action:** Always create a symlink with `sudo ln -s /usr/bin/pwsh /usr/bin/powershell || true` to maintain compatibility with Windows `.ps1` execution wrappers.
