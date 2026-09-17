@@ -44,29 +44,31 @@ export class ComplianceService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<ComplianceStats> {
-    const [
-      cntCritical, cntOpen, cntBlocked, cntStale, cntExpiring, cntHighRisk
-    ] = await this.db.batch([
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days')`),
-      this.db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND severity = 'Critical'`)
+    const [defectsStats, certsStats] = await this.db.batch([
+      this.db.prepare(`SELECT
+        SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END) AS critical_defects,
+        SUM(CASE WHEN status IN ('Open', 'In Progress') THEN 1 ELSE 0 END) AS open_defects,
+        SUM(CASE WHEN status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days') THEN 1 ELSE 0 END) AS stale_defects,
+        COUNT(DISTINCT CASE WHEN status IN ('Open', 'In Progress') AND severity = 'Critical' THEN system_id ELSE NULL END) AS high_risk_systems
+        FROM defects WHERE deleted_at IS NULL`),
+      this.db.prepare(`SELECT
+        SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END) AS blocked_certs,
+        SUM(CASE WHEN status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days') THEN 1 ELSE 0 END) AS expiring_certs
+        FROM certificates WHERE deleted_at IS NULL`)
     ]);
 
-    const getCount = (result: unknown) => {
-      const res = result as { results: { n: number }[] };
-      return res?.results?.[0]?.n ?? 0;
+    const getStat = (result: unknown, key: string) => {
+      const res = result as { results: Record<string, number>[] };
+      return res?.results?.[0]?.[key] ?? 0;
     };
 
     return {
-      criticalDefects: getCount(cntCritical),
-      openDefects: getCount(cntOpen),
-      blockedCertificates: getCount(cntBlocked),
-      staleDefects: getCount(cntStale),
-      expiringCertificates: getCount(cntExpiring),
-      highRiskSystems: getCount(cntHighRisk)
+      criticalDefects: getStat(defectsStats, 'critical_defects'),
+      openDefects: getStat(defectsStats, 'open_defects'),
+      blockedCertificates: getStat(certsStats, 'blocked_certs'),
+      staleDefects: getStat(defectsStats, 'stale_defects'),
+      expiringCertificates: getStat(certsStats, 'expiring_certs'),
+      highRiskSystems: getStat(defectsStats, 'high_risk_systems')
     };
   }
 
