@@ -191,7 +191,7 @@ try {
                 <td class="p-4">
                   {ev.metadata_json && (
                     <details class="group cursor-pointer">
-                      <summary class="text-base font-bold text-kharon-purple hover:text-white transition-colors uppercase tracking-widest list-none">View payload</summary>
+                      <summary class="text-base font-bold text-kharon-purple hover:text-white transition-colors uppercase tracking-widest list-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kharon-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-kharon-charcoal rounded-sm">View payload</summary>
                       <pre class="mt-2 rounded bg-kharon-black/80 p-3 text-base text-kharon-cyan font-mono border border-kharon-purple/20 overflow-x-auto max-w-xs">{JSON.stringify(JSON.parse(ev.metadata_json), null, 2)}</pre>
                     </details>
                   )}
