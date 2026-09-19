@@ -45,28 +45,36 @@ export class ComplianceService {
 
   async getAdminStats(): Promise<ComplianceStats> {
     const [
-      cntCritical, cntOpen, cntBlocked, cntStale, cntExpiring, cntHighRisk
+      defectsResult,
+      certsResult
     ] = await this.db.batch([
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days')`),
-      this.db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND severity = 'Critical'`)
+      this.db.prepare(`SELECT
+        SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END) AS critical_defects,
+        SUM(CASE WHEN status IN ('Open', 'In Progress') THEN 1 ELSE 0 END) AS open_defects,
+        SUM(CASE WHEN status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days') THEN 1 ELSE 0 END) AS stale_defects,
+        COUNT(DISTINCT CASE WHEN status IN ('Open', 'In Progress') AND severity = 'Critical' THEN system_id END) AS high_risk_systems
+        FROM defects WHERE deleted_at IS NULL`),
+      this.db.prepare(`SELECT
+        SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END) AS blocked_certs,
+        SUM(CASE WHEN status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days') THEN 1 ELSE 0 END) AS expiring_certs
+        FROM certificates WHERE deleted_at IS NULL`)
     ]);
 
-    const getCount = (result: unknown) => {
-      const res = result as { results: { n: number }[] };
-      return res?.results?.[0]?.n ?? 0;
+    const getRes = <T>(result: unknown): Partial<T> => {
+      const res = result as { results: T[] };
+      return res?.results?.[0] ?? {};
     };
 
+    const dCounts = getRes<{ critical_defects: number; open_defects: number; stale_defects: number; high_risk_systems: number }>(defectsResult);
+    const cCounts = getRes<{ blocked_certs: number; expiring_certs: number }>(certsResult);
+
     return {
-      criticalDefects: getCount(cntCritical),
-      openDefects: getCount(cntOpen),
-      blockedCertificates: getCount(cntBlocked),
-      staleDefects: getCount(cntStale),
-      expiringCertificates: getCount(cntExpiring),
-      highRiskSystems: getCount(cntHighRisk)
+      criticalDefects: Number(dCounts.critical_defects ?? 0),
+      openDefects: Number(dCounts.open_defects ?? 0),
+      blockedCertificates: Number(cCounts.blocked_certs ?? 0),
+      staleDefects: Number(dCounts.stale_defects ?? 0),
+      expiringCertificates: Number(cCounts.expiring_certs ?? 0),
+      highRiskSystems: Number(dCounts.high_risk_systems ?? 0)
     };
   }
 
