@@ -93,7 +93,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   interface CountResult {
     n: number;
   }
-  
+
   return {
     activeJobs: (activeJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
     unassignedJobs: (unassignedJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
