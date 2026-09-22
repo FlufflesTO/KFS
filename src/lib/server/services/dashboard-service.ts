@@ -41,6 +41,10 @@ export class DashboardService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<DashboardStats> {
+    // ⚡ Bolt Optimization:
+    // We consolidate multiple COUNT(*) queries into single conditional aggregations
+    // using SUM(CASE WHEN...). This avoids N+1 style queries and redundant table scans,
+    // dramatically reducing D1 execution time and read load.
     const [
       jobsResult,
       systemsResult,

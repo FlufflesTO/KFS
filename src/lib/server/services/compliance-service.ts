@@ -44,6 +44,9 @@ export class ComplianceService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<ComplianceStats> {
+    // ⚡ Bolt Optimization:
+    // Consolidated multiple COUNT(*) queries into single conditional aggregations
+    // to reduce redundant table scans and D1 load.
     const [defectsResult, certsResult] = await this.db.batch([
       this.db.prepare(`
         SELECT
