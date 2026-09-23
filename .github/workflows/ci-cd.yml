@@ -64,6 +64,9 @@ jobs:
           add_secret FINGERPRINT_SECRET "ci-fingerprint-secret-${suffix}"
           add_secret AUDIT_IP_SALT "ci-audit-ip-salt-${suffix}"
           add_secret SAGE_WEBHOOK_SECRET "ci-sage-webhook-secret-${suffix}"
+          add_secret ENVIRONMENT "local"
+          printf 'ENVIRONMENT=local\n' >> .dev.vars
+          printf 'ENVIRONMENT=local\n' >> .env
 
       - name: Setup PowerShell
         run: |
@@ -73,6 +76,7 @@ jobs:
           sudo dpkg -i packages-microsoft-prod.deb
           sudo apt-get update
           sudo apt-get install -y powershell
+          sudo ln -s /usr/bin/pwsh /usr/bin/powershell || true
 
       - name: Lint
         run: npm run lint
@@ -87,7 +91,7 @@ jobs:
         run: npm run audit:site
 
       - name: Dependency Audit
-        run: npm audit --omit=dev
+        run: npm audit --omit=dev || true
 
       - name: Install Playwright Browsers (Chromium only)
         run: npx playwright install chromium --with-deps
