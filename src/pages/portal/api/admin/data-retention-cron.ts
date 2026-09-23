@@ -2,7 +2,7 @@
  * Project Sentinel - Data Retention Cron Endpoint
  * Purpose: Secure admin endpoint for executing POPIA Section 14 data retention policies.
  *          Automatically deletes expired personal data based on configured retention periods.
- * 
+ *
  * Features:
  * - GET: Retrieve current retention policy status and statistics
  * - POST: Execute retention policies (delete expired data)
@@ -10,18 +10,18 @@
  * - Batch deletion to avoid long-running transactions
  * - Comprehensive audit logging for compliance
  * - Dry-run mode for testing without actual deletion
- * 
+ *
  * Security:
  * - Requires authenticated admin user
  * - CSRF token verification for POST requests
  * - All operations logged to data_retention_logs table
  * - Audit events recorded for compliance
- * 
+ *
  * POPIA Section 14 Compliance:
  * - Personal information must not be retained longer than necessary
  * - This endpoint enforces configured retention periods
  * - Audit trail maintained for all deletion operations
- * 
+ *
  * Dependencies: ../../../../lib/server/audit, ../../../../lib/server/bindings, ../../../../lib/server/csrf
  * Structural Role: Administrative data governance endpoint
  */
@@ -147,12 +147,15 @@ async function countExpiredRecords(
   entityType: string,
   cutoffDate: string
 ): Promise<number> {
+  if (!/^[a-zA-Z0-9_]+$/.test(entityType)) {
+    throw new Error(`Invalid entityType: ${entityType}`);
+  }
   const dateColumn = DEFAULT_ENTITY_DATE_COLUMN[entityType] || "created_at";
 
   try {
     // Check if table exists
     const tableCheck = await db.prepare(`
-      SELECT name FROM sqlite_master 
+      SELECT name FROM sqlite_master
       WHERE type='table' AND name=?
     `).bind(entityType).first();
 
@@ -183,6 +186,9 @@ async function deleteExpiredRecords(
   cutoffDate: string,
   dryRun: boolean = false
 ): Promise<{ deleted: number; batches: number; error?: string }> {
+  if (!/^[a-zA-Z0-9_]+$/.test(entityType)) {
+    return { deleted: 0, batches: 0, error: `Invalid entityType: ${entityType}` };
+  }
   const dateColumn = DEFAULT_ENTITY_DATE_COLUMN[entityType] || "created_at";
   let totalDeleted = 0;
   let batchesProcessed = 0;
@@ -190,7 +196,7 @@ async function deleteExpiredRecords(
   try {
     // Check if table exists
     const tableCheck = await db.prepare(`
-      SELECT name FROM sqlite_master 
+      SELECT name FROM sqlite_master
       WHERE type='table' AND name=?
     `).bind(entityType).first();
 
@@ -259,7 +265,7 @@ async function logRetentionOperation(
   try {
     await db.prepare(`
       INSERT INTO data_retention_logs (
-        id, policy_id, entity_type, records_affected, operation_type, 
+        id, policy_id, entity_type, records_affected, operation_type,
         operation_status, error_message, executed_by, execution_duration_ms
       ) VALUES (?, ?, ?, ?, 'delete', ?, ?, ?, ?)
     `).bind(
@@ -284,7 +290,7 @@ async function logRetentionOperation(
 export const GET: APIRoute = async ({ request, locals }) => {
   // Require authentication
   const user = (locals as { user?: { id: string; name: string; email: string; role: string } | undefined }).user;
-  
+
   if (!user) {
     return unauthorized("Authentication required.");
   }
@@ -377,7 +383,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 export const POST: APIRoute = async ({ request, locals }) => {
   // Require authentication
   const user = (locals as { user?: { id: string; name: string; email: string; role: "tech" | "admin" | "client" | "finance" } | undefined }).user;
-  
+
   if (!user) {
     return unauthorized("Authentication required.");
   }
@@ -415,7 +421,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Get active policies
     const policies = await getActivePolicies(db);
-    
+
     // Filter to specific entity type if requested
     const policiesToProcess = specificEntityType
       ? policies.filter((p) => p.entity_type === specificEntityType)
