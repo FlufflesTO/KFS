@@ -77,33 +77,37 @@ export async function getTechDashboardData(techId: string): Promise<JobWithDetai
 export async function getDashboardStats(): Promise<DashboardStats> {
   const db = getDatabase();
   
-  const [activeJobs, unassignedJobs, overdueSystems, openRequests, missingDocuments,
-         openDefects, criticalDefects, blockedCertificates, validCertificates] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
+  const [jobsResult, systemsResult, requestsResult, defectsResult, certsResult] = await db.batch([
+    db.prepare(`SELECT SUM(CASE WHEN status IN ('Scheduled', 'In Progress') THEN 1 ELSE 0 END) AS activeJobs, SUM(CASE WHEN status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL THEN 1 ELSE 0 END) AS unassignedJobs, SUM(CASE WHEN status IN ('Completed', 'Invoiced') AND documentation_path IS NULL THEN 1 ELSE 0 END) AS missingDocuments FROM jobs WHERE deleted_at IS NULL`),
     db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
     db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
+    db.prepare(`SELECT SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END) AS openDefects, SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END) AS criticalDefects FROM defects WHERE deleted_at IS NULL`),
+    db.prepare(`SELECT SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END) AS blockedCertificates, SUM(CASE WHEN status = 'Valid' THEN 1 ELSE 0 END) AS validCertificates FROM certificates WHERE deleted_at IS NULL`)
   ]);
 
-  interface CountResult {
-    n: number;
-  }
+  const getRow = (result: unknown) => {
+    const res = result as { results: any[] };
+    return res?.results?.[0] || {};
+  };
+  const getCount = (result: unknown) => {
+    const res = result as { results: { n: number }[] };
+    return res?.results?.[0]?.n ?? 0;
+  };
+
+  const jobsRow = getRow(jobsResult);
+  const defectsRow = getRow(defectsResult);
+  const certsRow = getRow(certsResult);
   
   return {
-    activeJobs: (activeJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    unassignedJobs: (unassignedJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    overdueSystems: (overdueSystems?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openRequests: (openRequests?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    missingDocuments: (missingDocuments?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openDefects: (openDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    criticalDefects: (criticalDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    blockedCertificates: (blockedCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    validCertificates: (validCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0
+    activeJobs: Number(jobsRow.activeJobs ?? 0),
+    unassignedJobs: Number(jobsRow.unassignedJobs ?? 0),
+    overdueSystems: getCount(systemsResult),
+    openRequests: getCount(requestsResult),
+    missingDocuments: Number(jobsRow.missingDocuments ?? 0),
+    openDefects: Number(defectsRow.openDefects ?? 0),
+    criticalDefects: Number(defectsRow.criticalDefects ?? 0),
+    blockedCertificates: Number(certsRow.blockedCertificates ?? 0),
+    validCertificates: Number(certsRow.validCertificates ?? 0)
   };
 }
 
