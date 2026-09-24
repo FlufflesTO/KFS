@@ -23,7 +23,7 @@ export async function GET({ params, locals, request }: APIContext): Promise<Resp
     const isJobcard = key.startsWith("jobcards/") && key.endsWith(".pdf");
     const isEvidence = key.startsWith("job-evidence/") && /\.(jpg|jpeg|png|webp)$/i.test(key);
     
-    if ((!isJobcard && !isEvidence) || key.includes("..") || key.includes("\0")) {
+    if ((!isJobcard && !isEvidence) || key.includes("..") || key.includes("\0") || !/^[a-zA-Z0-9_\-\.\/]+$/.test(key)) {
       return forbidden("Invalid document path.");
     }
 
