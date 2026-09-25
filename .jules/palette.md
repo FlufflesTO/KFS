@@ -1,3 +1,3 @@
-## 2025-06-08 - Refactoring the jobs POST API
-**Learning:** Refactoring backend endpoints directly benefits developer experience without altering UI.
-**Action:** Splitting `src/pages/portal/api/admin/jobs.ts` logic into helper functions.
+## 2026-09-25 - Native interactive elements focus states
+**Learning:** Native interactive elements like `<summary>` used for custom-styled dropdown menus frequently lose their default browser focus rings when heavily styled. This severely breaks keyboard navigation accessibility as power users and screen reader users cannot see which element has focus.
+**Action:** Always ensure that custom-styled native interactive elements (like `<summary>`, custom checkboxes, or heavily styled buttons) have explicit `focus-visible` styles added (e.g., `focus-visible:ring-2`) using the existing design system tokens to maintain accessibility without disrupting mouse users.
