@@ -18,11 +18,16 @@ const postMigrationQueries = [
 
 function runQuery(sql: string): void {
   const escapedSql = sql.replaceAll('"', '\\"');
-  execSync(`npx wrangler d1 execute ${database} --remote --config wrangler.portal.jsonc --command "${escapedSql}"`, {
-    cwd: process.cwd(),
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"]
-  });
+  try {
+    execSync(`npx wrangler d1 execute ${database} --remote --config wrangler.portal.jsonc --command "${escapedSql}"`, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: "inherit"
+    });
+  } catch (err: any) {
+    console.error(`Smoke query failed: ${sql}`);
+    process.exit(1);
+  }
 }
 
 for (const query of baselineQueries) runQuery(query);
