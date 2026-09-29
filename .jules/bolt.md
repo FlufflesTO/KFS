@@ -5,3 +5,7 @@
 ## 2026-09-29 - Consolidating SQL Aggregations
 **Learning:** When using `SUM(CASE WHEN ... THEN 1 ELSE 0 END)` to replace `COUNT()` for aggregating data over a table, you must explicitly wrap it in `COALESCE(SUM(...), 0)`. While `COUNT(*)` safely returns `0` when there are no matching rows, `SUM()` on an empty result set yields `NULL`.
 **Action:** Always wrap `SUM` inside a conditional aggregation query with `COALESCE(..., 0)` to guarantee predictable return types and prevent downstream data contract violations.
+
+## 2026-09-29 - CI Fix PowerShell
+**Learning:** If a GitHub Actions workflow on an Ubuntu runner fails with `powershell: not found` (exit code 127) when executing `package.json` scripts, it is because the `powershell` apt package installs the binary as `pwsh`.
+**Action:** Resolve this by adding `sudo ln -s /usr/bin/pwsh /usr/bin/powershell || true` to the workflow file after installation.
