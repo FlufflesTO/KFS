@@ -56,18 +56,31 @@ export class ReportService {
   constructor(private db: D1Database) {}
 
   async getFullReport(): Promise<FullReportingData> {
-    const [statsResult, trendsResult, techsResult, typesResult, financeResult] = await this.db.batch([
+    const [jobsStats, systemsStats, defectsStats, financeStats, usersStats, trendsResult, techsResult, typesResult, financeResult] = await this.db.batch([
       this.db.prepare(`
         SELECT
-          (SELECT COUNT(*) FROM jobs WHERE deleted_at IS NULL AND status = 'Completed') AS completed_jobs,
-          (SELECT COUNT(*) FROM jobs WHERE deleted_at IS NULL AND status = 'Scheduled') AS scheduled_jobs,
-          (SELECT COUNT(*) FROM jobs WHERE deleted_at IS NULL AND status = 'In Progress') AS in_progress_jobs,
-          (SELECT COUNT(*) FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')) AS overdue_systems,
-          (SELECT COUNT(*) FROM defects WHERE deleted_at IS NULL AND status = 'Open') AS open_defects,
-          (SELECT COUNT(*) FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical') AS critical_defects,
-          (SELECT COUNT(*) FROM financial_records WHERE payment_status = 'Unpaid') AS unpaid_invoices,
-          (SELECT COALESCE(SUM(amount), 0) / 100.0 FROM financial_records WHERE payment_status = 'Unpaid') AS unpaid_amount,
-          (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL AND is_active = 1) AS active_users
+          COALESCE(SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END), 0) AS completed_jobs,
+          COALESCE(SUM(CASE WHEN status = 'Scheduled' THEN 1 ELSE 0 END), 0) AS scheduled_jobs,
+          COALESCE(SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END), 0) AS in_progress_jobs
+        FROM jobs WHERE deleted_at IS NULL
+      `),
+      this.db.prepare(`
+        SELECT COUNT(*) AS overdue_systems FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')
+      `),
+      this.db.prepare(`
+        SELECT
+          COALESCE(SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END), 0) AS open_defects,
+          COALESCE(SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END), 0) AS critical_defects
+        FROM defects WHERE deleted_at IS NULL
+      `),
+      this.db.prepare(`
+        SELECT
+          COUNT(*) AS unpaid_invoices,
+          COALESCE(SUM(amount), 0) / 100.0 AS unpaid_amount
+        FROM financial_records WHERE payment_status = 'Unpaid'
+      `),
+      this.db.prepare(`
+        SELECT COUNT(*) AS active_users FROM users WHERE deleted_at IS NULL AND is_active = 1
       `),
       this.db.prepare(`
         SELECT
@@ -121,7 +134,13 @@ export class ReportService {
     ]);
 
     return {
-      stats: (statsResult.results[0] as unknown as AdvancedStats) || null,
+      stats: {
+        ...((jobsStats.results[0] || {}) as Partial<AdvancedStats>),
+        ...((systemsStats.results[0] || {}) as Partial<AdvancedStats>),
+        ...((defectsStats.results[0] || {}) as Partial<AdvancedStats>),
+        ...((financeStats.results[0] || {}) as Partial<AdvancedStats>),
+        ...((usersStats.results[0] || {}) as Partial<AdvancedStats>)
+      } as AdvancedStats,
       monthlyTrends: (trendsResult.results || []) as unknown as TrendRow[],
       topTechs: (techsResult.results || []) as unknown as TechnicianRow[],
       systemTypes: (typesResult.results || []) as unknown as SystemTypeRow[],

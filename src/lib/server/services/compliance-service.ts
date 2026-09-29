@@ -44,29 +44,41 @@ export class ComplianceService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<ComplianceStats> {
-    const [
-      cntCritical, cntOpen, cntBlocked, cntStale, cntExpiring, cntHighRisk
-    ] = await this.db.batch([
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days')`),
-      this.db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND severity = 'Critical'`)
+    const [defectsStats, certsStats, highRiskStats] = await this.db.batch([
+      this.db.prepare(`
+        SELECT
+          SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END) AS criticalDefects,
+          SUM(CASE WHEN status IN ('Open', 'In Progress') THEN 1 ELSE 0 END) AS openDefects,
+          SUM(CASE WHEN status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days') THEN 1 ELSE 0 END) AS staleDefects
+        FROM defects
+        WHERE deleted_at IS NULL
+      `),
+      this.db.prepare(`
+        SELECT
+          SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END) AS blockedCertificates,
+          SUM(CASE WHEN status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days') THEN 1 ELSE 0 END) AS expiringCertificates
+        FROM certificates
+        WHERE deleted_at IS NULL
+      `),
+      this.db.prepare(`
+        SELECT COUNT(DISTINCT system_id) AS highRiskSystems
+        FROM defects
+        WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND severity = 'Critical'
+      `)
     ]);
 
-    const getCount = (result: unknown) => {
-      const res = result as { results: { n: number }[] };
-      return res?.results?.[0]?.n ?? 0;
+    const getVal = (result: unknown, key: string) => {
+      const res = result as { results: Record<string, number>[] };
+      return Number(res?.results?.[0]?.[key] ?? 0);
     };
 
     return {
-      criticalDefects: getCount(cntCritical),
-      openDefects: getCount(cntOpen),
-      blockedCertificates: getCount(cntBlocked),
-      staleDefects: getCount(cntStale),
-      expiringCertificates: getCount(cntExpiring),
-      highRiskSystems: getCount(cntHighRisk)
+      criticalDefects: getVal(defectsStats, 'criticalDefects'),
+      openDefects: getVal(defectsStats, 'openDefects'),
+      blockedCertificates: getVal(certsStats, 'blockedCertificates'),
+      staleDefects: getVal(defectsStats, 'staleDefects'),
+      expiringCertificates: getVal(certsStats, 'expiringCertificates'),
+      highRiskSystems: getVal(highRiskStats, 'highRiskSystems')
     };
   }
 
