@@ -77,33 +77,56 @@ export async function getTechDashboardData(techId: string): Promise<JobWithDetai
 export async function getDashboardStats(): Promise<DashboardStats> {
   const db = getDatabase();
   
-  const [activeJobs, unassignedJobs, overdueSystems, openRequests, missingDocuments,
-         openDefects, criticalDefects, blockedCertificates, validCertificates] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
+  const [jobsStats, systemsStats, requestsStats, defectsStats, certsStats] = await db.batch([
+    db.prepare(`
+      SELECT
+        SUM(CASE WHEN status IN ('Scheduled', 'In Progress') THEN 1 ELSE 0 END) AS activeJobs,
+        SUM(CASE WHEN status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL THEN 1 ELSE 0 END) AS unassignedJobs,
+        SUM(CASE WHEN status IN ('Completed', 'Invoiced') AND documentation_path IS NULL THEN 1 ELSE 0 END) AS missingDocuments
+      FROM jobs
+      WHERE deleted_at IS NULL
+    `),
+    db.prepare(`
+      SELECT COUNT(*) AS overdueSystems
+      FROM systems
+      WHERE deleted_at IS NULL AND date(next_due_date) < date('now')
+    `),
+    db.prepare(`
+      SELECT COUNT(*) AS openRequests
+      FROM maintenance_requests
+      WHERE status IN ('New', 'Reviewing')
+    `),
+    db.prepare(`
+      SELECT
+        SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END) AS openDefects,
+        SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END) AS criticalDefects
+      FROM defects
+      WHERE deleted_at IS NULL
+    `),
+    db.prepare(`
+      SELECT
+        SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END) AS blockedCertificates,
+        SUM(CASE WHEN status = 'Valid' THEN 1 ELSE 0 END) AS validCertificates
+      FROM certificates
+      WHERE deleted_at IS NULL
+    `)
   ]);
 
-  interface CountResult {
-    n: number;
-  }
+  const getVal = (result: unknown, key: string) => {
+    const res = result as { results: Record<string, number>[] };
+    return Number(res?.results?.[0]?.[key] ?? 0);
+  };
   
   return {
-    activeJobs: (activeJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    unassignedJobs: (unassignedJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    overdueSystems: (overdueSystems?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openRequests: (openRequests?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    missingDocuments: (missingDocuments?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openDefects: (openDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    criticalDefects: (criticalDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    blockedCertificates: (blockedCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    validCertificates: (validCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0
+    activeJobs: getVal(jobsStats, 'activeJobs'),
+    unassignedJobs: getVal(jobsStats, 'unassignedJobs'),
+    overdueSystems: getVal(systemsStats, 'overdueSystems'),
+    openRequests: getVal(requestsStats, 'openRequests'),
+    missingDocuments: getVal(jobsStats, 'missingDocuments'),
+    openDefects: getVal(defectsStats, 'openDefects'),
+    criticalDefects: getVal(defectsStats, 'criticalDefects'),
+    blockedCertificates: getVal(certsStats, 'blockedCertificates'),
+    validCertificates: getVal(certsStats, 'validCertificates')
   };
 }
 
