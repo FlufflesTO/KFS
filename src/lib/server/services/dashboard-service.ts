@@ -41,43 +41,72 @@ export class DashboardService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<DashboardStats> {
-    const [
-      cntActive,
-      cntUnassigned,
-      cntOverdue,
-      cntRequests,
-      cntMissingDocs,
-      cntOpenDefects,
-      cntCriticalDefects,
-      cntBlockedCerts,
-      cntValidCerts
-    ] = await this.db.batch([
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress') AND jobs.assigned_technician_id IS NULL`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM systems INNER JOIN sites ON sites.id = systems.site_id WHERE systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND date(systems.next_due_date) < date('now')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests INNER JOIN sites ON sites.id = maintenance_requests.site_id WHERE sites.deleted_at IS NULL AND maintenance_requests.status IN ('New', 'Reviewing')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects INNER JOIN systems ON systems.id = defects.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects INNER JOIN systems ON systems.id = defects.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open' AND defects.severity = 'Critical'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates INNER JOIN systems ON systems.id = certificates.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status = 'Blocked'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates INNER JOIN systems ON systems.id = certificates.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status = 'Valid'`)
+    const [jobsRes, sysRes, reqRes, defRes, certRes] = await this.db.batch([
+      this.db.prepare(`
+        SELECT
+            COALESCE(SUM(CASE WHEN jobs.status IN ('Scheduled', 'In Progress') THEN 1 ELSE 0 END), 0) AS activeJobs,
+            COALESCE(SUM(CASE WHEN jobs.status IN ('Scheduled', 'In Progress') AND jobs.assigned_technician_id IS NULL THEN 1 ELSE 0 END), 0) AS unassignedJobs,
+            COALESCE(SUM(CASE WHEN jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL THEN 1 ELSE 0 END), 0) AS missingDocuments
+        FROM jobs
+        INNER JOIN systems ON systems.id = jobs.system_id
+        INNER JOIN sites ON sites.id = systems.site_id
+        WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL
+      `),
+      this.db.prepare(`
+        SELECT
+            COALESCE(SUM(CASE WHEN date(systems.next_due_date) < date('now') THEN 1 ELSE 0 END), 0) AS overdueSystems
+        FROM systems
+        INNER JOIN sites ON sites.id = systems.site_id
+        WHERE systems.deleted_at IS NULL AND sites.deleted_at IS NULL
+      `),
+      this.db.prepare(`
+        SELECT
+            COALESCE(SUM(CASE WHEN maintenance_requests.status IN ('New', 'Reviewing') THEN 1 ELSE 0 END), 0) AS openRequests
+        FROM maintenance_requests
+        INNER JOIN sites ON sites.id = maintenance_requests.site_id
+        WHERE sites.deleted_at IS NULL
+      `),
+      this.db.prepare(`
+        SELECT
+            COALESCE(SUM(CASE WHEN defects.status = 'Open' THEN 1 ELSE 0 END), 0) AS openDefects,
+            COALESCE(SUM(CASE WHEN defects.status = 'Open' AND defects.severity = 'Critical' THEN 1 ELSE 0 END), 0) AS criticalDefects
+        FROM defects
+        INNER JOIN systems ON systems.id = defects.system_id
+        INNER JOIN sites ON sites.id = systems.site_id
+        WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL
+      `),
+      this.db.prepare(`
+        SELECT
+            COALESCE(SUM(CASE WHEN certificates.status = 'Blocked' THEN 1 ELSE 0 END), 0) AS blockedCertificates,
+            COALESCE(SUM(CASE WHEN certificates.status = 'Valid' THEN 1 ELSE 0 END), 0) AS validCertificates
+        FROM certificates
+        INNER JOIN systems ON systems.id = certificates.system_id
+        INNER JOIN sites ON sites.id = systems.site_id
+        WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL
+      `)
     ]);
 
-    const getCount = (result: unknown) => {
-      const res = result as { results: { n: number }[] };
-      return res?.results?.[0]?.n ?? 0;
+    const getRes = (result: unknown) => {
+      const res = result as { results: Record<string, unknown>[] };
+      return res?.results?.[0] || {};
     };
 
+    const jobs = getRes(jobsRes);
+    const sys = getRes(sysRes);
+    const req = getRes(reqRes);
+    const def = getRes(defRes);
+    const cert = getRes(certRes);
+
     return {
-      activeJobs: getCount(cntActive),
-      unassignedJobs: getCount(cntUnassigned),
-      overdueSystems: getCount(cntOverdue),
-      openRequests: getCount(cntRequests),
-      missingDocuments: getCount(cntMissingDocs),
-      openDefects: getCount(cntOpenDefects),
-      criticalDefects: getCount(cntCriticalDefects),
-      blockedCertificates: getCount(cntBlockedCerts),
-      validCertificates: getCount(cntValidCerts)
+      activeJobs: Number(jobs.activeJobs ?? 0),
+      unassignedJobs: Number(jobs.unassignedJobs ?? 0),
+      overdueSystems: Number(sys.overdueSystems ?? 0),
+      openRequests: Number(req.openRequests ?? 0),
+      missingDocuments: Number(jobs.missingDocuments ?? 0),
+      openDefects: Number(def.openDefects ?? 0),
+      criticalDefects: Number(def.criticalDefects ?? 0),
+      blockedCertificates: Number(cert.blockedCertificates ?? 0),
+      validCertificates: Number(cert.validCertificates ?? 0)
     };
   }
 
