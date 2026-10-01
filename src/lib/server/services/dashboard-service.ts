@@ -42,41 +42,42 @@ export class DashboardService {
 
   async getAdminStats(): Promise<DashboardStats> {
     const [
-      jobsStats,
+      activeJobsStats,
+      missingDocsStats,
       overdueSystems,
       openRequests,
-      defectsStats,
+      openDefectsStats,
       certsStats
     ] = await this.db.batch([
-      // Consolidate multiple independent COUNT queries on jobs into a single query using conditional aggregation
       this.db.prepare(`SELECT
-        COALESCE(SUM(CASE WHEN jobs.status IN ('Scheduled', 'In Progress') THEN 1 ELSE 0 END), 0) AS activeJobs,
-        COALESCE(SUM(CASE WHEN jobs.status IN ('Scheduled', 'In Progress') AND jobs.assigned_technician_id IS NULL THEN 1 ELSE 0 END), 0) AS unassignedJobs,
-        COALESCE(SUM(CASE WHEN jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL THEN 1 ELSE 0 END), 0) AS missingDocuments
+        COUNT(*) AS activeJobs,
+        COALESCE(SUM(CASE WHEN jobs.assigned_technician_id IS NULL THEN 1 ELSE 0 END), 0) AS unassignedJobs
         FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id
-        WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL`),
+        WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress')`),
+
+      this.db.prepare(`SELECT COUNT(*) AS n
+        FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id
+        WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL`),
 
       this.db.prepare(`SELECT COUNT(*) AS n FROM systems INNER JOIN sites ON sites.id = systems.site_id WHERE systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND date(systems.next_due_date) < date('now')`),
 
       this.db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests INNER JOIN sites ON sites.id = maintenance_requests.site_id WHERE sites.deleted_at IS NULL AND maintenance_requests.status IN ('New', 'Reviewing')`),
 
-      // Consolidate queries on defects
       this.db.prepare(`SELECT
-        COALESCE(SUM(CASE WHEN defects.status = 'Open' THEN 1 ELSE 0 END), 0) AS openDefects,
-        COALESCE(SUM(CASE WHEN defects.status = 'Open' AND defects.severity = 'Critical' THEN 1 ELSE 0 END), 0) AS criticalDefects
+        COUNT(*) AS openDefects,
+        COALESCE(SUM(CASE WHEN defects.severity = 'Critical' THEN 1 ELSE 0 END), 0) AS criticalDefects
         FROM defects INNER JOIN systems ON systems.id = defects.system_id INNER JOIN sites ON sites.id = systems.site_id
-        WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL`),
+        WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open'`),
 
-      // Consolidate queries on certificates
       this.db.prepare(`SELECT
         COALESCE(SUM(CASE WHEN certificates.status = 'Blocked' THEN 1 ELSE 0 END), 0) AS blockedCertificates,
         COALESCE(SUM(CASE WHEN certificates.status = 'Valid' THEN 1 ELSE 0 END), 0) AS validCertificates
         FROM certificates INNER JOIN systems ON systems.id = certificates.system_id INNER JOIN sites ON sites.id = systems.site_id
-        WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL`)
+        WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status IN ('Blocked', 'Valid')`)
     ]);
 
-    const jobsData = (jobsStats as { results: any[] })?.results?.[0] ?? {};
-    const defectsData = (defectsStats as { results: any[] })?.results?.[0] ?? {};
+    const activeJobsData = (activeJobsStats as { results: any[] })?.results?.[0] ?? {};
+    const defectsData = (openDefectsStats as { results: any[] })?.results?.[0] ?? {};
     const certsData = (certsStats as { results: any[] })?.results?.[0] ?? {};
 
     const getCount = (result: unknown) => {
@@ -85,11 +86,11 @@ export class DashboardService {
     };
 
     return {
-      activeJobs: Number(jobsData.activeJobs ?? 0),
-      unassignedJobs: Number(jobsData.unassignedJobs ?? 0),
+      activeJobs: Number(activeJobsData.activeJobs ?? 0),
+      unassignedJobs: Number(activeJobsData.unassignedJobs ?? 0),
       overdueSystems: getCount(overdueSystems),
       openRequests: getCount(openRequests),
-      missingDocuments: Number(jobsData.missingDocuments ?? 0),
+      missingDocuments: getCount(missingDocsStats),
       openDefects: Number(defectsData.openDefects ?? 0),
       criticalDefects: Number(defectsData.criticalDefects ?? 0),
       blockedCertificates: Number(certsData.blockedCertificates ?? 0),
