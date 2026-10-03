@@ -72,9 +72,9 @@ export class ReportService {
       this.db.prepare(`
         SELECT
           strftime('%Y-%m', created_at) AS month,
-          COUNT(CASE WHEN status = 'Completed' THEN 1 END) AS completed,
-          COUNT(CASE WHEN status = 'Scheduled' THEN 1 END) AS scheduled,
-          COUNT(CASE WHEN status = 'In Progress' THEN 1 END) AS in_progress
+          COALESCE(SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END), 0) AS completed,
+          COALESCE(SUM(CASE WHEN status = 'Scheduled' THEN 1 ELSE 0 END), 0) AS scheduled,
+          COALESCE(SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END), 0) AS in_progress
         FROM jobs
         WHERE deleted_at IS NULL AND created_at >= date('now', '-6 months')
         GROUP BY strftime('%Y-%m', created_at)
