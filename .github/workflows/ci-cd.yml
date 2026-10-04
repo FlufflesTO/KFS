@@ -80,9 +80,6 @@ jobs:
       - name: Type Check
         run: npm run check
 
-      - name: Setup PowerShell
-        run: sudo ln -sf /usr/bin/pwsh /usr/bin/powershell
-
       - name: Build Deployment Artifacts
         run: npm run build:production
 
