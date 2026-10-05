@@ -77,33 +77,73 @@ export async function getTechDashboardData(techId: string): Promise<JobWithDetai
 export async function getDashboardStats(): Promise<DashboardStats> {
   const db = getDatabase();
   
-  const [activeJobs, unassignedJobs, overdueSystems, openRequests, missingDocuments,
-         openDefects, criticalDefects, blockedCertificates, validCertificates] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
+  const [jobsStats, overdueSystems, openRequests, defectsStats, certificatesStats] = await db.batch([
+    // Group active jobs, unassigned jobs, and missing documents into one query
+    db.prepare(`
+      SELECT
+        COALESCE(SUM(CASE WHEN status IN ('Scheduled', 'In Progress') THEN 1 ELSE 0 END), 0) AS active,
+        COALESCE(SUM(CASE WHEN status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL THEN 1 ELSE 0 END), 0) AS unassigned,
+        COALESCE(SUM(CASE WHEN status IN ('Completed', 'Invoiced') AND documentation_path IS NULL THEN 1 ELSE 0 END), 0) AS missing_docs
+      FROM jobs
+      WHERE deleted_at IS NULL
+        AND status IN ('Scheduled', 'In Progress', 'Completed', 'Invoiced')
+    `),
     db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
     db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
+    // Group open defects and critical defects into one query
+    db.prepare(`
+      SELECT
+        COALESCE(SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END), 0) AS open_defects,
+        COALESCE(SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END), 0) AS critical_defects
+      FROM defects
+      WHERE deleted_at IS NULL
+        AND status = 'Open'
+    `),
+    // Group blocked and valid certificates into one query
+    db.prepare(`
+      SELECT
+        COALESCE(SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END), 0) AS blocked,
+        COALESCE(SUM(CASE WHEN status = 'Valid' THEN 1 ELSE 0 END), 0) AS valid
+      FROM certificates
+      WHERE deleted_at IS NULL
+        AND status IN ('Blocked', 'Valid')
+    `)
   ]);
 
   interface CountResult {
     n: number;
   }
   
+  interface JobsResult {
+    active: number;
+    unassigned: number;
+    missing_docs: number;
+  }
+
+  interface DefectsResult {
+    open_defects: number;
+    critical_defects: number;
+  }
+
+  interface CertsResult {
+    blocked: number;
+    valid: number;
+  }
+
+  const jobsData = jobsStats?.results?.[0] as unknown as JobsResult | undefined;
+  const defectsData = defectsStats?.results?.[0] as unknown as DefectsResult | undefined;
+  const certsData = certificatesStats?.results?.[0] as unknown as CertsResult | undefined;
+
   return {
-    activeJobs: (activeJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    unassignedJobs: (unassignedJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    activeJobs: jobsData?.active ?? 0,
+    unassignedJobs: jobsData?.unassigned ?? 0,
     overdueSystems: (overdueSystems?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
     openRequests: (openRequests?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    missingDocuments: (missingDocuments?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openDefects: (openDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    criticalDefects: (criticalDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    blockedCertificates: (blockedCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    validCertificates: (validCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0
+    missingDocuments: jobsData?.missing_docs ?? 0,
+    openDefects: defectsData?.open_defects ?? 0,
+    criticalDefects: defectsData?.critical_defects ?? 0,
+    blockedCertificates: certsData?.blocked ?? 0,
+    validCertificates: certsData?.valid ?? 0
   };
 }
 
