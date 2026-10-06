@@ -74,6 +74,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y powershell && sudo ln -sf /usr/bin/pwsh /usr/bin/powershell
 
+      - name: Setup tsx
+        run: npm install tsx -D
+
       - name: Lint
         run: npm run lint
 
