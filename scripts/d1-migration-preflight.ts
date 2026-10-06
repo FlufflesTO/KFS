@@ -9,7 +9,7 @@ function run(command: string): string {
   return execSync(command, {
     cwd: process.cwd(),
     encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"]
+    stdio: "inherit"
   });
 }
 

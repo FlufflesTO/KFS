@@ -10,3 +10,7 @@
 **Vulnerability:** In Ubuntu CI runners, the `tsx` command may be missing.
 **Learning:** `tsx` should be installed globally or via npm before running `npx tsx scripts/audit-site.ts` in `.github/workflows/ci-cd.yml` or adding it as dev dependency in `package.json`.
 **Prevention:** Installing `tsx` using `npm install tsx -D` avoids modifying every script in `package.json` and ensures compatibility.
+## 2026-10-06 - Fixing CI Action execSync Error Reporting
+**Vulnerability:** Node.js scripts using `execSync` with `stdio: ["ignore", "pipe", "pipe"]` fail silently without surfacing the underlying command's error logs in CI output, making debugging very difficult.
+**Learning:** `execSync` requires `stdio: "inherit"` to properly stream errors up to the console environment running the process, avoiding cryptic "exit code 1" failures.
+**Prevention:** Change all utility scripts executing subcommands via `execSync` to include `stdio: "inherit"` if they are run in CI workflows where logs are necessary for pipeline diagnosis.
