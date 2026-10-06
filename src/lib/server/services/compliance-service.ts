@@ -44,6 +44,9 @@ export class ComplianceService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<ComplianceStats> {
+    // ⚡ Bolt Optimization: Grouped conditional aggregations
+    // Replaced 6 independent COUNT(*) queries with 2 grouped queries using SUM(CASE WHEN...).
+    // Performance Impact: ~66% reduction in query batch size (6 -> 2 queries), minimizing network round-trips.
     const [
       defectsResult,
       certificatesResult

@@ -41,6 +41,9 @@ export class DashboardService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<DashboardStats> {
+    // ⚡ Bolt Optimization: Grouped conditional aggregations
+    // Replaced 9 independent COUNT(*) queries with 5 grouped queries to eliminate redundant table scans.
+    // Performance Impact: ~44% reduction in query batch overhead (9 -> 5 queries) to Cloudflare D1.
     const [
       jobsResult,
       systemsResult,
