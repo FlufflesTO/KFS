@@ -21,7 +21,7 @@ function runQuery(sql: string): void {
   execSync(`npx wrangler d1 execute ${database} --remote --config wrangler.portal.jsonc --command "${escapedSql}"`, {
     cwd: process.cwd(),
     encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"]
+    stdio: "inherit"
   });
 }
 

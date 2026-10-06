@@ -61,7 +61,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     const storage = getStorage();
     const fileUuid = crypto.randomUUID();
     // Sanitize filename — strip path traversal characters
-    const safeName = fileField.name.replace(/[^a-zA-Z0-9._\- ]/g, "_").slice(0, 200);
+    const safeName = fileField.name.replace(/[^a-zA-Z0-9._\- ]/g, "_").replace(/\.{2,}/g, ".").slice(0, 200);
     const r2Key = `staff-files/${memberId}/${fileUuid}/${safeName}`;
 
     const fileBuffer = await fileField.arrayBuffer();
