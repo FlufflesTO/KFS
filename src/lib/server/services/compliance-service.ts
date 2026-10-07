@@ -44,29 +44,33 @@ export class ComplianceService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<ComplianceStats> {
-    const [
-      cntCritical, cntOpen, cntBlocked, cntStale, cntExpiring, cntHighRisk
-    ] = await this.db.batch([
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days')`),
-      this.db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND severity = 'Critical'`)
-    ]);
-
-    const getCount = (result: unknown) => {
-      const res = result as { results: { n: number }[] };
-      return res?.results?.[0]?.n ?? 0;
-    };
+    const query = `
+      SELECT * FROM
+        (SELECT
+           COALESCE(SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END), 0) AS criticalDefects,
+           COALESCE(SUM(CASE WHEN status IN ('Open', 'In Progress') THEN 1 ELSE 0 END), 0) AS openDefects,
+           COALESCE(SUM(CASE WHEN status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days') THEN 1 ELSE 0 END), 0) AS staleDefects,
+           COUNT(DISTINCT CASE WHEN status IN ('Open', 'In Progress') AND severity = 'Critical' THEN system_id END) AS highRiskSystems
+         FROM defects
+         WHERE deleted_at IS NULL
+        ) d,
+        (SELECT
+           COALESCE(SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END), 0) AS blockedCertificates,
+           COALESCE(SUM(CASE WHEN status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days') THEN 1 ELSE 0 END), 0) AS expiringCertificates
+         FROM certificates
+         WHERE deleted_at IS NULL
+        ) c
+    `;
+    const result = await this.db.prepare(query).all();
+    const row = result.results?.[0] as unknown as ComplianceStats;
 
     return {
-      criticalDefects: getCount(cntCritical),
-      openDefects: getCount(cntOpen),
-      blockedCertificates: getCount(cntBlocked),
-      staleDefects: getCount(cntStale),
-      expiringCertificates: getCount(cntExpiring),
-      highRiskSystems: getCount(cntHighRisk)
+      criticalDefects: Number(row?.criticalDefects ?? 0),
+      openDefects: Number(row?.openDefects ?? 0),
+      blockedCertificates: Number(row?.blockedCertificates ?? 0),
+      staleDefects: Number(row?.staleDefects ?? 0),
+      expiringCertificates: Number(row?.expiringCertificates ?? 0),
+      highRiskSystems: Number(row?.highRiskSystems ?? 0)
     };
   }
 
