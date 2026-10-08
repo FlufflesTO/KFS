@@ -41,26 +41,33 @@ export class DashboardService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<DashboardStats> {
+    // ⚡ Bolt: Consolidate multiple independent COUNT(*) queries on the same tables
+    // into fewer queries using conditional aggregation to reduce database table scans.
     const [
-      cntActive,
-      cntUnassigned,
-      cntOverdue,
-      cntRequests,
-      cntMissingDocs,
-      cntOpenDefects,
-      cntCriticalDefects,
-      cntBlockedCerts,
-      cntValidCerts
+      resJobs,
+      resSystems,
+      resRequests,
+      resDefects,
+      resCerts
     ] = await this.db.batch([
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress') AND jobs.assigned_technician_id IS NULL`),
+      this.db.prepare(`SELECT
+        COALESCE(SUM(CASE WHEN jobs.status IN ('Scheduled', 'In Progress') THEN 1 ELSE 0 END), 0) AS cnt_active,
+        COALESCE(SUM(CASE WHEN jobs.status IN ('Scheduled', 'In Progress') AND jobs.assigned_technician_id IS NULL THEN 1 ELSE 0 END), 0) AS cnt_unassigned,
+        COALESCE(SUM(CASE WHEN jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL THEN 1 ELSE 0 END), 0) AS cnt_missing
+        FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id
+        WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL`),
       this.db.prepare(`SELECT COUNT(*) AS n FROM systems INNER JOIN sites ON sites.id = systems.site_id WHERE systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND date(systems.next_due_date) < date('now')`),
       this.db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests INNER JOIN sites ON sites.id = maintenance_requests.site_id WHERE sites.deleted_at IS NULL AND maintenance_requests.status IN ('New', 'Reviewing')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects INNER JOIN systems ON systems.id = defects.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects INNER JOIN systems ON systems.id = defects.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open' AND defects.severity = 'Critical'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates INNER JOIN systems ON systems.id = certificates.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status = 'Blocked'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates INNER JOIN systems ON systems.id = certificates.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status = 'Valid'`)
+      this.db.prepare(`SELECT
+        COALESCE(SUM(CASE WHEN defects.status = 'Open' THEN 1 ELSE 0 END), 0) AS cnt_open,
+        COALESCE(SUM(CASE WHEN defects.status = 'Open' AND defects.severity = 'Critical' THEN 1 ELSE 0 END), 0) AS cnt_critical
+        FROM defects INNER JOIN systems ON systems.id = defects.system_id INNER JOIN sites ON sites.id = systems.site_id
+        WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL`),
+      this.db.prepare(`SELECT
+        COALESCE(SUM(CASE WHEN certificates.status = 'Blocked' THEN 1 ELSE 0 END), 0) AS cnt_blocked,
+        COALESCE(SUM(CASE WHEN certificates.status = 'Valid' THEN 1 ELSE 0 END), 0) AS cnt_valid
+        FROM certificates INNER JOIN systems ON systems.id = certificates.system_id INNER JOIN sites ON sites.id = systems.site_id
+        WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL`)
     ]);
 
     const getCount = (result: unknown) => {
@@ -68,16 +75,20 @@ export class DashboardService {
       return res?.results?.[0]?.n ?? 0;
     };
 
+    const jobsData = (resJobs as any).results[0] || {};
+    const defectsData = (resDefects as any).results[0] || {};
+    const certsData = (resCerts as any).results[0] || {};
+
     return {
-      activeJobs: getCount(cntActive),
-      unassignedJobs: getCount(cntUnassigned),
-      overdueSystems: getCount(cntOverdue),
-      openRequests: getCount(cntRequests),
-      missingDocuments: getCount(cntMissingDocs),
-      openDefects: getCount(cntOpenDefects),
-      criticalDefects: getCount(cntCriticalDefects),
-      blockedCertificates: getCount(cntBlockedCerts),
-      validCertificates: getCount(cntValidCerts)
+      activeJobs: Number(jobsData.cnt_active ?? 0),
+      unassignedJobs: Number(jobsData.cnt_unassigned ?? 0),
+      overdueSystems: getCount(resSystems),
+      openRequests: getCount(resRequests),
+      missingDocuments: Number(jobsData.cnt_missing ?? 0),
+      openDefects: Number(defectsData.cnt_open ?? 0),
+      criticalDefects: Number(defectsData.cnt_critical ?? 0),
+      blockedCertificates: Number(certsData.cnt_blocked ?? 0),
+      validCertificates: Number(certsData.cnt_valid ?? 0)
     };
   }
 
