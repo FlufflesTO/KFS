@@ -42,26 +42,49 @@ export class DashboardService {
 
   async getAdminStats(): Promise<DashboardStats> {
     const [
-      cntActive,
-      cntUnassigned,
-      cntOverdue,
-      cntRequests,
-      cntMissingDocs,
-      cntOpenDefects,
-      cntCriticalDefects,
-      cntBlockedCerts,
-      cntValidCerts
+      jobsStats,
+      systemsStats,
+      requestsStats,
+      defectsStats,
+      certsStats
     ] = await this.db.batch([
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress') AND jobs.assigned_technician_id IS NULL`),
+      this.db.prepare(`
+        SELECT
+          COALESCE(SUM(CASE WHEN jobs.status IN ('Scheduled', 'In Progress') THEN 1 ELSE 0 END), 0) AS cntActive,
+          COALESCE(SUM(CASE WHEN jobs.status IN ('Scheduled', 'In Progress') AND jobs.assigned_technician_id IS NULL THEN 1 ELSE 0 END), 0) AS cntUnassigned,
+          COALESCE(SUM(CASE WHEN jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL THEN 1 ELSE 0 END), 0) AS cntMissingDocs
+        FROM jobs
+        INNER JOIN systems ON systems.id = jobs.system_id
+        INNER JOIN sites ON sites.id = systems.site_id
+        WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL
+          AND (jobs.status IN ('Scheduled', 'In Progress') OR (jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL))
+      `),
       this.db.prepare(`SELECT COUNT(*) AS n FROM systems INNER JOIN sites ON sites.id = systems.site_id WHERE systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND date(systems.next_due_date) < date('now')`),
       this.db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests INNER JOIN sites ON sites.id = maintenance_requests.site_id WHERE sites.deleted_at IS NULL AND maintenance_requests.status IN ('New', 'Reviewing')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects INNER JOIN systems ON systems.id = defects.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects INNER JOIN systems ON systems.id = defects.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open' AND defects.severity = 'Critical'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates INNER JOIN systems ON systems.id = certificates.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status = 'Blocked'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates INNER JOIN systems ON systems.id = certificates.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status = 'Valid'`)
+      this.db.prepare(`
+        SELECT
+          COALESCE(SUM(CASE WHEN defects.status = 'Open' THEN 1 ELSE 0 END), 0) AS cntOpenDefects,
+          COALESCE(SUM(CASE WHEN defects.status = 'Open' AND defects.severity = 'Critical' THEN 1 ELSE 0 END), 0) AS cntCriticalDefects
+        FROM defects
+        INNER JOIN systems ON systems.id = defects.system_id
+        INNER JOIN sites ON sites.id = systems.site_id
+        WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open'
+      `),
+      this.db.prepare(`
+        SELECT
+          COALESCE(SUM(CASE WHEN certificates.status = 'Blocked' THEN 1 ELSE 0 END), 0) AS cntBlockedCerts,
+          COALESCE(SUM(CASE WHEN certificates.status = 'Valid' THEN 1 ELSE 0 END), 0) AS cntValidCerts
+        FROM certificates
+        INNER JOIN systems ON systems.id = certificates.system_id
+        INNER JOIN sites ON sites.id = systems.site_id
+        WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status IN ('Blocked', 'Valid')
+      `)
     ]);
+
+    const getProp = (result: unknown, prop: string) => {
+      const res = result as { results: Record<string, number>[] };
+      return res?.results?.[0]?.[prop] ?? 0;
+    };
 
     const getCount = (result: unknown) => {
       const res = result as { results: { n: number }[] };
@@ -69,15 +92,15 @@ export class DashboardService {
     };
 
     return {
-      activeJobs: getCount(cntActive),
-      unassignedJobs: getCount(cntUnassigned),
-      overdueSystems: getCount(cntOverdue),
-      openRequests: getCount(cntRequests),
-      missingDocuments: getCount(cntMissingDocs),
-      openDefects: getCount(cntOpenDefects),
-      criticalDefects: getCount(cntCriticalDefects),
-      blockedCertificates: getCount(cntBlockedCerts),
-      validCertificates: getCount(cntValidCerts)
+      activeJobs: getProp(jobsStats, 'cntActive'),
+      unassignedJobs: getProp(jobsStats, 'cntUnassigned'),
+      overdueSystems: getCount(systemsStats),
+      openRequests: getCount(requestsStats),
+      missingDocuments: getProp(jobsStats, 'cntMissingDocs'),
+      openDefects: getProp(defectsStats, 'cntOpenDefects'),
+      criticalDefects: getProp(defectsStats, 'cntCriticalDefects'),
+      blockedCertificates: getProp(certsStats, 'cntBlockedCerts'),
+      validCertificates: getProp(certsStats, 'cntValidCerts')
     };
   }
 
