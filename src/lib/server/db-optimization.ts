@@ -77,33 +77,61 @@ export async function getTechDashboardData(techId: string): Promise<JobWithDetai
 export async function getDashboardStats(): Promise<DashboardStats> {
   const db = getDatabase();
   
-  const [activeJobs, unassignedJobs, overdueSystems, openRequests, missingDocuments,
-         openDefects, criticalDefects, blockedCertificates, validCertificates] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
+  const [
+    jobsStats,
+    overdueSystems,
+    openRequests,
+    missingDocuments,
+    defectsStats,
+    certsStats
+  ] = await db.batch([
+    // Optimize: Combine active and unassigned jobs into a single table scan
+    db.prepare(`
+      SELECT
+        COUNT(*) AS activeJobs,
+        COALESCE(SUM(CASE WHEN assigned_technician_id IS NULL THEN 1 ELSE 0 END), 0) AS unassignedJobs
+      FROM jobs
+      WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')
+    `),
     db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
     db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
     db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
+    // Optimize: Combine open and critical defects into a single table scan
+    db.prepare(`
+      SELECT
+        COUNT(*) AS openDefects,
+        COALESCE(SUM(CASE WHEN severity = 'Critical' THEN 1 ELSE 0 END), 0) AS criticalDefects
+      FROM defects
+      WHERE deleted_at IS NULL AND status = 'Open'
+    `),
+    // Optimize: Combine blocked and valid certificates into a single table scan
+    db.prepare(`
+      SELECT
+        COALESCE(SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END), 0) AS blockedCertificates,
+        COALESCE(SUM(CASE WHEN status = 'Valid' THEN 1 ELSE 0 END), 0) AS validCertificates
+      FROM certificates
+      WHERE deleted_at IS NULL AND status IN ('Blocked', 'Valid')
+    `)
   ]);
 
   interface CountResult {
     n: number;
   }
   
+  const jStats = (jobsStats?.results?.[0] as { activeJobs: number, unassignedJobs: number } | undefined) ?? { activeJobs: 0, unassignedJobs: 0 };
+  const dStats = (defectsStats?.results?.[0] as { openDefects: number, criticalDefects: number } | undefined) ?? { openDefects: 0, criticalDefects: 0 };
+  const cStats = (certsStats?.results?.[0] as { blockedCertificates: number, validCertificates: number } | undefined) ?? { blockedCertificates: 0, validCertificates: 0 };
+
   return {
-    activeJobs: (activeJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    unassignedJobs: (unassignedJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    activeJobs: Number(jStats.activeJobs),
+    unassignedJobs: Number(jStats.unassignedJobs),
     overdueSystems: (overdueSystems?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
     openRequests: (openRequests?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
     missingDocuments: (missingDocuments?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openDefects: (openDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    criticalDefects: (criticalDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    blockedCertificates: (blockedCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    validCertificates: (validCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0
+    openDefects: Number(dStats.openDefects),
+    criticalDefects: Number(dStats.criticalDefects),
+    blockedCertificates: Number(cStats.blockedCertificates),
+    validCertificates: Number(cStats.validCertificates)
   };
 }
 
