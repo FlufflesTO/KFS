@@ -45,13 +45,25 @@ export class ComplianceService {
 
   async getAdminStats(): Promise<ComplianceStats> {
     const [
-      cntCritical, cntOpen, cntBlocked, cntStale, cntExpiring, cntHighRisk
+      defectsStats, certsStats, cntHighRisk
     ] = await this.db.batch([
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days')`),
+      // Optimize: Combine defects stats into a single table scan
+      this.db.prepare(`
+        SELECT
+          COUNT(*) AS openDefects,
+          COALESCE(SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END), 0) AS criticalDefects,
+          COALESCE(SUM(CASE WHEN updated_at < date('now', '-30 days') THEN 1 ELSE 0 END), 0) AS staleDefects
+        FROM defects
+        WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')
+      `),
+      // Optimize: Combine certificates stats into a single table scan
+      this.db.prepare(`
+        SELECT
+          COALESCE(SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END), 0) AS blockedCertificates,
+          COALESCE(SUM(CASE WHEN status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days') THEN 1 ELSE 0 END), 0) AS expiringCertificates
+        FROM certificates
+        WHERE deleted_at IS NULL AND status IN ('Blocked', 'Valid')
+      `),
       this.db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND severity = 'Critical'`)
     ]);
 
@@ -60,12 +72,15 @@ export class ComplianceService {
       return res?.results?.[0]?.n ?? 0;
     };
 
+    const dStats = (defectsStats?.results?.[0] as { openDefects: number, criticalDefects: number, staleDefects: number } | undefined) ?? { openDefects: 0, criticalDefects: 0, staleDefects: 0 };
+    const cStats = (certsStats?.results?.[0] as { blockedCertificates: number, expiringCertificates: number } | undefined) ?? { blockedCertificates: 0, expiringCertificates: 0 };
+
     return {
-      criticalDefects: getCount(cntCritical),
-      openDefects: getCount(cntOpen),
-      blockedCertificates: getCount(cntBlocked),
-      staleDefects: getCount(cntStale),
-      expiringCertificates: getCount(cntExpiring),
+      criticalDefects: Number(dStats.criticalDefects),
+      openDefects: Number(dStats.openDefects),
+      blockedCertificates: Number(cStats.blockedCertificates),
+      staleDefects: Number(dStats.staleDefects),
+      expiringCertificates: Number(cStats.expiringCertificates),
       highRiskSystems: getCount(cntHighRisk)
     };
   }
