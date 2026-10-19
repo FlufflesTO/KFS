@@ -55,6 +55,7 @@ const { missingSageRefs, sageConnection, stats } = Astro.props;
             )}
           </p>
           <button
+            type="button"
             id="disconnect-sage-btn"
             class="w-full inline-flex justify-center items-center rounded-md border border-kharon-red/35 bg-kharon-red/5 px-3 py-2 text-base font-bold uppercase tracking-widest text-kharon-red hover:bg-kharon-red/10 transition-all cursor-pointer min-h-[44px]"
           >
@@ -101,7 +102,7 @@ const { missingSageRefs, sageConnection, stats } = Astro.props;
               <p class="text-[11px] text-white/60 mt-1 font-medium">{task.task_type} &bull; Internal Ref: {task.reference || "N/A"}</p>
               <p class="mt-1.5 text-base text-white/40 font-bold uppercase tracking-wider">Completed: {task.updated_at ? new Date(task.updated_at).toLocaleDateString() : "N/A"}</p>
             </div>
-            <button class="rounded border border-kharon-cyan bg-kharon-cyan/5 px-3 py-1.5 text-base font-bold uppercase tracking-widest text-kharon-cyan hover:bg-kharon-cyan hover:text-black transition-all cursor-pointer min-h-[36px] flex items-center justify-center">
+            <button type="button" class="rounded border border-kharon-cyan bg-kharon-cyan/5 px-3 py-1.5 text-base font-bold uppercase tracking-widest text-kharon-cyan hover:bg-kharon-cyan hover:text-black transition-all cursor-pointer min-h-[36px] flex items-center justify-center">
               Reconcile
             </button>
           </article>
