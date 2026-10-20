@@ -91,7 +91,7 @@ const { defects, systems } = Astro.props;
             ) : null}
           </div>
           <div class="flex flex-wrap gap-2">
-            <button class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
+            <button type="submit" class="rounded-md bg-kharon-blue px-4 py-2 font-semibold text-white">Save</button>
             {item.status !== "Resolved" && (
               <button type="button" class="resolve-defect rounded-md border border-kharon-green/40 bg-kharon-green/10 px-4 py-2 text-base font-semibold text-kharon-green" data-id={item.id}>Resolve</button>
             )}
@@ -134,7 +134,7 @@ const { defects, systems } = Astro.props;
         </label>
       </div>
       <textarea class="min-h-20 rounded-md border border-kharon-purple/20 px-4 py-3" name="description" placeholder="Defect description (5–2000 characters)" required></textarea>
-      <button class="rounded-md bg-kharon-red px-5 py-3 font-semibold text-white">Create defect</button>
+      <button type="submit" class="rounded-md bg-kharon-red px-5 py-3 font-semibold text-white">Create defect</button>
       <p class="admin-result hidden rounded-md border px-4 py-3 text-base font-semibold"></p>
     </form>
   </article>
