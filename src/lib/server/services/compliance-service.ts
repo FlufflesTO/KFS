@@ -45,23 +45,13 @@ export class ComplianceService {
 
   async getAdminStats(): Promise<ComplianceStats> {
     const [
-      defectsResult, certsResult, cntHighRisk
+      cntCritical, cntOpen, cntBlocked, cntStale, cntExpiring, cntHighRisk
     ] = await this.db.batch([
-      this.db.prepare(`
-        SELECT
-          COALESCE(SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END), 0) AS criticalDefects,
-          COALESCE(SUM(CASE WHEN status IN ('Open', 'In Progress') THEN 1 ELSE 0 END), 0) AS openDefects,
-          COALESCE(SUM(CASE WHEN status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days') THEN 1 ELSE 0 END), 0) AS staleDefects
-        FROM defects
-        WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')
-      `),
-      this.db.prepare(`
-        SELECT
-          COALESCE(SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END), 0) AS blockedCertificates,
-          COALESCE(SUM(CASE WHEN status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days') THEN 1 ELSE 0 END), 0) AS expiringCertificates
-        FROM certificates
-        WHERE deleted_at IS NULL AND status IN ('Blocked', 'Valid')
-      `),
+      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
+      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')`),
+      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
+      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days')`),
+      this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days')`),
       this.db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND severity = 'Critical'`)
     ]);
 
@@ -70,15 +60,12 @@ export class ComplianceService {
       return res?.results?.[0]?.n ?? 0;
     };
 
-    const defects = (defectsResult as any)?.results?.[0] || {};
-    const certs = (certsResult as any)?.results?.[0] || {};
-
     return {
-      criticalDefects: defects.criticalDefects ?? 0,
-      openDefects: defects.openDefects ?? 0,
-      blockedCertificates: certs.blockedCertificates ?? 0,
-      staleDefects: defects.staleDefects ?? 0,
-      expiringCertificates: certs.expiringCertificates ?? 0,
+      criticalDefects: getCount(cntCritical),
+      openDefects: getCount(cntOpen),
+      blockedCertificates: getCount(cntBlocked),
+      staleDefects: getCount(cntStale),
+      expiringCertificates: getCount(cntExpiring),
       highRiskSystems: getCount(cntHighRisk)
     };
   }
