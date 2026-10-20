@@ -74,7 +74,7 @@ const { completedTasks } = Astro.props;
                   <div class="flex flex-col gap-1">
                     <span class="text-base text-amber-600 font-semibold">Missing Ref</span>
                     {(task.task_type.includes("Invoice") || task.task_type.includes("Quote")) && (
-                      <button class="push-to-sage-btn rounded bg-kharon-charcoal px-2 py-1 text-base font-bold text-white hover:bg-kharon-black" data-task-id={task.id}>
+                      <button type="button" class="push-to-sage-btn rounded bg-kharon-charcoal px-2 py-1 text-base font-bold text-white hover:bg-kharon-black" data-task-id={task.id}>
                         Push to Sage
                       </button>
                     )}
