@@ -77,33 +77,54 @@ export async function getTechDashboardData(techId: string): Promise<JobWithDetai
 export async function getDashboardStats(): Promise<DashboardStats> {
   const db = getDatabase();
   
-  const [activeJobs, unassignedJobs, overdueSystems, openRequests, missingDocuments,
-         openDefects, criticalDefects, blockedCertificates, validCertificates] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
+  const [
+    jobsResult,
+    systemsResult,
+    requestsResult,
+    defectsResult,
+    certsResult
+  ] = await db.batch([
+    db.prepare(`
+      SELECT
+        COALESCE(SUM(CASE WHEN status IN ('Scheduled', 'In Progress') THEN 1 ELSE 0 END), 0) AS cntActive,
+        COALESCE(SUM(CASE WHEN status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL THEN 1 ELSE 0 END), 0) AS cntUnassigned,
+        COALESCE(SUM(CASE WHEN status IN ('Completed', 'Invoiced') AND documentation_path IS NULL THEN 1 ELSE 0 END), 0) AS cntMissingDocs
+      FROM jobs
+      WHERE deleted_at IS NULL
+    `),
+    db.prepare(`SELECT COUNT(*) AS cntOverdue FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
+    db.prepare(`SELECT COUNT(*) AS cntRequests FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
+    db.prepare(`
+      SELECT
+        COALESCE(SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END), 0) AS cntOpenDefects,
+        COALESCE(SUM(CASE WHEN status = 'Open' AND severity = 'Critical' THEN 1 ELSE 0 END), 0) AS cntCriticalDefects
+      FROM defects
+      WHERE deleted_at IS NULL
+    `),
+    db.prepare(`
+      SELECT
+        COALESCE(SUM(CASE WHEN status = 'Blocked' THEN 1 ELSE 0 END), 0) AS cntBlockedCerts,
+        COALESCE(SUM(CASE WHEN status = 'Valid' THEN 1 ELSE 0 END), 0) AS cntValidCerts
+      FROM certificates
+      WHERE deleted_at IS NULL
+    `)
   ]);
 
-  interface CountResult {
-    n: number;
-  }
+  const getProp = (result: unknown, prop: string) => {
+    const res = result as { results: Record<string, number>[] };
+    return res?.results?.[0]?.[prop] ?? 0;
+  };
   
   return {
-    activeJobs: (activeJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    unassignedJobs: (unassignedJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    overdueSystems: (overdueSystems?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openRequests: (openRequests?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    missingDocuments: (missingDocuments?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openDefects: (openDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    criticalDefects: (criticalDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    blockedCertificates: (blockedCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    validCertificates: (validCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0
+    activeJobs: getProp(jobsResult, 'cntActive'),
+    unassignedJobs: getProp(jobsResult, 'cntUnassigned'),
+    overdueSystems: getProp(systemsResult, 'cntOverdue'),
+    openRequests: getProp(requestsResult, 'cntRequests'),
+    missingDocuments: getProp(jobsResult, 'cntMissingDocs'),
+    openDefects: getProp(defectsResult, 'cntOpenDefects'),
+    criticalDefects: getProp(defectsResult, 'cntCriticalDefects'),
+    blockedCertificates: getProp(certsResult, 'cntBlockedCerts'),
+    validCertificates: getProp(certsResult, 'cntValidCerts')
   };
 }
 
