@@ -103,13 +103,15 @@ export class FinanceRepository {
   }
 
   async getSummary(): Promise<DbFinanceSummary> {
+    // Optimized query to use idx_finance_tasks_status index and prevent NULL returns
     const result = await this.db.prepare(`
       SELECT
-        COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending_tasks,
-        SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as total_pending_value,
-        COUNT(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN 1 END) as overdue_invoices,
-        SUM(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN amount ELSE 0 END) as unpaid_amount
+        COALESCE(SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END), 0) as pending_tasks,
+        COALESCE(SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END), 0) as total_pending_value,
+        COALESCE(SUM(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN 1 ELSE 0 END), 0) as overdue_invoices,
+        COALESCE(SUM(CASE WHEN task_type LIKE '%Invoice%' AND status = 'Pending' THEN amount ELSE 0 END), 0) as unpaid_amount
       FROM finance_tasks
+      WHERE status = 'Pending'
     `).first<{
       pending_tasks: number;
       total_pending_value: number;
