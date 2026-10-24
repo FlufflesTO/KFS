@@ -58,6 +58,7 @@ export class DashboardService {
         INNER JOIN systems ON systems.id = jobs.system_id
         INNER JOIN sites ON sites.id = systems.site_id
         WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL
+          AND jobs.status IN ('Scheduled', 'In Progress', 'Completed', 'Invoiced')
       `),
       this.db.prepare(`
         SELECT
@@ -81,6 +82,7 @@ export class DashboardService {
         INNER JOIN systems ON systems.id = defects.system_id
         INNER JOIN sites ON sites.id = systems.site_id
         WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL
+          AND defects.status = 'Open'
       `),
       this.db.prepare(`
         SELECT
@@ -90,6 +92,7 @@ export class DashboardService {
         INNER JOIN systems ON systems.id = certificates.system_id
         INNER JOIN sites ON sites.id = systems.site_id
         WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL
+          AND certificates.status IN ('Blocked', 'Valid')
       `)
     ]);
 

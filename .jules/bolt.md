@@ -4,4 +4,4 @@
 
 ## 2025-06-08 - Optimized sequential COUNT queries in Dashboard Service
 **Learning:** Cloudflare D1 incurs HTTP execution and VM overhead per statement in a batch. Sequential isolated counts on overlapping conditions scan tables redundantly.
-**Action:** When gathering multiple counts on the same joined tables (e.g. active jobs vs missing docs), use single `SELECT` passes applying conditional aggregation (`SUM(CASE WHEN...)`) and wrap them in `COALESCE` to handle empty sets correctly.
+**Action:** When gathering multiple counts on the same joined tables (e.g. active jobs vs missing docs), use single `SELECT` passes applying conditional aggregation (`SUM(CASE WHEN...)`) and wrap them in `COALESCE` to handle empty sets correctly. Important: Never remove the root `WHERE` filters, as this forces O(N) full table scans over completed/historical records. Preserve the common filter bounds before grouping conditions inside the `SUM`.
