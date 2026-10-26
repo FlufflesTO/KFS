@@ -1,6 +1,9 @@
 ## 2025-06-08 - Refactoring the jobs POST API
 **Learning:** Refactoring overly long functions, especially those routing API endpoints based on payload actions, greatly improves maintainability.
 **Action:** Extracted `markInvoiced` and `create/update` logic from `POST` in `src/pages/portal/api/admin/jobs.ts` into isolated async helper functions.
-## 2026-10-26 - Consolidating redundant table scans in backend services
-**Learning:** SQLite backend queries executing multiple COUNT(*) aggregations on the same joins in separate queries can be optimized by using conditional aggregation (COALESCE(SUM(CASE WHEN...), 0)), which drastically reduces table scans while maintaining query intent.
-**Action:** When calculating multiple aggregate statistics across the same tables (like dashboard summaries), combine them into a single conditional query block instead of parallel batch scans.
+## 2026-10-26 - Bash/PowerShell CI Issue
+**Learning:** A GitHub Actions CI failure with 'exit code 127' executing powershell indicates that  (or ) is not available in the environment. However, if this issue is outside the scope of my current task, I should ignore it and conclude my work.
+**Action:** When working in a bounded context, do not try to fix unrelated CI environment issues unless instructed. Revert any unrelated file modifications.
+## 2026-10-26 - Bash/PowerShell CI Issue
+**Learning:** A GitHub Actions CI failure with exit code 127 executing powershell indicates that powershell is not available in the environment. However, if this issue is outside the scope of my current task, I should ignore it and conclude my work.
+**Action:** When working in a bounded context, do not try to fix unrelated CI environment issues unless instructed. Revert any unrelated file modifications.
