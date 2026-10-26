@@ -91,7 +91,7 @@ export class DashboardService {
 
     const getAgg = (result: unknown) => {
       const res = result as { results: Record<string, number>[] };
-      return res?.results?.[0] ?? {};
+      return (res?.results?.[0] as Record<string, number>) ?? {};
     };
 
     const jobsRes = getAgg(jobsAgg);
