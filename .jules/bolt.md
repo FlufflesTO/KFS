@@ -1,3 +1,7 @@
 ## 2025-06-08 - Refactoring the jobs POST API
 **Learning:** Refactoring overly long functions, especially those routing API endpoints based on payload actions, greatly improves maintainability.
 **Action:** Extracted `markInvoiced` and `create/update` logic from `POST` in `src/pages/portal/api/admin/jobs.ts` into isolated async helper functions.
+
+## 2025-06-08 - Optimizing DB queries with safe conditional aggregation
+**Learning:** Combining multiple `COUNT(*)` queries targeting the same table into a single query via conditional aggregation (`COALESCE(SUM(CASE WHEN ... THEN 1 ELSE 0 END), 0)`) reduces database round-trips. However, you must meticulously preserve the original `WHERE` clause filters in the consolidated query. Removing the specific `WHERE` filters breaks database index usage and triggers massive full table scans, destroying performance. Group *only* queries that share identical record sets and `WHERE` filters. Additionally, `this.db.batch()` already solves N+1 network round-trips, so optimizing queries inside a batch targets DB execution overhead (parsing/scanning), not network latency.
+**Action:** When applying conditional aggregation, carefully analyze and group queries by their identical `WHERE` clauses. Never broaden or remove a `WHERE` filter just to force more aggregations into a single query. Update `replace_with_git_merge_diff` steps with exact `WHERE` clauses maintained.
