@@ -44,13 +44,17 @@ export class ComplianceService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<ComplianceStats> {
+    // ⚡ Bolt: Consolidated redundant COUNT(*) queries using conditional aggregation
+    // to reduce database round-trips and full table scans
     const [
-      cntCritical, cntOpen, cntBlocked, cntStale, cntExpiring, cntHighRisk
+      defectsStats, cntCritical, cntBlocked, cntExpiring, cntHighRisk
     ] = await this.db.batch([
+      this.db.prepare(`SELECT
+          COUNT(*) AS cntOpen,
+          COALESCE(SUM(CASE WHEN updated_at < date('now', '-30 days') THEN 1 ELSE 0 END), 0) AS cntStale
+        FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')`),
       this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress')`),
       this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND updated_at < date('now', '-30 days')`),
       this.db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid' AND expiry_date IS NOT NULL AND expiry_date <= date('now', '+30 days')`),
       this.db.prepare(`SELECT COUNT(DISTINCT system_id) AS n FROM defects WHERE deleted_at IS NULL AND status IN ('Open', 'In Progress') AND severity = 'Critical'`)
     ]);
@@ -60,11 +64,16 @@ export class ComplianceService {
       return res?.results?.[0]?.n ?? 0;
     };
 
+    const getAggCount = (result: unknown, key: string) => {
+      const res = result as { results: Record<string, number>[] };
+      return res?.results?.[0]?.[key] ?? 0;
+    };
+
     return {
       criticalDefects: getCount(cntCritical),
-      openDefects: getCount(cntOpen),
+      openDefects: getAggCount(defectsStats, 'cntOpen'),
       blockedCertificates: getCount(cntBlocked),
-      staleDefects: getCount(cntStale),
+      staleDefects: getAggCount(defectsStats, 'cntStale'),
       expiringCertificates: getCount(cntExpiring),
       highRiskSystems: getCount(cntHighRisk)
     };
