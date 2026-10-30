@@ -83,8 +83,8 @@ export class DashboardService {
       return res?.results?.[0]?.n ?? 0;
     };
 
-    const jobsData = (jobsScheduledStats as any).results?.[0] || { activeJobs: 0, unassignedJobs: 0 };
-    const defectsData = (defectsStats as any).results?.[0] || { openDefects: 0, criticalDefects: 0 };
+    const jobsData = (jobsScheduledStats as { results: { activeJobs: number; unassignedJobs: number }[] })?.results?.[0] || { activeJobs: 0, unassignedJobs: 0 };
+    const defectsData = (defectsStats as { results: { openDefects: number; criticalDefects: number }[] })?.results?.[0] || { openDefects: 0, criticalDefects: 0 };
 
     return {
       activeJobs: jobsData.activeJobs,
