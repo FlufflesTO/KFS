@@ -41,24 +41,39 @@ export class DashboardService {
   constructor(private db: D1Database) {}
 
   async getAdminStats(): Promise<DashboardStats> {
+    // ⚡ Bolt Optimization: Grouped identical base COUNT(*) queries into single conditional
+    // aggregation scans using COALESCE(SUM(CASE WHEN ... THEN 1 ELSE 0 END), 0) to avoid
+    // redundant table access. Note we must only group queries with exact identical WHERE filters.
     const [
-      cntActive,
-      cntUnassigned,
+      jobsScheduledStats,
       cntOverdue,
       cntRequests,
       cntMissingDocs,
-      cntOpenDefects,
-      cntCriticalDefects,
+      defectsStats,
       cntBlockedCerts,
       cntValidCerts
     ] = await this.db.batch([
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress')`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress') AND jobs.assigned_technician_id IS NULL`),
+      this.db.prepare(`
+        SELECT
+          COALESCE(SUM(1), 0) AS activeJobs,
+          COALESCE(SUM(CASE WHEN jobs.assigned_technician_id IS NULL THEN 1 ELSE 0 END), 0) AS unassignedJobs
+        FROM jobs
+        INNER JOIN systems ON systems.id = jobs.system_id
+        INNER JOIN sites ON sites.id = systems.site_id
+        WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Scheduled', 'In Progress')
+      `),
       this.db.prepare(`SELECT COUNT(*) AS n FROM systems INNER JOIN sites ON sites.id = systems.site_id WHERE systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND date(systems.next_due_date) < date('now')`),
       this.db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests INNER JOIN sites ON sites.id = maintenance_requests.site_id WHERE sites.deleted_at IS NULL AND maintenance_requests.status IN ('New', 'Reviewing')`),
       this.db.prepare(`SELECT COUNT(*) AS n FROM jobs INNER JOIN systems ON systems.id = jobs.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE jobs.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND jobs.status IN ('Completed', 'Invoiced') AND jobs.documentation_path IS NULL`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects INNER JOIN systems ON systems.id = defects.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open'`),
-      this.db.prepare(`SELECT COUNT(*) AS n FROM defects INNER JOIN systems ON systems.id = defects.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open' AND defects.severity = 'Critical'`),
+      this.db.prepare(`
+        SELECT
+          COALESCE(SUM(1), 0) AS openDefects,
+          COALESCE(SUM(CASE WHEN defects.severity = 'Critical' THEN 1 ELSE 0 END), 0) AS criticalDefects
+        FROM defects
+        INNER JOIN systems ON systems.id = defects.system_id
+        INNER JOIN sites ON sites.id = systems.site_id
+        WHERE defects.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND defects.status = 'Open'
+      `),
       this.db.prepare(`SELECT COUNT(*) AS n FROM certificates INNER JOIN systems ON systems.id = certificates.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status = 'Blocked'`),
       this.db.prepare(`SELECT COUNT(*) AS n FROM certificates INNER JOIN systems ON systems.id = certificates.system_id INNER JOIN sites ON sites.id = systems.site_id WHERE certificates.deleted_at IS NULL AND systems.deleted_at IS NULL AND sites.deleted_at IS NULL AND certificates.status = 'Valid'`)
     ]);
@@ -68,14 +83,17 @@ export class DashboardService {
       return res?.results?.[0]?.n ?? 0;
     };
 
+    const jobsData = (jobsScheduledStats as { results: { activeJobs: number; unassignedJobs: number }[] })?.results?.[0] || { activeJobs: 0, unassignedJobs: 0 };
+    const defectsData = (defectsStats as { results: { openDefects: number; criticalDefects: number }[] })?.results?.[0] || { openDefects: 0, criticalDefects: 0 };
+
     return {
-      activeJobs: getCount(cntActive),
-      unassignedJobs: getCount(cntUnassigned),
+      activeJobs: jobsData.activeJobs,
+      unassignedJobs: jobsData.unassignedJobs,
       overdueSystems: getCount(cntOverdue),
       openRequests: getCount(cntRequests),
       missingDocuments: getCount(cntMissingDocs),
-      openDefects: getCount(cntOpenDefects),
-      criticalDefects: getCount(cntCriticalDefects),
+      openDefects: defectsData.openDefects,
+      criticalDefects: defectsData.criticalDefects,
       blockedCertificates: getCount(cntBlockedCerts),
       validCertificates: getCount(cntValidCerts)
     };
