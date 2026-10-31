@@ -77,15 +77,14 @@ export async function getTechDashboardData(techId: string): Promise<JobWithDetai
 export async function getDashboardStats(): Promise<DashboardStats> {
   const db = getDatabase();
   
-  const [activeJobs, unassignedJobs, overdueSystems, openRequests, missingDocuments,
-         openDefects, criticalDefects, blockedCertificates, validCertificates] = await db.batch([
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
-    db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress') AND assigned_technician_id IS NULL`),
+  // Optimization: Group queries targeting identical record sets with the exact same WHERE filters using conditional aggregation
+  const [jobsStats, overdueSystems, openRequests, missingDocuments,
+         defectsStats, blockedCertificates, validCertificates] = await db.batch([
+    db.prepare(`SELECT COALESCE(SUM(CASE WHEN 1 THEN 1 ELSE 0 END), 0) AS cntActive, COALESCE(SUM(CASE WHEN assigned_technician_id IS NULL THEN 1 ELSE 0 END), 0) AS cntUnassigned FROM jobs WHERE deleted_at IS NULL AND status IN ('Scheduled', 'In Progress')`),
     db.prepare(`SELECT COUNT(*) AS n FROM systems WHERE deleted_at IS NULL AND date(next_due_date) < date('now')`),
     db.prepare(`SELECT COUNT(*) AS n FROM maintenance_requests WHERE status IN ('New', 'Reviewing')`),
     db.prepare(`SELECT COUNT(*) AS n FROM jobs WHERE deleted_at IS NULL AND status IN ('Completed', 'Invoiced') AND documentation_path IS NULL`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
-    db.prepare(`SELECT COUNT(*) AS n FROM defects WHERE deleted_at IS NULL AND status = 'Open' AND severity = 'Critical'`),
+    db.prepare(`SELECT COALESCE(SUM(CASE WHEN 1 THEN 1 ELSE 0 END), 0) AS cntOpenDefects, COALESCE(SUM(CASE WHEN severity = 'Critical' THEN 1 ELSE 0 END), 0) AS cntCriticalDefects FROM defects WHERE deleted_at IS NULL AND status = 'Open'`),
     db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Blocked'`),
     db.prepare(`SELECT COUNT(*) AS n FROM certificates WHERE deleted_at IS NULL AND status = 'Valid'`)
   ]);
@@ -94,14 +93,17 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     n: number;
   }
   
+  const jobsRes = jobsStats as { results: { cntActive: number, cntUnassigned: number }[] };
+  const defectsRes = defectsStats as { results: { cntOpenDefects: number, cntCriticalDefects: number }[] };
+
   return {
-    activeJobs: (activeJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    unassignedJobs: (unassignedJobs?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    activeJobs: jobsRes?.results?.[0]?.cntActive ?? 0,
+    unassignedJobs: jobsRes?.results?.[0]?.cntUnassigned ?? 0,
     overdueSystems: (overdueSystems?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
     openRequests: (openRequests?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
     missingDocuments: (missingDocuments?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    openDefects: (openDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
-    criticalDefects: (criticalDefects?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
+    openDefects: defectsRes?.results?.[0]?.cntOpenDefects ?? 0,
+    criticalDefects: defectsRes?.results?.[0]?.cntCriticalDefects ?? 0,
     blockedCertificates: (blockedCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0,
     validCertificates: (validCertificates?.results?.[0] as unknown as CountResult | undefined)?.n ?? 0
   };
