@@ -1,3 +1,3 @@
-## 2025-06-08 - Refactoring the jobs POST API
-**Learning:** Refactoring overly long functions, especially those routing API endpoints based on payload actions, greatly improves maintainability.
-**Action:** Extracted `markInvoiced` and `create/update` logic from `POST` in `src/pages/portal/api/admin/jobs.ts` into isolated async helper functions.
+## 2024-11-02 - SQL Conditional Aggregation Index Preserving
+**Learning:** When using conditional aggregation (COALESCE(SUM(CASE WHEN...))) to optimize multiple COUNT(*) queries on the same table, they must share the exact same WHERE clause. Combining queries with different logical filters or dropping the WHERE clause forces a full table scan and bypasses indexes.
+**Action:** Always maintain the shared WHERE filter when consolidating queries with conditional aggregation.
