@@ -87,7 +87,8 @@ export class DashboardService {
 
     if (siteIds.length === 0) return null;
 
-    const sp = inClause(siteIds);
+    const spAgg = inClause(siteIds, 4);
+    const sp = inClause(siteIds, 1);
 
     const [aggResult, quoteResult, requestResult] = await this.db.batch([
       // Per-site aggregate for heatmap + overall stats
@@ -102,7 +103,7 @@ export class DashboardService {
           LEFT JOIN systems s ON s.site_id = sites.id AND s.deleted_at IS NULL
           LEFT JOIN defects d ON d.system_id = s.id AND d.deleted_at IS NULL
             AND d.status IN ('Open', 'In Progress')
-          WHERE sites.id IN (${sp}) AND sites.deleted_at IS NULL
+          WHERE sites.id IN (${spAgg}) AND sites.deleted_at IS NULL
           GROUP BY sites.id, sites.owner_company_name`
       ).bind(today, today, soonDate, ...siteIds),
 
